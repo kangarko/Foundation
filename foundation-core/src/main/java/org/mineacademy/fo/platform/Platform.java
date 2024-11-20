@@ -66,7 +66,7 @@ public final class Platform {
 	 * You can prefix the command with @(announce|warn|error|info|question|success) to send a formatted
 	 * message to playerReplacement directly.
 	 *
-	 * @param playerReplacement
+	 * @param playerReplacement can be null
 	 * @param command
 	 */
 	public static void dispatchConsoleCommand(FoundationPlayer playerReplacement, String command) {

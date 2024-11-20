@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.command.PermsCommand;
+import org.mineacademy.fo.command.PermsSubCommand;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * A draft API for enumerating chat messages into pages.
  *
- * See {@link PermsCommand} for an early implementation.
+ * See {@link PermsSubCommand} for an early implementation.
  */
 @Getter
 @RequiredArgsConstructor

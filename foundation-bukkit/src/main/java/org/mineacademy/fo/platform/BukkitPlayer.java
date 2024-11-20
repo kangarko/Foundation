@@ -1,6 +1,7 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -30,14 +31,14 @@ import net.md_5.bungee.api.ChatMessageType;
  * An implementation of {@link FoundationPlayer} for Bukkit.
  */
 @Getter
-public final class BukkitPlayer extends FoundationPlayer {
+final class BukkitPlayer extends FoundationPlayer {
 
-	private final CommandSender commandSender;
+	private final CommandSender sender;
 	private final boolean isPlayer;
 	private final Player player;
 
 	public BukkitPlayer(@NonNull CommandSender sender) {
-		this.commandSender = sender;
+		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
 	}
@@ -48,18 +49,47 @@ public final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
+	public SimpleLocation getBukkitLocation() {
+		Valid.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
+		final Location location = this.player.getLocation();
+
+		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+	}
+
+	@Override
+	protected String getSenderName0() {
+		return this.sender.getName();
+	}
+
+	@Override
+	public UUID getUniqueId() {
+		Valid.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
+
+		return this.player.getUniqueId();
+	}
+
+	@Override
+	protected boolean hasPermission0(String permission) {
+		return this.sender.hasPermission(permission);
+	}
+
+	@Override
 	public boolean isCommandSender() {
 		return true;
 	}
 
 	@Override
 	public boolean isConsole() {
-		return this.commandSender instanceof ConsoleCommandSender;
+		return this.sender instanceof ConsoleCommandSender;
+	}
+
+	private boolean isConversing() {
+		return this.isPlayer && this.player.isConversing();
 	}
 
 	@Override
 	public boolean isDiscord() {
-		return this.commandSender instanceof DiscordSender;
+		return this.sender instanceof DiscordSender;
 	}
 
 	public boolean isOnline() {
@@ -72,11 +102,17 @@ public final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public SimpleLocation getBukkitLocation() {
-		Valid.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
-		final Location location = this.player.getLocation();
+	protected void performPlayerCommand0(String replacedCommand) {
+		if (Bukkit.isPrimaryThread())
+			this.player.chat("/" + replacedCommand);
+		else
+			Bukkit.getScheduler().runTask(SimplePlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
+	}
 
-		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+	@Override
+	public void removeBossBar() {
+		if (this.isPlayer)
+			NMSBossBar.getInstance().removeBar(this.player);
 	}
 
 	@Override
@@ -95,13 +131,13 @@ public final class BukkitPlayer extends FoundationPlayer {
 
 		// Native is fastest
 		if (Remain.isCommandSenderAudience()) {
-			this.commandSender.sendActionBar(message);
+			this.sender.sendActionBar(message);
 
 			return;
 		}
 
 		if (!this.isPlayer || MinecraftVersion.olderThan(V.v1_8))
-			this.commandSender.sendMessage(message.toLegacy());
+			this.sender.sendMessage(message.toLegacy());
 
 		else
 			try {
@@ -117,7 +153,7 @@ public final class BukkitPlayer extends FoundationPlayer {
 
 		// Native is fastest
 		if (Remain.isCommandSenderAudience()) {
-			this.commandSender.showBossBar(BossBar.bossBar(message, progress, color, overlay));
+			this.sender.showBossBar(BossBar.bossBar(message, progress, color, overlay));
 
 			return;
 		}
@@ -126,7 +162,7 @@ public final class BukkitPlayer extends FoundationPlayer {
 			NMSBossBar.getInstance().sendMessage(this.player, message.toLegacy(), progress, color, overlay);
 
 		} else
-			this.commandSender.sendMessage(message.toLegacy());
+			this.sender.sendMessage(message.toLegacy());
 	}
 
 	@Override
@@ -136,8 +172,8 @@ public final class BukkitPlayer extends FoundationPlayer {
 		if (Remain.isCommandSenderAudience()) {
 			final BossBar bar = BossBar.bossBar(message, progress, color, overlay);
 
-			this.commandSender.showBossBar(bar);
-			Platform.runTask(secondsToShow * 20, () -> this.commandSender.hideBossBar(bar));
+			this.sender.showBossBar(bar);
+			Platform.runTask(secondsToShow * 20, () -> this.sender.hideBossBar(bar));
 
 			return;
 		}
@@ -146,7 +182,18 @@ public final class BukkitPlayer extends FoundationPlayer {
 			NMSBossBar.getInstance().sendTimedMessage(this.player, message.toLegacy(), secondsToShow, progress, color, overlay);
 
 		} else
-			this.commandSender.sendMessage(message.toLegacy());
+			this.sender.sendMessage(message.toLegacy());
+	}
+
+	@Override
+	protected void sendLegacyMessage(String message) {
+
+		// Ugly hack since most conversations prevent players from receiving messages through other API calls
+		if (this.isConversing())
+			this.player.sendRawMessage(message);
+
+		else
+			this.sender.sendMessage(message);
 	}
 
 	@Override
@@ -154,7 +201,7 @@ public final class BukkitPlayer extends FoundationPlayer {
 
 		// Paper is fastest: ~0.1ms vs ~0.3ms below
 		if (Remain.isCommandSenderAudience()) {
-			this.commandSender.sendMessage(component);
+			this.sender.sendMessage(component);
 
 			return;
 		}
@@ -170,17 +217,11 @@ public final class BukkitPlayer extends FoundationPlayer {
 		if (!this.isPlayer) {
 			final String legacy = SimpleComponent.fromAdventure(component).toLegacy();
 
-			this.commandSender.sendMessage(legacy.isEmpty() ? " " : legacy);
+			this.sender.sendMessage(legacy.isEmpty() ? " " : legacy);
 			return;
 		}
 
 		this.player.spigot().sendMessage(Remain.convertAdventureToBungee(component));
-	}
-
-	@Override
-	public void removeBossBar() {
-		if (this.isPlayer)
-			NMSBossBar.getInstance().removeBar(this.player);
 	}
 
 	@Override
@@ -222,38 +263,5 @@ public final class BukkitPlayer extends FoundationPlayer {
 		Valid.checkBoolean(this.isPlayer, "Cannot set temp metadata for non-players!");
 
 		this.player.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
-	}
-
-	@Override
-	protected String getSenderName0() {
-		return this.commandSender.getName();
-	}
-
-	@Override
-	protected boolean hasPermission0(String permission) {
-		return this.commandSender.hasPermission(permission);
-	}
-
-	@Override
-	protected void performPlayerCommand0(String replacedCommand) {
-		if (Bukkit.isPrimaryThread())
-			this.player.chat("/" + replacedCommand);
-		else
-			Bukkit.getScheduler().runTask(SimplePlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
-	}
-
-	@Override
-	protected void sendLegacyMessage(String message) {
-
-		// Ugly hack since most conversations prevent players from receiving messages through other API calls
-		if (this.isConversing())
-			this.player.sendRawMessage(message);
-
-		else
-			this.commandSender.sendMessage(message);
-	}
-
-	private boolean isConversing() {
-		return this.isPlayer && this.player.isConversing();
 	}
 }

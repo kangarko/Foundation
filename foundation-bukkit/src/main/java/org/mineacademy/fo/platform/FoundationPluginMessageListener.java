@@ -49,7 +49,7 @@ final class FoundationPluginMessageListener implements PluginMessageListener {
 
 			final String channelName = input.readUTF();
 
-			for (final ProxyListener listener : ProxyListener.getRegisteredlisteners())
+			for (final ProxyListener listener : ProxyListener.getRegisteredListeners())
 				if (channelName.equals(listener.getChannel())) {
 
 					final UUID senderUid = UUID.fromString(input.readUTF());

@@ -195,18 +195,18 @@ public abstract class SimpleCommandGroup {
 	/**
 	 * Automatically registers default Foundation subcommands:
 	 *
-	 * NB: {@link PermsCommand} is not automatically registed as it requires a class in its argument.
+	 * NB: {@link PermsSubCommand} is not automatically registed as it requires a class in its argument.
 	 *
-	 * @see DebugCommand
-	 * @see DumpLocaleCommand
-	 * @see ReloadCommand
+	 * @see DebugSubCommand
+	 * @see DumpLocaleSubCommand
+	 * @see ReloadSubCommand
 	 *
 	 * For platform specific implementations this might register more commands such as RegionCommand on Bukkit, etc.
 	 */
 	public final void registerDefaultSubcommands() {
-		this.registerSubcommand(new DebugCommand());
-		this.registerSubcommand(new DumpLocaleCommand());
-		this.registerSubcommand(new ReloadCommand());
+		this.registerSubcommand(new DebugSubCommand());
+		this.registerSubcommand(new DumpLocaleSubCommand());
+		this.registerSubcommand(new ReloadSubCommand());
 
 		Platform.registerDefaultPlatformSubcommands(this);
 	}

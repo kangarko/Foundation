@@ -23,7 +23,7 @@ import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.annotation.AutoRegister;
-import org.mineacademy.fo.command.RegionCommand;
+import org.mineacademy.fo.command.RegionSubCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
@@ -42,7 +42,7 @@ import org.mineacademy.fo.menu.MenuListener;
 import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
-import org.mineacademy.fo.model.BStatsMetrics;
+import org.mineacademy.fo.model.BStatsBukkit;
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
@@ -471,7 +471,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 			Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
 
 			if (this.getBStatsPluginId() != -1)
-				new BStatsMetrics(this, this.getBStatsPluginId());
+				new BStatsBukkit(this, this.getBStatsPluginId());
 
 			if (SimpleSettings.NOTIFY_NEW_VERSIONS)
 				Platform.runTaskAsync(new BuiltByBitUpdateCheck());
@@ -485,160 +485,160 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 		for (final CompAttribute comp : CompAttribute.values())
 			try {
 				CompAttribute.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (comp.getNmsName() != null)
 					Common.log("Invalid CompAttribute " + comp.name());
 			}
-
+	
 		for (final CompColor comp : CompColor.values())
 			try {
 				if (comp.getDye() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompColor " + comp.getName());
 			}
-
+	
 		for (final CompItemFlag comp : CompItemFlag.values())
 			try {
 				ItemFlag.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompItemFlag " + comp);
 			}
-
+	
 		for (final CompMaterial comp : CompMaterial.values())
 			try {
 				if (comp.toItem() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompMaterial " + comp);
 			}
-
+	
 		for (final CompParticle comp : CompParticle.values())
 			try {
 				Particle.valueOf(comp.name());
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Skip
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (!comp.isRemoved())
 					Common.log("Invalid CompParticle " + comp);
 			}
-
+	
 		if (MinecraftVersion.atLeast(V.v1_21))
 			for (final CompSound comp : CompSound.values())
 				try {
 					Sound.valueOf(comp.name());
-
+	
 				} catch (final IllegalArgumentException ex) {
 					Common.log("Invalid CompSound " + comp.name());
 				}
-
+	
 		for (final CompVillagerProfession comp : CompVillagerProfession.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerProfession " + comp);
 			}
-
+	
 		for (final CompVillagerType comp : CompVillagerType.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
 	}
-
+	
 	private void scanModernEnumsForUpdates() {
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final DyeColor bukkit : DyeColor.values())
 			try {
 				CompColor.fromDye(bukkit);
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompColor for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final Enchantment bukkit : Enchantment.values())
 			try {
 				if (CompEnchantment.getByName(bukkit.getKey().toString()) == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompEnchantment for Bukkit's " + bukkit);
 			}
-
+	
 		for (final ItemFlag bukkit : ItemFlag.values())
 			try {
 				CompItemFlag.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompItemFlag for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Material bukkit : Material.values())
 			try {
 				CompMaterial.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompMaterial for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Particle bukkit : Particle.values())
 			try {
 				CompParticle.fromName(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompParticle for Bukkit's " + bukkit);
 			}
-
+	
 		for (final PotionEffectType bukkit : PotionEffectType.values())
 			try {
 				CompPotionEffectType.getByName(bukkit.getKey().toString());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompPotionEffectType for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Sound bukkit : Sound.values())
 			try {
 				CompSound.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompSound for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Profession bukkit : Villager.Profession.values())
 			try {
 				CompVillagerProfession.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerProfession for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Type bukkit : Villager.Type.values())
 			try {
 				CompVillagerType.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerType for Bukkit's " + bukkit);
 			}
@@ -930,7 +930,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	}
 
 	/**
-	 * Set the default proxy used in {@link ProxyUtil#sendBungeeMessage(Player, Object...)}
+	 * Get the default proxy used in {@link ProxyUtil#sendBungeeMessage(Player, Object...)}
 	 * and {@link OutgoingMessage} when no group is provided.
 	 *
 	 * @return
@@ -1114,7 +1114,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 	/**
 	 * Should we enable the region system? Loads {@link DiskRegion#loadRegions()}
-	 * You still need to register the subcommand {@link RegionCommand} manually.
+	 * You still need to register the subcommand {@link RegionSubCommand} manually.
 	 *
 	 * @return
 	 */

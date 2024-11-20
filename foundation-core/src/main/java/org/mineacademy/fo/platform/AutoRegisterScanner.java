@@ -95,17 +95,13 @@ final class AutoRegisterScanner {
 		for (final Class<?> clazz : classes)
 			try {
 				// Prevent beginner programmer mistake of forgetting to implement listener
-				try {
-					final Class<? extends Annotation> eventHandlerClass = ReflectionUtil.lookupClass("org.bukkit.event.EventHandler");
-					final Class<?> listenerClass = ReflectionUtil.lookupClass("org.bukkit.event.Listener");
+				final Class<? extends Annotation> eventHandlerClass = ReflectionUtil.lookupClassSilently("org.bukkit.event.EventHandler");
+				final Class<?> listenerClass = ReflectionUtil.lookupClassSilently("org.bukkit.event.Listener");
 
+				if (eventHandlerClass != null && listenerClass != null)
 					for (final Method method : clazz.getMethods())
 						if (method.isAnnotationPresent(eventHandlerClass))
 							ValidCore.checkBoolean(listenerClass.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
-
-				} catch (final Error err) {
-					// Ignore, likely caused by a non-Bukkit platform or missing plugins
-				}
 
 				// Handled above
 				if (YamlStaticConfig.class.isAssignableFrom(clazz))

@@ -6,10 +6,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.mineacademy.fo.command.PermsCommand;
+import org.mineacademy.fo.command.PermsSubCommand;
 
 /**
- * Annotation that the {@link PermsCommand} command scans for in your class
+ * Annotation that the {@link PermsSubCommand} command scans for in your class
  * to generate permission messages.
  *
  * Example:
@@ -26,7 +26,7 @@ import org.mineacademy.fo.command.PermsCommand;
  * </pre>
  *
  * @see PermissionGroup
- * @see PermsCommand
+ * @see PermsSubCommand
  */
 @Retention(RUNTIME)
 @Target(FIELD)

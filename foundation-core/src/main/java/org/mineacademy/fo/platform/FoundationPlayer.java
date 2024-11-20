@@ -1,6 +1,7 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
+import java.util.UUID;
 
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
@@ -13,6 +14,7 @@ import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.settings.Lang;
 
+import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 
@@ -83,6 +85,13 @@ public abstract class FoundationPlayer {
 	}
 
 	/**
+	 * Returns the player's unique ID, or error if we are not a player.
+	 *
+	 * @return
+	 */
+	public abstract UUID getUniqueId();
+
+	/**
 	 * Get the player implementation object, such as Player on Bukkit.
 	 * Returns null if not applicable.
 	 *
@@ -90,6 +99,15 @@ public abstract class FoundationPlayer {
 	 * @return
 	 */
 	public abstract <T> T getPlayer();
+
+	/**
+	 * Get the command sender implementation object, such as CommandSender on Bukkit.
+	 *
+	 * @param <T>
+	 * @return
+	 */
+	@NonNull
+	public abstract <T> T getSender();
 
 	/**
 	 * Returns the player's location if called on Bukkit and the player is not a console

@@ -84,7 +84,6 @@ import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
@@ -93,7 +92,6 @@ import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.UUIDToNameConverter;
-import org.mineacademy.fo.platform.BukkitPlayer;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.SimplePlugin;
@@ -1839,9 +1837,10 @@ public final class Remain {
 
 						if (!colorized.isEmpty()) {
 							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), style);
+							final Player playerReceiver = receiver.getPlayer();
 
-							if (((BukkitPlayer) receiver.getPlayer()).isOnline())
-								accessor.show(((BukkitPlayer) receiver).getPlayer());
+							if (playerReceiver.isOnline())
+								accessor.show(playerReceiver.getPlayer());
 						}
 					});
 				}
@@ -2823,9 +2822,9 @@ public final class Remain {
 	 * @return the task or null
 	 */
 	public static Task runTask(final int delayTicks, Runnable timer) {
-		final Runnable runnable = wrapRunnable(timer);
+		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
-		if (runIfDisabled(runnable))
+		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
 		if (Remain.isFolia()) {
@@ -2836,7 +2835,7 @@ public final class Remain {
 			else
 				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
 
-			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2853,7 +2852,7 @@ public final class Remain {
 			else
 				task = Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), runnable, delayTicks);
 
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
+			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(simpleTask);
@@ -2861,7 +2860,7 @@ public final class Remain {
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
+			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(simpleTask);
@@ -2878,9 +2877,9 @@ public final class Remain {
 	 * @return the task or null
 	 */
 	public static Task runTaskAsync(final int delayTicks, Runnable timer) {
-		final Runnable runnable = wrapRunnable(timer);
+		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
-		if (runIfDisabled(runnable))
+		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
 		if (Remain.isFolia()) {
@@ -2891,7 +2890,7 @@ public final class Remain {
 			else
 				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
 
-			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2908,7 +2907,7 @@ public final class Remain {
 			else
 				task = Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks);
 
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
+			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(simpleTask);
@@ -2916,7 +2915,7 @@ public final class Remain {
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2934,15 +2933,15 @@ public final class Remain {
 	 * @return the bukkit task or null if error
 	 */
 	public static Task runTaskTimer(final int delayTicks, final int repeatTicks, Runnable timer) {
-		final Runnable runnable = wrapRunnable(timer);
+		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
-		if (runIfDisabled(runnable))
+		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
 		if (Remain.isFolia()) {
 			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
 
-			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2959,7 +2958,7 @@ public final class Remain {
 			else
 				task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
 
-			final SimpleTask simpleTask = SimpleTask.fromBukkit(task);
+			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(simpleTask);
@@ -2967,7 +2966,7 @@ public final class Remain {
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2985,15 +2984,15 @@ public final class Remain {
 	 * @return
 	 */
 	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, Runnable timer) {
-		final Runnable runnable = wrapRunnable(timer);
+		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
-		if (runIfDisabled(runnable))
+		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
 		if (Remain.isFolia()) {
 			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
 
-			final SimpleTask task = SimpleTask.fromFolia(cancel, taskHandle);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -3010,7 +3009,7 @@ public final class Remain {
 			else
 				task = Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
 
-			final SimpleTask simplTask = SimpleTask.fromBukkit(task);
+			final SimpleBukkitTask simplTask = SimpleBukkitTask.fromBukkit(task);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(simplTask);
@@ -3018,60 +3017,13 @@ public final class Remain {
 			return simplTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleTask task = SimpleTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
 
 			return task;
 		}
-	}
-
-	/*
-	 * Wraps the runnable to catch any exceptions and log them.
-	 */
-	private static Runnable wrapRunnable(@NonNull Runnable original) {
-		final StackTraceElement[] outerElements = new Throwable().getStackTrace();
-
-		return new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					original.run();
-
-				} catch (final Throwable throwable) {
-					logCombinedError(throwable, outerElements);
-				}
-			}
-		};
-	}
-
-	/*
-	 * Combines the stack traces of two throwables and logs them.
-	 */
-	private static void logCombinedError(Throwable throwable, StackTraceElement[] outerTrace) {
-		final StackTraceElement[] innerTrace = throwable.getStackTrace();
-
-		final StackTraceElement[] combinedTrace = new StackTraceElement[outerTrace.length + innerTrace.length];
-
-		System.arraycopy(innerTrace, 0, combinedTrace, 0, innerTrace.length);
-		System.arraycopy(outerTrace, 0, combinedTrace, innerTrace.length, outerTrace.length);
-
-		throwable.setStackTrace(combinedTrace);
-
-		Debugger.printStackTrace(throwable);
-		Debugger.saveError(throwable);
-	}
-
-	private static boolean runIfDisabled(@NonNull Runnable run) {
-		if (!SimplePlugin.getInstance().isEnabled()) {
-			run.run();
-
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -3492,52 +3444,52 @@ public final class Remain {
 	public static boolean hasPlayerOpenSignMethod() {
 		return hasPlayerOpenSignMethod;
 	}
+}
 
-	/**
-	 * Implements a Task for both Bukkit and Folia.
-	 */
-	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-	private static final class SimpleTask implements Task {
+/**
+ * Implements a Task for both Bukkit and Folia.
+ */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+final class SimpleBukkitTask implements Task {
 
-		@Getter
-		private final int taskId;
+	@Getter
+	private final int taskId;
 
-		@Getter
-		private final boolean sync;
+	@Getter
+	private final boolean sync;
 
-		private final Method foliaCancelMethod;
-		private final Object foliaTaskInstance;
+	private final Method foliaCancelMethod;
+	private final Object foliaTaskInstance;
 
-		@Getter
-		private boolean cancelled = false;
+	@Getter
+	private boolean cancelled = false;
 
-		@Override
-		public void cancel() {
-			if (Remain.isFolia())
-				ReflectionUtil.invoke(this.foliaCancelMethod, this.foliaTaskInstance);
+	@Override
+	public void cancel() {
+		if (Remain.isFolia())
+			ReflectionUtil.invoke(this.foliaCancelMethod, this.foliaTaskInstance);
 
-			else
-				Bukkit.getScheduler().cancelTask(taskId);
+		else
+			Bukkit.getScheduler().cancelTask(taskId);
 
-			this.cancelled = true;
-		}
+		this.cancelled = true;
+	}
 
-		private static SimpleTask fromBukkit(BukkitTask task) {
-			return new SimpleTask(task.getTaskId(), task.isSync(), null, null);
-		}
+	static SimpleBukkitTask fromBukkit(BukkitTask task) {
+		return new SimpleBukkitTask(task.getTaskId(), task.isSync(), null, null);
+	}
 
-		private static SimpleTask fromBukkit(int taskId, boolean sync) {
-			return taskId >= 0 ? null : new SimpleTask(taskId, sync, null, null);
-		}
+	static SimpleBukkitTask fromBukkit(int taskId, boolean sync) {
+		return taskId >= 0 ? null : new SimpleBukkitTask(taskId, sync, null, null);
+	}
 
-		private static SimpleTask fromFolia(Method foliaCancelMethod, Object foliaTaskInstance) {
-			return new SimpleTask(0, false, foliaCancelMethod, foliaTaskInstance);
-		}
+	static SimpleBukkitTask fromFolia(Method foliaCancelMethod, Object foliaTaskInstance) {
+		return new SimpleBukkitTask(0, false, foliaCancelMethod, foliaTaskInstance);
+	}
 
-		@Override
-		public Plugin getOwner() {
-			return SimplePlugin.getInstance();
-		}
+	@Override
+	public Plugin getOwner() {
+		return SimplePlugin.getInstance();
 	}
 }
 
