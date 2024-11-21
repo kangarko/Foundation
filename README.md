@@ -25,9 +25,9 @@ Thousands of servers are running on Foundation since 2013. It has been battle te
 
 1. Import Foundation using Maven/Gradle (see the Importing section).
 2. **IMPORTANT - DO NOT MISS**: Configure shading to only include Foundation and the libraries you need otherwise all of our dependencies will be shaded to your jar! [See this link](https://github.com/kangarko/PluginTemplate/blob/master/pom.xml#L130) for sample usage.
-3. Change "**extends JavaPlugin**" to "**extends SimplePlugin**" (we need that to register things and listeners on our end automatically)
+3. Depending on the platform, make your main class extend BukkitPlugin (replace "**extends JavaPlugin**") or BungeePlugin or VelocityPlugin.
 4. Change **onEnable()** to **onPluginStart()** and **onDisable()** to **onPluginStop()** (we occupy these methods to perform logic)
-5. If you use a **static getInstance()** method in your main plugin's class, change it to return **(T) SimplePlugin.getInstance()** where T is your plugin instead. Delete the instance of your plugin from your class if you use it (if you have myPlugin = this anywhere, remove it).
+5. If you use a **static getInstance()** method in your main plugin's class, change it to return **(T) SimpleXPlugin.getInstance()** where T is your plugin instead. Replace X with platform name, see 3. Delete static instance of your plugin from your class since it works the same as this.
 
 For a sample plugin, see [PluginTemplate](https://github.com/kangarko/plugintemplate).
 

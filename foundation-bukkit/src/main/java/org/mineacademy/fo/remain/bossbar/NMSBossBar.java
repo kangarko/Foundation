@@ -21,7 +21,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
@@ -95,7 +95,7 @@ public final class NMSBossBar implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPluginDisable(final PluginDisableEvent event) {
-		if (event.getPlugin().equals(SimplePlugin.getInstance()))
+		if (event.getPlugin().equals(BukkitPlugin.getInstance()))
 			this.stop();
 	}
 

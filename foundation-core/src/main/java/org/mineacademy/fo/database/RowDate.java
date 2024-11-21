@@ -36,7 +36,7 @@ public abstract class RowDate extends Row {
 
 	@Override
 	public SerializedMap toMap() {
-		return SerializedMap.ofArray(
+		return SerializedMap.fromArray(
 				"Date", TimeUtil.toSQLTimestamp(this.date));
 	}
 

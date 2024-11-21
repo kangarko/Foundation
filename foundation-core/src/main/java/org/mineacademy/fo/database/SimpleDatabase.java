@@ -157,7 +157,7 @@ public class SimpleDatabase {
 
 			// Create tables automatically
 			for (final Table createdTable : this.getTables()) {
-				final TableCreator creator = TableCreator.of(createdTable.getName());
+				final TableCreator creator = new TableCreator(createdTable.getName());
 
 				try {
 					createdTable.onTableCreate(creator);
@@ -622,7 +622,7 @@ public class SimpleDatabase {
 	/**
 	 * Returns the amount of rows from the given table per the conditions,
 	 *
-	 * Example conditions: SerializedMap.ofArray("Status", "PENDING")
+	 * Example conditions: SerializedMap.fromArray("Status", "PENDING")
 	 * This example will return all rows where column Status equals PENDING.
 	 *
 	 * @param table
@@ -1256,16 +1256,6 @@ public class SimpleDatabase {
 			this.primaryColumn = primaryColumn;
 
 			return this;
-		}
-
-		/**
-		 * Create a new table.
-		 *
-		 * @param name
-		 * @return
-		 */
-		public static TableCreator of(final String name) {
-			return new TableCreator(name);
 		}
 	}
 

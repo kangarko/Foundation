@@ -18,11 +18,8 @@ import net.md_5.bungee.event.EventHandler;
 
 /**
  * A listener that forwards incoming messages to the registered listeners
- *
- * @deprecated internal use only
  */
-@Deprecated
-public final class ForwardingListener implements Listener {
+final class BungeeListener implements Listener {
 
 	/**
 	 * Handle the received message automatically if it matches our tag

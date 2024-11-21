@@ -272,17 +272,17 @@ public abstract class SerializeUtilCore {
 			object = Boolean.parseBoolean(object.toString());
 
 		else if (classOf == SerializedMap.class)
-			object = SerializedMap.of(language, object);
+			object = SerializedMap.fromObject(language, object);
 
 		else if (classOf == UUID.class)
 			object = UUID.fromString(object.toString());
 
 		else if (classOf == SimpleComponent.class)
 			throw new FoException("Deserializing SimpleComponent is ambigious, if you want to deserialize it literally from JSON, "
-					+ "use SimpleComponent$deserialize(SerializedMap.of(Language.JSON, object.toString())), otherwise call SimpleComponent#fromMini");
+					+ "use SimpleComponent$deserialize(SerializedMap.from(Language.JSON, object.toString())), otherwise call SimpleComponent#fromMini");
 
 		else if (classOf == Style.class) {
-			final SerializedMap map = SerializedMap.of(object);
+			final SerializedMap map = SerializedMap.fromObject(object);
 			Style.Builder style = Style.style();
 
 			if (map.containsKey("Color"))
@@ -313,7 +313,7 @@ public abstract class SerializeUtilCore {
 				return (T) object;
 
 			if (language == Language.JSON)
-				return (T) SerializedMap.of(language, object).asMap();
+				return (T) SerializedMap.fromObject(language, object).asMap();
 
 			throw new FoException("Does not know how to turn " + object.getClass().getSimpleName() + " into a Map! (Keep in mind we can only serialize into Map<String, Object>. Data: " + object);
 
@@ -355,7 +355,7 @@ public abstract class SerializeUtilCore {
 					argumentClasses.add(param.getClass());
 
 				// Build parameter instances
-				arguments.add(SerializedMap.of(language, object));
+				arguments.add(SerializedMap.fromObject(language, object));
 				Collections.addAll(arguments, parameters);
 
 				// Find deserialize(SerializedMap, args[]) method
@@ -373,7 +373,7 @@ public abstract class SerializeUtilCore {
 			final Method deserialize = ReflectionUtil.getMethod(classOf, "deserialize", SerializedMap.class);
 
 			if (deserialize != null)
-				return ReflectionUtil.invokeStatic(deserialize, SerializedMap.of(language, object));
+				return ReflectionUtil.invokeStatic(deserialize, SerializedMap.fromObject(language, object));
 
 			throw new FoException("Unable to deserialize " + classOf.getSimpleName()
 					+ ", please write 'public static deserialize(SerializedMap map) or deserialize(SerializedMap map, X arg1, Y arg2, etc.) method to deserialize: " + object);

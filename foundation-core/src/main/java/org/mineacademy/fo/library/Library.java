@@ -6,6 +6,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * An immutable representation of a Maven artifact that can be downloaded,
@@ -18,7 +19,7 @@ public class Library {
 	/**
 	 * Direct download URLs for this library
 	 */
-	private final Collection<String> urls;
+	private final List<String> urls;
 
 	/**
 	 * Repository URLs for this library
@@ -163,7 +164,7 @@ public class Library {
 	 * @return direct download URLs
 	 */
 
-	public Collection<String> getUrls() {
+	public List<String> getUrls() {
 		return this.urls;
 	}
 

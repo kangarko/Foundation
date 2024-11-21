@@ -41,7 +41,7 @@ import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.CompAttribute;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
@@ -509,7 +509,7 @@ public final class PlayerUtil {
 	public static void storeState(final Player player) {
 		Valid.checkBoolean(!hasStoredState(player), "Player " + player.getName() + " already has a stored state!");
 
-		final SerializedMap data = SerializedMap.ofArray(
+		final SerializedMap data = SerializedMap.fromArray(
 				"gameMode", player.getGameMode(),
 				"content", player.getInventory().getContents(),
 				"armorContent", player.getInventory().getArmorContents(),
@@ -702,7 +702,7 @@ public final class PlayerUtil {
 
 		// Re-add metadata if vanished
 		if (vanished)
-			player.setMetadata("vanished", new FixedMetadataValue(SimplePlugin.getInstance(), true));
+			player.setMetadata("vanished", new FixedMetadataValue(BukkitPlugin.getInstance(), true));
 
 		// NMS
 		Remain.setInvisible(player, vanished);

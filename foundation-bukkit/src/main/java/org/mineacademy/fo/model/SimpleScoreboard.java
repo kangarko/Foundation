@@ -17,7 +17,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -357,7 +357,7 @@ public class SimpleScoreboard {
 	private void start() {
 		Valid.checkBoolean(this.updateTask == null, "Scoreboard " + this + " already running");
 
-		this.updateTask = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), () -> {
+		this.updateTask = Bukkit.getScheduler().runTaskTimer(BukkitPlugin.getInstance(), () -> {
 			try {
 				this.onUpdate();
 

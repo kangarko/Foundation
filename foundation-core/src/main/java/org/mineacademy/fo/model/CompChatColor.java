@@ -10,8 +10,9 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.ChatUtil;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.platform.Platform;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -455,7 +456,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 */
 	public static CompChatColor fromString(@NonNull String string) {
 		if (string.startsWith("#") && string.length() == 7) {
-			if (!Platform.hasHexColorSupport()) {
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
 				final Color color = getColorFromHex(string);
 
 				return getClosestLegacyColor(color);
@@ -548,7 +549,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @return
 	 */
 	public static CompChatColor getClosestLegacyColor(Color color) {
-		if (!Platform.hasHexColorSupport()) {
+		if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
 			if (color.getAlpha() < 128)
 				return null;
 
@@ -664,7 +665,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * Append a hex color to the result
 	 */
 	private static void appendHex(StringBuilder result, String code) {
-		if (!Platform.hasHexColorSupport())
+		if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16))
 			result.append(getClosestLegacyColor(getColorFromHex(code)));
 
 		else

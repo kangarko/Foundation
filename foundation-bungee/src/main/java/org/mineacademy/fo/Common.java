@@ -2,7 +2,6 @@ package org.mineacademy.fo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlayer;
@@ -16,11 +15,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Common extends CommonCore {
-
-	/**
-	 * The UUID of the console
-	 */
-	public static final UUID CONSOLE_UID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
 	/**
 	 * Sends a message to the player

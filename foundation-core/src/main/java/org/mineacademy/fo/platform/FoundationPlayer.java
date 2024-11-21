@@ -131,13 +131,12 @@ public abstract class FoundationPlayer {
 	}
 
 	/**
-	 * Return the server the player is on, or empty if this is not a player.
-	 *
-	 * @see #isPlayer()
+	 * Return the current server His Majesty is on,
+	 * null for poor consoles or weird Velocity players.
 	 *
 	 * @return
 	 */
-	public abstract String getCurrentServerName();
+	public abstract FoundationServer getServer();
 
 	/**
 	 * Returns the player's name, or the "part-console" lang key if the player is a console.
@@ -415,11 +414,12 @@ public abstract class FoundationPlayer {
 
 							// MiniMessage ignores the tag if it is equal to the last one, so we need shift its color
 							// This is invisible on legacy thanks to downsapling
-							oldLines[i] = "<" + this.darkenOneShade(lastStyle.color()).asHexString() + ">" + line;
+							if (lastStyle.color() != null)
+								oldLines[i] = "<" + this.darkenOneShade(lastStyle.color()).asHexString() + ">" + line;
 						}
 
-						// Find the last style and apply it to the next line
-						lastStyle = SimpleComponent.LastMessageStyleParser.parseStyle(line);
+						// Find the last style and apply it to the next line using the updated last line
+						lastStyle = SimpleComponent.LastMessageStyleParser.parseStyle(oldLines[i]);
 					}
 
 					adventure = adventure.hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize(String.join("\n", oldLines))));
@@ -442,14 +442,12 @@ public abstract class FoundationPlayer {
 	/*
 	 * Darken the given color by one shade.
 	 */
-	private TextColor darkenOneShade(TextColor color) {
-		final String hex = color.asHexString();
+	private TextColor darkenOneShade(@NonNull TextColor color) {
+		final int red = Math.max(color.red() - 1, 0);
+		final int green = color.green();
+		final int blue = color.blue();
 
-		final int r = Math.max(0, Integer.parseInt(hex.substring(1, 3), 16) - 1);
-		final int g = Integer.parseInt(hex.substring(3, 5), 16);
-		final int b = Integer.parseInt(hex.substring(5, 7), 16);
-
-		return TextColor.color(r, g, b);
+		return TextColor.color(red, green, blue);
 	}
 
 	/**

@@ -104,7 +104,7 @@ public final class RegionTool extends VisualTool {
 	@Override
 	public ItemStack getItem() {
 		if (this.item == null)
-			this.item = ItemCreator.of(itemMaterial).name(itemName).lore(lore).make();
+			this.item = ItemCreator.fromMaterial(itemMaterial).name(itemName).lore(lore).make();
 
 		return this.item;
 	}

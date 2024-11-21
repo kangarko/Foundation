@@ -1,5 +1,6 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -89,8 +90,18 @@ public final class Variables {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	@Setter
-	private static Collector collector = null;
+	private static List<Collector> collectors = new ArrayList<>();
+
+	/**
+	 * Set the collector to collect variables for the specified audience
+	 *
+	 * @param collector
+	 * @deprecated internal use only
+	 */
+	@Deprecated
+	public static void addCollector(@NonNull Collector collector) {
+		collectors.add(collector);
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Replacing
@@ -305,7 +316,7 @@ public final class Variables {
 			}
 		}
 
-		if (collector != null) {
+		for (final Collector collector : collectors) {
 			final SimpleComponent collectedVariable = collector.replaceVariable(pluginIdentifier, params, variable, audience);
 
 			if (collectedVariable != null)

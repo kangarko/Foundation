@@ -532,7 +532,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 				list.add(null);
 
 			else {
-				final Tuple<K, V> tuple = Tuple.deserialize(of(this.language, object), tupleKey, tupleValue);
+				final Tuple<K, V> tuple = Tuple.deserialize(fromObject(this.language, object), tupleKey, tupleValue);
 
 				list.add(tuple);
 			}
@@ -602,7 +602,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	public SerializedMap getMap(final String key) {
 		final Object raw = this.get(key, Object.class);
 
-		return raw != null ? of(this.language, raw) : new SerializedMap(Language.YAML);
+		return raw != null ? fromObject(this.language, raw) : new SerializedMap(Language.YAML);
 	}
 
 	/**
@@ -624,7 +624,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 		final Object raw = this.map.get(path);
 
 		if (raw != null)
-			for (final Entry<?, ?> entry : of(Language.YAML, raw).entrySet()) {
+			for (final Entry<?, ?> entry : fromObject(Language.YAML, raw).entrySet()) {
 				final Key key = SerializeUtilCore.deserialize(this.language, keyType, entry.getKey());
 				final Value value = SerializeUtilCore.deserialize(this.language, valueType, entry.getValue());
 
@@ -653,7 +653,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 		Object raw = this.map.get(path);
 
 		if (raw != null) {
-			raw = of(this.language, raw);
+			raw = fromObject(this.language, raw);
 
 			for (final Entry<String, Object> entry : ((SerializedMap) raw).entrySet()) {
 				final Key key = SerializeUtilCore.deserialize(this.language, keyType, entry.getKey());
@@ -953,7 +953,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param array
 	 * @return
 	 */
-	public static SerializedMap ofArray(final Object... array) {
+	public static SerializedMap fromArray(final Object... array) {
 
 		// If the first argument is a map already, treat as such
 		if (array != null && array.length == 1) {
@@ -963,25 +963,11 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 				return (SerializedMap) firstArgument;
 
 			if (firstArgument instanceof Map)
-				return SerializedMap.of(Language.YAML, firstArgument);
+				return SerializedMap.fromObject(Language.YAML, firstArgument);
 		}
 
 		final SerializedMap map = new SerializedMap(Language.YAML);
 		map.putArray(array);
-
-		return map;
-	}
-
-	/**
-	 * Create a new map with the first key-value pair
-	 *
-	 * @param key
-	 * @param value
-	 * @return
-	 */
-	public static SerializedMap of(final String key, final Object value) {
-		final SerializedMap map = new SerializedMap(Language.YAML);
-		map.put(key, value);
 
 		return map;
 	}
@@ -992,8 +978,8 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param object
 	 * @return the serialized map, or an empty map if object could not be parsed
 	 */
-	public static SerializedMap of(@NonNull Object object) {
-		return of(Language.YAML, object);
+	public static SerializedMap fromObject(@NonNull Object object) {
+		return fromObject(Language.YAML, object);
 	}
 
 	/**
@@ -1003,7 +989,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param object
 	 * @return
 	 */
-	public static SerializedMap of(Language language, @NonNull final Object object) {
+	public static SerializedMap fromObject(Language language, @NonNull final Object object) {
 
 		if (language == Language.JSON) {
 			ValidCore.checkBoolean(object instanceof String, "Can only create SerializedMap from JSON String, got " + object.getClass().getSimpleName() + " instead: " + object);
@@ -1016,7 +1002,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 				final JsonObject parsed = CommonCore.GSON.fromJson(json, JsonObject.class);
 				final Map<String, Object> converted = toValueMap(parsed);
 
-				return of0(Language.JSON, converted);
+				return fromInternal(Language.JSON, converted);
 
 			} catch (final Throwable t) {
 				CommonCore.throwError(t, "SerializedMap failed to parse JSON from " + json);
@@ -1025,13 +1011,13 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 			}
 		}
 
-		return of0(language, object);
+		return fromInternal(language, object);
 	}
 
 	/*
 	 * Parses the given object into Serialized map
 	 */
-	private static SerializedMap of0(Language language, @NonNull Object object) {
+	private static SerializedMap fromInternal(Language language, @NonNull Object object) {
 
 		if (object instanceof SerializedMap) {
 			((SerializedMap) object).language = language;
@@ -1043,7 +1029,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 			return new SerializedMap(language);
 
 		if (object instanceof ConfigSection)
-			return of0(language, ((ConfigSection) object).getValues(false));
+			return fromInternal(language, ((ConfigSection) object).getValues(false));
 
 		if (object instanceof Map) {
 			final Map<String, Object> copyOf = new LinkedHashMap<>();

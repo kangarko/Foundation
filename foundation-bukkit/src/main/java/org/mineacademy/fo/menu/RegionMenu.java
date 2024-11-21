@@ -29,7 +29,7 @@ public class RegionMenu extends Menu {
 		this.setTitle("Region " + regionName);
 		this.setSize(9 * 4);
 
-		this.teleportButton = Button.makeSimple(ItemCreator.of(CompMaterial.ENDER_PEARL,
+		this.teleportButton = Button.makeSimple(ItemCreator.from(CompMaterial.ENDER_PEARL,
 				"Teleport",
 				"",
 				"Click to teleport",
@@ -37,7 +37,7 @@ public class RegionMenu extends Menu {
 					player.chat("/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " region tp " + regionName);
 				});
 
-		this.viewButton = Button.makeSimple(ItemCreator.of(CompMaterial.GLASS,
+		this.viewButton = Button.makeSimple(ItemCreator.from(CompMaterial.GLASS,
 				"Visualize",
 				"",
 				"Click to visualize",

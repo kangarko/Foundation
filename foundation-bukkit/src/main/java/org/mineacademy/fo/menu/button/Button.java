@@ -53,7 +53,7 @@ public abstract class Button {
 		for (final String line : description)
 			lores.add(line);
 
-		return makeDummy(ItemCreator.of(infoButtonMaterial).name(Lang.legacy("menu-button-info-name")).hideTags(true).lore(lores));
+		return makeDummy(ItemCreator.fromMaterial(infoButtonMaterial).name(Lang.legacy("menu-button-info-name")).hideTags(true).lore(lores));
 	};
 
 	/**
@@ -120,7 +120,7 @@ public abstract class Button {
 	 * @return a new dummy air button
 	 */
 	public static final DummyButton makeEmpty() {
-		return makeDummy(ItemCreator.of(CompMaterial.AIR));
+		return makeDummy(ItemCreator.fromMaterial(CompMaterial.AIR));
 	}
 
 	/**
@@ -132,7 +132,7 @@ public abstract class Button {
 	 * @return
 	 */
 	public static final DummyButton makeDummy(final CompMaterial material, String title, String... lore) {
-		return makeDummy(ItemCreator.of(material).name(title).lore(lore));
+		return makeDummy(ItemCreator.fromMaterial(material).name(title).lore(lore));
 	}
 
 	/**
@@ -173,7 +173,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(icon).name(title).lore("").lore(label.split("\n")).makeMenuTool();
+				return ItemCreator.fromMaterial(icon).name(title).lore("").lore(label.split("\n")).makeMenuTool();
 			}
 
 			@Override
@@ -226,7 +226,7 @@ public abstract class Button {
 
 			@Override
 			public ItemStack getItem() {
-				return ItemCreator.of(icon, title, "", label).makeMenuTool();
+				return ItemCreator.from(icon, title, "", label).makeMenuTool();
 			}
 
 			@Override

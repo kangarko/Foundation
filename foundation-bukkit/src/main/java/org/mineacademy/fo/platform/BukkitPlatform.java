@@ -3,6 +3,7 @@ package org.mineacademy.fo.platform;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +39,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -48,7 +49,6 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.SerializeUtilCore.Serializer;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.BukkitCommandImpl;
@@ -57,6 +57,7 @@ import org.mineacademy.fo.command.RegionSubCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
@@ -74,6 +75,7 @@ import com.google.gson.JsonElement;
 
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEventSource;
 
 /**
@@ -87,14 +89,38 @@ final class BukkitPlatform extends FoundationPlatform {
 
 	private BukkitPlatform() {
 
+		// Avoid issues with shading by using a different version for legacy
+		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
+
+			// Pre-merge: 1.16-1.17
+			if (ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience")) {
+				String version = "4.2.0";
+
+				try {
+					Component.class.getMethod("compact");
+
+				} catch (final ReflectiveOperationException ex) {
+					version = "4.1.0";
+				}
+
+				this.getPlugin().loadLibrary(Library.builder()
+						.groupId("net.kyori")
+						.artifactId("adventure-text-minimessage")
+						.version(version)
+						.url("https://bitbucket.org/kangarko/libraries/raw/master/org/mineacademy/library/adventure-text-minimessage/" + version + "/adventure-text-minimessage-" + version + ".jar")
+						.build());
+
+			} else
+				this.getPlugin().loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
+
 		// Inject Yaml constructors and representers.
-		YamlConfig.setCustomConstructor(settings -> new BukkitYamlConstructor(settings));
-		YamlConfig.setCustomRepresenter(settings -> new BukkitYamlRepresenter(settings));
+		YamlConfig.setCustomConstructor(BukkitYamlConstructor::new);
+		YamlConfig.setCustomRepresenter(BukkitYamlRepresenter::new);
 
 		// Initialize platform-specific variables
-		Variables.setCollector(new BukkitVariableCollector());
+		Variables.addCollector(new BukkitVariableCollector());
 
-		Common.addSimplifier(object -> {
+		CommonCore.addSimplifier(object -> {
 			if (object instanceof Entity)
 				return Remain.getEntityName((Entity) object);
 
@@ -105,7 +131,7 @@ final class BukkitPlatform extends FoundationPlatform {
 				return ((World) object).getName();
 
 			else if (object instanceof PotionEffect)
-				return Common.simplify(((PotionEffect) object).getType());
+				return CommonCore.simplify(((PotionEffect) object).getType());
 
 			else if (object instanceof PotionEffectType)
 				return ((PotionEffectType) object).getName().toLowerCase();
@@ -114,7 +140,7 @@ final class BukkitPlatform extends FoundationPlatform {
 				return ((Enchantment) object).getName().toLowerCase();
 
 			else if (object instanceof ItemStack)
-				return Common.simplify(((ItemStack) object).getType());
+				return CommonCore.simplify(((ItemStack) object).getType());
 
 			else if (object instanceof Location)
 				return SerializeUtil.serializeLocation((Location) object);
@@ -146,10 +172,9 @@ final class BukkitPlatform extends FoundationPlatform {
 
 			@Override
 			public <E> String translateName(Class<E> enumType, String name) {
-				if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + "")) {
+				if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + ""))
 					name = ChatColor.getByChar(name.charAt(1)).name();
-
-				} else if (enumType == Biome.class) {
+				else if (enumType == Biome.class) {
 					if (MinecraftVersion.atLeast(V.v1_13))
 						if (name.equals("ICE_MOUNTAINS"))
 							name = "SNOWY_TAIGA";
@@ -198,7 +223,7 @@ final class BukkitPlatform extends FoundationPlatform {
 		});
 
 		// Add platform-specific helpers to translate values to a config and back
-		SerializeUtil.addSerializer(new Serializer() {
+		SerializeUtilCore.addSerializer(new Serializer() {
 
 			@Override
 			public <T> T deserialize(@NonNull Language language, @NonNull Class<T> classOf, @NonNull Object object, Object... parameters) {
@@ -211,14 +236,14 @@ final class BukkitPlatform extends FoundationPlatform {
 
 				else if (classOf == World.class) {
 					final World world = Bukkit.getWorld((String) object);
-					Valid.checkNotNull(world, "World " + object + " not found. Available: " + Bukkit.getWorlds());
+					ValidCore.checkNotNull(world, "World " + object + " not found. Available: " + Bukkit.getWorlds());
 
 					return (T) world;
 				}
 
 				else if (classOf == PotionEffectType.class) {
 					final PotionEffectType type = CompPotionEffectType.getByName((String) object);
-					Valid.checkNotNull(type, "Potion effect type " + object + " not found. Available: " + CompPotionEffectType.getPotionNames());
+					ValidCore.checkNotNull(type, "Potion effect type " + object + " not found. Available: " + CompPotionEffectType.getPotionNames());
 
 					return (T) type;
 				}
@@ -238,7 +263,7 @@ final class BukkitPlatform extends FoundationPlatform {
 
 				else if (classOf == Enchantment.class) {
 					final Enchantment enchant = CompEnchantment.getByName((String) object);
-					Valid.checkNotNull(enchant, "Enchantment " + object + " not found. Available: " + CompEnchantment.getEnchantmentNames());
+					ValidCore.checkNotNull(enchant, "Enchantment " + object + " not found. Available: " + CompEnchantment.getEnchantmentNames());
 
 					return (T) enchant;
 				}
@@ -251,7 +276,7 @@ final class BukkitPlatform extends FoundationPlatform {
 						return (T) JsonItemStack.fromJson(object.toString());
 
 					else {
-						final SerializedMap map = SerializedMap.of(object);
+						final SerializedMap map = SerializedMap.fromObject(object);
 
 						final ItemStack item = ItemStack.deserialize(map.asMap());
 						final SerializedMap meta = map.getMap("meta");
@@ -316,17 +341,17 @@ final class BukkitPlatform extends FoundationPlatform {
 					final List<ItemStack> list = new ArrayList<>();
 
 					if (language == SerializeUtil.Language.JSON) {
-						final JsonArray jsonList = Common.GSON.fromJson(object.toString(), JsonArray.class);
+						final JsonArray jsonList = CommonCore.GSON.fromJson(object.toString(), JsonArray.class);
 
 						for (final JsonElement element : jsonList)
 							list.add(element == null ? null : JsonItemStack.fromJson(element.toString()));
 
 					} else {
-						Valid.checkBoolean(object instanceof List, "When deserializing ItemStack[] from YAML, expected the oject to be a List, but got " + object.getClass().getSimpleName() + ": " + object);
+						ValidCore.checkBoolean(object instanceof List, "When deserializing ItemStack[] from YAML, expected the oject to be a List, but got " + object.getClass().getSimpleName() + ": " + object);
 						final List<?> rawList = (List<?>) object;
 
 						for (final Object element : rawList)
-							list.add(element == null ? null : SerializeUtil.deserialize(language, ItemStack.class, element));
+							list.add(element == null ? null : SerializeUtilCore.deserialize(language, ItemStack.class, element));
 					}
 
 					return (T) list.toArray(new ItemStack[list.size()]);
@@ -343,7 +368,7 @@ final class BukkitPlatform extends FoundationPlatform {
 
 				else if (classOf == Sound.class) {
 					final CompSound compSound = CompSound.fromName(object.toString());
-					Valid.checkNotNull(compSound, "No such sound: " + object + ", see https://mineacademy.org/sounds for valid values.");
+					ValidCore.checkNotNull(compSound, "No such sound: " + object + ", see https://mineacademy.org/sounds for valid values.");
 
 					return (T) compSound.getSound();
 
@@ -352,7 +377,7 @@ final class BukkitPlatform extends FoundationPlatform {
 
 				else if (classOf == EntityType.class) {
 					final EntityType compType = CompEntityType.fromName(object.toString());
-					Valid.checkNotNull(compType, "Cannot deserialize entity type from " + object + " as it is not available in this server version.");
+					ValidCore.checkNotNull(compType, "Cannot deserialize entity type from " + object + " as it is not available in this server version.");
 
 					return (T) compType;
 
@@ -418,7 +443,7 @@ final class BukkitPlatform extends FoundationPlatform {
 			}
 		});
 
-		ReflectionUtil.addLegacyEnumType(EntityType.class, Common.newHashMap(
+		ReflectionUtil.addLegacyEnumType(EntityType.class, CommonCore.newHashMap(
 				"TIPPED_ARROW", V.v1_9,
 				"SPECTRAL_ARROW", V.v1_9,
 				"SHULKER_BULLET", V.v1_9,
@@ -467,12 +492,12 @@ final class BukkitPlatform extends FoundationPlatform {
 				"GOAT", V.v1_17,
 				"MARKER", V.v1_17));
 
-		ReflectionUtil.addLegacyEnumType(SpawnReason.class, Common.newHashMap("DROWNED", V.v1_13));
+		ReflectionUtil.addLegacyEnumType(SpawnReason.class, CommonCore.newHashMap("DROWNED", V.v1_13));
 	}
 
 	@Override
 	public boolean callEvent(final Object event) {
-		Valid.checkBoolean(event instanceof Event, "Object must be an instance of Bukkit Event, not " + event.getClass());
+		ValidCore.checkBoolean(event instanceof Event, "Object must be an instance of Bukkit Event, not " + event.getClass());
 
 		Bukkit.getPluginManager().callEvent((Event) event);
 		return event instanceof Cancellable ? !((Cancellable) event).isCancelled() : true;
@@ -498,7 +523,7 @@ final class BukkitPlatform extends FoundationPlatform {
 		final List<FoundationPlayer> players = new ArrayList<>();
 
 		for (final Player player : Remain.getOnlinePlayers())
-			players.add(toPlayer(player));
+			players.add(this.toPlayer(player));
 
 		return players;
 	}
@@ -514,27 +539,46 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
+	protected FoundationPlayer getPlayer(String name) {
+		final Player player = Bukkit.getPlayerExact(name);
+
+		return player != null ? this.toPlayer(player) : null;
+	}
+
+	@Override
+	protected FoundationPlayer getPlayer(UUID uniqueid) {
+		final Player player = Remain.getPlayerByUUID(uniqueid);
+
+		return player != null && player.isOnline() ? this.toPlayer(player) : null;
+	}
+
+	@Override
 	public FoundationPlugin getPlugin() {
-		return SimplePlugin.getInstance();
+		return BukkitPlugin.getInstance();
 	}
 
 	@Override
 	public File getPluginFile(String pluginName) {
 		final Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-		Valid.checkNotNull(plugin, "Plugin " + pluginName + " not found!");
-		Valid.checkBoolean(plugin instanceof JavaPlugin, "Plugin " + pluginName + " is not a JavaPlugin. Got: " + plugin.getClass());
+		ValidCore.checkNotNull(plugin, "Plugin " + pluginName + " not found!");
+		ValidCore.checkBoolean(plugin instanceof JavaPlugin, "Plugin " + pluginName + " is not a JavaPlugin. Got: " + plugin.getClass());
 
 		return (File) ReflectionUtil.invoke(ReflectionUtil.getMethod(JavaPlugin.class, "getFile"), plugin);
 	}
 
 	@Override
-	public List<Tuple<String, String>> getServerPlugins() {
-		return Common.convertArrayToList(Bukkit.getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getName(), plugin.getDescription().getVersion()));
+	public List<Tuple<String, String>> getPlugins() {
+		return CommonCore.convertArrayToList(Bukkit.getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getName(), plugin.getDescription().getVersion()));
 	}
 
 	@Override
-	public boolean hasHexColorSupport() {
-		return MinecraftVersion.atLeast(V.v1_16);
+	public FoundationServer getServer(String name) {
+		throw new UnsupportedOperationException("Bukkit does not support multiple servers.");
+	}
+
+	@Override
+	public List<FoundationServer> getServers() {
+		return Arrays.asList(BukkitServer.getInstance());
 	}
 
 	@Override
@@ -560,10 +604,10 @@ final class BukkitPlatform extends FoundationPlatform {
 
 		// Warn if the plugin is still disabled after server has finished loading.
 		if (!found.isEnabled())
-			this.runTaskAsync(0, () -> {
+			Platform.runTaskAsync(0, () -> {
 				if (!found.isEnabled())
-					Common.warning(SimplePlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO "
-							+ SimplePlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
+					CommonCore.warning(BukkitPlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO "
+							+ BukkitPlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
 			});
 
 		return true;
@@ -593,15 +637,15 @@ final class BukkitPlatform extends FoundationPlatform {
 	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
 		group.registerSubcommand(new ConversationSubCommand());
 
-		if (SimplePlugin.getInstance().areRegionsEnabled())
+		if (BukkitPlugin.getInstance().areRegionsEnabled())
 			group.registerSubcommand(new RegionSubCommand());
 	}
 
 	@Override
 	public void registerEvents(final Object listener) {
-		Valid.checkBoolean(listener instanceof Listener, "Listener must extend Bukkit's Listener, not " + listener.getClass());
+		ValidCore.checkBoolean(listener instanceof Listener, "Listener must extend Bukkit's Listener, not " + listener.getClass());
 
-		Bukkit.getPluginManager().registerEvents((Listener) listener, SimplePlugin.getInstance());
+		Bukkit.getPluginManager().registerEvents((Listener) listener, BukkitPlugin.getInstance());
 	}
 
 	@Override
@@ -627,9 +671,9 @@ final class BukkitPlatform extends FoundationPlatform {
 	@Override
 	public void sendPluginMessage(UUID senderUid, String channel, byte[] array) {
 		final Player player = Remain.getPlayerByUUID(senderUid);
-		Valid.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
+		ValidCore.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
-		player.sendPluginMessage(SimplePlugin.getInstance(), channel, array);
+		player.sendPluginMessage(BukkitPlugin.getInstance(), channel, array);
 	}
 
 	@Override
@@ -644,6 +688,11 @@ final class BukkitPlatform extends FoundationPlatform {
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);
 
 		return new BukkitPlayer((CommandSender) sender);
+	}
+
+	@Override
+	public FoundationServer toServer(Object server) {
+		throw new UnsupportedOperationException("Bukkit does not support Platform#toServer(). To get the server, call Platform#getServers().get(0)");
 	}
 
 	@Override

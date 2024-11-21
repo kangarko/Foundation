@@ -192,7 +192,7 @@ public final class Book implements ConfigSerializable {
 	 */
 	public ItemStack toEditableBook(String title, String... lore) {
 		return ItemCreator
-				.of(CompMaterial.WRITABLE_BOOK)
+				.fromMaterial(CompMaterial.WRITABLE_BOOK)
 				.bookTitle(this.title)
 				.bookAuthor(this.author)
 				.bookPages(this.pages)

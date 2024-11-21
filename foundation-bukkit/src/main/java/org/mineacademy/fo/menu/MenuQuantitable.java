@@ -94,7 +94,7 @@ public interface MenuQuantitable {
 			@Override
 			public ItemStack getItem() {
 				return ItemCreator
-						.of(
+						.from(
 								CompMaterial.STRING,
 								"Edit Quantity: &7" + MenuQuantitable.this.getCurrentQuantityPercent(),
 								"",
@@ -146,7 +146,7 @@ public interface MenuQuantitable {
 
 		// Paint the item with the drop chance lore
 		return ItemCreator
-				.of(item.clone())
+				.fromItemStack(item.clone())
 				.clearLore()
 				.lore(
 						"",

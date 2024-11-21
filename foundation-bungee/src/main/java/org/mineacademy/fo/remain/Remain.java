@@ -11,7 +11,7 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.FoundationPlugin;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BungeePlugin;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -122,8 +122,8 @@ public final class Remain {
 		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
-		return SimpleBungeeTask.fromBungee(SimplePlugin.getServer().getScheduler()
-				.schedule(SimplePlugin.getInstance(), runnable, delayTicks * 50, TimeUnit.MILLISECONDS));
+		return SimpleBungeeTask.fromBungee(BungeePlugin.getServer().getScheduler()
+				.schedule(BungeePlugin.getInstance(), runnable, delayTicks * 50, TimeUnit.MILLISECONDS));
 	}
 
 	/**
@@ -141,8 +141,8 @@ public final class Remain {
 		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
-		return SimpleBungeeTask.fromBungee(SimplePlugin.getServer().getScheduler()
-				.schedule(SimplePlugin.getInstance(), runnable, delayTicks * 50, repeatTicks * 50, TimeUnit.MILLISECONDS));
+		return SimpleBungeeTask.fromBungee(BungeePlugin.getServer().getScheduler()
+				.schedule(BungeePlugin.getInstance(), runnable, delayTicks * 50, repeatTicks * 50, TimeUnit.MILLISECONDS));
 	}
 }
 
@@ -179,7 +179,7 @@ final class SimpleBungeeTask implements Task {
 
 	@Override
 	public FoundationPlugin getOwner() {
-		return SimplePlugin.getInstance();
+		return BungeePlugin.getInstance();
 	}
 
 	static SimpleBungeeTask fromBungee(ScheduledTask task) {

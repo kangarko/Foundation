@@ -663,7 +663,7 @@ public abstract class FileConfig extends ConfigSection {
 	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
 		final Object object = this.getObject(key);
 
-		return object != null ? Tuple.deserialize(SerializedMap.of(object), keyType, valueType) : def;
+		return object != null ? Tuple.deserialize(SerializedMap.fromObject(object), keyType, valueType) : def;
 	}
 
 	/**
@@ -938,7 +938,7 @@ public abstract class FileConfig extends ConfigSection {
 				if (object == null)
 					tuples.add(null);
 				else {
-					final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.of(object), tupleKey, tupleValue);
+					final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.fromObject(object), tupleKey, tupleValue);
 
 					tuples.add(tuple);
 				}
@@ -992,7 +992,7 @@ public abstract class FileConfig extends ConfigSection {
 
 		// Load key-value pairs from config to our map
 		if (section != null)
-			for (final Map.Entry<String, Object> entry : SerializedMap.of(section).entrySet()) {
+			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(section).entrySet()) {
 				final Key key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
 				final List<Value> value = SerializeUtilCore.deserialize(Language.YAML, List.class, entry.getValue(), setDeserializeParameters);
 
@@ -1150,7 +1150,7 @@ public abstract class FileConfig extends ConfigSection {
 	public final SerializedMap getMap(final String path) {
 		final Object object = this.getObject(path);
 
-		return object != null ? SerializedMap.of(object) : new SerializedMap();
+		return object != null ? SerializedMap.fromObject(object) : new SerializedMap();
 	}
 
 	/**
@@ -1177,7 +1177,7 @@ public abstract class FileConfig extends ConfigSection {
 		final Object savedKeys = this.getObject(path);
 
 		if (savedKeys != null)
-			for (final Map.Entry<String, Object> entry : SerializedMap.of(savedKeys)) {
+			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(savedKeys)) {
 				final Key key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
 				final Value value = SerializeUtilCore.deserialize(Language.YAML, valueType, entry.getValue(), valueDeserializeParams);
 

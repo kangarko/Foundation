@@ -10,7 +10,7 @@ import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
 
@@ -24,7 +24,7 @@ public final class CompMonsterEgg {
 	/**
 	 * Our universal tag we use to mark our eggs
 	 */
-	private static final String TAG = SimplePlugin.getInstance().getName() + "_NbtTag";
+	private static final String TAG = BukkitPlugin.getInstance().getName() + "_NbtTag";
 
 	// Prevent new instance, always call static methods
 	private CompMonsterEgg() {
@@ -36,8 +36,8 @@ public final class CompMonsterEgg {
 	 * @param type
 	 * @return the finished monster egg
 	 */
-	public static ItemStack makeEgg(final EntityType type) {
-		return makeEgg(type, 1);
+	public static ItemStack toItemStack(final EntityType type) {
+		return toItemStack(type, 1);
 	}
 
 	/**
@@ -47,7 +47,7 @@ public final class CompMonsterEgg {
 	 * @param count
 	 * @return the finished egg
 	 */
-	public static ItemStack makeEgg(@NonNull EntityType type, final int count) {
+	public static ItemStack toItemStack(@NonNull EntityType type, final int count) {
 		CompMaterial material = CompEntityType.getSpawnEgg(type);
 
 		if (material == null && MinecraftVersion.atLeast(V.v1_13))
@@ -68,7 +68,7 @@ public final class CompMonsterEgg {
 	 * @param item
 	 * @return the entity type, or unknown or error if not found
 	 */
-	public static EntityType getEntity(@NonNull final ItemStack item) {
+	public static EntityType lookupEntity(@NonNull final ItemStack item) {
 		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 		EntityType type = null;
 
@@ -76,25 +76,25 @@ public final class CompMonsterEgg {
 			type = CompEntityType.fromSpawnEggMaterial(CompMaterial.fromItem(item));
 
 		if (type == null && Remain.hasSpawnEggMeta())
-			type = getTypeByMeta(item);
+			type = lookupTypeByMeta(item);
 
 		if (type == null && MinecraftVersion.olderThan(V.v1_13))
-			type = getTypeByData(item);
+			type = lookupTypeByData(item);
 
 		if (type == null)
-			type = getTypeByNbt(item);
+			type = lookupTypeByNbt(item);
 
 		return type != null ? type : CompEntityType.UNKNOWN;
 	}
 
-	private static EntityType getTypeByMeta(final ItemStack item) {
+	private static EntityType lookupTypeByMeta(final ItemStack item) {
 		final ItemMeta meta = item.getItemMeta();
 
 		return item.hasItemMeta() && meta instanceof SpawnEggMeta ? ((SpawnEggMeta) meta).getSpawnedType() : null;
 	}
 
-	private static EntityType getTypeByData(final ItemStack item) {
-		EntityType type = readEntity0(item);
+	private static EntityType lookupTypeByData(final ItemStack item) {
+		EntityType type = readItemStackNBTEntity(item);
 
 		if (type == null) {
 			if (item.getDurability() != 0)
@@ -107,7 +107,7 @@ public final class CompMonsterEgg {
 		return type;
 	}
 
-	private static EntityType readEntity0(final ItemStack item) {
+	private static EntityType readItemStackNBTEntity(final ItemStack item) {
 		Valid.checkNotNull(item, "Reading entity got null item");
 
 		final NBTItem nbt = new NBTItem(item);
@@ -116,7 +116,7 @@ public final class CompMonsterEgg {
 		return type != null && !type.isEmpty() ? CompEntityType.fromName(type) : null;
 	}
 
-	private static EntityType getTypeByNbt(@NonNull final ItemStack item) {
+	private static EntityType lookupTypeByNbt(@NonNull final ItemStack item) {
 		try {
 			final Class<?> classNMSItemstack = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
 			final Object stack = Remain.asNMSCopy(item);

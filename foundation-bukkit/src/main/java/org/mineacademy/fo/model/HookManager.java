@@ -40,7 +40,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
 
@@ -180,7 +180,7 @@ public final class HookManager {
 				discordSRVHook = new DiscordSRVHook();
 
 			} catch (final ClassNotFoundException ex) {
-				Common.error(ex, "&c" + SimplePlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
+				Common.error(ex, "&c" + BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 
 		if (Platform.isPluginInstalled("Essentials"))
@@ -2683,7 +2683,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getAuthor() {
-			return SimplePlugin.getInstance().getDescription().getAuthors().toString();
+			return BukkitPlugin.getInstance().getDescription().getAuthors().toString();
 		}
 
 		/**
@@ -2697,7 +2697,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getIdentifier() {
-			return SimplePlugin.getInstance().getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
+			return BukkitPlugin.getInstance().getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
 		}
 
 		/**
@@ -2710,7 +2710,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getVersion() {
-			return SimplePlugin.getInstance().getDescription().getVersion();
+			return BukkitPlugin.getInstance().getDescription().getVersion();
 		}
 
 		/**
@@ -3755,7 +3755,7 @@ class LandsHook {
 
 		final Method of = ReflectionUtil.getMethod(lands, "of", Plugin.class);
 
-		this.landsClass = ReflectionUtil.invokeStatic(of, SimplePlugin.getInstance());
+		this.landsClass = ReflectionUtil.invokeStatic(of, BukkitPlugin.getInstance());
 		this.getArea = ReflectionUtil.getMethod(lands, "getArea", Location.class);
 		this.getLand = ReflectionUtil.getMethod(area, "getLand");
 		this.getName = ReflectionUtil.getMethod(land, "getName");

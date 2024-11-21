@@ -95,7 +95,7 @@ public final class IncomingMessage extends Message {
 	public SimpleComponent readSimpleComponent() {
 		this.moveHead(SimpleComponent.class);
 
-		return SimpleComponent.deserialize(SerializedMap.of(Language.JSON, this.readCompressedString()));
+		return SimpleComponent.deserialize(SerializedMap.fromObject(Language.JSON, this.readCompressedString()));
 	}
 
 	/**
@@ -106,7 +106,7 @@ public final class IncomingMessage extends Message {
 	public SerializedMap readMap() {
 		this.moveHead(SerializedMap.class);
 
-		return SerializedMap.of(Language.JSON, this.readCompressedString());
+		return SerializedMap.fromObject(Language.JSON, this.readCompressedString());
 	}
 
 	/**

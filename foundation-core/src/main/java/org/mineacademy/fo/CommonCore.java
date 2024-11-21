@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
@@ -48,6 +49,11 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class CommonCore {
+
+	/**
+	 * The UUID of the console
+	 */
+	public static final UUID CONSOLE_UID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
 	/**
 	 * The Google Json instance
@@ -332,7 +338,7 @@ public abstract class CommonCore {
 	 */
 	public static final void logFramed(final boolean disablePlugin, final String... messages) {
 		if (messages != null && !ValidCore.isNullOrEmpty(messages)) {
-			log("&7" + chatLine());
+			log("&7" + configLine());
 
 			for (final String msg : messages)
 				log(" &c" + msg);
@@ -340,7 +346,7 @@ public abstract class CommonCore {
 			if (disablePlugin)
 				log(" &cPlugin is now disabled.");
 
-			log("&7" + chatLine());
+			log("&7" + configLine());
 		}
 
 		if (disablePlugin)

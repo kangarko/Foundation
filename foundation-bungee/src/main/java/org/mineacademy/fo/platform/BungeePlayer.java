@@ -28,7 +28,7 @@ final class BungeePlayer extends FoundationPlayer {
 	private final ProxiedPlayer player;
 	private final CommandSender sender;
 
-	public BungeePlayer(@NonNull CommandSender sender) {
+	BungeePlayer(@NonNull CommandSender sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof ProxiedPlayer;
 		this.player = this.isPlayer ? (ProxiedPlayer) sender : null;
@@ -45,8 +45,8 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public String getCurrentServerName() {
-		return this.isPlayer ? this.player.getServer().getInfo().getName() : "";
+	public FoundationServer getServer() {
+		return this.isPlayer ? new BungeeServer(this.player.getServer().getInfo()) : null;
 	}
 
 	@Override
@@ -78,7 +78,7 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public boolean isConsole() {
-		return this.sender.equals(SimplePlugin.getServer().getConsole());
+		return this.sender.equals(BungeePlugin.getServer().getConsole());
 	}
 
 	@Override

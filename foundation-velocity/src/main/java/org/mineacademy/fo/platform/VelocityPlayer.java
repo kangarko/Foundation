@@ -39,7 +39,7 @@ final class VelocityPlayer extends FoundationPlayer {
 	private final CommandSource sender;
 	private final List<BossBar> viewedBossBars = new ArrayList<>();
 
-	public VelocityPlayer(@NonNull CommandSource sender) {
+	VelocityPlayer(@NonNull CommandSource sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
@@ -56,15 +56,15 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public String getCurrentServerName() {
+	public FoundationServer getServer() {
 		if (this.isPlayer) {
 			final Optional<ServerConnection> server = this.player.getCurrentServer();
 
 			if (server.isPresent())
-				return server.get().getServerInfo().getName();
+				return new VelocityServer(server.get().getServer());
 		}
 
-		return "";
+		return null;
 	}
 
 	@Override

@@ -312,16 +312,16 @@ public enum CompEquipmentSlot {
 	 */
 	public static void applyArmor(LivingEntity entity, CompColor color, Double dropChance, Set<CompEquipmentSlot> ignoredSlots) {
 		if (!ignoredSlots.contains(HEAD))
-			HEAD.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_HELMET).color(color).make(), dropChance);
+			HEAD.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_HELMET).color(color).make(), dropChance);
 
 		if (!ignoredSlots.contains(CHEST))
-			CHEST.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_CHESTPLATE).color(color).make(), dropChance);
+			CHEST.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_CHESTPLATE).color(color).make(), dropChance);
 
 		if (!ignoredSlots.contains(LEGS))
-			LEGS.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_LEGGINGS).color(color).make(), dropChance);
+			LEGS.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_LEGGINGS).color(color).make(), dropChance);
 
 		if (!ignoredSlots.contains(FEET))
-			FEET.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_BOOTS).color(color).make(), dropChance);
+			FEET.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_BOOTS).color(color).make(), dropChance);
 	}
 
 	/**

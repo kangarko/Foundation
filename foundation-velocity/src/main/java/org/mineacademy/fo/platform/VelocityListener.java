@@ -25,15 +25,7 @@ import com.velocitypowered.api.proxy.messages.ChannelMessageSource;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.util.UuidUtils;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
-final class ForwardingListener {
-
-	/**
-	 * The proxy
-	 */
-	private final ProxyServer proxy;
+final class VelocityListener {
 
 	/**
 	 * Handle the received message automatically if it matches our tag
@@ -91,11 +83,12 @@ final class ForwardingListener {
 			// The reason for this ugly patch is that the above listener is ignored completely when velocity handles bungee commands :/
 			//
 			// https://github.com/kangarko/ChatControl-Red/issues/2673
+			final ProxyServer proxy = VelocityPlugin.getServer();
 			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			boolean found = true;
 
 			if (subChannel.equals("ForwardToPlayer")) {
-				this.proxy.getPlayer(in.readUTF())
+				proxy.getPlayer(in.readUTF())
 						.ifPresent(player -> player.sendPluginMessage(event.getIdentifier(), prepareForwardMessage(in)));
 
 			} else if (subChannel.equals("Forward")) {
@@ -107,15 +100,15 @@ final class ForwardingListener {
 						other.sendPluginMessage(event.getIdentifier(), toForward);
 
 				} else
-					this.proxy.getServer(target).ifPresent(conn -> conn.sendPluginMessage(event.getIdentifier(), toForward));
+					proxy.getServer(target).ifPresent(conn -> conn.sendPluginMessage(event.getIdentifier(), toForward));
 
 			} else if (subChannel.equals("Connect")) {
-				final Optional<RegisteredServer> info = this.proxy.getServer(in.readUTF());
+				final Optional<RegisteredServer> info = proxy.getServer(in.readUTF());
 				info.ifPresent(serverInfo -> connection.getPlayer().createConnectionRequest(serverInfo).fireAndForget());
 
 			} else if (subChannel.equals("ConnectOther"))
-				this.proxy.getPlayer(in.readUTF()).ifPresent(otherPlayer -> {
-					final Optional<RegisteredServer> info = this.proxy.getServer(in.readUTF());
+				proxy.getPlayer(in.readUTF()).ifPresent(otherPlayer -> {
+					final Optional<RegisteredServer> info = proxy.getServer(in.readUTF());
 					info.ifPresent(serverInfo -> otherPlayer.createConnectionRequest(serverInfo).fireAndForget());
 				});
 
@@ -130,9 +123,9 @@ final class ForwardingListener {
 				if (target.equals("ALL")) {
 					out.writeUTF("PlayerCount");
 					out.writeUTF("ALL");
-					out.writeInt(this.proxy.getPlayerCount());
+					out.writeInt(proxy.getPlayerCount());
 				} else
-					this.proxy.getServer(target).ifPresent(rs -> {
+					proxy.getServer(target).ifPresent(rs -> {
 						final int playersOnServer = rs.getPlayersConnected().size();
 						out.writeUTF("PlayerCount");
 						out.writeUTF(rs.getServerInfo().getName());
@@ -148,7 +141,7 @@ final class ForwardingListener {
 					out.writeUTF(Remain.getOnlinePlayers(true).stream().map(Player::getUsername).collect(Collectors.joining(", ")));
 
 				} else
-					this.proxy.getServer(target).ifPresent(info -> {
+					proxy.getServer(target).ifPresent(info -> {
 						final String playersOnServer = info.getPlayersConnected().stream().map(Player::getUsername).collect(Collectors.joining(", "));
 						out.writeUTF("PlayerList");
 						out.writeUTF(info.getServerInfo().getName());
@@ -168,7 +161,7 @@ final class ForwardingListener {
 						Common.tell(player, message);
 
 				else
-					this.proxy.getPlayer(target).ifPresent(player -> {
+					proxy.getPlayer(target).ifPresent(player -> {
 						Common.tell(player, message);
 					});
 
@@ -181,14 +174,14 @@ final class ForwardingListener {
 				out.writeUTF(UuidUtils.toUndashed(connection.getPlayer().getUniqueId()));
 
 			} else if (subChannel.equals("UUIDOther"))
-				this.proxy.getPlayer(in.readUTF()).ifPresent(player -> {
+				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
 					out.writeUTF("UUIDOther");
 					out.writeUTF(player.getUsername());
 					out.writeUTF(UuidUtils.toUndashed(player.getUniqueId()));
 				});
 
 			else if (subChannel.equals("ServerIP"))
-				this.proxy.getServer(in.readUTF()).ifPresent(info -> {
+				proxy.getServer(in.readUTF()).ifPresent(info -> {
 					out.writeUTF("ServerIP");
 					out.writeUTF(info.getServerInfo().getName());
 					out.writeUTF(info.getServerInfo().getAddress().getHostString());
@@ -196,7 +189,7 @@ final class ForwardingListener {
 				});
 
 			else if (subChannel.equals("KickPlayer"))
-				this.proxy.getPlayer(in.readUTF()).ifPresent(player -> {
+				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
 					final String kickReason = in.readUTF();
 
 					player.disconnect(SimpleComponent.fromSection(kickReason).toAdventure());

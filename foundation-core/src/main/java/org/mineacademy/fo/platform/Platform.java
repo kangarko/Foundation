@@ -27,20 +27,6 @@ public final class Platform {
 	private static FoundationPlatform instance;
 
 	/**
-	 * Get the platform implementation instance or throw an exception if not set yet.
-	 *
-	 * @return
-	 */
-	static FoundationPlatform getPlatform() {
-
-		// Do not throw FoException to prevent race condition
-		if (instance == null)
-			throw new NullPointerException("Foundation instance not set yet.");
-
-		return instance;
-	}
-
-	/**
 	 * Call an event using the platform-specific event caller.
 	 *
 	 * @param event
@@ -83,12 +69,27 @@ public final class Platform {
 	}
 
 	/**
-	 * Get a list of all online players.
+	 * Get a list of all online players. On Proxy this includes all servers. Redis is supported
+	 * as per implementation.
 	 *
 	 * @return
 	 */
 	public static List<FoundationPlayer> getOnlinePlayers() {
 		return getPlatform().getOnlinePlayers();
+	}
+
+	/**
+	 * Get the platform implementation instance or throw an exception if not set yet.
+	 *
+	 * @return
+	 */
+	static FoundationPlatform getPlatform() {
+
+		// Do not throw FoException to prevent race condition
+		if (instance == null)
+			throw new NullPointerException("Foundation instance not set yet.");
+
+		return instance;
 	}
 
 	/**
@@ -107,6 +108,26 @@ public final class Platform {
 	 */
 	public static String getPlatformVersion() {
 		return getPlatform().getPlatformVersion();
+	}
+
+	/**
+	 * Get a player by his name.
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static FoundationPlayer getPlayer(String name) {
+		return getPlatform().getPlayer(name);
+	}
+
+	/**
+	 * Get a player by his unique id.
+	 *
+	 * @param uniqueId
+	 * @return
+	 */
+	public static FoundationPlayer getPlayer(UUID uniqueId) {
+		return getPlatform().getPlayer(uniqueId);
 	}
 
 	/**
@@ -134,8 +155,28 @@ public final class Platform {
 	 *
 	 * @return
 	 */
-	public static List<Tuple<String, String>> getServerPlugins() {
-		return getPlatform().getServerPlugins();
+	public static List<Tuple<String, String>> getPlugins() {
+		return getPlatform().getPlugins();
+	}
+
+	/**
+	 * Get a server by its name.
+	 *
+	 * @param name
+	 * @return the server or null if not found
+	 */
+	public static FoundationServer getServer(String name) {
+		return getPlatform().getServer(name);
+	}
+
+	/**
+	 * Return a list of servers. On Bukkit this always returns the single server instance.
+	 * On proxy this returns all servers.
+	 *
+	 * @return
+	 */
+	public static List<FoundationServer> getServers() {
+		return getPlatform().getServers();
 	}
 
 	/**
@@ -148,12 +189,12 @@ public final class Platform {
 	}
 
 	/**
-	 * Return true if the server supports HEX colors.
+	 * Return if the platform was initialized (properly).
 	 *
 	 * @return
 	 */
-	public static boolean hasHexColorSupport() {
-		return getPlatform().hasHexColorSupport();
+	public static boolean hasPlatform() {
+		return instance != null;
 	}
 
 	/**
@@ -347,13 +388,23 @@ public final class Platform {
 	}
 
 	/**
-	 * Convert the given player object to a FoundationPlayer.
+	 * Convert the given player object to a {@link FoundationPlayer}.
 	 *
 	 * @param player
 	 * @return
 	 */
 	public static FoundationPlayer toPlayer(Object player) {
 		return getPlatform().toPlayer(player);
+	}
+
+	/**
+	 * Convert the given server object to a {@link FoundationServer}.
+	 *
+	 * @param server
+	 * @return
+	 */
+	public static FoundationServer toServer(Object server) {
+		return getPlatform().toServer(server);
 	}
 
 	/**
