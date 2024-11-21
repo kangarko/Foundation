@@ -165,7 +165,7 @@ public final class Debugger {
 						"------------------------------------[ " + date.format(new Date()) + " ]-----------------------------------",
 						header,
 						systemInfo,
-						"Plugins: " + CommonCore.join(Platform.getServerPlugins()),
+						"Plugins: " + CommonCore.join(Platform.getPlugins()),
 						"----------------------------------------------------------------------------------------------");
 
 				// Write additional data

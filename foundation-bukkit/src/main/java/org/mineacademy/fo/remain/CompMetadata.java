@@ -35,7 +35,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.nbt.NBT;
 import org.mineacademy.fo.remain.nbt.ReadableNBT;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -215,7 +215,7 @@ public final class CompMetadata {
 			String value = Common.getOrNull(nbt.getString(key));
 
 			if (value == null) {
-				final ReadableNBT compound = nbt.getCompound(SimplePlugin.getInstance().getName() + "_NbtTag");
+				final ReadableNBT compound = nbt.getCompound(BukkitPlugin.getInstance().getName() + "_NbtTag");
 
 				if (compound != null && compound.hasTag(key))
 					value = Common.getOrNull(compound.getString(key));
@@ -292,7 +292,7 @@ public final class CompMetadata {
 	 * @param tag
 	 */
 	public static void setTempMetadata(final Entity entity, final String tag) {
-		entity.setMetadata(tag, new FixedMetadataValue(SimplePlugin.getInstance(), tag));
+		entity.setMetadata(tag, new FixedMetadataValue(BukkitPlugin.getInstance(), tag));
 	}
 
 	/**
@@ -304,7 +304,7 @@ public final class CompMetadata {
 	 * @param key
 	 */
 	public static void setTempMetadata(final Entity entity, final String tag, final Object key) {
-		entity.setMetadata(tag, new FixedMetadataValue(SimplePlugin.getInstance(), key));
+		entity.setMetadata(tag, new FixedMetadataValue(BukkitPlugin.getInstance(), key));
 	}
 
 	/**
@@ -339,7 +339,7 @@ public final class CompMetadata {
 	 * @param key
 	 */
 	public static void removeTempMetadata(final Entity player, final String key) {
-		player.removeMetadata(key, SimplePlugin.getInstance());
+		player.removeMetadata(key, BukkitPlugin.getInstance());
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -361,14 +361,14 @@ public final class CompMetadata {
 	private static String getTag(final String raw, final String key) {
 		final String[] parts = raw.split(DELIMITER);
 
-		return parts.length == 3 && parts[0].equals(SimplePlugin.getInstance().getName()) && parts[1].equals(key) ? parts[2] : null;
+		return parts.length == 3 && parts[0].equals(BukkitPlugin.getInstance().getName()) && parts[1].equals(key) ? parts[2] : null;
 	}
 
 	/*
 	 * Helper method to format a tag
 	 */
 	private static String formatTag(final String key, final String value) {
-		return SimplePlugin.getInstance().getName() + DELIMITER + key + DELIMITER + value;
+		return BukkitPlugin.getInstance().getName() + DELIMITER + key + DELIMITER + value;
 	}
 
 	/*
@@ -399,7 +399,7 @@ public final class CompMetadata {
 	}
 
 	private static Object getOrCacheKey(String key) {
-		return namespacedCache.computeIfAbsent(key, k -> new NamespacedKey(SimplePlugin.getInstance(), key));
+		return namespacedCache.computeIfAbsent(key, k -> new NamespacedKey(BukkitPlugin.getInstance(), key));
 	}
 
 	/**
@@ -513,7 +513,7 @@ public final class CompMetadata {
 						for (final String meta : metadata) {
 							final String[] parts = meta.split(DELIMITER);
 
-							if (parts.length == 3 && parts[0].equals(SimplePlugin.getInstance().getName()))
+							if (parts.length == 3 && parts[0].equals(BukkitPlugin.getInstance().getName()))
 								converted.put(parts[1], parts[2]);
 						}
 
@@ -522,7 +522,7 @@ public final class CompMetadata {
 				}
 
 				else {
-					final SerializedMap data = SerializedMap.of(raw);
+					final SerializedMap data = SerializedMap.fromObject(raw);
 
 					if (!data.isEmpty()) {
 						final Map<String, String> converted = new HashMap<>();

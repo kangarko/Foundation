@@ -36,12 +36,12 @@ public final class InventoryDrawer {
 	private final ItemStack[] content;
 
 	/**
-	 * Create a new inventory drawer, see {@link #of(int, String)}
+	 * Create a new inventory drawer
 	 *
 	 * @param size  the size
 	 * @param title the title
 	 */
-	private InventoryDrawer(int size, String title) {
+	public InventoryDrawer(int size, String title) {
 		this.size = size;
 		this.title = title;
 
@@ -158,16 +158,5 @@ public final class InventoryDrawer {
 		inv.setContents(this.content);
 
 		return inv;
-	}
-
-	/**
-	 * Make a new inventory drawer
-	 *
-	 * @param size  the size
-	 * @param title the title, colors will be replaced
-	 * @return the inventory drawer
-	 */
-	public static InventoryDrawer of(int size, String title) {
-		return new InventoryDrawer(size, title);
 	}
 }

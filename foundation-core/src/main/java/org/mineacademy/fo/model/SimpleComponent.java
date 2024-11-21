@@ -668,7 +668,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray(
+		return SerializedMap.fromArray(
 				"Components", this.subcomponents,
 				"Last_Style", this.lastStyle);
 	}
@@ -1020,7 +1020,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 						this.lastDecorations.add(CompChatColor.MINI_TO_DECORATION.get(tag));
 
 					else if (RGB_PATTERN.matcher(tag).matches())
-						this.lastColor = TextColor.fromHexString(tag.substring(1, 7));
+						this.lastColor = TextColor.fromHexString(tag.substring(1, 8));
 
 					insideTag = false;
 

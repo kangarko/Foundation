@@ -80,7 +80,7 @@ public final class ItemSlider implements Slider<List<ItemStack>> {
 	 * @return
 	 */
 	public static ItemSlider from(CompMaterial filler, CompMaterial highlighted) {
-		return from(ItemCreator.of(filler), ItemCreator.of(highlighted));
+		return from(ItemCreator.fromMaterial(filler), ItemCreator.fromMaterial(highlighted));
 	}
 
 	/**

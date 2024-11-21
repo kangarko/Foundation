@@ -12,7 +12,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidRowException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.model.SimpleLocation;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -107,7 +107,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 			return deserialize(Language.JSON, ItemStack.class, value);
 
 		} catch (final Throwable ex) {
-			Common.warning(SimplePlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 
 			throw new InvalidRowException();
 		}
@@ -130,7 +130,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 			return deserialize(Language.JSON, ItemStack.class, value);
 
 		} catch (final Throwable ex) {
-			Common.warning(SimplePlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 			throw new InvalidRowException();
 		}
 	}
@@ -168,7 +168,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 		final String value = resultSet.getString(columnLabel);
 
 		if (value == null || "".equals(value)) {
-			Common.warning(SimplePlugin.getInstance().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 
 			throw new InvalidRowException();
 		}

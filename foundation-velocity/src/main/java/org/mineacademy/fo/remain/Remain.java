@@ -11,7 +11,7 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.FoundationPlugin;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.VelocityPlugin;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -33,7 +33,7 @@ public final class Remain {
 	 * The server getter, used to change for Redis compatibility.
 	 */
 	@Setter
-	private static Supplier<Collection<RegisteredServer>> serverGetter = () -> SimplePlugin.getServer().getAllServers();
+	private static Supplier<Collection<RegisteredServer>> serverGetter = () -> VelocityPlugin.getServer().getAllServers();
 
 	/**
 	 * Return the server by the given name
@@ -123,8 +123,8 @@ public final class Remain {
 		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
-		return SimpleVelocityTask.fromVelocity(SimplePlugin.getServer().getScheduler()
-				.buildTask(SimplePlugin.getInstance(), runnable)
+		return SimpleVelocityTask.fromVelocity(VelocityPlugin.getServer().getScheduler()
+				.buildTask(VelocityPlugin.getInstance(), runnable)
 				.delay(Duration.ofMillis(delayTicks * 50))
 				.schedule());
 	}
@@ -144,8 +144,8 @@ public final class Remain {
 		if (CommonCore.runIfDisabled(runnable))
 			return null;
 
-		return SimpleVelocityTask.fromVelocity(SimplePlugin.getServer().getScheduler()
-				.buildTask(SimplePlugin.getInstance(), runnable)
+		return SimpleVelocityTask.fromVelocity(VelocityPlugin.getServer().getScheduler()
+				.buildTask(VelocityPlugin.getInstance(), runnable)
 				.delay(Duration.ofMillis(delayTicks * 50))
 				.repeat(Duration.ofMillis(repeatTicks * 50))
 				.schedule());
@@ -187,7 +187,7 @@ final class SimpleVelocityTask implements Task {
 
 	@Override
 	public FoundationPlugin getOwner() {
-		return SimplePlugin.getInstance();
+		return VelocityPlugin.getInstance();
 	}
 
 	static SimpleVelocityTask fromVelocity(ScheduledTask task) {

@@ -20,7 +20,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.event.RegionScanCompleteEvent;
 import org.mineacademy.fo.exception.ReflectionException;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
@@ -178,7 +178,7 @@ public abstract class OfflineRegionScanner {
 
 				OfflineRegionScanner.this.scanFile(file, queue);
 			}
-		}.runTask(SimplePlugin.getInstance());
+		}.runTask(BukkitPlugin.getInstance());
 	}
 
 	/*

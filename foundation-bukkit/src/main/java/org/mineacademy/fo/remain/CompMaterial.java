@@ -2309,8 +2309,8 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(final byte color, final int amount) {
-		return makeWool(CompColor.fromWoolData(color), amount);
+	public static ItemStack makeWoolItem(final byte color, final int amount) {
+		return makeWoolItem(CompColor.fromWoolData(color), amount);
 	}
 
 	/**
@@ -2320,7 +2320,7 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(final CompColor color, final int amount) {
+	public static ItemStack makeWoolItem(final CompColor color, final int amount) {
 		if (MinecraftVersion.atLeast(V.v1_13))
 			return new ItemStack(ReflectionUtil.lookupEnum(Material.class, color.getDye() + "_WOOL"), amount);
 

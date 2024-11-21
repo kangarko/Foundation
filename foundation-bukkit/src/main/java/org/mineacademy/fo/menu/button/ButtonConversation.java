@@ -34,7 +34,7 @@ public final class ButtonConversation extends Button {
 	private final ItemStack item;
 
 	/**
-	 * Convenience shortcut for {@link ItemCreator#of(CompMaterial, String, String...)}
+	 * Convenience shortcut for {@link ItemCreator#from(CompMaterial, String, String...)}
 	 *
 	 * @param convo
 	 * @param material
@@ -42,7 +42,7 @@ public final class ButtonConversation extends Button {
 	 * @param lore
 	 */
 	public ButtonConversation(SimpleConversation convo, CompMaterial material, String title, String... lore) {
-		this(convo, ItemCreator.of(material, title, lore));
+		this(convo, ItemCreator.from(material, title, lore));
 	}
 
 	/**
@@ -56,7 +56,7 @@ public final class ButtonConversation extends Button {
 	}
 
 	/**
-	 * Convenience shortcut for {@link ItemCreator#of(CompMaterial, String, String...)}
+	 * Convenience shortcut for {@link ItemCreator#from(CompMaterial, String, String...)}
 	 *
 	 * @param prompt
 	 * @param material
@@ -64,7 +64,7 @@ public final class ButtonConversation extends Button {
 	 * @param lore
 	 */
 	public ButtonConversation(SimplePrompt prompt, CompMaterial material, String title, String... lore) {
-		this(prompt, ItemCreator.of(material, title, lore));
+		this(prompt, ItemCreator.from(material, title, lore));
 	}
 
 	/**

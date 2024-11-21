@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
@@ -31,7 +31,7 @@ public final class ProxyUtil {
 	 * We will find a random player through which we will send the message.
 	 * If the server is empty, nothing will happen.
 	 *
-	 * This method uses the default channel name specified in {@link SimplePlugin}. By
+	 * This method uses the default channel name specified in {@link BukkitPlugin}. By
 	 * default, nothing is specified there and so an exception will be thrown.
 	 *
 	 * @see OutgoingMessage#send(java.util.UUID)
@@ -42,8 +42,8 @@ public final class ProxyUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessage(ProxyMessage message, T... datas) {
-		final ProxyListener proxy = SimplePlugin.getInstance().getDefaultProxyListener();
-		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + SimplePlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage!");
+		final ProxyListener proxy = BukkitPlugin.getInstance().getDefaultProxyListener();
+		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + BukkitPlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage!");
 
 		sendPluginMessage(proxy.getChannel(), message, datas);
 	}
@@ -51,7 +51,7 @@ public final class ProxyUtil {
 	/**
 	 * Sends message via a channel to proxy as the given player.
 	 *
-	 * This method uses the default channel name specified in {@link SimplePlugin}. By
+	 * This method uses the default channel name specified in {@link BukkitPlugin}. By
 	 * default, nothing is specified there and so an exception will be thrown.
 	 *
 	 * @see OutgoingMessage#send(java.util.UUID)
@@ -69,7 +69,7 @@ public final class ProxyUtil {
 	/**
 	 * Sends message via a channel to proxy as the given player.
 	 *
-	 * This method uses the default channel name specified in {@link SimplePlugin}. By
+	 * This method uses the default channel name specified in {@link BukkitPlugin}. By
 	 * default, nothing is specified there and so an exception will be thrown.
 	 *
 	 * @see OutgoingMessage#send(java.util.UUID)
@@ -81,8 +81,8 @@ public final class ProxyUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessageAs(@Nullable Player player, ProxyMessage message, T... datas) {
-		final ProxyListener proxy = SimplePlugin.getInstance().getDefaultProxyListener();
-		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + SimplePlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage");
+		final ProxyListener proxy = BukkitPlugin.getInstance().getDefaultProxyListener();
+		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + BukkitPlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage");
 
 		sendPluginMessage(player, proxy.getChannel(), message, datas);
 	}
@@ -118,7 +118,7 @@ public final class ProxyUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessage(@Nullable Player sender, String channel, ProxyMessage message, T... dataArray) {
-		synchronized (SimplePlugin.getInstance()) {
+		synchronized (BukkitPlugin.getInstance()) {
 			if (sender == null)
 				sender = findFirstPlayer();
 
@@ -161,7 +161,7 @@ public final class ProxyUtil {
 	 * @param data  the data
 	 */
 	public static void sendBungeeMessage(@NonNull Player sender, Object... data) {
-		synchronized (SimplePlugin.getInstance()) {
+		synchronized (BukkitPlugin.getInstance()) {
 			ValidCore.checkBoolean(data != null && data.length >= 1, "");
 
 			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
@@ -188,7 +188,7 @@ public final class ProxyUtil {
 			}
 
 			// Can't use "Bukkit.getServer()" since it will send one message for each player, creating duplicates (i.e. 4X join message bug)
-			sender.sendPluginMessage(SimplePlugin.getInstance(), "BungeeCord", out.toByteArray());
+			sender.sendPluginMessage(BukkitPlugin.getInstance(), "BungeeCord", out.toByteArray());
 		}
 	}
 

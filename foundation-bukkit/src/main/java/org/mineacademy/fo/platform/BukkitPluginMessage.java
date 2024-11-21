@@ -23,14 +23,14 @@ import lombok.NoArgsConstructor;
  */
 @Deprecated
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class FoundationPluginMessageListener implements PluginMessageListener {
+final class BukkitPluginMessage implements PluginMessageListener {
 
 	@Getter
-	private static final FoundationPluginMessageListener instance = new FoundationPluginMessageListener();
+	private static final BukkitPluginMessage instance = new BukkitPluginMessage();
 
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] data) {
-		synchronized (SimplePlugin.getInstance()) {
+		synchronized (BukkitPlugin.getInstance()) {
 
 			// Check if the message is for a server (ignore client messages)
 			if (!channel.equals(ProxyListener.DEFAULT_CHANNEL))

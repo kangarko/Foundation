@@ -20,7 +20,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -1822,7 +1822,7 @@ public enum CompSound {
 				if (this.repeating-- == 0)
 					this.cancel();
 			}
-		}.runTaskTimer(SimplePlugin.getInstance(), 0, delay);
+		}.runTaskTimer(BukkitPlugin.getInstance(), 0, delay);
 	}
 
 	/**
@@ -1994,7 +1994,7 @@ public enum CompSound {
 				if (this.repeating-- == 0)
 					this.cancel();
 			}
-		}.runTaskTimerAsynchronously(SimplePlugin.getInstance(), 0, delay);
+		}.runTaskTimerAsynchronously(BukkitPlugin.getInstance(), 0, delay);
 	}
 }
 

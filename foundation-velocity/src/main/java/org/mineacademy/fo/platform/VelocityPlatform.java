@@ -1,6 +1,7 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,10 +14,10 @@ import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.VelocityCommandImpl;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.ReflectionException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
 import org.slf4j.Logger;
 
@@ -26,6 +27,8 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Keyed;
@@ -41,10 +44,6 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	private VelocityPlatform() {
-
-		// Initialize platform-specific variables
-		Variables.setCollector(new VelocityVariableCollector());
-
 		Common.addSimplifier(object -> {
 			if (object instanceof Player)
 				return ((Player) object).getUsername();
@@ -69,9 +68,15 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public boolean callEvent(final Object event) {
-		SimplePlugin.getServer().getEventManager().fireAndForget(event);
+		final Object futureEvent = VelocityPlugin.getServer().getEventManager().fire(event).join();
+		Method isCancelled = null;
 
-		return true;
+		try {
+			isCancelled = ReflectionUtil.getMethod(futureEvent.getClass(), "isCancelled");
+		} catch (final ReflectionException ex) {
+		}
+
+		return isCancelled == null || !((boolean) ReflectionUtil.invoke(isCancelled, futureEvent));
 	}
 
 	@Override
@@ -81,7 +86,7 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	protected void dispatchConsoleCommand0(String command) {
-		final ProxyServer server = SimplePlugin.getServer();
+		final ProxyServer server = VelocityPlugin.getServer();
 
 		server.getCommandManager().executeAsync(server.getConsoleCommandSource(), command);
 	}
@@ -98,32 +103,53 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public String getPlatformName() {
-		return SimplePlugin.getServer().getVersion().getName();
+		return VelocityPlugin.getServer().getVersion().getName();
 	}
 
 	@Override
 	public String getPlatformVersion() {
-		return SimplePlugin.getServer().getVersion().getVersion();
+		return VelocityPlugin.getServer().getVersion().getVersion();
+	}
+
+	@Override
+	protected FoundationPlayer getPlayer(String name) {
+		final Player player = VelocityPlugin.getServer().getPlayer(name).orElse(null);
+
+		return player != null ? toPlayer(player) : null;
+	}
+
+	@Override
+	protected FoundationPlayer getPlayer(UUID uniqueId) {
+		final Player player = VelocityPlugin.getServer().getPlayer(uniqueId).orElse(null);
+
+		return player != null && player.isActive() ? toPlayer(player) : null;
 	}
 
 	@Override
 	public FoundationPlugin getPlugin() {
-		return SimplePlugin.getInstance();
+		return VelocityPlugin.getInstance();
 	}
 
 	@Override
 	public File getPluginFile(String pluginName) {
-		return SimplePlugin.getInstance().getFile();
+		return VelocityPlugin.getInstance().getFile();
 	}
 
 	@Override
-	public List<Tuple<String, String>> getServerPlugins() {
-		return Common.convertList(SimplePlugin.getServer().getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getDescription().getName().orElse("Unnamed"), plugin.getDescription().getVersion().orElse("")));
+	public List<Tuple<String, String>> getPlugins() {
+		return Common.convertList(VelocityPlugin.getServer().getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getDescription().getName().orElse("Unnamed"), plugin.getDescription().getVersion().orElse("")));
 	}
 
 	@Override
-	public boolean hasHexColorSupport() {
-		return true;
+	public FoundationServer getServer(String name) {
+		final RegisteredServer server = VelocityPlugin.getServer().getServer(name).orElse(null);
+
+		return server != null ? new VelocityServer(server) : null;
+	}
+
+	@Override
+	public List<FoundationServer> getServers() {
+		return Common.convertList(VelocityPlugin.getServer().getAllServers(), server -> new VelocityServer(server));
 	}
 
 	@Override
@@ -133,23 +159,22 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public boolean isPluginInstalled(String name) {
-		final PluginManager manager = SimplePlugin.getServer().getPluginManager();
+		final PluginManager manager = VelocityPlugin.getServer().getPluginManager();
 		final boolean present = manager.getPlugin(name).isPresent() || manager.getPlugin(name.toLowerCase()).isPresent();
 
 		if (present)
-			this.runTaskAsync(0, () -> {
+			Platform.runTaskAsync(0, () -> {
 				if (!manager.isLoaded(name) && !manager.isLoaded(name.toLowerCase()))
-					Common.warning(SimplePlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
+					Common.warning(VelocityPlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + VelocityPlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
 			});
 
 		return present;
-
 	}
 
 	@Override
 	public void log(String message) {
 		final String plain = CompChatColor.stripColorCodes(message);
-		final Logger logger = SimplePlugin.getInstance().getLogger();
+		final Logger logger = VelocityPlugin.getInstance().getLogger();
 
 		if (plain.startsWith("Warning:") || plain.startsWith("[Warning]") || plain.startsWith("Warn:") || plain.startsWith("[Warn]"))
 			logger.warn(plain);
@@ -160,7 +185,7 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
-		final CommandManager manager = SimplePlugin.getServer().getCommandManager();
+		final CommandManager manager = VelocityPlugin.getServer().getCommandManager();
 		final CommandMeta oldCommand = manager.getCommandMeta(command.getLabel());
 
 		if (oldCommand != null && unregisterOldCommand)
@@ -184,7 +209,7 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public void registerEvents(final Object listener) {
-		SimplePlugin.getInstance().registerEvents(listener);
+		VelocityPlugin.getServer().getEventManager().register(VelocityPlugin.getInstance(), listener);
 	}
 
 	@Override
@@ -212,7 +237,7 @@ final class VelocityPlatform extends FoundationPlatform {
 		final Player player = Remain.getPlayer(senderUid, false);
 		Valid.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
-		player.sendPluginMessage(SimplePlugin.LEGACY_BUNGEE_CHANNEL, array);
+		player.sendPluginMessage(VelocityPlugin.LEGACY_BUNGEE_CHANNEL, array);
 	}
 
 	@Override
@@ -230,7 +255,22 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
+	public FoundationServer toServer(Object server) {
+		if (server instanceof FoundationServer)
+			return (FoundationServer) server;
+
+		else if (server instanceof RegisteredServer)
+			return new VelocityServer((RegisteredServer) server);
+
+		else if (server instanceof ServerConnection)
+			return new VelocityServer(((ServerConnection) server).getServer());
+
+		else
+			throw new FoException("Cannot convert " + server + " to FoundationServer! Only RegisteredServer and ServerConnection are supported.");
+	}
+
+	@Override
 	public void unregisterCommand(SimpleCommandCore command) {
-		SimplePlugin.getServer().getCommandManager().unregister(command.getLabel());
+		VelocityPlugin.getServer().getCommandManager().unregister(command.getLabel());
 	}
 }

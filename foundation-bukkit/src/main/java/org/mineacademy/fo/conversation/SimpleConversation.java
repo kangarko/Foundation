@@ -23,7 +23,7 @@ import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
@@ -357,7 +357,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		private SimplePrompt lastSimplePrompt;
 
 		private CustomConversation(final Conversable forWhom) {
-			super(SimplePlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
+			super(BukkitPlugin.getInstance(), forWhom, SimpleConversation.this.getFirstPrompt());
 
 			this.localEchoEnabled = false;
 			this.modal = SimpleConversation.this.isModal();

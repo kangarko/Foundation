@@ -23,7 +23,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.visual.VisualizedRegion;
@@ -35,7 +35,7 @@ import lombok.Setter;
 /**
  * Represents a region in a yml file in regions/ folder in your plugin's folder.
  *
- * To use this, enable regions in {@link SimplePlugin#areRegionsEnabled()}.
+ * To use this, enable regions in {@link BukkitPlugin#areRegionsEnabled()}.
  */
 @Getter
 public final class DiskRegion extends YamlConfig {
@@ -109,7 +109,7 @@ public final class DiskRegion extends YamlConfig {
 			return;
 		}
 
-		final SerializedMap map = SerializedMap.of(this);
+		final SerializedMap map = SerializedMap.fromObject(this);
 
 		try {
 			this.border = VisualizedRegion.deserialize(map);

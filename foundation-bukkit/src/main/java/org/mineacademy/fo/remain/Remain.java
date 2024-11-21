@@ -94,7 +94,7 @@ import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.UUIDToNameConverter;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 
 import com.google.gson.JsonObject;
@@ -661,7 +661,7 @@ public final class Remain {
 	/**
 	 * Freeze back enchant registry
 	 *
-	 * @deprecated called internally already in {@link SimplePlugin}
+	 * @deprecated called internally already in {@link BukkitPlugin}
 	 */
 	@Deprecated
 	public static void freezeEnchantRegistry() {
@@ -706,7 +706,7 @@ public final class Remain {
 	/**
 	 * Unfreeze enchant registry
 	 *
-	 * @deprecated called internally already in {@link SimplePlugin}
+	 * @deprecated called internally already in {@link BukkitPlugin}
 	 */
 	@Deprecated
 	public static void unfreezeEnchantRegistry() {
@@ -1217,7 +1217,7 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError err) {
 			if (Bukkit.isPrimaryThread())
-				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + SimplePlugin.getInstance().getName() + " plugin authors.");
+				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + BukkitPlugin.getInstance().getName() + " plugin authors.");
 
 			try {
 				final String name = new UUIDToNameConverter(uniqueId).call();
@@ -1517,7 +1517,7 @@ public final class Remain {
 			final Constructor<PluginCommand> con = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			con.setAccessible(true);
 
-			return con.newInstance(label, SimplePlugin.getInstance());
+			return con.newInstance(label, BukkitPlugin.getInstance());
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Unable to create command: /" + label);
@@ -1533,7 +1533,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static NamespacedKey newNamespaced() {
-		return new NamespacedKey(SimplePlugin.getInstance(), SimplePlugin.getInstance().getName() + "_" + RandomUtil.nextString(16));
+		return new NamespacedKey(BukkitPlugin.getInstance(), BukkitPlugin.getInstance().getName() + "_" + RandomUtil.nextString(16));
 	}
 
 	/**
@@ -1543,7 +1543,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static NamespacedKey newNamespaced(String name) {
-		return new NamespacedKey(SimplePlugin.getInstance(), name);
+		return new NamespacedKey(BukkitPlugin.getInstance(), name);
 	}
 
 	/**
@@ -2817,9 +2817,9 @@ public final class Remain {
 			final Object taskHandle;
 
 			if (delayTicks == 0)
-				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
+				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
 			else
-				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
+				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
 
 			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
@@ -2833,10 +2833,10 @@ public final class Remain {
 			BukkitTask task;
 
 			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskLater(SimplePlugin.getInstance(), delayTicks);
+				task = ((BukkitRunnable) runnable).runTaskLater(BukkitPlugin.getInstance(), delayTicks);
 
 			else
-				task = Bukkit.getScheduler().runTaskLater(SimplePlugin.getInstance(), runnable, delayTicks);
+				task = Bukkit.getScheduler().runTaskLater(BukkitPlugin.getInstance(), runnable, delayTicks);
 
 			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
@@ -2846,7 +2846,7 @@ public final class Remain {
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), false);
+			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleSyncDelayedTask(BukkitPlugin.getInstance(), runnable, delayTicks), false);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(simpleTask);
@@ -2872,9 +2872,9 @@ public final class Remain {
 			final Object taskHandle;
 
 			if (delayTicks == 0)
-				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
+				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
 			else
-				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
+				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
 
 			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
@@ -2888,10 +2888,10 @@ public final class Remain {
 			BukkitTask task;
 
 			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskLaterAsynchronously(SimplePlugin.getInstance(), delayTicks);
+				task = ((BukkitRunnable) runnable).runTaskLaterAsynchronously(BukkitPlugin.getInstance(), delayTicks);
 
 			else
-				task = Bukkit.getScheduler().runTaskLaterAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks);
+				task = Bukkit.getScheduler().runTaskLaterAsynchronously(BukkitPlugin.getInstance(), runnable, delayTicks);
 
 			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
@@ -2901,7 +2901,7 @@ public final class Remain {
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(SimplePlugin.getInstance(), runnable, delayTicks), true);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncDelayedTask(BukkitPlugin.getInstance(), runnable, delayTicks), true);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2925,7 +2925,7 @@ public final class Remain {
 			return null;
 
 		if (Remain.isFolia()) {
-			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
+			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
 
 			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
@@ -2939,10 +2939,10 @@ public final class Remain {
 			BukkitTask task;
 
 			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskTimer(SimplePlugin.getInstance(), delayTicks, repeatTicks);
+				task = ((BukkitRunnable) runnable).runTaskTimer(BukkitPlugin.getInstance(), delayTicks, repeatTicks);
 
 			else
-				task = Bukkit.getScheduler().runTaskTimer(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
+				task = Bukkit.getScheduler().runTaskTimer(BukkitPlugin.getInstance(), runnable, delayTicks, repeatTicks);
 
 			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
@@ -2952,7 +2952,7 @@ public final class Remain {
 			return simpleTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleSyncRepeatingTask(BukkitPlugin.getInstance(), runnable, delayTicks, repeatTicks), false);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -2976,7 +2976,7 @@ public final class Remain {
 			return null;
 
 		if (Remain.isFolia()) {
-			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, SimplePlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
+			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
 
 			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
@@ -2990,10 +2990,10 @@ public final class Remain {
 			BukkitTask task;
 
 			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskTimerAsynchronously(SimplePlugin.getInstance(), delayTicks, repeatTicks);
+				task = ((BukkitRunnable) runnable).runTaskTimerAsynchronously(BukkitPlugin.getInstance(), delayTicks, repeatTicks);
 
 			else
-				task = Bukkit.getScheduler().runTaskTimerAsynchronously(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks);
+				task = Bukkit.getScheduler().runTaskTimerAsynchronously(BukkitPlugin.getInstance(), runnable, delayTicks, repeatTicks);
 
 			final SimpleBukkitTask simplTask = SimpleBukkitTask.fromBukkit(task);
 
@@ -3003,7 +3003,7 @@ public final class Remain {
 			return simplTask;
 
 		} catch (final NoSuchMethodError err) {
-			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(SimplePlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
+			final SimpleBukkitTask task = SimpleBukkitTask.fromBukkit(Bukkit.getScheduler().scheduleAsyncRepeatingTask(BukkitPlugin.getInstance(), runnable, delayTicks, repeatTicks), true);
 
 			if (timer instanceof SimpleRunnable)
 				((SimpleRunnable) timer).setupTask(task);
@@ -3475,7 +3475,7 @@ final class SimpleBukkitTask implements Task {
 
 	@Override
 	public Plugin getOwner() {
-		return SimplePlugin.getInstance();
+		return BukkitPlugin.getInstance();
 	}
 }
 
@@ -3490,7 +3490,7 @@ final class AdvancementAccessor {
 	private final CompToastStyle toastStyle;
 
 	AdvancementAccessor(final String message, final String icon, CompToastStyle toastStyle) {
-		this.key = new NamespacedKey(SimplePlugin.getInstance(), UUID.randomUUID().toString());
+		this.key = new NamespacedKey(BukkitPlugin.getInstance(), UUID.randomUUID().toString());
 		this.message = message;
 		this.icon = icon;
 		this.toastStyle = toastStyle;

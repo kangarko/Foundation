@@ -138,7 +138,7 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 	 * @return
 	 */
 	public static ItemFrameBounceSlider from(final CompMaterial filler, final CompMaterial highlighted, final CompMaterial side, final CompMaterial corner) {
-		return from(ItemCreator.of(filler), ItemCreator.of(highlighted), ItemCreator.of(side), ItemCreator.of(corner));
+		return from(ItemCreator.fromMaterial(filler), ItemCreator.fromMaterial(highlighted), ItemCreator.fromMaterial(side), ItemCreator.fromMaterial(corner));
 	}
 
 	/**

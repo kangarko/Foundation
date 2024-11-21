@@ -36,13 +36,13 @@ import lombok.NoArgsConstructor;
  */
 @AutoRegister(hideIncompatibilityWarnings = false)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class FoundationPacketListener extends PacketListener {
+final class BukkitPacketListener extends PacketListener {
 
 	/**
 	 * The singleton of this class to auto register it.
 	 */
 	@Getter(value = AccessLevel.MODULE)
-	private static final PacketListener instance = new FoundationPacketListener();
+	private static final PacketListener instance = new BukkitPacketListener();
 
 	/**
 	 * Registers our packet listener for some of the more advanced features of Foundation
@@ -206,7 +206,7 @@ final class FoundationPacketListener extends PacketListener {
 
 						for (int line = 0; line < lines.length; line++) {
 							final WrappedChatComponent component = lines[line];
-							final String signText = SimpleComponent.fromAdventureJson(component.getJson().replace("§f", ""), MinecraftVersion.atLeast(V.v1_16)).toLegacy();
+							final String signText = SimpleComponent.fromAdventureJson(component.getJson().replace("§f", ""), MinecraftVersion.olderThan(V.v1_16)).toLegacy();
 
 							sign.setLine(line, signText);
 						}

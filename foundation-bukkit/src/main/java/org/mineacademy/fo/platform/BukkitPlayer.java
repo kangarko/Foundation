@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
@@ -58,12 +57,8 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public String getCurrentServerName() {
-		if (!Platform.hasCustomServerName())
-			Common.logTimed(60, "Called FoundationPlayer#getCurrentServerName() on Bukkit without server name set! Either put Server_Name key"
-					+ " to settings.yml to set the server name in Platform#setCustomServerName() manually. This is a bug! Returning empty...");
-
-		return Platform.hasCustomServerName() ? Platform.getCustomServerName() : "";
+	public FoundationServer getServer() {
+		return BukkitServer.getInstance();
 	}
 
 	@Override
@@ -132,7 +127,7 @@ final class BukkitPlayer extends FoundationPlayer {
 		if (Bukkit.isPrimaryThread())
 			this.player.chat("/" + replacedCommand);
 		else
-			Bukkit.getScheduler().runTask(SimplePlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
+			Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
 	}
 
 	@Override
@@ -167,7 +162,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 		else
 			try {
-				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, message.toBungee(MinecraftVersion.atLeast(V.v1_16)));
+				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, message.toBungee(!this.hasHexColorSupport()));
 
 			} catch (final NoSuchMethodError err) {
 				Remain.sendActionBarLegacyPacket(this.player, message);
@@ -247,7 +242,7 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		this.player.spigot().sendMessage(SimpleComponent.fromAdventure(component).toBungee(MinecraftVersion.atLeast(V.v1_16)));
+		this.player.spigot().sendMessage(SimpleComponent.fromAdventure(component).toBungee(!this.hasHexColorSupport()));
 	}
 
 	@Override
@@ -288,6 +283,6 @@ final class BukkitPlayer extends FoundationPlayer {
 	public void setTempMetadata(String key, Object value) {
 		Valid.checkBoolean(this.isPlayer, "Cannot set temp metadata for non-players!");
 
-		this.player.setMetadata(key, new FixedMetadataValue(SimplePlugin.getInstance(), value));
+		this.player.setMetadata(key, new FixedMetadataValue(BukkitPlugin.getInstance(), value));
 	}
 }

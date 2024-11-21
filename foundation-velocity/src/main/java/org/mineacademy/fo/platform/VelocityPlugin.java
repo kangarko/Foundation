@@ -1,40 +1,23 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
-import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
-import org.mineacademy.fo.database.SimpleDatabase;
-import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.HandledException;
-import org.mineacademy.fo.filter.Filter;
-import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.library.VelocityLibraryManager;
 import org.mineacademy.fo.model.BStatsVelocity;
-import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
-import org.mineacademy.fo.settings.SimpleSettings;
 import org.slf4j.Logger;
 
 import com.google.gson.JsonElement;
@@ -52,7 +35,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 /**
  * Represents a Velocity plugin.
  */
-public abstract class SimplePlugin implements FoundationPlugin {
+public abstract class VelocityPlugin implements FoundationPlugin {
 
 	/**
 	 * Stores the legacy BungeeCord channel identifier
@@ -63,17 +46,17 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	/**
 	 * The instance of this plugin
 	 */
-	private static SimplePlugin instance;
+	private static VelocityPlugin instance;
 
 	/**
-	 * Returns the instance of {@link SimplePlugin}.
+	 * Returns the instance of {@link VelocityPlugin}.
 	 * <p>
-	 * It is recommended to override this in your own {@link SimplePlugin}
+	 * It is recommended to override this in your own {@link VelocityPlugin}
 	 * implementation so you will get the instance of that, directly.
 	 *
 	 * @return this instance
 	 */
-	public static SimplePlugin getInstance() {
+	public static VelocityPlugin getInstance() {
 		return instance;
 	}
 
@@ -172,16 +155,10 @@ public abstract class SimplePlugin implements FoundationPlugin {
 		FoundationFilter.inject();
 	}
 
-	public SimplePlugin(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
+	public VelocityPlugin(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
 		instance = this;
 
 		try {
-
-			// Unsupported so default to the latest version
-			MinecraftVersion.setVersion(Common.last(MinecraftVersion.V.values()), -1);
-
-			VelocityPlatform.inject();
-
 			this.file = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 
 			// Hacky due to Velocity lacking simpler implementation
@@ -195,7 +172,7 @@ public abstract class SimplePlugin implements FoundationPlugin {
 			} else {
 
 				// If annotation isn't used, try to load from velocity-plugin.json directly. You can place this file to your src/main/resources and use variables in it.
-				final List<String> lines = FileUtil.readLinesFromInternalPath("velocity-plugin.json");
+				final List<String> lines = FileUtil.readLinesFromInternalPath(this.getFile(), "velocity-plugin.json");
 				Valid.checkBoolean(lines != null, "Either place @Plugin annotation over your main class or write velocity-plugin.json to your resources folder!");
 
 				final JsonObject json = Common.GSON.fromJson(String.join("", lines), JsonObject.class);
@@ -222,25 +199,6 @@ public abstract class SimplePlugin implements FoundationPlugin {
 			this.logger = logger;
 			this.dataFolder = new File(dataDirectory.toFile().getParentFile(), this.name); // Another hack to prevent lowercase folders
 
-			// Dynamically load filters
-			for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
-				try {
-					final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
-					Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
-					Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
-
-					final Filter filter = ReflectionUtil.instantiate(constructor);
-
-					Filter.register(filter.getIdentifier(), filter);
-
-				} catch (final Exception ex) {
-					Common.error(ex,
-							"Failed to load filter: " + filterClass,
-							"Check that it has a public no args constructor!");
-
-					continue;
-				}
-
 			// Call delegate
 			this.onPluginLoad();
 
@@ -260,16 +218,7 @@ public abstract class SimplePlugin implements FoundationPlugin {
 		if (this.loadingFailed)
 			return;
 
-		this.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.8");
-
-		if (!ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
-			this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
-
-		//if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.chat.BaseComponentSerializer"))
-		//	this.loadLibrary("net.md-5", "bungeecord-api", "1.16-R0.1");
-
-		//if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
-		//	this.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
+		VelocityPlatform.inject();
 
 		try {
 			if (this.getStartupLogo() != null)
@@ -277,7 +226,8 @@ public abstract class SimplePlugin implements FoundationPlugin {
 
 			// Register the proxy listener and channel
 			this.proxy.getChannelRegistrar().register(LEGACY_BUNGEE_CHANNEL, MODERN_BUNGEE_CHANNEL);
-			this.registerEvents(new ForwardingListener(this.proxy));
+
+			this.registerEvents(new VelocityListener());
 
 			// Scan for @AutoRegister annotations
 			AutoRegisterScanner.scanAndRegister();
@@ -288,73 +238,14 @@ public abstract class SimplePlugin implements FoundationPlugin {
 			if (!this.enabled)
 				return;
 
-			// Move the legacy localization folder to unused
-			{
-				final File localizationFolder = new File(this.dataFolder, "localization");
-
-				if (localizationFolder.exists()) {
-					Common.warning("The localization/ folder is now unused, run '/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " dumplocale' to download the new locale format. Moving to unused/ ...");
-
-					final File unusedFolder = new File(this.dataFolder, "unused");
-
-					if (!unusedFolder.exists())
-						unusedFolder.mkdirs();
-
-					localizationFolder.renameTo(new File(unusedFolder, "localization"));
-				}
-			}
-
-			Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
-
 			if (this.getBStatsPluginId() != -1)
 				new BStatsVelocity(this, this.proxy, this.logger, this.dataFolder.toPath(), this.getBStatsPluginId());
 
-			if (SimpleSettings.NOTIFY_NEW_VERSIONS)
-				Platform.runTaskAsync(new BuiltByBitUpdateCheck());
+			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			this.displayError(t);
 		}
-	}
-
-	/**
-	 * Handles various startup problems
-	 *
-	 * @param throwable
-	 */
-	protected final void displayError(Throwable throwable) {
-		Debugger.printStackTrace(throwable);
-
-		Common.log(
-				"&4    ___                  _ ",
-				"&4   / _ \\  ___  _ __  ___| |",
-				"&4  | | | |/ _ \\| '_ \\/ __| |",
-				"&4  | |_| | (_) | |_) \\__ \\_|",
-				"&4   \\___/ \\___/| .__/|___(_)",
-				"&4             |_|          ",
-				"&4!-----------------------------------------------------!",
-				" &cError loading " + this.name + " v" + getVersion() + ", plugin is disabled!",
-				" &cRunning on " + this.proxy.getVersion().getVersion() + " and Java " + System.getProperty("java.version"),
-				"&4!-----------------------------------------------------!");
-
-		if (throwable instanceof HandledException)
-			throwable = ((HandledException) throwable).getHandle();
-
-		while (throwable.getCause() != null)
-			throwable = throwable.getCause();
-
-		if (!(throwable instanceof HandledException)) {
-			String error = "Unable to get the error message, search above.";
-			if (throwable.getMessage() != null && !throwable.getMessage().isEmpty() && !throwable.getMessage().equals("null"))
-				error = throwable.getMessage();
-
-			Common.log(" &cError: " + error);
-		} else
-			Common.log(" &cError: See above for stack trace.");
-
-		Common.log("&4!-----------------------------------------------------!");
-
-		this.enabled = false;
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -450,47 +341,6 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	}
 
 	// ----------------------------------------------------------------------------------------
-	// Methods
-	// ----------------------------------------------------------------------------------------
-
-	/**
-	 * Convenience method for quickly registering events for this plugin
-	 *
-	 * @param listener
-	 */
-	public final void registerEvents(final Object listener) {
-		ValidCore.checkBoolean(!this.initializing, "Cannot register events during plugin initialization! Use onPluginStart() instead.");
-
-		this.proxy.getEventManager().register(this, listener);
-	}
-
-	/**
-	 * Convenience method for registering a command.
-	 *
-	 * @see SimpleCommandCore#register()
-	 *
-	 * @param command
-	 */
-	@Override
-	public final void registerCommand(final SimpleCommandCore command) {
-		ValidCore.checkBoolean(!this.initializing, "Cannot register commands during plugin initialization! Use onPluginStart() instead.");
-
-		command.register();
-	}
-
-	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register()}
-	 *
-	 * @param group
-	 */
-	@Override
-	public final void registerCommands(final SimpleCommandGroup group) {
-		ValidCore.checkBoolean(!this.initializing, "Cannot register commands during plugin initialization! Use onPluginStart() instead.");
-
-		group.register();
-	}
-
-	// ----------------------------------------------------------------------------------------
 	// Defaults
 	// ----------------------------------------------------------------------------------------
 
@@ -543,32 +393,11 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Loads a library jar into the classloader classpath. If the library jar
-	 * doesn't exist locally, it will be downloaded.
-	 *
-	 * If the provided library has any relocations, they will be applied to
-	 * create a relocated jar and the relocated jar will be loaded instead.
-	 *
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 */
-	@Override
-	public final void loadLibrary(String groupId, String artifactId, String version) {
-		this.getLibraryManager().loadLibrary(Library
-				.builder()
-				.groupId(groupId)
-				.artifactId(artifactId)
-				.resolveTransitiveDependencies(true)
-				.version(version)
-				.build());
-	}
-
-	/**
 	 * Get the Libby library manager
 	 *
 	 * @return
 	 */
+	@Override
 	public final LibraryManager getLibraryManager() {
 		if (this.libraryManager == null)
 			this.libraryManager = new VelocityLibraryManager(this, this.dataFolder.toPath(), this.proxy.getPluginManager());
@@ -581,140 +410,14 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * The start-up fancy logo
-	 *
-	 * @return null by default
-	 */
-	public String[] getStartupLogo() {
-		return null;
-	}
-
-	/**
-	 * Get the year of foundation displayed in our {@link SimpleCommandGroup} on help
-	 *
-	 * @return -1 by default, or the founded year
-	 */
-	@Override
-	public int getFoundedYear() {
-		return -1;
-	}
-
-	/**
-	 * Foundation automatically can filter console commands for you, including
-	 * messages from other plugins or the server itself, preventing unnecessary console spam.
-	 *
-	 * You can return a list of messages that will be matched using "startsWith OR contains" method
-	 * and will be filtered.
-	 *
-	 * @return
-	 */
-	public Set<String> getConsoleFilter() {
-		return new HashSet<>();
-	}
-
-	/**
-	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in the Common class?
-	 *
-	 * May impose a slight performance penalty but increases catches.
-	 *
-	 * @see CommonCore#compilePattern(String)
+	 * Return true if the plugin has not yet reached onPluginStart() method.
 	 *
 	 * @return
 	 */
 	@Override
-	public boolean isRegexCaseInsensitive() {
-		return true;
+	public final boolean isInitializing() {
+		return this.initializing;
 	}
-
-	/**
-	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in the Common class?
-	 *
-	 * May impose a slight performance penalty but useful for non-English servers.
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexUnicode() {
-		return true;
-	}
-
-	/**
-	 * Should we remove diacritical marks before matching regex?
-	 * Defaults to true.
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexStrippingAccents() {
-		return true;
-	}
-
-	/**
-	 * Strip colors from checked message while checking it against a regex?
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexStrippingColors() {
-		return true;
-	}
-
-	/**
-	 * Should we replace accents with their non accented friends when
-	 * checking two strings for similarity in {@link ChatUtil}?
-	 *
-	 * @return defaults to true
-	 */
-	@Override
-	public boolean isSimilarityStrippingAccents() {
-		return true;
-	}
-
-	/**
-	 * Returns the Sentry DSN to use for error tracking or null if Sentry is disabled.
-	 *
-	 * @return
-	 */
-	@Override
-	public String getSentryDsn() {
-		return null;
-	}
-
-	/**
-	 * Return the bStats plugin id, if not -1, we automatically start reporting
-	 * your plugin to bStats.
-	 *
-	 * @return
-	 */
-	public int getBStatsPluginId() {
-		return -1;
-	}
-
-	/**
-	 * @see FoundationPlugin#getBuiltByBitId()
-	 */
-	@Override
-	public int getBuiltByBitId() {
-		return -1;
-	}
-
-	/**
-	 * @see FoundationPlugin#getBuiltByBitSharedToken()
-	 */
-	@Override
-	public String getBuiltByBitSharedToken() {
-		return null;
-	}
-
-	// ----------------------------------------------------------------------------------------
-	// Overriding parent methods
-	// ----------------------------------------------------------------------------------------
 
 	/**
 	 * Return false if plugin was disabled during startup/reload
@@ -725,6 +428,27 @@ public abstract class SimplePlugin implements FoundationPlugin {
 	public final boolean isEnabled() {
 		return this.enabled;
 	}
+
+	/**
+	 * Return the proxy server (aka Bukkit#getServer())
+	 *
+	 * @return
+	 */
+	public final ProxyServer getProxy() {
+		return this.proxy;
+	}
+
+	/**
+	 * Get the plugin's logger.
+	 * @return
+	 */
+	public final Logger getLogger() {
+		return this.logger;
+	}
+
+	// ----------------------------------------------------------------------------------------
+	// Overriding parent methods
+	// ----------------------------------------------------------------------------------------
 
 	/**
 	 * Return the data folder
@@ -752,26 +476,14 @@ public abstract class SimplePlugin implements FoundationPlugin {
 		return this.version;
 	}
 
-	@Override
-	public final String getName() {
-		return this.name;
-	}
-
 	/**
-	 * Return the proxy server (aka Bukkit#getServer())
+	 * Get the plugin's name.
 	 *
 	 * @return
 	 */
-	public final ProxyServer getProxy() {
-		return this.proxy;
-	}
-
-	/**
-	 * Get the plugin's logger.
-	 * @return
-	 */
-	public final Logger getLogger() {
-		return this.logger;
+	@Override
+	public final String getName() {
+		return this.name;
 	}
 
 	/**

@@ -31,7 +31,7 @@ public abstract class MenuContainer extends Menu {
 	 */
 	@Getter
 	@Setter
-	private ItemStack bottomBarFillerItem = ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, " ").make();
+	private ItemStack bottomBarFillerItem = ItemCreator.from(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, " ").make();
 
 	/**
 	 * Create a new menu that can edit chances of the items you put inside.

@@ -1,42 +1,30 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ProxyUtil;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.RegionSubCommand;
-import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
-import org.mineacademy.fo.database.SimpleDatabase;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.exception.HandledException;
-import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.library.BukkitLibraryManager;
-import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
@@ -44,7 +32,6 @@ import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.model.BStatsBukkit;
-import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.PacketListener;
@@ -57,9 +44,6 @@ import org.mineacademy.fo.proxy.message.OutgoingMessage;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.settings.SimpleSettings;
-
-import net.kyori.adventure.text.Component;
 
 /**
  * Represents a Bukkit plugin.
@@ -67,25 +51,25 @@ import net.kyori.adventure.text.Component;
  * This class extends {@link JavaPlugin} and plugin
  * authors should extend this class when creating a new plugin.
  */
-public abstract class SimplePlugin extends JavaPlugin implements Listener, FoundationPlugin {
+public abstract class BukkitPlugin extends JavaPlugin implements Listener, FoundationPlugin {
 
 	/**
 	 * The instance of this plugin
 	 */
-	private static SimplePlugin instance;
+	private static BukkitPlugin instance;
 
 	/**
-	 * Returns the instance of {@link SimplePlugin}.
+	 * Returns the instance of {@link BukkitPlugin}.
 	 * <p>
-	 * It is recommended to override this in your own {@link SimplePlugin}
+	 * It is recommended to override this in your own {@link BukkitPlugin}
 	 * implementation so you will get the instance of that, directly.
 	 *
 	 * @return this instance
 	 */
-	public static SimplePlugin getInstance() {
+	public static BukkitPlugin getInstance() {
 		if (instance == null) {
 			try {
-				instance = JavaPlugin.getPlugin(SimplePlugin.class);
+				instance = JavaPlugin.getPlugin(BukkitPlugin.class);
 
 			} catch (final IllegalStateException ex) {
 				if (Bukkit.getPluginManager().getPlugin("PlugMan") != null || Bukkit.getPluginManager().getPlugin("PlugManX") != null)
@@ -126,7 +110,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	private ProxyListener defaultProxyListener;
 
-	/*
+	/**
+	 * Shortcut to discover if the plugin is initializing
+	 */
+	private boolean initializing = true;
+
+	/**
 	 * false = error has occurred early in loading pipeline so we skip onDisable since there is no data
 	 */
 	private boolean loadingFailed = false;
@@ -138,7 +127,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	static {
 
 		// Add console filters early - no reload support
-		FoundationFilter.inject();
+		FoundationFilter.inject(filter -> {
+			for (final Plugin plugin : Bukkit.getPluginManager().getPlugins())
+				plugin.getLogger().setFilter(filter);
+
+			Bukkit.getLogger().setFilter(filter);
+		});
 	}
 
 	@Override
@@ -147,28 +141,8 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 			getInstance();
 
 			this.setVersion();
-			this.loadLibraries();
 
 			BukkitPlatform.inject();
-
-			// Dynamically load filters
-			for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getFile(), Filter.class))
-				try {
-					final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
-					Valid.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
-					Valid.checkBoolean(Modifier.isPublic(constructor.getModifiers()), "Filter class " + filterClass + " must have a public constructor!");
-
-					final Filter filter = ReflectionUtil.instantiate(constructor);
-
-					Filter.register(filter.getIdentifier(), filter);
-
-				} catch (final Exception ex) {
-					Common.error(ex,
-							"Failed to load filter: " + filterClass,
-							"Check that it has a public no args constructor!");
-
-					continue;
-				}
 
 			this.onPluginLoad();
 
@@ -177,6 +151,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 			this.setEnabled(false);
 
 			throw t;
+
+		} finally {
+			this.initializing = false;
 		}
 	}
 
@@ -195,84 +172,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 		final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
 
 		MinecraftVersion.setVersion(current, subversion);
-	}
-
-	/*
-	 * Load the necessary libraries for the plugin to work.
-	 */
-	private void loadLibraries() {
-		this.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.8");
-
-		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
-			this.loadLibrary("com.google.code.gson", "gson", "2.11.0");
-
-		if (this.getJavaVersion() >= 15 && !ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
-			this.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
-
-		if (!ReflectionUtil.isClassAvailable("net.md_5.bungee.chat.BaseComponentSerializer"))
-			this.loadLibrary("net.md-5", "bungeecord-api", "1.16-R0.1");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
-
-			// Pre-merge: 1.16-1.17
-			if (ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience")) {
-				String version = "4.2.0";
-
-				try {
-					Component.class.getMethod("compact");
-
-				} catch (final ReflectiveOperationException ex) {
-					version = "4.1.0";
-				}
-
-				this.getLibraryManager().loadLibrary(Library.builder()
-						.groupId("net.kyori")
-						.artifactId("adventure-text-minimessage")
-						.version(version)
-						.url("https://bitbucket.org/kangarko/libraries/raw/master/org/mineacademy/library/adventure-text-minimessage/" + version + "/adventure-text-minimessage-" + version + ".jar")
-						.build());
-
-			} else
-				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience"))
-			this.loadLibrary("net.kyori", "adventure-api", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-plain", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-legacy", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-gson", "4.17.0");
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
-			this.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
-	}
-
-	/*
-	 * Return the corresponding major Java version such as 8 for Java 1.8, or 11 for Java 11.
-	 *
-	 * Need a duplicate of this method here because the one in Remain class cannot be used at this time.
-	 */
-	private int getJavaVersion() {
-		String version = System.getProperty("java.version");
-
-		if (version.startsWith("1."))
-			version = version.substring(2, 3);
-
-		else {
-			final int dot = version.indexOf(".");
-
-			if (dot != -1)
-				version = version.substring(0, dot);
-		}
-
-		if (version.contains("-"))
-			version = version.split("\\-")[0];
-
-		return Integer.parseInt(version);
 	}
 
 	@Override
@@ -324,7 +223,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 					}
 
 					if (PacketListener.class.isAssignableFrom(clazz) && !HookManager.isProtocolLibLoaded()) {
-						if (printWarnings && !clazz.equals(FoundationPacketListener.class)) {
+						if (printWarnings && !clazz.equals(BukkitPacketListener.class)) {
 							CommonCore.warning("**** WARNING ****");
 							CommonCore.warning("The following class requires ProtocolLib and won't be registered: " + clazz.getSimpleName()
 									+ ". To hide this message, put @AutoRegister(hideIncompatibilityWarnings=true) over the class.");
@@ -394,7 +293,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 							registerEvents(SimpleEnchantment.Listener.getInstance());
 
 							if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null)
-								FoundationPacketListener.getInstance().onRegister();
+								BukkitPacketListener.getInstance().onRegister();
 							else
 								CommonCore.warning("Custom enchantments require ProtocolLib for lore to be added properly.");
 						}
@@ -411,7 +310,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 					}
 
 					if (instance instanceof Listener) {
-						registerEvents((Listener) instance);
+						registerEvents(instance);
 
 						return true;
 					}
@@ -427,7 +326,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 			final Messenger messenger = this.getServer().getMessenger();
 
 			if (!messenger.isIncomingChannelRegistered(this, ProxyListener.DEFAULT_CHANNEL))
-				messenger.registerIncomingPluginChannel(this, ProxyListener.DEFAULT_CHANNEL, FoundationPluginMessageListener.getInstance());
+				messenger.registerIncomingPluginChannel(this, ProxyListener.DEFAULT_CHANNEL, BukkitPluginMessage.getInstance());
 
 			if (!messenger.isOutgoingChannelRegistered(this, ProxyListener.DEFAULT_CHANNEL))
 				messenger.registerOutgoingPluginChannel(this, ProxyListener.DEFAULT_CHANNEL);
@@ -450,7 +349,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 
 			// Register our listeners
 			this.registerEvents(this);
-			this.registerEvents(new FoundationListener());
+			this.registerEvents(new BukkitListener());
 
 			if (this.areMenusEnabled())
 				this.registerEvents(new MenuListener());
@@ -471,29 +370,10 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 				this.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
-			// Move the legacy localization folder to unused
-			{
-				final File localizationFolder = new File(this.getDataFolder(), "localization");
-
-				if (localizationFolder.exists()) {
-					Common.warning("The localization/ folder is now unused, run '/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " dumplocale' to download the new locale format. Moving to unused/ ...");
-
-					final File unusedFolder = new File(this.getDataFolder(), "unused");
-
-					if (!unusedFolder.exists())
-						unusedFolder.mkdirs();
-
-					localizationFolder.renameTo(new File(unusedFolder, "localization"));
-				}
-			}
-
-			Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
-
 			if (this.getBStatsPluginId() != -1)
 				new BStatsBukkit(this, this.getBStatsPluginId());
 
-			if (SimpleSettings.NOTIFY_NEW_VERSIONS)
-				Platform.runTaskAsync(new BuiltByBitUpdateCheck());
+			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			this.displayError(t);
@@ -504,160 +384,160 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 		for (final CompAttribute comp : CompAttribute.values())
 			try {
 				CompAttribute.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (comp.getNmsName() != null)
 					Common.log("Invalid CompAttribute " + comp.name());
 			}
-
+	
 		for (final CompColor comp : CompColor.values())
 			try {
 				if (comp.getDye() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompColor " + comp.getName());
 			}
-
+	
 		for (final CompItemFlag comp : CompItemFlag.values())
 			try {
 				ItemFlag.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompItemFlag " + comp);
 			}
-
+	
 		for (final CompMaterial comp : CompMaterial.values())
 			try {
 				if (comp.toItem() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompMaterial " + comp);
 			}
-
+	
 		for (final CompParticle comp : CompParticle.values())
 			try {
 				Particle.valueOf(comp.name());
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Skip
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (!comp.isRemoved())
 					Common.log("Invalid CompParticle " + comp);
 			}
-
+	
 		if (MinecraftVersion.atLeast(V.v1_21))
 			for (final CompSound comp : CompSound.values())
 				try {
 					Sound.valueOf(comp.name());
-
+	
 				} catch (final IllegalArgumentException ex) {
 					Common.log("Invalid CompSound " + comp.name());
 				}
-
+	
 		for (final CompVillagerProfession comp : CompVillagerProfession.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerProfession " + comp);
 			}
-
+	
 		for (final CompVillagerType comp : CompVillagerType.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
 	}
-
+	
 	private void scanModernEnumsForUpdates() {
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final DyeColor bukkit : DyeColor.values())
 			try {
 				CompColor.fromDye(bukkit);
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompColor for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final Enchantment bukkit : Enchantment.values())
 			try {
 				if (CompEnchantment.getByName(bukkit.getKey().toString()) == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompEnchantment for Bukkit's " + bukkit);
 			}
-
+	
 		for (final ItemFlag bukkit : ItemFlag.values())
 			try {
 				CompItemFlag.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompItemFlag for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Material bukkit : Material.values())
 			try {
 				CompMaterial.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompMaterial for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Particle bukkit : Particle.values())
 			try {
 				CompParticle.fromName(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompParticle for Bukkit's " + bukkit);
 			}
-
+	
 		for (final PotionEffectType bukkit : PotionEffectType.values())
 			try {
 				CompPotionEffectType.getByName(bukkit.getKey().toString());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompPotionEffectType for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Sound bukkit : Sound.values())
 			try {
 				CompSound.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompSound for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Profession bukkit : Villager.Profession.values())
 			try {
 				CompVillagerProfession.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerProfession for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Type bukkit : Villager.Type.values())
 			try {
 				CompVillagerType.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerType for Bukkit's " + bukkit);
 			}
@@ -674,7 +554,7 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	}
 
 	/**
-	 * The exception enabling us to check if for some reason {@link SimplePlugin}'s instance
+	 * The exception enabling us to check if for some reason {@link BukkitPlugin}'s instance
 	 * does not match this class' instance, which is most likely caused by wrong repackaging
 	 * or no repackaging at all (two plugins using Foundation must both have different packages
 	 * for their own Foundation version).
@@ -685,9 +565,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 		private static final long serialVersionUID = 1L;
 
 		public ShadingException() {
-			if (!getName().equals(SimplePlugin.this.getDescription().getName())) {
+			if (!getName().equals(BukkitPlugin.this.getDescription().getName())) {
 				Bukkit.getLogger().severe("We have a class path problem in the Foundation library");
-				Bukkit.getLogger().severe("preventing " + SimplePlugin.this.getDescription().getName() + " from loading correctly!");
+				Bukkit.getLogger().severe("preventing " + BukkitPlugin.this.getDescription().getName() + " from loading correctly!");
 				Bukkit.getLogger().severe("");
 				Bukkit.getLogger().severe("This is likely caused by two plugins having the");
 				Bukkit.getLogger().severe("same Foundation library paths - make sure you");
@@ -695,63 +575,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 				Bukkit.getLogger().severe("Ant, only test one plugin at the time.");
 				Bukkit.getLogger().severe("");
 				Bukkit.getLogger().severe("Possible cause: " + getName());
-				Bukkit.getLogger().severe("Foundation package: " + SimplePlugin.class.getPackage().getName());
+				Bukkit.getLogger().severe("Foundation package: " + BukkitPlugin.class.getPackage().getName());
 
 				throw new FoException("Shading exception, see above for details.");
 			}
 		}
-	}
-
-	/**
-	 * Handles various startup problems
-	 *
-	 * @param throwable
-	 */
-	protected final void displayError(Throwable throwable) {
-		Debugger.printStackTrace(throwable);
-
-		Common.log(
-				"&4    ___                  _ ",
-				"&4   / _ \\  ___  _ __  ___| |",
-				"&4  | | | |/ _ \\| '_ \\/ __| |",
-				"&4  | |_| | (_) | |_) \\__ \\_|",
-				"&4   \\___/ \\___/| .__/|___(_)",
-				"&4             |_|          ",
-				"&4!-----------------------------------------------------!",
-				" &cError loading " + this.getDescription().getName() + " v" + this.getDescription().getVersion() + ", plugin is disabled!",
-				" &cRunning on " + Bukkit.getName() + " " + Bukkit.getBukkitVersion() + " & Java " + System.getProperty("java.version"),
-				"&4!-----------------------------------------------------!");
-
-		if (throwable instanceof InvalidConfigurationException) {
-			Common.log(" &cSeems like your config is not a valid YAML.");
-			Common.log(" &cUse online services like");
-			Common.log(" &chttp://yaml-online-parser.appspot.com/");
-			Common.log(" &cto check for syntax errors!");
-
-		} else if (throwable instanceof UnsupportedOperationException || throwable.getCause() != null && throwable.getCause() instanceof UnsupportedOperationException) {
-			Common.log(" &cUnable to setup reflection!");
-			Common.log(" &cYour server is either too old or");
-			Common.log(" &cthe plugin broke on the new version :(");
-		}
-
-		if (throwable instanceof HandledException)
-			throwable = ((HandledException) throwable).getHandle();
-
-		while (throwable.getCause() != null)
-			throwable = throwable.getCause();
-
-		if (!(throwable instanceof HandledException)) {
-			String error = "Unable to get the error message, search above.";
-			if (throwable.getMessage() != null && !throwable.getMessage().isEmpty() && !throwable.getMessage().equals("null"))
-				error = throwable.getMessage();
-
-			Common.log(" &cError: " + error);
-		} else
-			Common.log(" &cError: See above for stack trace.");
-
-		Common.log("&4!-----------------------------------------------------!");
-
-		this.getPluginLoader().disablePlugin(this);
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -847,7 +675,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	@Override
 	public final void reload() {
-
 		try {
 			if (CompMetadata.isLegacy() && CompMetadata.MetadataFile.getInstance().getFile() != null)
 				CompMetadata.MetadataFile.getInstance().save();
@@ -881,43 +708,12 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Convenience method for quickly registering events for this plugin
-	 *
-	 * @param listener
-	 */
-	public final void registerEvents(final Listener listener) {
-		this.getServer().getPluginManager().registerEvents(listener, this);
-	}
-
-	/**
 	 * Convenience method for quickly registering a single event
 	 *
 	 * @param listener
 	 */
 	public final void registerEvents(final SimpleListener<? extends Event> listener) {
 		listener.register();
-	}
-
-	/**
-	 * Convenience method for registering a command.
-	 *
-	 * @see SimpleCommandCore#register()
-	 *
-	 * @param command
-	 */
-	@Override
-	public final void registerCommand(final SimpleCommandCore command) {
-		command.register();
-	}
-
-	/**
-	 * Shortcut for calling {@link SimpleCommandGroup#register()}
-	 *
-	 * @param group
-	 */
-	@Override
-	public final void registerCommands(final SimpleCommandGroup group) {
-		group.register();
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -975,32 +771,11 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	// ----------------------------------------------------------------------------------------
 
 	/**
-	 * Loads a library jar into the classloader classpath. If the library jar
-	 * doesn't exist locally, it will be downloaded.
-	 *
-	 * If the provided library has any relocations, they will be applied to
-	 * create a relocated jar and the relocated jar will be loaded instead.
-	 *
-	 * @param groupId
-	 * @param artifactId
-	 * @param version
-	 */
-	@Override
-	public final void loadLibrary(String groupId, String artifactId, String version) {
-		this.getLibraryManager().loadLibrary(Library
-				.builder()
-				.groupId(groupId)
-				.artifactId(artifactId)
-				.resolveTransitiveDependencies(true)
-				.version(version)
-				.build());
-	}
-
-	/**
 	 * Get the Libby library manager
 	 *
 	 * @return
 	 */
+	@Override
 	public final LibraryManager getLibraryManager() {
 		if (this.libraryManager == null)
 			this.libraryManager = new BukkitLibraryManager(this);
@@ -1012,100 +787,9 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	// Additional features
 	// ----------------------------------------------------------------------------------------
 
-	/**
-	 * The start-up fancy logo
-	 *
-	 * @return null by default
-	 */
-	public String[] getStartupLogo() {
-		return null;
-	}
-
-	/**
-	 * Get the year of foundation displayed in our {@link SimpleCommandGroup} on help
-	 *
-	 * @return -1 by default, or the founded year
-	 */
 	@Override
-	public int getFoundedYear() {
-		return -1;
-	}
-
-	/**
-	 * Foundation automatically can filter console commands for you, including
-	 * messages from other plugins or the server itself, preventing unnecessary console spam.
-	 *
-	 * You can return a list of messages that will be matched using "startsWith OR contains" method
-	 * and will be filtered.
-	 *
-	 * @return
-	 */
-	public Set<String> getConsoleFilter() {
-		return new HashSet<>();
-	}
-
-	/**
-	 * Should Pattern.CASE_INSENSITIVE be applied when compiling regular expressions in the Common class?
-	 *
-	 * May impose a slight performance penalty but increases catches.
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexCaseInsensitive() {
-		return true;
-	}
-
-	/**
-	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in the Common class?
-	 *
-	 * May impose a slight performance penalty but useful for non-English servers.
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexUnicode() {
-		return true;
-	}
-
-	/**
-	 * Should we remove diacritical marks before matching regex?
-	 * Defaults to true.
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexStrippingAccents() {
-		return true;
-	}
-
-	/**
-	 * Strip colors from checked message while checking it against a regex?
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean isRegexStrippingColors() {
-		return true;
-	}
-
-	/**
-	 * Should we replace accents with their non accented friends when
-	 * checking two strings for similarity in {@link ChatUtil}?
-	 *
-	 * @return defaults to true
-	 */
-	@Override
-	public boolean isSimilarityStrippingAccents() {
-		return true;
+	public boolean isInitializing() {
+		return this.initializing;
 	}
 
 	/**
@@ -1139,42 +823,6 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener, Found
 	 */
 	public boolean areRegionsEnabled() {
 		return false;
-	}
-
-	/**
-	 * Returns the Sentry DSN to use for error tracking or null if Sentry is disabled.
-	 *
-	 * @return
-	 */
-	@Override
-	public String getSentryDsn() {
-		return null;
-	}
-
-	/**
-	 * Return the bStats plugin id, if not -1, we automatically start reporting
-	 * your plugin to bStats.
-	 *
-	 * @return
-	 */
-	public int getBStatsPluginId() {
-		return -1;
-	}
-
-	/**
-	 * @see FoundationPlugin#getBuiltByBitId()
-	 */
-	@Override
-	public int getBuiltByBitId() {
-		return -1;
-	}
-
-	/**
-	 * @see FoundationPlugin#getBuiltByBitSharedToken()
-	 */
-	@Override
-	public String getBuiltByBitSharedToken() {
-		return null;
 	}
 
 	// ----------------------------------------------------------------------------------------

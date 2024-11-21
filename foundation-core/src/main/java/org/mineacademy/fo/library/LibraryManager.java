@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +36,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.NetworkUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,6 +60,11 @@ import org.xml.sax.SAXException;
  * @see Library
  */
 public abstract class LibraryManager {
+
+	/**
+	 * The logger instance
+	 */
+	private final static Logger LOGGER = Logger.getLogger("LibraryManager");
 
 	/**
 	 * Directory where downloaded library jars are saved to
@@ -224,25 +230,27 @@ public abstract class LibraryManager {
 	 * @param library the library to resolve
 	 * @return download URLs
 	 */
-	public Collection<String> resolveLibrary(Library library) {
+	public List<String> resolveLibrary(Library library) {
 
 		// MineAcademy edit: Skip resolve if direct links are provided
 		if (!library.getUrls().isEmpty())
 			return library.getUrls();
 
-		final Set<String> urls = new LinkedHashSet<>();
+		final List<String> urls = new ArrayList<>();
 		final boolean snapshot = library.isSnapshot();
-		final Collection<String> repos = this.resolveRepositories(library);
+		final List<String> repos = this.resolveRepositories(library);
 
-		for (final String repository : repos)
+		for (final String repository : repos) {
 			if (snapshot) {
 				final String url = this.resolveSnapshot(repository, library);
+
 				if (url != null)
 					urls.add(repository + url);
 			} else
 				urls.add(repository + library.getPath());
+		}
 
-		return Collections.unmodifiableSet(urls);
+		return Collections.unmodifiableList(urls);
 	}
 
 	/**
@@ -251,11 +259,13 @@ public abstract class LibraryManager {
 	 * @param library the library to resolve repositories for
 	 * @return the resolved repositories
 	 */
-	public Collection<String> resolveRepositories(Library library) {
-		return Stream.of(
-				library.getRepositories(),
-				this.getRepositories(),
-				library.getFallbackRepositories()).flatMap(Collection::stream).collect(Collectors.toCollection(LinkedHashSet::new));
+	public List<String> resolveRepositories(Library library) {
+
+		// MineAcademy edit: Prioritize library repositories
+		if (!library.getRepositories().isEmpty())
+			return Stream.of(library.getRepositories(), library.getFallbackRepositories()).flatMap(Collection::stream).collect(Collectors.toList());
+
+		return Stream.of(this.getRepositories(), library.getFallbackRepositories()).flatMap(Collection::stream).collect(Collectors.toList());
 	}
 
 	/**
@@ -269,6 +279,7 @@ public abstract class LibraryManager {
 	protected String resolveSnapshot(String repository, Library library) {
 		final String mavenMetadata = repository.startsWith("file") ? "maven-metadata-local.xml" : "maven-metadata.xml";
 		final String url = requireNonNull(repository, "repository") + requireNonNull(library, "library").getPartialPath() + mavenMetadata;
+
 		try {
 			final URLConnection connection = new URL(requireNonNull(url, "url")).openConnection();
 
@@ -279,25 +290,27 @@ public abstract class LibraryManager {
 			try (InputStream in = connection.getInputStream()) {
 				return this.getURLFromMetadata(in, library);
 			}
+
 		} catch (final MalformedURLException e) {
 			throw new IllegalArgumentException(e);
+
 		} catch (final IOException ex) {
 			if (ex instanceof FileNotFoundException) {
-				CommonCore.log("File not found: " + url);
+				LOGGER.severe("File not found: " + url);
 
 				ex.printStackTrace();
 
 			} else if (ex instanceof SocketTimeoutException) {
-				CommonCore.log("Connect timed out: " + url);
+				LOGGER.severe("Connect timed out: " + url);
 
 				ex.printStackTrace();
 			} else if (ex instanceof UnknownHostException) {
-				CommonCore.log("Unknown host: " + url);
+				LOGGER.severe("Unknown host: " + url);
 
 				ex.printStackTrace();
 
 			} else {
-				CommonCore.log("Unexpected IOException");
+				LOGGER.severe("Unexpected IOException");
 
 				ex.printStackTrace();
 			}
@@ -366,8 +379,10 @@ public abstract class LibraryManager {
 
 				version = version + '-' + timestamp + '-' + buildNumber;
 			}
-		} catch (ParserConfigurationException | SAXException e) {
-			CommonCore.error(e, "Invalid maven-metadata.xml");
+		} catch (ParserConfigurationException | SAXException ex) {
+			LOGGER.severe("Invalid maven-metadata.xml");
+
+			ex.printStackTrace();
 			return null;
 		}
 		return Util.craftPath(library.getPartialPath(), library.getArtifactId(), version, library.getClassifier());
@@ -381,7 +396,7 @@ public abstract class LibraryManager {
 	 */
 	protected byte[] downloadLibrary(String url) {
 		try {
-			System.out.println("Downloading library " + url); // Cannot use CommonCore since libraries were not loaded yet
+			LOGGER.info("Downloading library " + url.substring(url.lastIndexOf('/') + 1));
 
 			final URLConnection connection = new URL(requireNonNull(url, "url")).openConnection();
 
@@ -398,7 +413,9 @@ public abstract class LibraryManager {
 					while ((len = in.read(buf)) != -1)
 						out.write(buf, 0, len);
 				} catch (final SocketTimeoutException e) {
-					CommonCore.error(e, "Download timed out: " + connection.getURL());
+					LOGGER.severe("Download timed out: " + connection.getURL());
+
+					e.printStackTrace();
 					return null;
 				}
 
@@ -408,21 +425,21 @@ public abstract class LibraryManager {
 			throw new IllegalArgumentException(e);
 		} catch (final IOException ex) {
 			if (ex instanceof FileNotFoundException) {
-				CommonCore.log("File not found: " + url);
+				LOGGER.severe("File not found: " + url);
 
 				ex.printStackTrace();
 
 			} else if (ex instanceof SocketTimeoutException) {
-				CommonCore.log("Connect timed out: " + url);
+				LOGGER.severe("Connect timed out: " + url);
 
 				ex.printStackTrace();
 
 			} else if (ex instanceof UnknownHostException) {
-				CommonCore.log("Unknown host: " + url);
+				LOGGER.severe("Unknown host: " + url);
 
 				ex.printStackTrace();
 			} else {
-				CommonCore.log("Unexpected IOException");
+				LOGGER.severe("Unexpected IOException");
 
 				ex.printStackTrace();
 			}
@@ -506,11 +523,11 @@ public abstract class LibraryManager {
 				if (md != null) {
 					final byte[] checksum = md.digest(bytes);
 					if (!Arrays.equals(checksum, library.getChecksum())) {
-						CommonCore.log("*** INVALID CHECKSUM ***");
-						CommonCore.log("Library :  " + library);
-						CommonCore.log("URL :  " + url);
-						CommonCore.log("Expected :  " + Base64.getEncoder().encodeToString(library.getChecksum()));
-						CommonCore.log("Actual :  " + Base64.getEncoder().encodeToString(checksum));
+						LOGGER.severe("*** INVALID CHECKSUM ***");
+						LOGGER.severe("Library :  " + library);
+						LOGGER.severe("URL :  " + url);
+						LOGGER.severe("Expected :  " + Base64.getEncoder().encodeToString(library.getChecksum()));
+						LOGGER.severe("Actual :  " + Base64.getEncoder().encodeToString(checksum));
 
 						continue;
 					}

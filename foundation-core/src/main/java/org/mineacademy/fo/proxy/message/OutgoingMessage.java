@@ -8,12 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.platform.FoundationServer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
@@ -23,7 +27,12 @@ import org.mineacademy.fo.proxy.ProxyMessage;
  * String is the server name and the second String is the
  * {@link ProxyMessage} by its name *written automatically*.
  */
-public class OutgoingMessage extends Message {
+public final class OutgoingMessage extends Message {
+
+	/**
+	 * The default channel name. We broadcast on BungeeCord by default.
+	 */
+	public static final String DEFAULT_CHANNEL = "BungeeCord";
 
 	/**
 	 * The pending queue to write the message.
@@ -44,7 +53,7 @@ public class OutgoingMessage extends Message {
 	 */
 	private static ProxyListener getDefaultListener() {
 		final ProxyListener defaultListener = Platform.getPlugin().getDefaultProxyListener();
-		ValidCore.checkNotNull(defaultListener, "Cannot call OutgoingMessage with no params because SimplePlugin#getDefaultProxyListener() is not set!");
+		ValidCore.checkNotNull(defaultListener, "Cannot call OutgoingMessage with no params because getDefaultProxyListener() in your main plugin's class is not set!");
 
 		return defaultListener;
 	}
@@ -334,5 +343,76 @@ public class OutgoingMessage extends Message {
 		ValidCore.checkNotNull(this.getListener(), "Listener cannot be null for " + this);
 
 		return this.getListener().getChannel();
+	}
+
+	/**
+	 * Forwards this message to another server
+	 *
+	 * @param fromServer
+	 * @param server
+	 */
+	public void sendToServer(String fromServer, FoundationServer server) {
+		synchronized (ProxyListener.DEFAULT_CHANNEL) {
+			final String channel = this.getChannel();
+			final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, fromServer);
+
+			if (server.isEmpty()) {
+				Debugger.debug("bungee", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
+
+				return;
+			}
+
+			if (byteArray.length >= OutgoingMessage.MAX_MESSAGE_SIZE) {
+				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + OutgoingMessage.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+
+				return;
+			}
+
+			server.sendData(DEFAULT_CHANNEL, byteArray);
+			Debugger.debug("bungee", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
+		}
+	}
+
+	/**
+	 * Broadcasts the message to all servers
+	 */
+	public void broadcast() {
+		broadcastExcept(null);
+	}
+
+	/**
+	 * Broadcasts the message to all servers except the one ignored
+	 *
+	 * @param ignoredServerName
+	 */
+	public void broadcastExcept(@Nullable String ignoredServerName) {
+		synchronized (ProxyListener.DEFAULT_CHANNEL) {
+			final String channel = this.getChannel();
+
+			for (final FoundationServer otherServer : Platform.getServers()) {
+				if (otherServer.isEmpty()) {
+					Debugger.debug("bungee", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
+
+					continue;
+				}
+
+				if (ignoredServerName != null && otherServer.getName().equalsIgnoreCase(ignoredServerName)) {
+					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is ignored.");
+
+					continue;
+				}
+
+				final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, otherServer.getName());
+
+				if (byteArray.length >= OutgoingMessage.MAX_MESSAGE_SIZE) {
+					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + OutgoingMessage.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+
+					return;
+				}
+
+				otherServer.sendData(DEFAULT_CHANNEL, byteArray);
+				Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
+			}
+		}
 	}
 }

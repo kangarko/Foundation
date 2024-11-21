@@ -112,7 +112,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 				"Java: " + System.getProperty("java.version") + " (" + System.getProperty("java.specification.vendor") + "/" + System.getProperty("java.vm.vendor") + ")",
 				"OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version"),
 				"Players Online: " + Platform.getOnlinePlayers().size(),
-				"Plugins: " + CommonCore.join(Platform.getServerPlugins(), tuple -> tuple.getKey() + " " + tuple.getValue()));
+				"Plugins: " + CommonCore.join(Platform.getPlugins(), tuple -> tuple.getKey() + " " + tuple.getValue()));
 
 		lines.addAll(debugLines);
 
