@@ -75,7 +75,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray(
+		return SerializedMap.fromArray(
 				"Color", this.color,
 				"Style", this.overlay,
 				"Seconds", this.seconds,

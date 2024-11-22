@@ -241,7 +241,25 @@ public final class FileUtil {
 	 * @return a list of strings, where each string is a line from the file, or {@code null} if the file is not found or an error occurs
 	 */
 	public static List<String> readLinesFromInternalPath(@NonNull String path) {
-		try (JarFile jarFile = new JarFile(Platform.getPlugin().getFile())) {
+		return readLinesFromInternalPath(Platform.getPlugin().getFile(), path);
+	}
+
+	/**
+	 * Read all lines of text from a file located within the internal jar resources and return them as a list of strings.
+	 *
+	 * <p>This method searches for the specified internal path within the running jar file, opens the file, and reads its contents line by line.
+	 * It works for resources packaged within the plugin jar. The method ensures the file is read using UTF-8 encoding.
+	 *
+	 * <ul>
+	 * <li> For example, calling {@code readLinesFromInternalPath("config.yml")} will return the lines from the internal `config.yml` file.
+	 * </ul>
+	 *
+	 * @param pluginFile the plugin file to read the internal path from
+	 * @param path the internal path to the file within the jar (e.g., "config.yml" or "lang/en_US.json")
+	 * @return a list of strings, where each string is a line from the file, or {@code null} if the file is not found or an error occurs
+	 */
+	public static List<String> readLinesFromInternalPath(@NonNull File pluginFile, @NonNull String path) {
+		try (JarFile jarFile = new JarFile(pluginFile)) {
 
 			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
 				final JarEntry entry = it.nextElement();

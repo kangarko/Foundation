@@ -73,7 +73,7 @@ public class ButtonRemove extends Button {
 	public ItemStack getItem() {
 		return ItemCreator
 
-				.of(CompMaterial.LAVA_BUCKET)
+				.fromMaterial(CompMaterial.LAVA_BUCKET)
 				.name(title.replace("{name}", this.toRemoveName))
 
 				.lore(Variables.replaceListArray(lore, null, Common.newHashMap(
@@ -92,7 +92,7 @@ public class ButtonRemove extends Button {
 	public ItemStack getRemoveConfirmItem() {
 		return ItemCreator
 
-				.ofWool(CompColor.RED)
+				.fromWool(CompColor.RED)
 				.name("&6&lRemove " + this.toRemoveName)
 
 				.lore(Arrays.asList(

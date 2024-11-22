@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.exception.FoException;
@@ -18,7 +17,7 @@ import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlugin;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -29,17 +28,17 @@ import lombok.RequiredArgsConstructor;
 /**
  * The command to manage plugin's region system.
  *
- * To use this, enable regions in {@link SimplePlugin#areRegionsEnabled()}
+ * To use this, enable regions in {@link BukkitPlugin#areRegionsEnabled()}
  * and register this subcommand manually in your class extending {@link SimpleCommandGroup}
  * or by calling {@link SimpleCommandGroup#registerDefaultSubcommands()}.
  */
-public class RegionCommand extends SimpleSubCommand {
+public class RegionSubCommand extends SimpleSubCommand {
 
 	/**
 	 * Create a new sub-command with the "region" and "rg" aliases registered in your
 	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
 	 */
-	public RegionCommand() {
+	public RegionSubCommand() {
 		this("region|rg");
 	}
 
@@ -49,7 +48,7 @@ public class RegionCommand extends SimpleSubCommand {
 	 *
 	 * @param label
 	 */
-	public RegionCommand(String label) {
+	public RegionSubCommand(String label) {
 		super(label);
 
 		this.setProperties();
@@ -60,7 +59,7 @@ public class RegionCommand extends SimpleSubCommand {
 	 *
 	 * @param group
 	 */
-	public RegionCommand(SimpleCommandGroup group) {
+	public RegionSubCommand(SimpleCommandGroup group) {
 		this(group, "region|rg");
 	}
 
@@ -70,7 +69,7 @@ public class RegionCommand extends SimpleSubCommand {
 	 * @param group
 	 * @param label
 	 */
-	public RegionCommand(SimpleCommandGroup group, String label) {
+	public RegionSubCommand(SimpleCommandGroup group, String label) {
 		super(group, label);
 
 		this.setProperties();
@@ -87,7 +86,7 @@ public class RegionCommand extends SimpleSubCommand {
 
 	@Override
 	protected boolean showInHelp() {
-		return SimplePlugin.getInstance().areRegionsEnabled();
+		return BukkitPlugin.getInstance().areRegionsEnabled();
 	}
 
 	/**
@@ -103,11 +102,11 @@ public class RegionCommand extends SimpleSubCommand {
 	 */
 	@Override
 	protected void onCommand() {
-
 		final String regionName = this.args.length > 1 ? this.args[1] : null;
 		final DiskRegion region = regionName != null ? DiskRegion.findRegion(regionName) : null;
 		final Param param = Param.find(this.args[0]);
-		this.checkNotNull(param, "No such param '{0}'. Available: " + CommonCore.join(Param.values()));
+
+		this.checkNoSuchType(param, "param", "{0}", Param.values());
 
 		//
 		// Commands without a region.
@@ -122,7 +121,7 @@ public class RegionCommand extends SimpleSubCommand {
 
 			for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
 
-				final String longestText = "&7Secondary: &2" + SerializeUtil.serializeLoc(otherRegion.getSecondary());
+				final String longestText = "&7Secondary: &2" + SerializeUtil.serializeLocation(otherRegion.getSecondary());
 
 				components.add(SimpleComponent
 						.fromPlain(" ")
@@ -147,7 +146,7 @@ public class RegionCommand extends SimpleSubCommand {
 
 						.appendMini("&7" + otherRegion.getFileName())
 						.onHover(ChatUtil.center("&fRegion Information", longestText.length() * 2 + longestText.length() / 3),
-								"&7Primary: &2" + SerializeUtil.serializeLoc(otherRegion.getPrimary()),
+								"&7Primary: &2" + SerializeUtil.serializeLocation(otherRegion.getPrimary()),
 								longestText,
 								"&7Size: &2" + otherRegion.getBlocks().size() + " blocks"));
 			}
@@ -388,7 +387,7 @@ public class RegionCommand extends SimpleSubCommand {
 		 * @param command
 		 * @return
 		 */
-		public static SimpleComponent[] generateUsages(RegionCommand command) {
+		public static SimpleComponent[] generateUsages(RegionSubCommand command) {
 			final Param[] params = Param.values();
 			final List<SimpleComponent> components = new ArrayList<>();
 

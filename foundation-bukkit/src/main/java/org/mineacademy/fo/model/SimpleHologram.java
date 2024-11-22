@@ -10,10 +10,10 @@ import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompParticle;
 import org.mineacademy.fo.remain.Remain;
@@ -147,7 +147,7 @@ public abstract class SimpleHologram {
 			location = location.add(0, -0.5, 0);
 
 		for (final String loreLine : this.loreLines) {
-			final ArmorStand armorStand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+			final ArmorStand armorStand = (ArmorStand) location.getWorld().spawnEntity(location, CompEntityType.ARMOR_STAND);
 
 			armorStand.setGravity(false);
 			armorStand.setVisible(false);
@@ -302,7 +302,7 @@ public abstract class SimpleHologram {
 	 */
 	@Override
 	public String toString() {
-		return "ArmorStandItem{spawnLocation=" + SerializeUtil.serializeLoc(this.lastTeleportLocation) + ", spawned=" + this.isSpawned() + "}";
+		return "ArmorStandItem{spawnLocation=" + SerializeUtil.serializeLocation(this.lastTeleportLocation) + ", spawned=" + this.isSpawned() + "}";
 	}
 
 	/**

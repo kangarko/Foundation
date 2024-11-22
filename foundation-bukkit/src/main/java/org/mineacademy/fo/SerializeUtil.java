@@ -5,12 +5,14 @@ import java.sql.SQLException;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.database.SimpleResultSet;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidRowException;
 import org.mineacademy.fo.exception.InvalidWorldException;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.model.SimpleLocation;
+import org.mineacademy.fo.platform.BukkitPlugin;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -24,12 +26,32 @@ import lombok.NoArgsConstructor;
 public final class SerializeUtil extends SerializeUtilCore {
 
 	/**
+	 * Convert the given player location to an array
+	 *
+	 * @param player
+	 * @return
+	 */
+	public static SimpleLocation serializeLocationToSimple(Player player) {
+		return serializeLocationToSimple(player.getLocation());
+	}
+
+	/**
+	 * Convert the given location to an array
+	 *
+	 * @param location
+	 * @return
+	 */
+	public static SimpleLocation serializeLocationToSimple(Location location) {
+		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+	}
+
+	/**
 	 * Converts a {@link Location} into "world x y z yaw pitch" String.
 	 *
 	 * @param loc
 	 * @return
 	 */
-	public static String serializeLoc(final Location loc) {
+	public static String serializeLocation(final Location loc) {
 		if (loc == null)
 			return "";
 
@@ -85,7 +107,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 			return deserialize(Language.JSON, ItemStack.class, value);
 
 		} catch (final Throwable ex) {
-			Common.warning(SimplePlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 
 			throw new InvalidRowException();
 		}
@@ -108,7 +130,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 			return deserialize(Language.JSON, ItemStack.class, value);
 
 		} catch (final Throwable ex) {
-			Common.warning(SimplePlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 			throw new InvalidRowException();
 		}
 	}
@@ -146,7 +168,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 		final String value = resultSet.getString(columnLabel);
 
 		if (value == null || "".equals(value)) {
-			Common.warning(SimplePlugin.getInstance().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 
 			throw new InvalidRowException();
 		}

@@ -7,7 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.nbt.NBT;
 import org.mineacademy.fo.remain.nbt.ReadableNBT;
@@ -94,7 +94,7 @@ public final class ItemUtil {
 		final ReadableNBT firstNbt = NBT.readNbt(first);
 		final ReadableNBT secondNbt = NBT.readNbt(second);
 
-		return matchNbt(SimplePlugin.getInstance().getName(), firstNbt, secondNbt) && matchNbt(SimplePlugin.getInstance().getName() + "_Item", firstNbt, secondNbt);
+		return matchNbt(BukkitPlugin.getInstance().getName(), firstNbt, secondNbt) && matchNbt(BukkitPlugin.getInstance().getName() + "_Item", firstNbt, secondNbt);
 	}
 
 	private static boolean listMatchPlain(List<String> first, List<String> second) {

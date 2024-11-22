@@ -20,7 +20,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.ReflectionException;
 import org.mineacademy.fo.platform.Platform;
@@ -153,7 +152,7 @@ public final class ReflectionUtil {
 			return constructor;
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Could not get constructor of " + clazz + " with parameters " + CommonCore.join(params));
+			throw new ReflectionException(ex, "Could not get constructor of " + clazz + " with parameters " + CommonCore.join(params));
 		}
 	}
 
@@ -293,7 +292,7 @@ public final class ReflectionUtil {
 			field.set(null, fieldValue);
 
 		} catch (final Throwable t) {
-			throw new FoException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
+			throw new ReflectionException(t, "Could not set " + fieldName + " in " + clazz + " to " + fieldValue);
 		}
 	}
 
@@ -305,7 +304,7 @@ public final class ReflectionUtil {
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(Class<?> clazz, final String methodName, Class<?>... args) {
+	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, Class<?>... args) {
 		final Class<?> originalClass = clazz;
 
 		while (!clazz.equals(Object.class))
@@ -329,13 +328,17 @@ public final class ReflectionUtil {
 	 * Invoke a static method.
 	 *
 	 * @param <T>
-	 * @param cl
+	 * @param clazz
 	 * @param methodName
 	 * @param params
 	 * @return
 	 */
-	public static <T> T invokeStatic(final Class<?> cl, final String methodName, final Object... params) {
-		return invokeStatic(getMethod(cl, methodName), params);
+	public static <T> T invokeStatic(@NonNull final Class<?> clazz, @NonNull final String methodName, final Object... params) {
+		final Method method = getMethod(clazz, methodName);
+		if (method == null)
+			throw new ReflectionException("Static method " + methodName + " does not exist in class " + clazz.getSimpleName());
+
+		return invokeStatic(method, params);
 	}
 
 	/**
@@ -348,8 +351,8 @@ public final class ReflectionUtil {
 	 */
 	public static <T> T invokeStatic(@NonNull final Method method, final Object... params) {
 		try {
-			ValidCore.checkBoolean(Modifier.isStatic(method.getModifiers()),
-					"Method " + method.getName() + " must be static to be invoked through invokeStatic with params: " + CommonCore.join(params));
+			if (!Modifier.isStatic(method.getModifiers()))
+				throw new ReflectionException("Method " + method.getName() + " must be static to be invoked through invokeStatic with params: " + CommonCore.join(params));
 
 			return (T) method.invoke(null, params);
 
@@ -370,7 +373,9 @@ public final class ReflectionUtil {
 	public static <T> T invoke(@NonNull final String methodName, @NonNull final Object instance, final Object... params) {
 		final List<Class<?>> args = CommonCore.convertArrayToList(params, Object::getClass);
 		final Method method = getMethod(instance.getClass(), methodName, args.toArray(new Class<?>[args.size()]));
-		ValidCore.checkNotNull(method, "Unable to invoke " + methodName + "(" + CommonCore.join(params) + ") because such method was not found in " + instance.getClass());
+
+		if (method == null)
+			throw new ReflectionException("No such method " + instance.getClass() + "." + methodName + "(" + CommonCore.join(params) + ")");
 
 		return invoke(method, instance, params);
 	}
@@ -385,7 +390,8 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static <T> T invoke(final Method method, final Object instance, final Object... params) {
-		ValidCore.checkNotNull(method, "Cannot invoke a null method for " + (instance == null ? "static" : instance.getClass().getSimpleName() + "") + " instance '" + instance + "' " + " with params " + CommonCore.join(params));
+		if (method == null)
+			throw new ReflectionException("Cannot invoke a null method for " + (instance == null ? "static" : instance.getClass().getSimpleName() + "") + " instance '" + instance + "' " + " with params " + CommonCore.join(params));
 
 		try {
 			return (T) method.invoke(instance, params);
@@ -444,7 +450,9 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Object param : params) {
-				ValidCore.checkNotNull(param, "Argument cannot be null when instatiating " + clazz);
+				if (param == null)
+					throw new ReflectionException("Argument cannot be null when instatiating " + clazz);
+
 				final Class<?> paramClass = param.getClass();
 
 				classes.add(paramClass.isPrimitive() ? wrapperToPrimitive(paramClass) : paramClass);
@@ -485,7 +493,7 @@ public final class ReflectionUtil {
 			return constructor.newInstance(params);
 
 		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Could not make new instance of " + constructor + " with params: " + CommonCore.join(params));
+			throw new ReflectionException(ex, "Could not make new instance of " + constructor + " with params: " + CommonCore.join(params));
 		}
 	}
 
@@ -507,6 +515,22 @@ public final class ReflectionUtil {
 
 		} catch (final Throwable t) {
 			return false;
+		}
+	}
+
+	/**
+	 * Wrapper for Class.forName, does not throw exception, returns null instead.
+	 *
+	 * @param <T>
+	 * @param path
+	 * @return
+	 */
+	public static <T> Class<T> lookupClassSilently(final String path) {
+		try {
+			return lookupClass(path);
+
+		} catch (final ReflectionException ex) {
+			return null;
 		}
 	}
 
@@ -602,7 +626,7 @@ public final class ReflectionUtil {
 			if (legacyMap != null) {
 				final V since = legacyMap.get(name);
 
-				if (since != null && MinecraftVersion.olderThan(since))
+				if (since != null && MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(since))
 					return null;
 			}
 
@@ -698,7 +722,7 @@ public final class ReflectionUtil {
 			return null;
 
 		} catch (IllegalAccessException | InvocationTargetException ex) {
-			throw new FoException(ex, "Error invocating enum finding method for " + typeOf.getSimpleName() + " from string " + name);
+			throw new ReflectionException(ex, "Error invocating enum finding method for " + typeOf.getSimpleName() + " from string " + name);
 		}
 	}
 
@@ -720,6 +744,27 @@ public final class ReflectionUtil {
 	 */
 	public static boolean isEnumLike(Class<?> clazz) {
 		return clazz.isEnum() || (orgBukkitKeyed != null && orgBukkitKeyed.isAssignableFrom(clazz));
+	}
+
+	/**
+	 * Get the enum's name, works for enum and interface classes.
+	 *
+	 * @param enumOrKeyed
+	 * @return
+	 */
+	public static String getEnumName(Object enumOrKeyed) {
+		return enumOrKeyed instanceof Enum ? ((Enum<?>) enumOrKeyed).name() : invoke("name", enumOrKeyed);
+	}
+
+	/**
+	 * Get the enum's constants, works for enum and interface classes.
+	 *
+	 * @param <T>
+	 * @param enumOrKeyed
+	 * @return
+	 */
+	public static <T> T[] getEnumValues(Class<T> enumOrKeyed) {
+		return enumOrKeyed.isEnum() ? enumOrKeyed.getEnumConstants() : invokeStatic(enumOrKeyed, "values");
 	}
 
 	/**
@@ -833,7 +878,8 @@ public final class ReflectionUtil {
 			final List<Class<?>> classes = new ArrayList<>();
 
 			for (final Class<?> param : constructor.getParameterTypes()) {
-				ValidCore.checkNotNull(param, "Argument cannot be null when instatiating " + this.clazz);
+				if (param == null)
+					throw new ReflectionException("Argument cannot be null when instatiating " + this.clazz);
 
 				classes.add(param);
 			}

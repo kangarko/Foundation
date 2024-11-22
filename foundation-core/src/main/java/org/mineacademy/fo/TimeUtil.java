@@ -3,6 +3,8 @@ package org.mineacademy.fo;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.Lang.Default;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -35,7 +38,7 @@ public final class TimeUtil {
 	 *
 	 * @return System.currentTimeMillis / 1000
 	 */
-	public static long currentTimeSeconds() {
+	public static long getCurrentTimeSeconds() {
 		return System.currentTimeMillis() / 1000;
 	}
 
@@ -44,8 +47,28 @@ public final class TimeUtil {
 	 *
 	 * @return System.currentTimeMillis / 50
 	 */
-	public static long currentTimeTicks() {
+	public static long getCurrentTimeTicks() {
 		return System.currentTimeMillis() / 50;
+	}
+
+	/**
+	 * Return the current date in the timezone specified in settings.yml
+	 * or returns default if not set
+	 *
+	 * @return
+	 */
+	public static LocalDate getCurrentDate() {
+		return LocalDate.now(SimpleSettings.TIMEZONE);
+	}
+
+	/**
+	 * Return the current time in the timezone specified in settings.yml
+	 * or returns default if not set
+	 *
+	 * @return
+	 */
+	public static LocalTime getCurrentTime() {
+		return LocalTime.now(SimpleSettings.TIMEZONE);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

@@ -14,6 +14,7 @@ import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Represents an incoming plugin message.
@@ -65,7 +66,7 @@ public final class IncomingMessage extends Message {
 	 * @param input
 	 * @param stream
 	 */
-	public IncomingMessage(ProxyListener listener, UUID senderUid, String serverName, ProxyMessage type, byte[] data, DataInput input, ByteArrayInputStream stream) {
+	public IncomingMessage(@NonNull ProxyListener listener, @NonNull UUID senderUid, @NonNull String serverName, @NonNull ProxyMessage type, @NonNull byte[] data, @NonNull DataInput input, @NonNull ByteArrayInputStream stream) {
 		super(listener, type);
 
 		this.data = data;
@@ -94,7 +95,7 @@ public final class IncomingMessage extends Message {
 	public SimpleComponent readSimpleComponent() {
 		this.moveHead(SimpleComponent.class);
 
-		return SimpleComponent.deserialize(SerializedMap.of(Language.JSON, this.readCompressedString()));
+		return SimpleComponent.deserialize(SerializedMap.fromObject(Language.JSON, this.readCompressedString()));
 	}
 
 	/**
@@ -105,7 +106,7 @@ public final class IncomingMessage extends Message {
 	public SerializedMap readMap() {
 		this.moveHead(SerializedMap.class);
 
-		return SerializedMap.of(Language.JSON, this.readCompressedString());
+		return SerializedMap.fromObject(Language.JSON, this.readCompressedString());
 	}
 
 	/**
@@ -296,19 +297,29 @@ public final class IncomingMessage extends Message {
 	 * Helper util to read the next compressed string
 	 */
 	private String readCompressedString() {
-		try {
-			final int length = this.input.readInt();
-			final byte[] compressed = new byte[length];
+		if (COMPRESS_STRINGS)
+			try {
+				final int length = this.input.readInt();
+				final byte[] compressed = new byte[length];
 
-			this.input.readFully(compressed);
+				this.input.readFully(compressed);
 
-			return CommonCore.decompress(compressed);
+				return CommonCore.decompress(compressed);
 
-		} catch (final IOException ex) {
-			CommonCore.sneaky(ex);
+			} catch (final IOException ex) {
+				CommonCore.sneaky(ex);
 
-			return null;
-		}
+				return null;
+			}
+		else
+			try {
+				return this.input.readUTF();
+
+			} catch (final IOException ex) {
+				CommonCore.sneaky(ex);
+
+				return null;
+			}
 	}
 
 	/**

@@ -65,9 +65,9 @@ public class SimpleHologramStand extends SimpleHologram {
 		final ItemCreator item;
 
 		if (this.itemOrMaterial instanceof ItemStack)
-			item = ItemCreator.of((ItemStack) this.itemOrMaterial);
+			item = ItemCreator.fromItemStack((ItemStack) this.itemOrMaterial);
 		else
-			item = ItemCreator.of((CompMaterial) this.itemOrMaterial);
+			item = ItemCreator.fromMaterial((CompMaterial) this.itemOrMaterial);
 
 		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_11)) {
 			final Consumer<ArmorStand> consumer = armorStand -> {

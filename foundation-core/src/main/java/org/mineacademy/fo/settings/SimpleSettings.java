@@ -1,5 +1,6 @@
 package org.mineacademy.fo.settings;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,12 +63,16 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static SimpleComponent PREFIX = SimpleComponent.fromMini("&7" + Platform.getPlugin().getName() + " //");
 
 	/**
-	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
-	 * those that are specified in this settings are logged into the console, otherwise no message is shown.
-	 * <p>
-	 * Typically this is left empty: Debug: []
+	 * The localization language tag.
+	 *
+	 * Typically: Locale: en_US
 	 */
-	public static List<String> DEBUG_SECTIONS = new ArrayList<>();
+	public static String LOCALE = "en_US";
+
+	/**
+	 * The timezone used for time converting operations.
+	 */
+	public static ZoneId TIMEZONE = ZoneId.systemDefault();
 
 	/**
 	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to -1 to disable.
@@ -77,13 +82,6 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * Log_Lag_Over_Milis: 100
 	 */
 	public static Integer LAG_THRESHOLD_MILLIS = 100;
-
-	/**
-	 * The localization language tag.
-	 *
-	 * Typically: Locale: en_US
-	 */
-	public static String LOCALE = "en_US";
 
 	/**
 	 * Notify updates to ops on join and the console?
@@ -100,27 +98,31 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static Boolean SENTRY = true;
 
 	/**
+	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
+	 * those that are specified in this settings are logged into the console, otherwise no message is shown.
+	 * <p>
+	 * Typically this is left empty: Debug: []
+	 */
+	public static List<String> DEBUG_SECTIONS = new ArrayList<>();
+
+	/**
 	 * Load the values -- this method is called automatically by reflection in the {@link YamlStaticConfig} class!
 	 */
 	private static void init() {
 		setPathPrefix(null);
+
+		if (isSetDefault("Server_Name")) {
+			final String serverName = getString("Server_Name");
+			ValidCore.checkBoolean(serverName.length() < 33, "Server_Name cannot be longer than 33 characters!");
+
+			Platform.setCustomServerName(serverName.isEmpty() ? "server" : serverName);
+		}
 
 		if (isSetDefault("Command_Aliases"))
 			MAIN_COMMAND_ALIASES = getCommandList("Command_Aliases");
 
 		if (isSetDefault("Prefix"))
 			PREFIX = getComponent("Prefix");
-
-		if (isSetDefault("Debug"))
-			DEBUG_SECTIONS = getStringList("Debug");
-
-		if (isSetDefault("Log_Lag_Over_Milis")) {
-			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
-			ValidCore.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Milis must be either -1 to disable, 0 to log all or greater!");
-
-			if (LAG_THRESHOLD_MILLIS == 0)
-				CommonCore.log("&eLog_Lag_Over_Milis is 0, all performance is logged. Set to -1 to disable.");
-		}
 
 		if (isSetDefault("Locale")) {
 			LOCALE = getString("Locale");
@@ -137,10 +139,33 @@ public class SimpleSettings extends YamlStaticConfig {
 			}
 		}
 
+		if (isSetDefault("Timezone")) {
+			final String raw = getString("Timezone");
+
+			if (raw != null && !"".equals(raw))
+				try {
+					TIMEZONE = java.time.ZoneId.of(raw);
+
+				} catch (final Throwable t) {
+					throw new IllegalArgumentException("No such time-zone in 'Timezone' key in " + getFileName() + ": '" + raw + "'! Available: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids");
+				}
+		}
+
+		if (isSetDefault("Log_Lag_Over_Milis")) {
+			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
+			ValidCore.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Milis must be either -1 to disable, 0 to log all or greater!");
+
+			if (LAG_THRESHOLD_MILLIS == 0)
+				CommonCore.log("&eLog_Lag_Over_Milis is 0, all performance is logged. Set to -1 to disable.");
+		}
+
 		if (isSetDefault("Notify_New_Versions"))
 			NOTIFY_NEW_VERSIONS = getBoolean("Notify_New_Versions");
 
 		if (isSetDefault("Sentry"))
 			SENTRY = getBoolean("Sentry");
+
+		if (isSetDefault("Debug"))
+			DEBUG_SECTIONS = getStringList("Debug");
 	}
 }

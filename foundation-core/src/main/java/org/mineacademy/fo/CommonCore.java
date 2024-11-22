@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,12 +16,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.database.Row;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
@@ -37,7 +40,6 @@ import com.google.gson.GsonBuilder;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * Our main utility class hosting a large variety of different convenience functions.
@@ -49,6 +51,11 @@ import lombok.Setter;
 public abstract class CommonCore {
 
 	/**
+	 * The UUID of the console
+	 */
+	public static final UUID CONSOLE_UID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+	/**
 	 * The Google Json instance
 	 */
 	public final static Gson GSON = new Gson();
@@ -57,6 +64,7 @@ public abstract class CommonCore {
 	 * The Google Json instance with pretty printing
 	 */
 	public final static Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+
 	/**
 	 * Used to send messages to player without repetition, e.g. if they attempt to break a block
 	 * in a restricted region, we will not spam their chat with "You cannot break this block here" 120x times,
@@ -78,8 +86,7 @@ public abstract class CommonCore {
 	 *
 	 * @see #simplify(Object)
 	 */
-	@Setter
-	private static Function<Object, String> simplifier = t -> t.toString();
+	private static List<Function<Object, String>> simplifiers = new ArrayList<>();
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Broadcasting
@@ -246,14 +253,14 @@ public abstract class CommonCore {
 		if (!TIMED_TELL_CACHE.containsKey(message)) {
 			audience.sendMessage(message);
 
-			TIMED_TELL_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_TELL_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 			return;
 		}
 
-		if (TimeUtil.currentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
+		if (TimeUtil.getCurrentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
 			audience.sendMessage(message);
 
-			TIMED_TELL_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_TELL_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 		}
 	}
 
@@ -300,13 +307,13 @@ public abstract class CommonCore {
 	public static final void logTimed(final int delaySeconds, final String message) {
 		if (!TIMED_LOG_CACHE.containsKey(message)) {
 			log(message);
-			TIMED_LOG_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_LOG_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 			return;
 		}
 
-		if (TimeUtil.currentTimeSeconds() - TIMED_LOG_CACHE.get(message) > delaySeconds) {
+		if (TimeUtil.getCurrentTimeSeconds() - TIMED_LOG_CACHE.get(message) > delaySeconds) {
 			log(message);
-			TIMED_LOG_CACHE.put(message, TimeUtil.currentTimeSeconds());
+			TIMED_LOG_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
 		}
 	}
 
@@ -331,7 +338,7 @@ public abstract class CommonCore {
 	 */
 	public static final void logFramed(final boolean disablePlugin, final String... messages) {
 		if (messages != null && !ValidCore.isNullOrEmpty(messages)) {
-			log("&7" + chatLine());
+			log("&7" + configLine());
 
 			for (final String msg : messages)
 				log(" &c" + msg);
@@ -339,7 +346,7 @@ public abstract class CommonCore {
 			if (disablePlugin)
 				log(" &cPlugin is now disabled.");
 
-			log("&7" + chatLine());
+			log("&7" + configLine());
 		}
 
 		if (disablePlugin)
@@ -393,7 +400,7 @@ public abstract class CommonCore {
 				final String stripped = message.replaceFirst("\\[JSON\\]", "").trim();
 
 				if (!stripped.isEmpty())
-					log(SimpleComponent.fromAdventureJson(stripped).toLegacy());
+					log(SimpleComponent.fromAdventureJson(stripped, false).toLegacy());
 
 			} else
 				for (final String part : message.split("\n"))
@@ -445,6 +452,9 @@ public abstract class CommonCore {
 		if (throwable instanceof FoException)
 			throw (FoException) throwable;
 
+		if (throwable instanceof HandledException)
+			throw (HandledException) throwable;
+
 		Throwable cause = throwable;
 
 		while (cause.getCause() != null)
@@ -452,15 +462,15 @@ public abstract class CommonCore {
 
 		// Delegate to only print out the relevant stuff
 		if (cause instanceof FoException)
-			throw (FoException) throwable;
+			throw (FoException) cause;
 
 		if (messages != null)
 			logFramed(false, replaceErrorVariable(throwable, messages));
 
 		Debugger.saveError(throwable, messages);
+		Debugger.printStackTrace(throwable);
 
-		throwable.printStackTrace();
-		throw new HandledException();
+		throw new HandledException(throwable);
 	}
 
 	/*
@@ -480,6 +490,30 @@ public abstract class CommonCore {
 		}
 
 		return messages;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// GSON
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Convert the given json into list
+	 *
+	 * @param json
+	 * @return
+	 */
+	public static List<String> convertJsonToList(String json) {
+		return GSON.fromJson(json, List.class);
+	}
+
+	/**
+	 * Return the given list as JSON
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static String convertListToJson(final Collection<String> list) {
+		return GSON.toJson(list);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -608,40 +642,70 @@ public abstract class CommonCore {
 	 * <li> For a ConfigStringSerializable, return its serialized string.
 	 * </ul>
 	 *
-	 * You can set a custom simplifier by calling {@link #setSimplifier(Function)} which
+	 * You can set a custom simplifier by calling {@link #addSimplifier(Function)} which
 	 * will be used for all unknown object types.
 	 *
-	 * @see #setSimplifier(Function)
+	 * @see #addSimplifier(Function)
 	 *
-	 * @param arg the object to simplify
+	 * @param object the object to simplify
 	 * @return the simplified string representation of the object
 	 */
-	public static final String simplify(Object arg) {
-		if (arg == null)
+	public static final String simplify(Object object) {
+		if (object == null)
 			return "";
 
-		else if (arg instanceof String)
-			return (String) arg;
+		else if (object instanceof String)
+			return (String) object;
 
-		else if (arg.getClass() == double.class || arg.getClass() == float.class)
-			return MathUtil.formatTwoDigits((double) arg);
+		else if (object.getClass() == double.class || object.getClass() == float.class)
+			return MathUtil.formatTwoDigits((double) object);
 
-		else if (arg instanceof Collection)
-			return CommonCore.join((Collection<?>) arg, ", ", CommonCore::simplify);
+		else if (object instanceof Collection)
+			return CommonCore.join((Collection<?>) object, ", ", CommonCore::simplify);
 
-		else if (arg instanceof CompChatColor)
-			return ((CompChatColor) arg).getName();
+		else if (object instanceof CompChatColor)
+			return ((CompChatColor) object).getName();
 
-		else if (arg instanceof Enum)
-			return ((Enum<?>) arg).toString().toLowerCase();
+		else if (object instanceof Enum)
+			return ((Enum<?>) object).toString().toLowerCase();
 
-		else if (arg instanceof FoundationPlayer)
-			return ((FoundationPlayer) arg).getName();
+		else if (object instanceof FoundationPlayer)
+			return ((FoundationPlayer) object).getName();
 
-		else if (arg instanceof ConfigStringSerializable)
-			return ((ConfigStringSerializable) arg).serialize();
+		else if (object instanceof ConfigStringSerializable)
+			return ((ConfigStringSerializable) object).serialize();
 
-		return simplifier.apply(arg);
+		else if (object instanceof Row)
+			throw new FoException("Cannot simplify a Row object, got: " + object);
+
+		for (final Function<Object, String> simplifier : simplifiers) {
+			final String result = simplifier.apply(object);
+
+			if (result != null)
+				return result;
+		}
+
+		Method nameMethod = ReflectionUtil.getMethod(object.getClass(), "name");
+
+		if (nameMethod == null)
+			nameMethod = ReflectionUtil.getMethod(object.getClass(), "getName");
+
+		if (nameMethod == null)
+			nameMethod = ReflectionUtil.getMethod(object.getClass(), "getKey");
+
+		if (nameMethod != null)
+			return ReflectionUtil.invoke(nameMethod, object);
+
+		return object.toString();
+	}
+
+	/**
+	 * Add a simplifier function that converts objects into their string representation.
+	 *
+	 * @param simplifier
+	 */
+	public static void addSimplifier(Function<Object, String> simplifier) {
+		simplifiers.add(simplifier);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -764,7 +828,7 @@ public abstract class CommonCore {
 				if (element != null)
 					if (element instanceof Iterable)
 						for (final Object iterable : (Iterable<?>) element) {
-							final String parsedValue = SerializeUtilCore.serialize(Language.YAML, iterable).toString();
+							final String parsedValue = CommonCore.simplify(iterable);
 
 							toComplete.add(ReflectionUtil.isEnumLike(iterable) ? parsedValue.toLowerCase() : parsedValue);
 						}
@@ -772,7 +836,7 @@ public abstract class CommonCore {
 					else if (element.getClass().isArray())
 						for (int i = 0; i < Array.getLength(element); i++) {
 							final Object iterable = Array.get(element, i);
-							final String parsedValue = SerializeUtilCore.serialize(Language.YAML, iterable).toString();
+							final String parsedValue = CommonCore.simplify(iterable);
 
 							toComplete.add(ReflectionUtil.isEnumLike(iterable) ? parsedValue.toLowerCase() : parsedValue);
 						}
@@ -784,7 +848,7 @@ public abstract class CommonCore {
 
 					else {
 						final boolean lowercase = ReflectionUtil.isEnumLike(element);
-						final String parsedValue = SerializeUtilCore.serialize(Language.YAML, element).toString();
+						final String parsedValue = CommonCore.simplify(element);
 
 						if (!"".equals(parsedValue))
 							toComplete.add(lowercase ? parsedValue.toLowerCase() : parsedValue);
@@ -1669,6 +1733,62 @@ public abstract class CommonCore {
 		} catch (final NoClassDefFoundError | NoSuchFieldError | NoSuchMethodError err) {
 			throw new FoException(throwable);
 		}
+	}
+
+	/**
+	 * Wraps the runnable to catch any exceptions and log them.
+	 *
+	 * @param original
+	 * @return
+	 */
+	public static Runnable wrapRunnableInExceptionCatcher(@NonNull Runnable original) {
+		final StackTraceElement[] outerElements = new Throwable().getStackTrace();
+
+		return new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					original.run();
+
+				} catch (final Throwable throwable) {
+					logCombinedError(throwable, outerElements);
+				}
+			}
+		};
+	}
+
+	/**
+	 * Run the given runnable if the plugin is disabled.
+	 *
+	 * @param run
+	 * @return
+	 */
+	public static boolean runIfDisabled(@NonNull Runnable run) {
+		if (!Platform.getPlugin().isEnabled()) {
+			run.run();
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/*
+	 * Combines the stack traces of two throwables and logs them.
+	 */
+	private static void logCombinedError(Throwable throwable, StackTraceElement[] outerTrace) {
+		final StackTraceElement[] innerTrace = throwable.getStackTrace();
+
+		final StackTraceElement[] combinedTrace = new StackTraceElement[outerTrace.length + innerTrace.length];
+
+		System.arraycopy(innerTrace, 0, combinedTrace, 0, innerTrace.length);
+		System.arraycopy(outerTrace, 0, combinedTrace, innerTrace.length, outerTrace.length);
+
+		throwable.setStackTrace(combinedTrace);
+
+		Debugger.printStackTrace(throwable);
+		Debugger.saveError(throwable);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

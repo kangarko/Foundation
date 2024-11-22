@@ -10,7 +10,7 @@ import org.mineacademy.fo.menu.button.StartPosition;
 import org.mineacademy.fo.menu.button.annotation.Position;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -41,12 +41,12 @@ public class SelectRegionMenu extends MenuPaged<String> {
 
 		this.setTitle("Create Or Edit Regions");
 
-		this.createButton = Button.makeSimple(ItemCreator.of(CompMaterial.EMERALD,
+		this.createButton = Button.makeSimple(ItemCreator.from(CompMaterial.EMERALD,
 				"&aCreate New",
 				"",
 				"Click to create",
 				"a new region."), player -> {
-					if (SimplePlugin.getInstance().areToolsEnabled())
+					if (BukkitPlugin.getInstance().areToolsEnabled())
 						CreateRegionPrompt.showToOrHint(player);
 					else {
 						player.closeInventory();
@@ -66,7 +66,7 @@ public class SelectRegionMenu extends MenuPaged<String> {
 
 	@Override
 	protected ItemStack convertToItemStack(String regionName) {
-		return ItemCreator.of(CompMaterial.WHITE_STAINED_GLASS,
+		return ItemCreator.from(CompMaterial.WHITE_STAINED_GLASS,
 				"Region " + regionName,
 				"",
 				"Click to open the region",

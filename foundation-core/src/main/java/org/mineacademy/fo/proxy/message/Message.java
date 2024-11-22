@@ -16,6 +16,14 @@ import lombok.RequiredArgsConstructor;
 abstract class Message {
 
 	/**
+	 * Whether to compress strings when sending or reading messages
+	 *
+	 * @deprecated will be removed once chatcontrol 11 is out
+	 */
+	@Deprecated
+	public static boolean COMPRESS_STRINGS = true;
+
+	/**
 	 * Represents the largest size that an individual plugin message may be.
 	 */
 	public static final int MAX_MESSAGE_SIZE = 1048576;
@@ -43,15 +51,15 @@ abstract class Message {
 	 * This also ensures we are reading the correct data type (both primitives and wrappers
 	 * are supported).
 	 *
-	 * @param requiredType
+	 * @param givenType
 	 */
-	protected final void moveHead(Class<?> requiredType) {
+	protected final void moveHead(Class<?> givenType) {
 		ValidCore.checkNotNull(this.message, "Action not set!");
 
 		final Class<?>[] content = this.message.getContent();
 		final Class<?> clazz = content[this.head];
 
-		ValidCore.checkBoolean(requiredType.isAssignableFrom(clazz), "Expected " + requiredType.getSimpleName() + " at position " + head + " but got " + clazz.getSimpleName() + " for " + this.getMessage().name());
+		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Got " + givenType.getSimpleName() + " at position " + this.head + " but expected " + clazz.getSimpleName() + " for " + this.getMessage().name());
 		ValidCore.checkBoolean(head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;
@@ -74,5 +82,10 @@ abstract class Message {
 	 */
 	public final <T extends ProxyMessage> T getMessage() {
 		return (T) message;
+	}
+
+	@Override
+	public String toString() {
+		return this.message.name();
 	}
 }

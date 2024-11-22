@@ -58,7 +58,7 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 		if (Platform.getPlugin().getDefaultCommandGroup() != null && Platform.getPlugin().getDefaultCommandGroup().getLabel().equals(this.getLabel()))
 			this.setPermission(Platform.getPlugin().getName().toLowerCase() + ".command." + this.getSublabel()); // simply replace label with sublabel
 		else
-			this.setPermission(this.getPermission() + ".{sublabel}"); // append the sublabel at the end since this is not our main command
+			this.setPermission(this.getPermission() + "." + this.getSublabel()); // append the sublabel at the end since this is not our main command
 	}
 
 	/**

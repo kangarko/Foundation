@@ -31,11 +31,13 @@ import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompEnchantment;
+import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -444,7 +446,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofPlayerSkull()
+	 * @see #fromPlayerSkull()
 	 *
 	 * @param skullOwner
 	 * @return
@@ -458,7 +460,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofPlayerSkull()
+	 * @see #fromPlayerSkull()
 	 *
 	 * @param skullUrl
 	 * @return
@@ -472,7 +474,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofPlayerSkull()
+	 * @see #fromPlayerSkull()
 	 *
 	 * @param skullBase64
 	 * @return
@@ -486,7 +488,7 @@ public final class ItemCreator {
 	/**
 	 * Set the skull owner for this item, only works if the item is a skull.
 	 *
-	 * @see #ofPlayerSkull()
+	 * @see #fromPlayerSkull()
 	 *
 	 * @param skullUid
 	 * @return
@@ -615,7 +617,7 @@ public final class ItemCreator {
 		Object compiledMeta = this.meta != null ? this.meta.clone() : compiledItem.getItemMeta();
 
 		// Override with given material
-		if (this.material != null) {
+		if (this.item != null && this.material != null) {
 			compiledItem.setType(this.material.getMaterial());
 
 			if (MinecraftVersion.olderThan(V.v1_13))
@@ -643,7 +645,7 @@ public final class ItemCreator {
 					final String suffix = "_" + material;
 
 					if (compiledItem.getType().toString().endsWith(suffix)) {
-						compiledItem.setType(Material.valueOf(dye + suffix));
+						compiledItem.setType(ReflectionUtil.lookupEnum(Material.class, dye + suffix));
 
 						break color;
 					}
@@ -661,15 +663,12 @@ public final class ItemCreator {
 
 		// Fix monster eggs
 		if (compiledItem.getType().toString().endsWith("SPAWN_EGG") || compiledItem.getType().toString().equals("MONSTER_EGG")) {
-
 			EntityType entity = null;
 
 			if (MinecraftVersion.olderThan(V.v1_13)) { // Try to find it if already exists
-				CompMonsterEgg.acceptUnsafeEggs = true;
-				final EntityType pre = CompMonsterEgg.getEntity(compiledItem);
-				CompMonsterEgg.acceptUnsafeEggs = false;
+				final EntityType pre = CompMonsterEgg.lookupEntity(compiledItem);
 
-				if (pre != null && pre != EntityType.UNKNOWN)
+				if (pre != null && pre != CompEntityType.UNKNOWN)
 					entity = pre;
 			}
 
@@ -681,20 +680,11 @@ public final class ItemCreator {
 				if (entityRaw.equals("MONSTER_EGG") && this.material != null && this.material.toString().endsWith("SPAWN_EGG"))
 					entityRaw = this.material.toString().replace("_SPAWN_EGG", "");
 
-				if ("MOOSHROOM".equals(entityRaw))
-					entityRaw = "MUSHROOM_COW";
+				entity = CompEntityType.fromName(entityRaw);
 
-				else if ("ZOMBIE_PIGMAN".equals(entityRaw))
-					entityRaw = "PIG_ZOMBIE";
-
-				try {
-					entity = EntityType.valueOf(entityRaw);
-
-				} catch (final Throwable t) {
-
-					// Probably version incompatible
+				// Probably version incompatible
+				if (entity == null)
 					Common.log("The following item could not be transformed into " + entityRaw + " egg, item: " + compiledItem);
-				}
 			}
 
 			if (entity != null)
@@ -741,10 +731,10 @@ public final class ItemCreator {
 
 					} catch (final Throwable ex2) {
 						try {
-							skullMeta.setOwningPlayer(Remain.getOfflinePlayerByUUID(this.skullUid));
+							skullMeta.setOwningPlayer(Remain.getOfflinePlayerByUniqueId(this.skullUid));
 
 						} catch (final Throwable t) {
-							skullMeta.setOwner(Remain.getOfflinePlayerByUUID(this.skullUid).getName());
+							skullMeta.setOwner(Remain.getOfflinePlayerByUniqueId(this.skullUid).getName());
 						}
 					}
 				}
@@ -844,7 +834,7 @@ public final class ItemCreator {
 
 		for (final CompItemFlag flag : this.flags)
 			try {
-				((ItemMeta) compiledMeta).addItemFlags(ItemFlag.valueOf(flag.toString()));
+				((ItemMeta) compiledMeta).addItemFlags(ReflectionUtil.lookupEnum(ItemFlag.class, flag.toString()));
 			} catch (final Throwable t) {
 			}
 
@@ -896,8 +886,8 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator of(final CompMaterial material, final String name, @NonNull final Collection<String> lore) {
-		return of(material, name, Common.toArray(lore));
+	public static ItemCreator from(final CompMaterial material, final String name, @NonNull final Collection<String> lore) {
+		return from(material, name, Common.toArray(lore));
 	}
 
 	/**
@@ -908,7 +898,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return new item creator
 	 */
-	public static ItemCreator of(final CompMaterial material, final String name, @NonNull final String... lore) {
+	public static ItemCreator from(final CompMaterial material, final String name, @NonNull final String... lore) {
 		return new ItemCreator().material(material).name(name).lore(lore).hideTags(true);
 	}
 
@@ -918,8 +908,8 @@ public final class ItemCreator {
 	 * @param color the wool color
 	 * @return the new item creator
 	 */
-	public static ItemCreator ofWool(final CompColor color) {
-		return of(CompMaterial.makeWool(color, 1)).color(color);
+	public static ItemCreator fromWool(CompColor color) {
+		return fromItemStack(CompMaterial.makeWoolItem(color, 1)).color(color);
 	}
 
 	/**
@@ -928,8 +918,8 @@ public final class ItemCreator {
 	 * @param entityType
 	 * @return
 	 */
-	public static ItemCreator ofEgg(final EntityType entityType) {
-		return of(CompMonsterEgg.makeEgg(entityType));
+	public static ItemCreator fromMonsterEgg(EntityType entityType) {
+		return fromItemStack(CompMonsterEgg.toItemStack(entityType));
 	}
 
 	/**
@@ -940,53 +930,53 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator ofEgg(final EntityType entityType, String name, String... lore) {
-		return of(CompMonsterEgg.makeEgg(entityType)).name(name).lore(lore);
+	public static ItemCreator fromMonsterEgg(EntityType entityType, String name, String... lore) {
+		return fromItemStack(CompMonsterEgg.toItemStack(entityType)).name(name).lore(lore);
 	}
 
 	/**
 	 * Convenience method for creation potions
 	 *
-	 * @param potionEffect
+	 * @param type
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffectType potionEffect) {
-		return ofPotion(potionEffect, 1);
+	public static ItemCreator fromPotion(PotionEffectType type) {
+		return fromPotion(type, 1);
 	}
 
 	/**
 	 * Convenience method for creation potions
 	 *
-	 * @param potionEffect
+	 * @param type
 	 * @param durationTicks
 	 * @param level
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int durationTicks, int level) {
-		return ofPotion(potionEffect, durationTicks, level, null);
+	public static ItemCreator fromPotion(PotionEffectType type, int durationTicks, int level) {
+		return fromPotion(type, durationTicks, level, null);
 	}
 
 	/**
 	 * Convenience method for creation potions
 	 *
-	 * @param potionEffect
+	 * @param type
 	 * @param level
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int level) {
-		return ofPotion(potionEffect, Integer.MAX_VALUE, level, null);
+	public static ItemCreator fromPotion(PotionEffectType type, int level) {
+		return fromPotion(type, Integer.MAX_VALUE, level, null);
 	}
 
 	/**
 	 * Convenience method for creation potions
 	 *
-	 * @param potionEffect
+	 * @param type
 	 * @param name
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffectType potionEffect, String name, String... lore) {
-		return ofPotion(potionEffect, Integer.MAX_VALUE, 1, name, lore);
+	public static ItemCreator fromPotion(PotionEffectType type, String name, String... lore) {
+		return fromPotion(type, Integer.MAX_VALUE, 1, name, lore);
 	}
 
 	/**
@@ -997,28 +987,28 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffect effect, String name, String... lore) {
-		return ofPotion(effect.getType(), Integer.MAX_VALUE, effect.getAmplifier() + 1, name, lore);
+	public static ItemCreator fromPotion(PotionEffect effect, String name, String... lore) {
+		return fromPotion(effect.getType(), Integer.MAX_VALUE, effect.getAmplifier() + 1, name, lore);
 	}
 
 	/**
 	 * Convenience method for creation potions
 	 *
-	 * @param potionEffect
+	 * @param effect
 	 * @param durationTicks
 	 * @param level
 	 * @param name
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator ofPotion(final PotionEffectType potionEffect, int durationTicks, int level, String name, String... lore) {
+	public static ItemCreator fromPotion(final PotionEffectType effect, int durationTicks, int level, String name, String... lore) {
 		final boolean noLevel = level == 0;
 		final ItemStack item = new ItemStack(level == 0 ? CompMaterial.GLASS_BOTTLE.getMaterial() : CompMaterial.POTION.getMaterial());
 
 		if (!noLevel)
-			Remain.setPotion(item, potionEffect, durationTicks, level);
+			Remain.setPotion(item, effect, durationTicks, level);
 
-		final ItemCreator builder = of(item);
+		final ItemCreator builder = fromItemStack(item);
 
 		if (name != null)
 			builder.name(name);
@@ -1035,7 +1025,7 @@ public final class ItemCreator {
 	 * @param item existing itemstack
 	 * @return the new item creator
 	 */
-	public static ItemCreator of(final ItemStack item) {
+	public static ItemCreator fromItemStack(final ItemStack item) {
 		final ItemCreator builder = new ItemCreator();
 		final ItemMeta meta = item.getItemMeta();
 
@@ -1051,7 +1041,7 @@ public final class ItemCreator {
 	 * @param mat existing material
 	 * @return the new item creator
 	 */
-	public static ItemCreator of(final CompMaterial mat) {
+	public static ItemCreator fromMaterial(final CompMaterial mat) {
 		Valid.checkNotNull(mat, "Material cannot be null!");
 
 		return new ItemCreator().material(mat);
@@ -1062,12 +1052,12 @@ public final class ItemCreator {
 	 *
 	 * @return
 	 */
-	public static ItemCreator ofPlayerSkull() {
+	public static ItemCreator fromPlayerSkull() {
 		try {
-			return of(new ItemStack(Material.valueOf("PLAYER_HEAD")));
+			return fromItemStack(new ItemStack(ReflectionUtil.lookupEnum(Material.class, "PLAYER_HEAD")));
 
 		} catch (final IllegalArgumentException e) {
-			return of(new ItemStack(Material.valueOf("SKULL_ITEM"), 1, (byte) 3));
+			return fromItemStack(new ItemStack(ReflectionUtil.lookupEnum(Material.class, "SKULL_ITEM"), 1, (byte) 3));
 		}
 	}
 }

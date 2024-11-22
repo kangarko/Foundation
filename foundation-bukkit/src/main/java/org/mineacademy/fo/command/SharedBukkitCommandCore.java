@@ -15,7 +15,6 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.platform.BukkitPlayer;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
@@ -59,9 +58,38 @@ public interface SharedBukkitCommandCore {
 
 	/**
 	 * Attempts to parse the given name into a CompMaterial, will work for both modern
+	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG.
+	 *
+	 * You can use the {material} variable to replace with the given name.
+	 *
+	 * @param name
+	 * @param falseMessage
+	 * @return
+	 * @throws CommandException
+	 */
+	default CompMaterial findMaterial(final String name, final String falseMessage) throws CommandException {
+		return this.findMaterial(name, SimpleComponent.fromMini(falseMessage));
+	}
+
+	/**
+	 * Attempts to parse the given name into a CompMaterial, will work for both modern
 	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
 	 *
-	 * You can use the {enum} or {item} variable to replace with the given name.
+	 * You can use the {material} variable to replace with the given name.
+	 *
+	 * @param name
+	 * @return
+	 * @throws CommandException
+	 */
+	default CompMaterial findMaterial(final String name) throws CommandException {
+		return this.findMaterial(name, Lang.component("command-invalid-material"));
+	}
+
+	/**
+	 * Attempts to parse the given name into a CompMaterial, will work for both modern
+	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG
+	 *
+	 * You can use the {material} variable to replace with the given name.
 	 *
 	 * @param name
 	 * @param falseMessage
@@ -71,26 +99,9 @@ public interface SharedBukkitCommandCore {
 	default CompMaterial findMaterial(final String name, final SimpleComponent falseMessage) throws CommandException {
 		final CompMaterial found = CompMaterial.fromString(name);
 
-		this.checkBoolean(found != null, falseMessage
-				.replaceBracket("enum", name)
-				.replaceBracket("item", name));
+		this.checkBoolean(found != null, falseMessage.replaceBracket("material", name));
 
 		return found;
-	}
-
-	/**
-	 * Attempts to parse the given name into a CompMaterial, will work for both modern
-	 * and legacy materials: MONSTER_EGG and SHEEP_SPAWN_EGG.
-	 *
-	 * You can use the {enum} or {item} variable to replace with the given name.
-	 *
-	 * @param name
-	 * @param falseMessage
-	 * @return
-	 * @throws CommandException
-	 */
-	default CompMaterial findMaterial(final String name, final String falseMessage) throws CommandException {
-		return this.findMaterial(name, SimpleComponent.fromMini(falseMessage));
 	}
 
 	/**
@@ -134,7 +145,7 @@ public interface SharedBukkitCommandCore {
 	 */
 	default void findOfflinePlayer(final UUID uniqueId, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
 		this.runTaskAsync(() -> {
-			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUUID(uniqueId);
+			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUniqueId(uniqueId);
 			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), Lang.componentVars("player-invalid-uuid", "uuid", uniqueId.toString()));
 
 			this.runTask(() -> syncCallback.accept(targetPlayer));
@@ -250,8 +261,8 @@ public interface SharedBukkitCommandCore {
 	 *
 	 * @return
 	 */
-	default CommandSender getCommandSender() {
-		return ((BukkitPlayer) this.getAudience()).getCommandSender();
+	default CommandSender getSender() {
+		return this.getAudience().getSender();
 	}
 
 	/**
@@ -261,7 +272,7 @@ public interface SharedBukkitCommandCore {
 	 * @return
 	 */
 	default Player getPlayer() {
-		return this.isPlayer() ? ((BukkitPlayer) this.getAudience()).getPlayer() : null;
+		return this.isPlayer() ? this.getAudience().getPlayer() : null;
 	}
 
 	/**

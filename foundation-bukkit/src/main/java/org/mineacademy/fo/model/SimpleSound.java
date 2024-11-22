@@ -5,7 +5,6 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.platform.BukkitPlayer;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.CompSound;
 
@@ -87,7 +86,8 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 * @param audience
 	 */
 	public void play(FoundationPlayer audience) {
-		this.play(((BukkitPlayer) audience).getPlayer());
+		if (audience.isPlayer())
+			this.play((Player) audience.getPlayer());
 	}
 
 	/**

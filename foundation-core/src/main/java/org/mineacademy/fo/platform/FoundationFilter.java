@@ -3,8 +3,11 @@ package org.mineacademy.fo.platform;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -12,8 +15,6 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.message.Message;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -30,7 +31,7 @@ final class FoundationFilter {
 	private static final Pattern LEGACY_COLORS_PATTERN = Pattern.compile("([&§])[0-9a-fk-orA-FK-OR]");
 
 	/**
-	 * The messages we should filter, plugin authors can customize this in {@link SimplePlugin}
+	 * The messages we should filter, plugin authors can customize this in {@link BukkitPlugin}
 	 */
 	@Setter(value = AccessLevel.PACKAGE)
 	private static List<String> MESSAGES_TO_FILTER = new ArrayList<>();
@@ -39,17 +40,28 @@ final class FoundationFilter {
 	 * Start filtering the console
 	 */
 	static void inject() {
+		inject(null);
+	}
+
+	/**
+	 * Start filtering the console
+	 *
+	 * @param javaFilterConsumer
+	 */
+	static void inject(@Nullable Consumer<FilterJava> javaFilterConsumer) {
 
 		// Set filter for System out
-		System.setOut(new FilterSystem());
+		System.setOut(new FilterSystemOut());
 
-		// Set filter for Bukkit
-		final FilterLegacy filter = new FilterLegacy();
+		// Set filter for Java
+		final FilterJava filter = new FilterJava();
 
-		for (final Plugin plugin : Bukkit.getPluginManager().getPlugins())
-			plugin.getLogger().setFilter(filter);
+		// Filter native Java
+		java.util.logging.Logger.getLogger("").setFilter(filter);
 
-		Bukkit.getLogger().setFilter(filter);
+		// Filter plugin-specific
+		if (javaFilterConsumer != null)
+			javaFilterConsumer.accept(filter);
 
 		// Set Log4j filter
 		try {
@@ -91,14 +103,19 @@ final class FoundationFilter {
 		message = message.toLowerCase();
 
 		// Only filter this after plugin has been fully enabled
-		if (SimplePlugin.hasInstance() && SimplePlugin.getInstance().getDefaultCommandGroup() != null) {
+		if (Platform.hasPlatform()) {
+			final FoundationPlugin plugin = Platform.getPlugin();
 
-			// Filter inbuilt Foundation or ChatControl commands
-			if (message.contains("issued server command: /" + SimplePlugin.getInstance().getDefaultCommandGroup().getLabel() + " internal") || message.contains("issued server command: /#flp"))
+			// Filter internal plugin commands
+			if ((plugin.getDefaultCommandGroup() != null && message.contains("issued server command: /" + plugin.getDefaultCommandGroup().getLabel() + " internal")))
+				return true;
+
+			// Filter chat paginator commands
+			if (message.contains("issued server command: /#flp"))
 				return true;
 
 			// Filter user-defined commands
-			for (String filter : SimplePlugin.getInstance().getConsoleFilter()) {
+			for (String filter : plugin.getConsoleFilter()) {
 				filter = filter.toLowerCase();
 
 				if (message.startsWith(filter) || message.contains(filter))
@@ -113,7 +130,7 @@ final class FoundationFilter {
 /**
  * The old Bukkit filter
  */
-class FilterLegacy implements java.util.logging.Filter {
+class FilterJava implements java.util.logging.Filter {
 
 	@Override
 	public boolean isLoggable(LogRecord record) {
@@ -126,9 +143,9 @@ class FilterLegacy implements java.util.logging.Filter {
 /**
  * The System out filter
  */
-class FilterSystem extends PrintStream {
+class FilterSystemOut extends PrintStream {
 
-	FilterSystem() {
+	FilterSystemOut() {
 		super(System.out);
 	}
 

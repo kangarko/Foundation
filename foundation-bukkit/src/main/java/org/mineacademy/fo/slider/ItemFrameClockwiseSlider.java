@@ -115,7 +115,7 @@ public class ItemFrameClockwiseSlider implements Slider<Map<Integer, ItemStack>>
 	 * @return
 	 */
 	public static ItemFrameClockwiseSlider from(final CompMaterial filler, final CompMaterial highlighted) {
-		return from(ItemCreator.of(filler), ItemCreator.of(highlighted));
+		return from(ItemCreator.fromMaterial(filler), ItemCreator.fromMaterial(highlighted));
 	}
 
 	/**

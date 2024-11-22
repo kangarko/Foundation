@@ -29,9 +29,9 @@ import org.mineacademy.fo.settings.SimpleSettings;
 /**
  * Listens for some events we handle for you automatically
  */
-final class FoundationListener implements Listener {
+final class BukkitListener implements Listener {
 
-	FoundationListener() {
+	BukkitListener() {
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

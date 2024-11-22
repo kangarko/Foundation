@@ -62,12 +62,18 @@ public final class ToastMessage implements ConfigSerializable {
 
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray(
+		return SerializedMap.fromArray(
 				"icon", this.icon.toString(),
 				"style", this.style.toString(),
 				"message", this.message.toMini());
 	}
 
+	/**
+	 * Deserialize a new toast message
+	 *
+	 * @param map
+	 * @return
+	 */
 	public static ToastMessage deserialize(SerializedMap map) {
 		final CompMaterial icon = CompMaterial.fromString(map.getString("icon"));
 		final CompToastStyle style = CompToastStyle.valueOf(map.getString("style"));
@@ -84,8 +90,8 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param message
 	 * @return
 	 */
-	public static ToastMessage of(CompMaterial material, CompToastStyle style, String message) {
-		return of(material, style, SimpleComponent.fromMini(message));
+	public static ToastMessage from(CompMaterial material, CompToastStyle style, String message) {
+		return from(material, style, SimpleComponent.fromMini(message));
 	}
 
 	/**
@@ -96,7 +102,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param component
 	 * @return
 	 */
-	public static ToastMessage of(CompMaterial material, CompToastStyle style, SimpleComponent component) {
+	public static ToastMessage from(CompMaterial material, CompToastStyle style, SimpleComponent component) {
 		return new ToastMessage(material, style, component);
 	}
 }

@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EnderPearl;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -27,6 +26,7 @@ import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 
@@ -249,7 +249,7 @@ public final class ToolsListener implements Listener {
 						final Projectile copy;
 
 						if (shot instanceof EnderPearl)
-							copy = (Projectile) world.spawnEntity(directedLoc, EntityType.ENDER_PEARL);
+							copy = (Projectile) world.spawnEntity(directedLoc, CompEntityType.ENDER_PEARL);
 						else
 							copy = world.spawn(directedLoc, shot.getClass());
 

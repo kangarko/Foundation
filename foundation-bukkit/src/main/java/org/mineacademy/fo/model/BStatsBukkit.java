@@ -46,7 +46,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.remain.Remain;
 
-public class BStatsMetrics {
+public class BStatsBukkit {
 
 	private final Plugin plugin;
 
@@ -59,7 +59,7 @@ public class BStatsMetrics {
 	 * @param serviceId The id of the service. It can be found at <a
 	 *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
 	 */
-	public BStatsMetrics(Plugin plugin, int serviceId) {
+	public BStatsBukkit(Plugin plugin, int serviceId) {
 		this.plugin = plugin;
 		// Get the config file
 		final File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");

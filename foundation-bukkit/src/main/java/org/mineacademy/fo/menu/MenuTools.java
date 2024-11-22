@@ -16,7 +16,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.tool.Tool;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 
@@ -76,7 +76,7 @@ public abstract class MenuTools extends Menu {
 	protected Object[] lookupTools(final Class<? extends Tool> extendingClass) {
 		final List<Object> instances = new ArrayList<>();
 
-		for (final Class<?> clazz : ReflectionUtil.getClasses(SimplePlugin.getInstance().getFile(), extendingClass))
+		for (final Class<?> clazz : ReflectionUtil.getClasses(BukkitPlugin.getInstance().getFile(), extendingClass))
 			try {
 				final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "instance");
 
@@ -117,12 +117,12 @@ public abstract class MenuTools extends Menu {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void onMenuClick(final Player pl, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack item, final boolean cancelled) {
-		final ItemStack it = this.getItemAt(slot);
-		final ToggleableTool tool = it != null ? this.findTool(it) : null;
+	public final void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clickedItem, final boolean cancelled) {
+		final ItemStack slotItem = this.getItemAt(slot);
+		final ToggleableTool tool = slotItem != null ? this.findTool(slotItem) : null;
 
 		if (tool != null) {
-			tool.giveOrTake(pl);
+			tool.giveOrTake(player);
 
 			this.restartMenu();
 		}
@@ -130,9 +130,9 @@ public abstract class MenuTools extends Menu {
 
 	// Converts the clicked item into a toggleable tool
 	private final ToggleableTool findTool(final ItemStack item) {
-		for (final ToggleableTool h : this.tools)
-			if (h.equals(item))
-				return h;
+		for (final ToggleableTool toggleableTool : this.tools)
+			if (toggleableTool.equals(item))
+				return toggleableTool;
 
 		return null;
 	}
@@ -154,31 +154,31 @@ public abstract class MenuTools extends Menu {
 	 * Compiles an automated tools menu and shows to player.
 	 *
 	 * @param player
-	 * @param pluginToolClasses We will scan your plugin for this kind of class and
+	 * @param toolClasses We will scan your plugin for this kind of class and
 	 *                          all classes extending it will be loaded into the
 	 *                          menu
 	 * @param description       the menu description
 	 *
 	 */
-	public static final void display(final Player player, final Class<? extends Tool> pluginToolClasses, final String... description) {
-		of(pluginToolClasses, description).displayTo(player);
+	public static final void display(final Player player, final Class<? extends Tool> toolClasses, final String... description) {
+		fromToolClasses(toolClasses, description).displayTo(player);
 	}
 
 	/**
 	 * Compiles an automated tools menu.
 	 *
-	 * @param pluginToolClasses We will scan your plugin for this kind of class and
+	 * @param toolClasses We will scan your plugin for this kind of class and
 	 *                          all classes extending it will be loaded into the
 	 *                          menu
 	 * @param description       the menu description
 	 * @return
 	 */
-	public static final MenuTools of(final Class<? extends Tool> pluginToolClasses, final String... description) {
+	public static final MenuTools fromToolClasses(final Class<? extends Tool> toolClasses, final String... description) {
 		return new MenuTools() {
 
 			@Override
 			protected Object[] compileTools() {
-				return this.lookupTools(pluginToolClasses);
+				return this.lookupTools(toolClasses);
 			}
 
 			@Override
@@ -255,7 +255,7 @@ final class ToggleableTool {
 	// Return the dummy placeholder tool when the player already has it
 	private ItemStack getToolWhenHas() {
 		return ItemCreator
-				.of(this.item)
+				.fromItemStack(this.item)
 				.glow(true)
 				.lore("", "&6You already have this item.", "&6Click to take it away.")
 				.makeMenuTool();

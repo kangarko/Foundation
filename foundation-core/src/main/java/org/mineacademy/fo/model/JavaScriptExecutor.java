@@ -40,49 +40,90 @@ public final class JavaScriptExecutor {
 		Thread.currentThread().setContextClassLoader(Platform.getPlugin().getPluginClassLoader());
 
 		ScriptEngineManager engineManager = new ScriptEngineManager();
-		ScriptEngine scriptEngine = engineManager.getEngineByName("Nashorn");
+		ScriptEngine scriptEngine = null;
 
-		// Workaround for newer Minecraft releases
-		if (scriptEngine == null) {
-			engineManager = new ScriptEngineManager(null);
+		boolean knownBug = false;
 
+		try {
 			scriptEngine = engineManager.getEngineByName("Nashorn");
+
+		} catch (final ExceptionInInitializerError ex) {
+			final Throwable cause = ex.getCause();
+
+			if (cause instanceof NullPointerException && cause.toString().contains("java.lang.invoke.MethodHandle.type()")) {
+				CommonCore.logFramed(
+						"",
+						"FATAL ERROR LOADING JAVASCRIPT ENGINE",
+						"",
+						"If you see 'Cannot set JUL log level through log4j-api: ignoring call...' above,",
+						"that means your server version is not compatible with nashorn-core library we use",
+						"to execute JavaScript code, such as in your variables or operators.",
+						"",
+						"THIS IS NOT OUR BUG - DO NOT REPORT TO US",
+						"",
+						"We are waiting for nashorn-core to update - please do not report it to us.",
+						"See: https://github.com/PaperMC/Velocity/issues/1462 for more information",
+						"",
+						"Solutions:",
+						"1. Run your server with the following system property:",
+						"   -Dlog4j2.julLoggerAdapter=org.apache.logging.log4j.jul.CoreLoggerAdapter",
+						"   See https://docs.papermc.io/paper/reference/system-properties for how to do so.",
+						"",
+						"2. If you are on Velocity, downgrade to Velocity build 446 temporarily to fix this:",
+						"   https://api.papermc.io/v2/projects/velocity/versions/3.4.0-SNAPSHOT/builds/446/downloads/velocity-3.4.0-SNAPSHOT-446.jar");
+
+				knownBug = true;
+
+			} else
+				ex.printStackTrace();
 		}
 
-		// If still fails, try to load our own library for Java 15 and up
-		if (scriptEngine == null) {
-			final String nashorn = "org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory";
+		if (!knownBug) {
 
-			if (ReflectionUtil.isClassAvailable(nashorn)) {
-				final ScriptEngineFactory engineFactory = ReflectionUtil.instantiate(ReflectionUtil.lookupClass(nashorn));
+			// Workaround for newer Minecraft releases
+			if (scriptEngine == null) {
+				engineManager = new ScriptEngineManager(null);
 
-				engineManager.registerEngineName("Nashorn", engineFactory);
 				scriptEngine = engineManager.getEngineByName("Nashorn");
 			}
-		}
 
-		engine = scriptEngine;
+			// If still fails, try to load our own library for Java 15 and up
+			if (scriptEngine == null) {
+				final String nashorn = "org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory";
 
-		if (engine == null) {
-			final List<String> warningMessage = CommonCore.newList(
-					"ERROR: JavaScript placeholders will not function!",
-					"",
-					"Your Java version/distribution lacks the",
-					"Nashorn library for JavaScript placeholders.");
+				if (ReflectionUtil.isClassAvailable(nashorn)) {
+					final ScriptEngineFactory engineFactory = ReflectionUtil.instantiate(ReflectionUtil.lookupClass(nashorn));
 
-			if (CommonCore.getJavaVersion() >= 15)
-				warningMessage.addAll(Arrays.asList(
+					engineManager.registerEngineName("Nashorn", engineFactory);
+					scriptEngine = engineManager.getEngineByName("Nashorn");
+				}
+			}
+
+			engine = scriptEngine;
+
+			if (engine == null) {
+				final List<String> warningMessage = CommonCore.newList(
+						"ERROR: JavaScript placeholders will not function!",
 						"",
-						"To fix this, install the NashornPlus",
-						"plugin from mineacademy.org/nashorn"));
-			else
-				warningMessage.addAll(Arrays.asList(
-						"",
-						"To fix this, install Java 11 from Oracle",
-						"or other vendor that supports Nashorn."));
+						"Your Java version/distribution lacks the",
+						"Nashorn library for JavaScript placeholders.");
 
-			CommonCore.logFramed(false, CommonCore.toArray(warningMessage));
-		}
+				if (CommonCore.getJavaVersion() >= 15)
+					warningMessage.addAll(Arrays.asList(
+							"",
+							"To fix this, install the NashornPlus",
+							"plugin from mineacademy.org/nashorn"));
+				else
+					warningMessage.addAll(Arrays.asList(
+							"",
+							"To fix this, install Java 11 from Oracle",
+							"or other vendor that supports Nashorn."));
+
+				CommonCore.logFramed(false, CommonCore.toArray(warningMessage));
+			}
+
+		} else
+			engine = null;
 	}
 
 	/**
@@ -120,48 +161,45 @@ public final class JavaScriptExecutor {
 	 * @throws FoScriptException
 	 */
 	public static Object run(@NonNull String javascript, final FoundationPlayer audience, Map<String, Object> replacements) throws FoScriptException {
-		synchronized (engine) {
+		if (replacements == null)
+			replacements = new HashMap<>();
 
-			if (replacements == null)
-				replacements = new HashMap<>();
+		if (audience == null && javascript.contains("player.")) {
+			CommonCore.warning("Not running JavaScript because it contains 'player' but player was not provided. Script: " + javascript);
 
-			if (audience == null && javascript.contains("player.")) {
-				CommonCore.warning("Not running JavaScript because it contains 'player' but player was not provided. Script: " + javascript);
-
-				return false;
-			}
-
-			if (audience != null && audience.isDiscord() && javascript.contains("player.")) {
-				CommonCore.warning("Not running JavaScript because it contains 'player' but player was on Discord. Set Sender_Condition to '{sender_is_player}' to remove this warning next to your code. Script: " + javascript);
-
-				return false;
-			}
-
-			// Find and replace all {syntax} variables since they were not replaced for Discord
-			if (audience == null || audience.isDiscord()) {
-
-				// Replace by line to avoid the {...} in "function() { return false; }" being replaced to "function() false"
-				final String[] copy = javascript.split("\n");
-				final String[] replaced = new String[copy.length];
-
-				for (int i = 0; i < copy.length; i++) {
-					String line = copy[i];
-					final Matcher matcher = Variables.BRACKET_VARIABLE_PATTERN.matcher(line);
-
-					while (matcher.find())
-						line = line.replace(matcher.group(), "false");
-
-					replaced[i] = line;
-				}
-
-				javascript = String.join("\n", replaced);
-			}
-
-			if (audience != null && audience.isPlayer())
-				replacements.put("player", audience.getPlayer());
-
-			return run(javascript, replacements);
+			return false;
 		}
+
+		if (audience != null && audience.isDiscord() && javascript.contains("player.")) {
+			CommonCore.warning("Not running JavaScript because it contains 'player' but player was on Discord. Set Sender_Condition to '{sender_is_player}' to remove this warning next to your code. Script: " + javascript);
+
+			return false;
+		}
+
+		// Find and replace all {syntax} variables since they were not replaced for Discord
+		if (audience == null || audience.isDiscord()) {
+
+			// Replace by line to avoid the {...} in "function() { return false; }" being replaced to "function() false"
+			final String[] copy = javascript.split("\n");
+			final String[] replaced = new String[copy.length];
+
+			for (int i = 0; i < copy.length; i++) {
+				String line = copy[i];
+				final Matcher matcher = Variables.BRACKET_VARIABLE_PATTERN.matcher(line);
+
+				while (matcher.find())
+					line = line.replace(matcher.group(), "false");
+
+				replaced[i] = line;
+			}
+
+			javascript = String.join("\n", replaced);
+		}
+
+		if (audience != null && audience.isPlayer())
+			replacements.put("player", audience.getPlayer());
+
+		return run(javascript, replacements);
 	}
 
 	/**
@@ -174,6 +212,12 @@ public final class JavaScriptExecutor {
 	 * @throws FoScriptException
 	 */
 	public static Object run(@NonNull String javascript, Map<String, Object> replacements) throws FoScriptException {
+		if (engine == null) {
+			CommonCore.warning("Not running JavaScript code because nashorn-core library is missing (see earlier logs for details). Ignoring code: " + javascript);
+
+			return null;
+		}
+
 		synchronized (engine) {
 			if (replacements == null)
 				replacements = new HashMap<>();
@@ -184,12 +228,6 @@ public final class JavaScriptExecutor {
 
 			if (javascript.equals("false") || javascript.equals("!true") || javascript.equals("no"))
 				return false;
-
-			if (engine == null) {
-				CommonCore.warning("Not running script because JavaScript library is missing (try installing mineacademy.org/nashorn). Script: " + javascript);
-
-				return null;
-			}
 
 			// CLear past variables
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
@@ -250,6 +288,9 @@ public final class JavaScriptExecutor {
 
 				if (message.contains("ReferenceError:") && message.contains("is not defined"))
 					errorMessage.add("Invalid or unparsed variable!");
+
+				if (message.contains("TypeError:") && message.contains("player.getName is not a function") && Platform.getPlatformName().contains("Velocity"))
+					errorMessage.add("On Velocity, use player.getUsername() instead of player.getName()");
 
 				if (ex instanceof ScriptException)
 					errorMessage.add("Line: " + ((ScriptException) ex).getLineNumber() + ". Error: " + ex.getMessage());

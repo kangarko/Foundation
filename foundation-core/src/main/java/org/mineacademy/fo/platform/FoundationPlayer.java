@@ -1,6 +1,10 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
@@ -9,11 +13,20 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.settings.Lang;
 
+import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.event.HoverEvent.Action;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.format.TextDecoration.State;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 /**
  * Similar to Audience in Adventure, the FoundationPlayer represents a platform-neutral
@@ -25,75 +38,9 @@ import net.kyori.adventure.text.Component;
 public abstract class FoundationPlayer {
 
 	/**
-	 * Returns true if the player has the given permission.
-	 *
-	 * @param permission
-	 * @return
+	 * The minimum protocol version required for HEX colors to work. Added in 20w17a.
 	 */
-	public final boolean hasPermission(String permission) {
-		if (permission.contains("{") || permission.contains("}"))
-			throw new FoException("Permission cannot contain variables: " + permission);
-
-		return this.hasPermission0(permission);
-	}
-
-	/*
-	 * Implementation of hasPermission().
-	 */
-	protected abstract boolean hasPermission0(String permission);
-
-	/**
-	 * Returns true if the player is a player, false if console or command sender.
-	 *
-	 * @return
-	 */
-	public abstract boolean isPlayer();
-
-	/**
-	 * Returns true if the player is a command sender. For most platforms, Player
-	 * is also a command sender.
-	 *
-	 * @return
-	 */
-	public abstract boolean isCommandSender();
-
-	/**
-	 * Returns true if the player is the console.
-	 *
-	 * @return
-	 */
-	public abstract boolean isConsole();
-
-	/**
-	 * Returns true if the player is a Discord sender.
-	 *
-	 * @return
-	 */
-	public abstract boolean isDiscord();
-
-	/**
-	 * Returns the player's name, or the "part-console" lang key if the player is a console.
-	 *
-	 * @see Lang
-	 * @return
-	 */
-	public final String getName() {
-		return this.isConsole() ? Lang.legacy("part-console") : this.getSenderName0();
-	}
-
-	/**
-	 * Get the player implementation object, such as Player on Bukkit.
-	 * Returns null if not applicable.
-	 *
-	 * @param <T>
-	 * @return
-	 */
-	public abstract <T> T getPlayer();
-
-	/*
-	 * Implementation of getName() for players.
-	 */
-	protected abstract String getSenderName0();
+	protected static final int MINIMUM_PROTOCOL_FOR_HEX = 713;
 
 	/**
 	 * Runs the given command (without /) as the player, replacing {player} with his name.
@@ -146,20 +93,173 @@ public abstract class FoundationPlayer {
 		}
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof FoundationPlayer) {
+			final FoundationPlayer other = (FoundationPlayer) obj;
+
+			if (other.isPlayer() && !this.isPlayer())
+				return false;
+
+			if (!other.isPlayer() && this.isPlayer())
+				return false;
+
+			return other.isPlayer() ? other.getUniqueId().equals(this.getUniqueId()) : other.getName().equals(this.getName());
+		}
+
+		return false;
+	}
+
 	/**
-	 * Sets a temporary metadata for the player that will be lost after the player quits or server reloads.
+	 * Returns the player's IP address and port or null if not a player or not supported by platform.
 	 *
-	 * @deprecated internal use only. On Bukkit, use CompMetadata instead
-	 * @param key
-	 * @param value
+	 * @return
 	 */
-	@Deprecated
-	public abstract void setTempMetadata(String key, Object value);
+	public abstract InetSocketAddress getAddress();
+
+	/**
+	 * Returns the player's location if called on Bukkit and the player is not a console
+	 * or returns null if not applicable.
+	 *
+	 * Throws exception if called on Bukkit and the sender is console:
+	 * @see #isPlayer()
+	 *
+	 * @return
+	 */
+	public SimpleLocation getBukkitLocation() {
+		return null;
+	}
+
+	/**
+	 * Return the current server His Majesty is on,
+	 * null for poor consoles or weird Velocity players.
+	 *
+	 * @return
+	 */
+	public abstract FoundationServer getServer();
+
+	/**
+	 * Returns the player's name, or the "part-console" lang key if the player is a console.
+	 *
+	 * @see Lang
+	 * @return
+	 */
+	public final String getName() {
+		return this.isConsole() ? Lang.legacy("part-console") : this.getSenderName0();
+	}
+
+	/**
+	 * Get the player implementation object, such as Player on Bukkit.
+	 * Returns null if not applicable.
+	 *
+	 * @param <T>
+	 * @return
+	 */
+	public abstract <T> T getPlayer();
+
+	/**
+	 * Get the command sender implementation object, such as CommandSender on Bukkit.
+	 *
+	 * @param <T>
+	 * @return
+	 */
+	@NonNull
+	public abstract <T> T getSender();
+
+	/*
+	 * Implementation of getName() for players.
+	 */
+	protected abstract String getSenderName0();
+
+	/**
+	 * Returns the player's unique ID, or error if we are not a player.
+	 *
+	 * @return
+	 */
+	public abstract UUID getUniqueId();
+
+	/**
+	 * Return true if the player has RGB support
+	 *
+	 * @return
+	 */
+	public abstract boolean hasHexColorSupport();
+
+	/**
+	 * Returns true if the player has the given permission.
+	 *
+	 * @param permission
+	 * @return
+	 */
+	public final boolean hasPermission(String permission) {
+		if (permission.contains("{") || permission.contains("}"))
+			throw new FoException("Permission cannot contain variables: " + permission);
+
+		return this.hasPermission0(permission);
+	}
+
+	/*
+	 * Implementation of hasPermission().
+	 */
+	protected abstract boolean hasPermission0(String permission);
+
+	/**
+	 * Returns true if the player is a command sender. For most platforms, Player
+	 * is also a command sender.
+	 *
+	 * @return
+	 */
+	public abstract boolean isCommandSender();
+
+	/**
+	 * Returns true if the player is the console.
+	 *
+	 * @return
+	 */
+	public abstract boolean isConsole();
+
+	/**
+	 * Returns true if the player is a Discord sender.
+	 *
+	 * @return
+	 */
+	public abstract boolean isDiscord();
+
+	/**
+	 * Returns true if the player is a player, false if console or command sender.
+	 *
+	 * @return
+	 */
+	public abstract boolean isPlayer();
+
+	/**
+	 * Kicks this player, or throws error if not a player.
+	 *
+	 * @param reason
+	 */
+	public abstract void kick(SimpleComponent reason);
 
 	/*
 	 * Implementation of dispatchCommand() for players.
 	 */
 	protected abstract void performPlayerCommand0(String replacedCommand);
+
+	/**
+	 * Removes the bossbar from the player.
+	 */
+	public abstract void removeBossBar();
+
+	/**
+	 * Resets the title that is being displayed to the player.
+	 */
+	public abstract void resetTitle();
+
+	/**
+	 * Sends a message to the player.
+	 *
+	 * @param message
+	 */
+	public abstract void sendActionBar(SimpleComponent message);
 
 	/**
 	 * Sends a message to the player.
@@ -173,11 +273,14 @@ public abstract class FoundationPlayer {
 	}
 
 	/**
-	 * Sends a message to the player.
+	 * Sends a bossbar to the player.
 	 *
 	 * @param message
+	 * @param progress
+	 * @param color
+	 * @param overlay
 	 */
-	public abstract void sendActionBar(SimpleComponent message);
+	public abstract void sendBossbarPercent(SimpleComponent message, float progress, BossBar.Color color, BossBar.Overlay overlay);
 
 	/**
 	 * Sends a bossbar to the player.
@@ -194,14 +297,15 @@ public abstract class FoundationPlayer {
 	}
 
 	/**
-	 * Sends a bossbar to the player.
+	 * Sends a bossbar to the player for a certain amount of seconds.
 	 *
 	 * @param message
+	 * @param seconds
 	 * @param progress
 	 * @param color
 	 * @param overlay
 	 */
-	public abstract void sendBossbarPercent(SimpleComponent message, float progress, BossBar.Color color, BossBar.Overlay overlay);
+	public abstract void sendBossbarTimed(SimpleComponent message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay);
 
 	/**
 	 * Sends a bossbar to the player for a certain amount of seconds.
@@ -219,82 +323,18 @@ public abstract class FoundationPlayer {
 	}
 
 	/**
-	 * Sends a bossbar to the player for a certain amount of seconds.
+	 * Sends a JSON component message to the player.
 	 *
-	 * @param message
-	 * @param seconds
-	 * @param progress
-	 * @param color
-	 * @param overlay
+	 * @param json
 	 */
-	public abstract void sendBossbarTimed(SimpleComponent message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay);
-
-	/**
-	 * Removes the bossbar from the player.
-	 */
-	public abstract void removeBossBar();
-
-	/**
-	 * Sends a toast to the player if supported by the platform.
-	 *
-	 * Legacy and MiniMessage tags will be replaced.
-	 *
-	 * @param message
-	 */
-	public final void sendToast(String message) {
-		this.sendToast(SimpleComponent.fromMini(message));
+	public final void sendJson(String json) {
+		this.sendMessage(SimpleComponent.fromAdventureJson(json, !this.hasHexColorSupport()));
 	}
 
-	/**
-	 * Sends a toast to the player if supported by the platform.
-	 *
-	 * Legacy and MiniMessage tags will be replaced.
-	 *
-	 * @param message
-	 * @param style
+	/*
+	 * Implementation of sendMessage(String) for players.
 	 */
-	public final void sendToast(String message, CompToastStyle style) {
-		this.sendToast(SimpleComponent.fromMini(message), style);
-	}
-
-	/**
-	 * Sends a toast to the player if supported by the platform.
-	 *
-	 * @param message
-	 */
-	public final void sendToast(SimpleComponent message) {
-		this.sendToast(message, CompToastStyle.TASK);
-	}
-
-	/**
-	 * Sends a toast to the player if supported by the platform.
-	 *
-	 * @param message
-	 * @param style
-	 */
-	public abstract void sendToast(SimpleComponent message, CompToastStyle style);
-
-	/**
-	 * Sets tab-list header and/or footer. Header or footer can be null.
-	 *
-	 * Legacy and MiniMessage tags will be replaced.
-	 *
-	 * @param header
-	 * @param footer
-	 */
-	public final void sendTablist(String header, String footer) {
-		this.sendTablist(SimpleComponent.fromMini(header), SimpleComponent.fromMini(footer));
-	}
-
-	/**
-	 * Sets tab-list header and/or footer. Header or footer can be null.
-	 *
-	 * Legacy and MiniMessage tags will be replaced.
-	 *
-	 * @param header the header
-	 * @param footer the footer
-	 */
-	public abstract void sendTablist(final SimpleComponent header, final SimpleComponent footer);
+	protected abstract void sendLegacyMessage(String message);
 
 	/**
 	 * Sends a message to the player.
@@ -334,8 +374,80 @@ public abstract class FoundationPlayer {
 
 			this.sendLegacyMessage(centeredLegacyMessage);
 
-		} else if (!plainMessage.equals("none"))
-			this.sendRawMessage(component.toAdventure(this));
+		} else if (!plainMessage.equals("none")) {
+			Component adventure = component.toAdventure(this);
+
+			if (!this.hasHexColorSupport())
+				adventure = this.fixHoverLosingStyleInLegacyMultiline(adventure);
+
+			this.sendRawMessage(adventure);
+		}
+	}
+
+	/*
+	 * On legacy, the client resets hover formatting on \n, so we reapply it from the previous line.
+	 *
+	 * See https://github.com/KyoriPowered/adventure/issues/1132
+	 */
+	private Component fixHoverLosingStyleInLegacyMultiline(Component adventure) {
+		if (adventure.hoverEvent() != null) {
+			final HoverEvent<?> hover = adventure.hoverEvent();
+
+			if (hover.action() == Action.SHOW_TEXT) {
+
+				// Cleverly flip back to MiniMessage to retain complex formatting structures
+				final String oldMini = MiniMessage.miniMessage().serialize((Component) hover.value());
+
+				if (oldMini.contains("\n")) {
+					final String[] oldLines = oldMini.split("\n");
+					Style lastStyle = null;
+
+					for (int i = 0; i < oldLines.length; i++) {
+						final String line = oldLines[i];
+
+						if (lastStyle != null) {
+
+							// Append decorations
+							for (final Map.Entry<TextDecoration, State> entry : lastStyle.decorations().entrySet())
+								if (entry.getValue() == State.TRUE)
+									oldLines[i] = "<" + entry.getKey().name() + ">" + line;
+
+							// MiniMessage ignores the tag if it is equal to the last one, so we need shift its color
+							// This is invisible on legacy thanks to downsapling
+							if (lastStyle.color() != null)
+								oldLines[i] = "<" + this.darkenOneShade(lastStyle.color()).asHexString() + ">" + line;
+						}
+
+						// Find the last style and apply it to the next line using the updated last line
+						lastStyle = SimpleComponent.LastMessageStyleParser.parseStyle(oldLines[i]);
+					}
+
+					adventure = adventure.hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize(String.join("\n", oldLines))));
+				}
+			}
+		}
+
+		if (!adventure.children().isEmpty()) {
+			final List<Component> newChildren = new ArrayList<>();
+
+			for (final Component child : adventure.children())
+				newChildren.add(fixHoverLosingStyleInLegacyMultiline(child));
+
+			adventure = adventure.children(newChildren);
+		}
+
+		return adventure;
+	}
+
+	/*
+	 * Darken the given color by one shade.
+	 */
+	private TextColor darkenOneShade(@NonNull TextColor color) {
+		final int red = Math.max(color.red() - 1, 0);
+		final int green = color.green();
+		final int blue = color.blue();
+
+		return TextColor.color(red, green, blue);
 	}
 
 	/**
@@ -347,41 +459,38 @@ public abstract class FoundationPlayer {
 	 */
 	public abstract void sendRawMessage(Component component);
 
-	/*
-	 * Implementation of sendMessage(String) for players.
-	 */
-	protected abstract void sendLegacyMessage(String message);
-
 	/**
-	 * Sends a JSON component message to the player.
-	 *
-	 * @param json
-	 */
-	public final void sendJson(String json) {
-		this.sendMessage(SimpleComponent.fromAdventureJson(json));
-	}
-
-	/**
-	 * Sends a title to the player for three seconds.
+	 * Sets tab-list header and/or footer. Header or footer can be null.
 	 *
 	 * Legacy and MiniMessage tags will be replaced.
 	 *
-	 * @param title
-	 * @param subtitle
+	 * @param header the header
+	 * @param footer the footer
 	 */
-	public final void sendTitle(final String title, final String subtitle) {
-		this.sendTitle(20, 3 * 20, 20, title, subtitle);
+	public abstract void sendTablist(final SimpleComponent header, final SimpleComponent footer);
+
+	/**
+	 * Sets tab-list header and/or footer. Header or footer can be null.
+	 *
+	 * Legacy and MiniMessage tags will be replaced.
+	 *
+	 * @param header
+	 * @param footer
+	 */
+	public final void sendTablist(String header, String footer) {
+		this.sendTablist(SimpleComponent.fromMini(header), SimpleComponent.fromMini(footer));
 	}
 
 	/**
-	 * Sends a title to the player for three seconds
+	 * Sends a title to the player.
 	 *
-	 * @param title
-	 * @param subtitle
+	 * @param fadeIn   how long to fade in the title (in ticks)
+	 * @param stay     how long to make the title stay (in ticks)
+	 * @param fadeOut  how long to fade out (in ticks)
+	 * @param title    the title, will be colorized
+	 * @param subtitle the subtitle, will be colorized
 	 */
-	public final void sendTitle(final SimpleComponent title, final SimpleComponent subtitle) {
-		this.sendTitle(20, 3 * 20, 20, title, subtitle);
-	}
+	public abstract void sendTitle(final int fadeIn, final int stay, final int fadeOut, final SimpleComponent title, final SimpleComponent subtitle);
 
 	/**
 	 * Sends a title to the player.
@@ -399,27 +508,76 @@ public abstract class FoundationPlayer {
 	}
 
 	/**
-	 * Sends a title to the player.
+	 * Sends a title to the player for three seconds
 	 *
-	 * @param fadeIn   how long to fade in the title (in ticks)
-	 * @param stay     how long to make the title stay (in ticks)
-	 * @param fadeOut  how long to fade out (in ticks)
-	 * @param title    the title, will be colorized
-	 * @param subtitle the subtitle, will be colorized
+	 * @param title
+	 * @param subtitle
 	 */
-	public abstract void sendTitle(final int fadeIn, final int stay, final int fadeOut, final SimpleComponent title, final SimpleComponent subtitle);
+	public final void sendTitle(final SimpleComponent title, final SimpleComponent subtitle) {
+		this.sendTitle(20, 3 * 20, 20, title, subtitle);
+	}
 
 	/**
-	 * Resets the title that is being displayed to the player.
+	 * Sends a title to the player for three seconds.
+	 *
+	 * Legacy and MiniMessage tags will be replaced.
+	 *
+	 * @param title
+	 * @param subtitle
 	 */
-	public abstract void resetTitle();
+	public final void sendTitle(final String title, final String subtitle) {
+		this.sendTitle(20, 3 * 20, 20, title, subtitle);
+	}
 
 	/**
-	 * Returns the player's IP address and port or null if not a player or not supported by platform.
+	 * Sends a toast to the player if supported by the platform.
 	 *
-	 * @return
+	 * @param message
 	 */
-	public abstract InetSocketAddress getAddress();
+	public final void sendToast(SimpleComponent message) {
+		this.sendToast(message, CompToastStyle.TASK);
+	}
+
+	/**
+	 * Sends a toast to the player if supported by the platform.
+	 *
+	 * @param message
+	 * @param style
+	 */
+	public abstract void sendToast(SimpleComponent message, CompToastStyle style);
+
+	/**
+	 * Sends a toast to the player if supported by the platform.
+	 *
+	 * Legacy and MiniMessage tags will be replaced.
+	 *
+	 * @param message
+	 */
+	public final void sendToast(String message) {
+		this.sendToast(SimpleComponent.fromMini(message));
+	}
+
+	/**
+	 * Sends a toast to the player if supported by the platform.
+	 *
+	 * Legacy and MiniMessage tags will be replaced.
+	 *
+	 * @param message
+	 * @param style
+	 */
+	public final void sendToast(String message, CompToastStyle style) {
+		this.sendToast(SimpleComponent.fromMini(message), style);
+	}
+
+	/**
+	 * Sets a temporary metadata for the player that will be lost after the player quits or server reloads.
+	 *
+	 * @deprecated internal use only. On Bukkit, use CompMetadata instead
+	 * @param key
+	 * @param value
+	 */
+	@Deprecated
+	public abstract void setTempMetadata(String key, Object value);
 
 	/**
 	 * @see Object#toString()

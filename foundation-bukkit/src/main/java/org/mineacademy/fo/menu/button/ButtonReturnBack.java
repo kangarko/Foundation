@@ -36,7 +36,7 @@ public final class ButtonReturnBack extends Button {
 	 * The item for this button
 	 */
 	@Setter
-	private static Supplier<ItemCreator> item = () -> ItemCreator.of(material).name(Lang.legacy("menu-button-return-title")).lore(Lang.legacyArrayVars("menu-button-return-lore"));
+	private static Supplier<ItemCreator> item = () -> ItemCreator.fromMaterial(material).name(Lang.legacy("menu-button-return-title")).lore(Lang.legacyArrayVars("menu-button-return-lore"));
 
 	/**
 	 * The parent menu

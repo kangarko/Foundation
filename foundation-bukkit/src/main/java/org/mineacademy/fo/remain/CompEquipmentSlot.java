@@ -11,9 +11,11 @@ import org.bukkit.entity.Enderman;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
@@ -221,7 +223,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-			
+
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}
@@ -237,6 +239,16 @@ public enum CompEquipmentSlot {
 		Valid.checkNotNull(this.bukkitName, "CompEquipmentSlot." + name() + " does not have a Bukkit counterpart!");
 
 		return this.bukkitName;
+	}
+
+	/**
+	 * Return the Bukkit equipment slot of this equipment
+	 * or throw an error if not found
+	 *
+	 * @return
+	 */
+	public EquipmentSlot toBukkit() {
+		return ReflectionUtil.lookupEnum(EquipmentSlot.class, this.getBukkitName());
 	}
 
 	/**
@@ -300,16 +312,16 @@ public enum CompEquipmentSlot {
 	 */
 	public static void applyArmor(LivingEntity entity, CompColor color, Double dropChance, Set<CompEquipmentSlot> ignoredSlots) {
 		if (!ignoredSlots.contains(HEAD))
-			HEAD.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_HELMET).color(color).make(), dropChance);
+			HEAD.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_HELMET).color(color).make(), dropChance);
 
 		if (!ignoredSlots.contains(CHEST))
-			CHEST.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_CHESTPLATE).color(color).make(), dropChance);
+			CHEST.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_CHESTPLATE).color(color).make(), dropChance);
 
 		if (!ignoredSlots.contains(LEGS))
-			LEGS.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_LEGGINGS).color(color).make(), dropChance);
+			LEGS.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_LEGGINGS).color(color).make(), dropChance);
 
 		if (!ignoredSlots.contains(FEET))
-			FEET.applyTo(entity, ItemCreator.of(CompMaterial.LEATHER_BOOTS).color(color).make(), dropChance);
+			FEET.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_BOOTS).color(color).make(), dropChance);
 	}
 
 	/**

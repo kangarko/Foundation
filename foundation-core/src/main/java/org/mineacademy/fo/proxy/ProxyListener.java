@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.proxy.message.IncomingMessage;
 
 import lombok.AccessLevel;
@@ -85,10 +84,9 @@ public abstract class ProxyListener {
 	 * Called automatically when you receive a plugin message from proxy,
 	 * see https://spigotmc.org/wiki/bukkit-bungee-plugin-messaging-channel
 	 *
-	 * @param audience
 	 * @param message
 	 */
-	public abstract void onMessageReceived(FoundationPlayer audience, IncomingMessage message);
+	public abstract void onMessageReceived(IncomingMessage message);
 
 	/**
 	 * @deprecated internal use only
@@ -118,7 +116,7 @@ public abstract class ProxyListener {
 	 *
 	 * @return
 	 */
-	public static final Set<ProxyListener> getRegisteredlisteners() {
+	public static final Set<ProxyListener> getRegisteredListeners() {
 		return Collections.unmodifiableSet(registeredListeners);
 	}
 }
