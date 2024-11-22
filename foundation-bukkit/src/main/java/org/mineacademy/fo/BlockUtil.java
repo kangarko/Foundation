@@ -501,11 +501,13 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static boolean isTool(final Material material) {
-		return material.name().endsWith("AXE") // axe & pickaxe
-				|| material.name().endsWith("SPADE")
-				|| material.name().endsWith("SWORD")
-				|| material.name().endsWith("HOE")
-				|| material.name().endsWith("BUCKET") // water, milk, lava,..
+		final String name = ReflectionUtil.getEnumName(material);
+
+		return name.endsWith("AXE") // axe & pickaxe
+				|| name.endsWith("SPADE")
+				|| name.endsWith("SWORD")
+				|| name.endsWith("HOE")
+				|| name.endsWith("BUCKET") // water, milk, lava,..
 				|| material == CompMaterial.BOW.getMaterial()
 				|| material == CompMaterial.FISHING_ROD.getMaterial()
 				|| material == CompMaterial.CLOCK.getMaterial()
@@ -520,10 +522,12 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static boolean isArmor(final Material material) {
-		return material.name().endsWith("HELMET")
-				|| material.name().endsWith("CHESTPLATE")
-				|| material.name().endsWith("LEGGINGS")
-				|| material.name().endsWith("BOOTS");
+		final String name = ReflectionUtil.getEnumName(material);
+
+		return name.endsWith("HELMET")
+				|| name.endsWith("CHESTPLATE")
+				|| name.endsWith("LEGGINGS")
+				|| name.endsWith("BOOTS");
 	}
 
 	/**
@@ -819,10 +823,10 @@ public final class BlockUtil {
 		state.setRawData((byte) 0x1);
 
 		try {
-			state.setOwningPlayer(Remain.getOfflinePlayerByUUID(id));
+			state.setOwningPlayer(Remain.getOfflinePlayerByUniqueId(id));
 
 		} catch (final Throwable t) {
-			state.setOwner(Remain.getOfflinePlayerByUUID(id).getName());
+			state.setOwner(Remain.getOfflinePlayerByUniqueId(id).getName());
 		}
 
 		state.update(false, false);
@@ -858,10 +862,10 @@ public final class BlockUtil {
 	 */
 	private static void setToSkull(final Block block) {
 		try {
-			block.setType(Material.valueOf("PLAYER_HEAD"), false);
+			block.setType(ReflectionUtil.lookupEnum(Material.class, "PLAYER_HEAD"), false);
 
 		} catch (final IllegalArgumentException e) {
-			block.setType(Material.valueOf("SKULL"), false);
+			block.setType(ReflectionUtil.lookupEnum(Material.class, "SKULL"), false);
 
 			final Skull state = (Skull) block.getState();
 			state.setSkullType(SkullType.PLAYER);

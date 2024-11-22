@@ -20,7 +20,7 @@ import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.settings.Lang;
 
 import lombok.RequiredArgsConstructor;
@@ -232,6 +232,6 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * A shortcut for registering this event in Bukkit
 	 */
 	public final void register() {
-		Bukkit.getPluginManager().registerEvent(this.eventClass, this, this.priority, this, SimplePlugin.getInstance(), this.ignoreCancelled);
+		Bukkit.getPluginManager().registerEvent(this.eventClass, this, this.priority, this, BukkitPlugin.getInstance(), this.ignoreCancelled);
 	}
 }

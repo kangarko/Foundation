@@ -1,9 +1,6 @@
 package org.mineacademy.fo;
 
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.platform.Platform;
-
-import lombok.Getter;
 
 /**
  * Represents the current Minecraft version the plugin is loaded on.
@@ -13,20 +10,17 @@ public final class MinecraftVersion {
 	/**
 	 * The wrapper representation of the version.
 	 */
-	@Getter
-	private static V current;
+	private static V current = null;
 
 	/**
 	 * The subversion such as 8 in 1.8.8 or 6 in 1.20.6.
 	 */
-	@Getter
-	private static int subversion;
+	private static int subversion = -1;
 
 	/**
 	 * The version wrapper.
 	 */
 	public enum V {
-		v1_22(22),
 		v1_21(21),
 		v1_20(20),
 		v1_19(19),
@@ -64,11 +58,13 @@ public final class MinecraftVersion {
 		/**
 		 * Attempts to get the version from number.
 		 *
+		 * @deprecated internal use only
 		 * @param number
 		 * @return
 		 * @throws RuntimeException if number not found
 		 */
-		protected static V parse(int number) {
+		@Deprecated
+		public static V parse(int number) {
 			for (final V v : values())
 				if (v.minorVersionNumber == number)
 					return v;
@@ -145,21 +141,57 @@ public final class MinecraftVersion {
 	 * @return
 	 */
 	public static String getFullVersion() {
-		return current.toString() + (subversion > 0 ? "." + subversion : "");
+		return getCurrent().toString() + (getSubversion() > 0 ? "." + getSubversion() : "");
 	}
 
-	/*
-	 * Initialize and parse the current Bukkit version, setting version and subversion.
+	/**
+	 * Return the current Minecraft version.
+	 *
+	 * @return
 	 */
-	static {
-		final String bukkitVersion = Platform.getPlatformVersion(); // 1.20.6-R0.1-SNAPSHOT
-		final String versionString = bukkitVersion.split("\\-")[0]; // 1.20.6
-		final String[] versions = versionString.split("\\.");
-		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version '" + bukkitVersion + "', expected '-' and a version number");
+	public static V getCurrent() {
+		ValidCore.checkBoolean(current != null, "Call MinecraftVersion.setVersion() first before calling getCurrent() - or unsupported on this platform (Velocity doesnt support this)");
 
-		final int version = Integer.parseInt(versions[1]); // 20
+		return current;
+	}
 
-		current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
-		subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
+	/**
+	 * Return the current Minecraft subversion.
+	 *
+	 * @return
+	 */
+	public static int getSubversion() {
+		ValidCore.checkBoolean(subversion != -1, "Call MinecraftVersion.setVersion() first before calling getSubversion() - or unsupported on this platform (Velocity doesnt support this)");
+
+		return subversion;
+	}
+
+	/**
+	 * Return true if this server supports reporting Minecraft version.
+	 *
+	 * Bukkit = true, includes subversions
+	 * Bungee = true, excludes subversions
+	 * Velocity = false
+	 *
+	 * @return
+	 */
+	public static boolean hasVersion() {
+		return current != null;
+	}
+
+	/**
+	 * Set the current Minecraft version.
+	 *
+	 * @deprecated internal use only
+	 * @param current
+	 * @param subversion
+	 */
+	@Deprecated
+	public static void setVersion(V current, int subversion) {
+		ValidCore.checkBoolean(MinecraftVersion.current == null, "Version already set to " + MinecraftVersion.current);
+		ValidCore.checkBoolean(MinecraftVersion.subversion == -1, "Subversion already set to " + MinecraftVersion.subversion);
+
+		MinecraftVersion.current = current;
+		MinecraftVersion.subversion = subversion;
 	}
 }

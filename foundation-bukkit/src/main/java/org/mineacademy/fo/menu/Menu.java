@@ -36,8 +36,8 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.SimpleSound;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.remain.Remain;
@@ -69,7 +69,7 @@ public abstract class Menu {
 	 * <p>
 	 * Used in {@link Menu#getMenu(Player)}
 	 */
-	public static final String TAG_MENU_CURRENT = SimplePlugin.getInstance().getName() + "_Menu";
+	public static final String TAG_MENU_CURRENT = BukkitPlugin.getInstance().getName() + "_Menu";
 
 	/**
 	 * An internal metadata tag the player gets when he opens another menu.
@@ -77,7 +77,7 @@ public abstract class Menu {
 	 * <p>
 	 * Used in {@link Menu#getPreviousMenu(Player)}
 	 */
-	public static final String TAG_MENU_PREVIOUS = SimplePlugin.getInstance().getName() + "_Previous_Menu";
+	public static final String TAG_MENU_PREVIOUS = BukkitPlugin.getInstance().getName() + "_Previous_Menu";
 
 	/**
 	 * An internal metadata tag the player gets when he closes our menu so you can
@@ -86,7 +86,7 @@ public abstract class Menu {
 	 * <p>
 	 * Used in {@link Menu#getLastClosedMenu(Player)}
 	 */
-	public static final String TAG_MENU_LAST_CLOSED = SimplePlugin.getInstance().getName() + "_Last_Closed_Menu";
+	public static final String TAG_MENU_LAST_CLOSED = BukkitPlugin.getInstance().getName() + "_Last_Closed_Menu";
 
 	/**
 	 * A placeholder to represent that no item should be displayed/returned
@@ -477,7 +477,7 @@ public abstract class Menu {
 		this.registerButtonsIfHasnt();
 
 		// Draw the menu
-		final InventoryDrawer drawer = InventoryDrawer.of(this.size, this.title);
+		final InventoryDrawer drawer = new InventoryDrawer(this.size, this.title);
 
 		// Allocate items
 		this.compileItems().forEach((slot, item) -> drawer.setItem(slot, item));
@@ -508,7 +508,7 @@ public abstract class Menu {
 			final Menu previous = getMenu(player);
 
 			if (previous != null)
-				player.setMetadata(TAG_MENU_PREVIOUS, new FixedMetadataValue(SimplePlugin.getInstance(), previous));
+				player.setMetadata(TAG_MENU_PREVIOUS, new FixedMetadataValue(BukkitPlugin.getInstance(), previous));
 		}
 
 		// Register current menu
@@ -522,7 +522,7 @@ public abstract class Menu {
 				return;
 			}
 
-			player.setMetadata(TAG_MENU_CURRENT, new FixedMetadataValue(SimplePlugin.getInstance(), Menu.this));
+			player.setMetadata(TAG_MENU_CURRENT, new FixedMetadataValue(BukkitPlugin.getInstance(), Menu.this));
 
 			this.opened = true;
 			this.onPostDisplay(player);
@@ -541,7 +541,7 @@ public abstract class Menu {
 				final ItemStack item = drawer.getItem(slot);
 
 				if (item == null)
-					drawer.setItem(slot, ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "Slot " + slot).make());
+					drawer.setItem(slot, ItemCreator.from(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, "Slot " + slot).make());
 			}
 	}
 
@@ -1160,8 +1160,8 @@ public abstract class Menu {
 	 */
 	@Deprecated
 	public final void handleClose(final Inventory inventory) {
-		this.viewer.removeMetadata(TAG_MENU_CURRENT, SimplePlugin.getInstance());
-		this.viewer.setMetadata(TAG_MENU_LAST_CLOSED, new FixedMetadataValue(SimplePlugin.getInstance(), this));
+		this.viewer.removeMetadata(TAG_MENU_CURRENT, BukkitPlugin.getInstance());
+		this.viewer.setMetadata(TAG_MENU_LAST_CLOSED, new FixedMetadataValue(BukkitPlugin.getInstance(), this));
 		this.opened = false;
 
 		this.onMenuClose(this.viewer, inventory);

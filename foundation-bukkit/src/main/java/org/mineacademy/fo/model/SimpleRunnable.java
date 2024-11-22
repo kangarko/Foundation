@@ -14,6 +14,13 @@ public abstract class SimpleRunnable implements Runnable {
 		this.checkScheduled();
 
 		task.cancel();
+		this.onCancel();
+	}
+
+	/**
+	 * Called after {@link #cancel()}
+	 */
+	protected void onCancel() {
 	}
 
 	/**

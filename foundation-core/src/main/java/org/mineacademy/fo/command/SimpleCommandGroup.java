@@ -195,16 +195,20 @@ public abstract class SimpleCommandGroup {
 	/**
 	 * Automatically registers default Foundation subcommands:
 	 *
-	 * NB: {@link PermsCommand} is not automatically registed as it requires a class in its argument.
+	 * NB: {@link PermsSubCommand} is not automatically registed as it requires a class in its argument.
 	 *
-	 * @see DebugCommand
-	 * @see DumpLocaleCommand
-	 * @see ReloadCommand
+	 * @see DebugSubCommand
+	 * @see DumpLocaleSubCommand
+	 * @see ReloadSubCommand
 	 *
 	 * For platform specific implementations this might register more commands such as RegionCommand on Bukkit, etc.
 	 */
 	public final void registerDefaultSubcommands() {
-		Platform.registerDefaultSubcommands(this);
+		this.registerSubcommand(new DebugSubCommand());
+		this.registerSubcommand(new DumpLocaleSubCommand());
+		this.registerSubcommand(new ReloadSubCommand());
+
+		Platform.registerDefaultPlatformSubcommands(this);
 	}
 
 	// ----------------------------------------------------------------------
@@ -221,8 +225,8 @@ public abstract class SimpleCommandGroup {
 		final List<String> messages = new ArrayList<>();
 
 		messages.add("&8" + CommonCore.chatLineSmooth());
-		messages.add("  " + this.getHeaderPrefix() + Platform.getPlugin().getName() + " &r&7" + Platform.getPlugin().getVersion());
-		messages.add("  ");
+		messages.add(" " + this.getHeaderPrefix() + Platform.getPlugin().getName() + " &r" + this.getSecondaryPrefix() + Platform.getPlugin().getVersion());
+		messages.add(" ");
 
 		final String authors = Platform.getPlugin().getAuthors();
 
@@ -230,10 +234,10 @@ public abstract class SimpleCommandGroup {
 			final int foundedYear = Platform.getPlugin().getFoundedYear();
 			final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
-			messages.add("  " + Lang.plain("command-label-authors") + " &f" + authors + (foundedYear != -1 ? " &7\u00A9 " + foundedYear + (currentYear != foundedYear ? " - " + currentYear : "") : ""));
+			messages.add(" " + this.getSecondaryPrefix() + Lang.plain("command-label-authors") + " &f" + authors + (foundedYear != -1 ? " " + this.getSecondaryPrefix() + "\u00A9 " + foundedYear + (currentYear != foundedYear ? " - " + currentYear : "") : ""));
 		}
 
-		messages.add("  " + this.getCredits());
+		messages.add(" " + this.getSecondaryPrefix() + this.getCredits());
 		messages.add("&8" + CommonCore.chatLineSmooth());
 
 		return messages;
@@ -245,7 +249,7 @@ public abstract class SimpleCommandGroup {
 	 * @return
 	 */
 	protected String getCredits() {
-		return "<gray>Visit <white><click:open_url:'https://mineacademy.org/plugins'>mineacademy.org/plugins</click> <gray>for more information.";
+		return "Visit <white><click:open_url:'https://mineacademy.org/plugins'>mineacademy.org/plugins</click></white> for more information.";
 	}
 
 	/**
@@ -258,10 +262,10 @@ public abstract class SimpleCommandGroup {
 		return new String[] {
 				"  ",
 				"&8" + CommonCore.chatLineSmooth(),
-				"  " + this.getHeaderPrefix() + Platform.getPlugin().getName() + " &r&7" + Platform.getPlugin().getVersion(),
+				"  " + this.getHeaderPrefix() + Platform.getPlugin().getName() + " &r" + this.getSecondaryPrefix() + Platform.getPlugin().getVersion(),
 				"  ",
-				"  &2[] &7= " + Lang.plain("command-label-optional-args"),
-				"  &6<> &7= " + Lang.plain("command-label-required-args"),
+				"  &2[] " + this.getSecondaryPrefix() + "= " + Lang.plain("command-label-optional-args"),
+				"  &6<> " + this.getSecondaryPrefix() + "= " + Lang.plain("command-label-required-args"),
 				"  "
 		};
 	}
@@ -288,6 +292,16 @@ public abstract class SimpleCommandGroup {
 	 */
 	protected String getHeaderPrefix() {
 		return "&6&l";
+	}
+
+	/**
+	 * Return the secondary theme color, should be light gray,
+	 * <#c7b8b8> by default.
+	 *
+	 * @return
+	 */
+	protected String getSecondaryPrefix() {
+		return "<#c7b8b8>";
 	}
 
 	// ----------------------------------------------------------------------

@@ -41,7 +41,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 */
 	@Getter
 	@Setter
-	private ItemStack bottomBarFillerItem = ItemCreator.of(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, " ").make();
+	private ItemStack bottomBarFillerItem = ItemCreator.from(CompMaterial.LIGHT_GRAY_STAINED_GLASS_PANE, " ").make();
 
 	/**
 	 * Temporary store of the edited drop chances here
@@ -114,7 +114,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			public ItemStack getItem() {
 				final boolean chances = MenuContainerChances.this.mode == EditMode.CHANCE;
 
-				return ItemCreator.of(
+				return ItemCreator.from(
 						chances ? CompMaterial.GOLD_NUGGET : CompMaterial.CHEST,
 						"Editing " + MenuContainerChances.this.mode.getKey(),
 						"",

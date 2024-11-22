@@ -51,7 +51,7 @@ public final class ButtonMenu extends Button {
 	 * @param lore
 	 */
 	public ButtonMenu(final Class<? extends Menu> menuClass, final CompMaterial material, final String name, final String... lore) {
-		this(null, () -> ReflectionUtil.instantiate(menuClass), ItemCreator.of(material, name, lore).hideTags(true).make(), false);
+		this(null, () -> ReflectionUtil.instantiate(menuClass), ItemCreator.from(material, name, lore).hideTags(true).make(), false);
 	}
 
 	/**
@@ -83,7 +83,7 @@ public final class ButtonMenu extends Button {
 	 * @param lore
 	 */
 	public ButtonMenu(final Menu menu, final CompMaterial material, final String name, final String... lore) {
-		this(menu, ItemCreator.of(material, name, lore));
+		this(menu, ItemCreator.from(material, name, lore));
 	}
 
 	/**

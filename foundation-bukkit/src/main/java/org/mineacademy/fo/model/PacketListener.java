@@ -12,7 +12,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
@@ -204,7 +204,7 @@ public abstract class PacketListener {
 			final PacketContainer packet = event.getPacket();
 
 			// Ignore dummy instances and disabled plugin or processed players
-			if (!player.isOnline() || !SimplePlugin.getInstance().isEnabled() || this.processedPlayers.contains(playerName))
+			if (!player.isOnline() || !BukkitPlugin.getInstance().isEnabled() || this.processedPlayers.contains(playerName))
 				return;
 
 			// Ignore action bar messages
@@ -251,19 +251,20 @@ public abstract class PacketListener {
 				final StructureModifier<WrappedChatComponent> modifierIChatBaseComponent = this.hasIChatBase ? event.getPacket().getChatComponents() : null;
 
 				String json = null;
+				final boolean legacy = MinecraftVersion.olderThan(V.v1_16);
 
 				if (this.hasAdventure) {
 					final Component component = modifierAdventure.read(0);
 
 					if (component != null)
-						json = GsonComponentSerializer.gson().serialize(component);
+						json = SimpleComponent.fromAdventure(component).toAdventureJson(legacy);
 				}
 
 				if (json == null && !"".equals(json) && !"{}".equals(json) && this.hasBungee) {
 					final BaseComponent[] components = modifierBaseComponent.read(0);
 
 					if (components != null)
-						json = GsonComponentSerializer.gson().serialize(BungeeComponentSerializer.get().deserialize(components));
+						json = SimpleComponent.fromBungee(components, legacy).toAdventureJson(legacy);
 				}
 
 				if (json == null && !"".equals(json) && !"{}".equals(json) && this.hasIChatBase) {
@@ -277,7 +278,7 @@ public abstract class PacketListener {
 
 					// This flag effectivelly doubles processing time from ~0.3ms to ~0.6ms that is why it needs to be explicitly enabled
 					final boolean editJson = this.editJson();
-					final Component oldJson = editJson ? GsonComponentSerializer.gson().deserialize(json) : null;
+					final Component oldJson = editJson ? SimpleComponent.fromAdventureJson(json, legacy).toAdventure() : null;
 
 					try {
 						json = this.onJsonMessage(player, json);
@@ -364,7 +365,7 @@ public abstract class PacketListener {
 		 * @param type
 		 */
 		public SimpleAdapter(final ListenerPriority priority, final PacketType type) {
-			super(SimplePlugin.getInstance(), priority, type);
+			super(BukkitPlugin.getInstance(), priority, type);
 
 			this.type = type;
 		}

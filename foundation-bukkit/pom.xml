@@ -21,29 +21,27 @@
 			<id>papermc</id>
 			<url>https://repo.papermc.io/repository/maven-public/</url>
 		</repository>
-		<repository>
-			<id>spigot-repo</id>
-			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-		</repository>
 	</repositories>
 
 	<dependencies>
-		<!--<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.8.8-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>-->
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
-			<version>1.21.1-R0.1-SNAPSHOT</version>
+			<version>1.21.3-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy</groupId>
 			<artifactId>foundation-core</artifactId>
 			<version>7.0.0</version>
 			<scope>compile</scope>
+		</dependency>
+
+		<!-- Adventure platform -->
+		<dependency>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-platform-bukkit</artifactId>
+			<version>4.3.4</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Only needed for NBT-API -->
@@ -73,7 +71,6 @@
 			<version>9.6.5.0</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- TODO replace by JDA -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>DiscordSRV</artifactId>

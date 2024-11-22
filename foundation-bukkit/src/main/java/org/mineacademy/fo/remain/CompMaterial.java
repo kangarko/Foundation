@@ -35,13 +35,13 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 
 import lombok.Getter;
@@ -1802,7 +1802,7 @@ public enum CompMaterial {
 	/**
 	 * A list of material names that was being used for older verions.
 	 *
-	 * @see #getLegacy()
+	 * @see #getClosestLegacyAlternatives()
 	 */
 	private final String[] legacy;
 
@@ -2040,7 +2040,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static boolean isAir(final Material material) {
-		return material == null || isAir(material.name());
+		return material == null || isAir(ReflectionUtil.getEnumName(material));
 	}
 
 	/**
@@ -2309,8 +2309,8 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(final byte color, final int amount) {
-		return makeWool(CompColor.fromWoolData(color), amount);
+	public static ItemStack makeWoolItem(final byte color, final int amount) {
+		return makeWoolItem(CompColor.fromWoolData(color), amount);
 	}
 
 	/**
@@ -2320,95 +2320,12 @@ public enum CompMaterial {
 	 * @param amount
 	 * @return
 	 */
-	public static ItemStack makeWool(final CompColor color, final int amount) {
+	public static ItemStack makeWoolItem(final CompColor color, final int amount) {
 		if (MinecraftVersion.atLeast(V.v1_13))
-			return new ItemStack(Material.valueOf(color.getDye() + "_WOOL"), amount);
+			return new ItemStack(ReflectionUtil.lookupEnum(Material.class, color.getDye() + "_WOOL"), amount);
 
 		else
-			return new ItemStack(Material.valueOf("WOOL"), amount, color.getDye().getWoolData());
-	}
-
-	/**
-	 * Attempts to convert an {@link EntityType} into a valid {@link CompMaterial}
-	 * representing a spawnable Monster Egg.
-	 * <p>
-	 * In case the entity given is not a valid entity or does not have an egg, we
-	 * return Sheep Monster Egg instead.
-	 *
-	 * @param type
-	 * @return the corresponding egg, or Sheep Monster Egg if does not exist
-	 */
-	public static CompMaterial makeMonsterEgg(final EntityType type) {
-		CompMaterial created = CompMaterial.SHEEP_SPAWN_EGG;
-
-		try {
-			String name = type.toString() + "_SPAWN_EGG";
-
-			// Special cases
-			if (type.name().equals("ZOMBIFIED_PIGLIN"))
-				if (MinecraftVersion.newerThan(V.v1_15))
-					name = "ZOMBIFIED_PIGLIN_SPAWN_EGG";
-				else
-					name = "ZOMBIE_PIGMAN_SPAWN_EGG";
-
-			else if (type.name().equals("MUSHROOM_COW") || type.name().equals("MOOSHROOM"))
-				name = "MOOSHROOM_SPAWN_EGG";
-
-			// Parse normally, backwards compatible
-			final CompMaterial mat = fromString(name);
-
-			if (mat == null || mat.getMaterial().toString().equals("STONE"))
-				created = CompMaterial.SHEEP_SPAWN_EGG;
-
-			else
-				// Return the egg or sheep egg if does not exist
-				created = Common.getOrDefault(mat, CompMaterial.SHEEP_SPAWN_EGG);
-
-		} catch (final Throwable throwable) {
-			Common.error(throwable, "Something went wrong while creating spawn egg!", "Type: " + type);
-		}
-
-		return created;
-	}
-
-	/**
-	 * Reverts back the 1.13+ spawn egg material to {@link EntityType}
-	 *
-	 * @param monsterEgg the monster egg
-	 * @return the egg, or null if does not exist in the current MC version
-	 */
-	public static EntityType makeEntityType(final CompMaterial monsterEgg) {
-		Valid.checkBoolean(monsterEgg.toString().endsWith("_SPAWN_EGG"), "Material " + monsterEgg + " is not a valid monster egg! (Must end with _SPAWN_EGG)");
-
-		final String name = monsterEgg.toString().replace("_SPAWN_EGG", "");
-
-		// Special cases
-		if (name.equals("ZOMBIE_PIGMAN_SPAWN_EGG"))
-			try {
-				return EntityType.ZOMBIFIED_PIGLIN; // PIGMAN
-
-			} catch (final Throwable t) {
-				// MC compatible
-				return EntityType.valueOf("PIG_ZOMBIE");
-			}
-
-		else if (name.equals("MOOSHROOM_SPAWN_EGG")) {
-			try {
-				return EntityType.MOOSHROOM;
-
-			} catch (final Throwable t) {
-				return EntityType.valueOf("MUSHROOM_COW");
-			}
-
-		} else
-			// Parse normally, backwards compatible
-			try {
-				return EntityType.valueOf(name);
-			} catch (final IllegalArgumentException ex) {
-				// Does not exist for the current MC version
-			}
-
-		return null;
+			return new ItemStack(ReflectionUtil.lookupEnum(Material.class, "WOOL"), amount, color.getDye().getWoolData());
 	}
 
 	/*
@@ -2520,7 +2437,7 @@ public enum CompMaterial {
 	 * @since 2.0.0
 	 */
 	public static CompMaterial fromItem(@NonNull ItemStack item) {
-		final String material = item.getType().name();
+		final String material = ReflectionUtil.getEnumName(item.getType());
 		final byte data = (byte) (Data.ISFLAT || item.getType().getMaxDurability() > 0 ? 0 : item.getDurability());
 
 		CompMaterial compmaterial = fromLegacy(material, data);
@@ -2549,8 +2466,8 @@ public enum CompMaterial {
 			return CompMaterial.valueOf(material.toString());
 
 		} catch (final Throwable t) {
-			final CompMaterial compmaterial = fromLegacy(material.name(), UNKNOWN_DATA_VALUE);
-			Valid.checkNotNull(compmaterial, "Unsupported material with no data value: " + material.name());
+			final CompMaterial compmaterial = fromLegacy(ReflectionUtil.getEnumName(material), UNKNOWN_DATA_VALUE);
+			Valid.checkNotNull(compmaterial, "Unsupported material with no data value: " + material);
 
 			return compmaterial;
 
@@ -2754,7 +2671,6 @@ public enum CompMaterial {
 	 * @since 8.0.0
 	 */
 	private boolean isPlural() {
-		// this.name().charAt(this.name().length() - 1) == 'S'
 		return this == CARROTS || this == POTATOES;
 	}
 

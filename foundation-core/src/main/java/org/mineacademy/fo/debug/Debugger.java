@@ -1,14 +1,18 @@
 package org.mineacademy.fo.debug;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.HandledException;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -23,6 +27,11 @@ import lombok.NonNull;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Debugger {
+
+	/**
+	 * Used to prevent duplicated reporting to sentry
+	 */
+	private static final Set<String> reportedExceptions = new HashSet<>();
 
 	/**
 	 * Logs a message to the console if the section name is within {@link SimpleSettings#DEBUG_SECTIONS}
@@ -85,53 +94,61 @@ public final class Debugger {
 		final FoundationPlugin plugin = Platform.getPlugin();
 
 		// Ignore PlugMan errors
-		for (final StackTraceElement element : throwable.getStackTrace()) {
-			if (element.getClassName().contains(".plugman."))
+		for (final StackTraceElement element : throwable.getStackTrace())
+			if (element.getClassName().contains(".plugman.") || element.getClassName().contains(".plugmanx.")) {
 				CommonCore.warning("Please do not use PlugMan to interact with " + Platform.getPlugin().getName() + " because it causes issues. Restart your server or use the inbuilt reload command instead.");
 
-			return;
-		}
+				return;
+			}
 
 		if (plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;
 
-			if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
-				plugin.loadLibrary("io.sentry", "sentry", "8.0.0-beta.1");
+			// Prevent duplicated reporting
+			final String key = Arrays.toString(throwable.getStackTrace());
 
-			Platform.runTaskAsync(() -> {
+			if (!reportedExceptions.contains(key)) {
 
-				// Need to address the bug where a globally included sentry has the DSN of the first plugin
-				Sentry.init(options -> {
+				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
+					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-beta.2");
 
-					// Prevent exceptions from other plugins from being caught
-					options.setEnableUncaughtExceptionHandler(false);
+				Platform.runTaskAsync(() -> {
 
-					options.setDsn(plugin.getSentryDsn());
-					options.setTracesSampleRate(0.0);
+					// Need to address the bug where a globally included sentry has the DSN of the first plugin
+					Sentry.init(options -> {
 
-					// Add plugin name and version to Sentry context
-					options.setBeforeSend((event, hint) -> {
-						event.setRelease(plugin.getVersion());
-						event.setServerName(null);
-						event.setDist(Platform.getPlatformVersion());
-						event.setTag("plugin_name", plugin.getName());
-						event.setTag("plugin_version", plugin.getVersion());
-						event.setTag("server_version", Platform.getPlatformVersion());
-						event.setTag("server_distro", Platform.getPlatformName());
+						// Prevent exceptions from other plugins from being caught
+						options.setEnableUncaughtExceptionHandler(false);
 
-						if ("%%__BUILTBYBIT__%%".equals("true")) {
-							event.setTag("bbb_user_id", "%%__USER__%%");
-							event.setTag("bbb_user_name", "%%__USERNAME__%%");
-							event.setTag("bbb_user_name", "%%__USERNAME__%%");
-							event.setTag("bbb_nonce", "%%__NONCE__%%");
-						}
+						options.setDsn(plugin.getSentryDsn());
+						options.setTracesSampleRate(0.0);
 
-						return event;
+						// Add plugin name and version to Sentry context
+						options.setBeforeSend((event, hint) -> {
+							event.setRelease(plugin.getVersion());
+							event.setServerName(null);
+							event.setDist(Platform.getPlatformVersion());
+							event.setTag("plugin_name", plugin.getName());
+							event.setTag("plugin_version", plugin.getVersion());
+							event.setTag("server_version", Platform.getPlatformVersion());
+							event.setTag("server_distro", Platform.getPlatformName());
+
+							if ("%%__BUILTBYBIT__%%".equals("true")) {
+								event.setTag("bbb_user_id", "%%__USER__%%");
+								event.setTag("bbb_user_name", "%%__USERNAME__%%");
+								event.setTag("bbb_user_name", "%%__USERNAME__%%");
+								event.setTag("bbb_nonce", "%%__NONCE__%%");
+							}
+
+							return event;
+						});
 					});
+
+					Sentry.captureException(finalThrowable);
 				});
 
-				Sentry.captureException(finalThrowable);
-			});
+				reportedExceptions.add(key);
+			}
 		}
 
 		// Else, only log locally.
@@ -141,13 +158,14 @@ public final class Debugger {
 			try {
 				final List<String> lines = new ArrayList<>();
 				final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + throwable.getClass().getSimpleName();
+				final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 				// Write out header and server info
 				fill(lines,
-						"------------------------------------[ " + TimeUtil.getFormattedDate() + " ]-----------------------------------",
+						"------------------------------------[ " + date.format(new Date()) + " ]-----------------------------------",
 						header,
 						systemInfo,
-						"Plugins: " + CommonCore.join(Platform.getServerPlugins()),
+						"Plugins: " + CommonCore.join(Platform.getPlugins()),
 						"----------------------------------------------------------------------------------------------");
 
 				// Write additional data
@@ -189,10 +207,17 @@ public final class Debugger {
 			} catch (final Throwable secondError) {
 
 				// Use system in case CommonCore#log threw the error
-				log("Got error when saving another error! Saving error:" + secondError);
+				log(CommonCore.configLine());
+				log("Got error when saving another error!");
 				log("Original error that is not saved:");
-
+				log(CommonCore.configLine());
 				throwable.printStackTrace();
+
+				log(CommonCore.configLine());
+				log("New error:");
+				log(CommonCore.configLine());
+				secondError.printStackTrace();
+				log(CommonCore.configLine());
 			}
 		}
 	}
@@ -271,6 +296,9 @@ public final class Debugger {
 	 */
 	public static void printStackTrace(@NonNull Throwable throwable) {
 
+		if (throwable instanceof HandledException)
+			return;
+
 		// Load all causes
 		final List<Throwable> causes = new ArrayList<>();
 
@@ -285,6 +313,7 @@ public final class Debugger {
 		if (throwable instanceof FoException && !causes.isEmpty())
 			// Do not print parent exception if we are only wrapping it, saves console spam
 			log(throwable.getMessage());
+
 		else {
 			log(throwable.toString());
 
@@ -315,20 +344,23 @@ public final class Debugger {
 	 * Returns whether a line is suitable for printing as an error line.
 	 * We ignore stuff from NMS and other spam as this is not needed.
 	 *
-	 * @param message
+	 * @param stackTraceLine
 	 * @return
 	 */
-	private static boolean canPrint(String message) {
-		return !message.contains("net.minecraft") &&
-				!message.contains("org.bukkit.craftbukkit") &&
-				!message.contains("org.github.paperspigot.ServerScheduler") &&
-				!message.contains("nashorn") &&
-				!message.contains("javax.script") &&
-				!message.contains("org.yaml.snakeyaml") &&
-				!message.contains("sun.reflect") &&
-				!message.contains("sun.misc") &&
-				!message.contains("java.lang.Thread.run") &&
-				!message.contains("java.util.concurrent.ThreadPoolExecutor");
+	private static boolean canPrint(String stackTraceLine) {
+		return !stackTraceLine.startsWith("net.minecraft") &&
+				!stackTraceLine.startsWith("org.bukkit.") &&
+				!stackTraceLine.startsWith("org.github.paperspigot.") &&
+				!stackTraceLine.startsWith("java.") &&
+				!stackTraceLine.startsWith("javax.script") &&
+				!stackTraceLine.startsWith("nashorn") &&
+				!stackTraceLine.startsWith("org.yaml.snakeyaml") &&
+				!stackTraceLine.startsWith("sun.reflect") &&
+				!stackTraceLine.startsWith("sun.misc");
+
+		//!stackTraceLine.contains("org.bukkit.craftbukkit") &&
+		//!stackTraceLine.contains("java.lang.Thread.run") &&
+		//!stackTraceLine.contains("java.util.concurrent.ThreadPoolExecutor");
 	}
 
 	/*

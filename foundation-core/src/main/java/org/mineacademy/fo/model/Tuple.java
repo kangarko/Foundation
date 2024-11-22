@@ -31,7 +31,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray("Key", this.key, "Value", this.value);
+		return SerializedMap.fromArray("Key", this.key, "Value", this.value);
 	}
 
 	/**

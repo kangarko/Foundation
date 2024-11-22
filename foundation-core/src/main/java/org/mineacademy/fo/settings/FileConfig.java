@@ -10,7 +10,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -128,7 +127,7 @@ public abstract class FileConfig extends ConfigSection {
 			throw err;
 
 		} catch (final Exception ex) {
-			CommonCore.error(ex, "Cannot load config from file " + file);
+			CommonCore.throwError(ex, "Cannot load config from file " + file);
 		}
 	}
 
@@ -148,7 +147,7 @@ public abstract class FileConfig extends ConfigSection {
 			this.loadFromString(String.join("\n", content));
 
 		} catch (final Exception ex) {
-			CommonCore.error(ex, "Cannot load config from JAR path " + internalPath);
+			CommonCore.throwError(ex, "Cannot load config from JAR path " + internalPath);
 		}
 	}
 
@@ -222,7 +221,7 @@ public abstract class FileConfig extends ConfigSection {
 			}
 
 		} catch (final IOException ex) {
-			CommonCore.error(ex, "Error saving " + this.file);
+			CommonCore.throwError(ex, "Error saving " + this.file);
 		}
 	}
 
@@ -664,7 +663,7 @@ public abstract class FileConfig extends ConfigSection {
 	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
 		final Object object = this.getObject(key);
 
-		return object != null ? Tuple.deserialize(SerializedMap.of(object), keyType, valueType) : def;
+		return object != null ? Tuple.deserialize(SerializedMap.fromObject(object), keyType, valueType) : def;
 	}
 
 	/**
@@ -705,45 +704,6 @@ public abstract class FileConfig extends ConfigSection {
 		final String raw = this.getString(path, def);
 
 		return raw == null ? null : CaseNumberFormat.fromString(raw);
-	}
-
-	/**
-	 * Return a timezone. This is stored as a String such as "Europe/Berlin".
-	 *
-	 * If the object is null, and default configuration is set, we automatically
-	 * copy it from defaults to this config's map (we do not save it to file yet,
-	 * you need to call save() for this) and return the default.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public final ZoneId getTimezone(String path) {
-		return this.getTimezone(path, null);
-	}
-
-	/**
-	 * Return a timezone. This is stored as a String such as "Europe/Berlin".
-	 *
-	 * If the object is null, and default configuration is set, we automatically
-	 * copy it from defaults to this config's map (we do not save it to file yet,
-	 * you need to call save() for this) and return the default.
-	 *
-	 * If the config and default config return the object as null,
-	 * the "def" value is returned.
-	 *
-	 * @param path
-	 * @param def
-	 * @return
-	 */
-	public final ZoneId getTimezone(String path, ZoneId def) {
-		final String raw = this.getString(path);
-
-		try {
-			return raw != null && !"".equals(raw) ? java.time.ZoneId.of(raw) : def;
-
-		} catch (final Throwable t) {
-			throw new IllegalArgumentException("Path '" + this.buildPathPrefix(path) + "' in " + this.getFile() + " contains invalid timezone '" + raw + "'! Valid syntax: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids");
-		}
 	}
 
 	/**
@@ -978,7 +938,7 @@ public abstract class FileConfig extends ConfigSection {
 				if (object == null)
 					tuples.add(null);
 				else {
-					final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.of(object), tupleKey, tupleValue);
+					final Tuple<K, V> tuple = Tuple.deserialize(SerializedMap.fromObject(object), tupleKey, tupleValue);
 
 					tuples.add(tuple);
 				}
@@ -1032,7 +992,7 @@ public abstract class FileConfig extends ConfigSection {
 
 		// Load key-value pairs from config to our map
 		if (section != null)
-			for (final Map.Entry<String, Object> entry : SerializedMap.of(section).entrySet()) {
+			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(section).entrySet()) {
 				final Key key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
 				final List<Value> value = SerializeUtilCore.deserialize(Language.YAML, List.class, entry.getValue(), setDeserializeParameters);
 
@@ -1190,7 +1150,7 @@ public abstract class FileConfig extends ConfigSection {
 	public final SerializedMap getMap(final String path) {
 		final Object object = this.getObject(path);
 
-		return object != null ? SerializedMap.of(object) : new SerializedMap();
+		return object != null ? SerializedMap.fromObject(object) : new SerializedMap();
 	}
 
 	/**
@@ -1217,7 +1177,7 @@ public abstract class FileConfig extends ConfigSection {
 		final Object savedKeys = this.getObject(path);
 
 		if (savedKeys != null)
-			for (final Map.Entry<String, Object> entry : SerializedMap.of(savedKeys)) {
+			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(savedKeys)) {
 				final Key key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
 				final Value value = SerializeUtilCore.deserialize(Language.YAML, valueType, entry.getValue(), valueDeserializeParams);
 

@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.mineacademy.fo.CommonCore;
+
 /**
  * A reflection-based helper for resolving transitive dependencies. It automatically
  * downloads Libby Maven Resolver to resolve transitive dependencies.
@@ -182,8 +184,11 @@ final class TransitiveDependencyHelper {
 
 				transitiveLibraries.add(libraryBuilder.build());
 			}
-		} catch (final ReflectiveOperationException e) {
-			throw new RuntimeException(e);
+		} catch (ReflectiveOperationException ex) {
+			while (ex.getCause() != null)
+				ex = (ReflectiveOperationException) ex.getCause();
+
+			CommonCore.sneaky(ex);
 		}
 
 		return Collections.unmodifiableCollection(transitiveLibraries);

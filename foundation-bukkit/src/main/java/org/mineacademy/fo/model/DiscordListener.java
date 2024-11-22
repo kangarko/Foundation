@@ -18,7 +18,7 @@ import org.bukkit.event.Listener;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.Remain;
 
 import github.scarsz.discordsrv.DiscordSRV;
@@ -492,7 +492,7 @@ public abstract class DiscordListener implements Listener {
 		 */
 		public void registerHook() {
 			try {
-				DiscordSRV.getPlugin().getPluginHooks().add(SimplePlugin::getInstance);
+				DiscordSRV.getPlugin().getPluginHooks().add(BukkitPlugin::getInstance);
 
 			} catch (final Error err) {
 				// Support previous Discord versions
@@ -506,7 +506,7 @@ public abstract class DiscordListener implements Listener {
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceived(DiscordGuildMessagePreProcessEvent event) {
-			synchronized (SimplePlugin.getInstance()) {
+			synchronized (BukkitPlugin.getInstance()) {
 				for (final DiscordListener listener : registeredListeners)
 					try {
 						listener.handleMessageReceived(event);
@@ -531,7 +531,7 @@ public abstract class DiscordListener implements Listener {
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
-			synchronized (SimplePlugin.getInstance()) {
+			synchronized (BukkitPlugin.getInstance()) {
 				for (final DiscordListener listener : registeredListeners)
 					try {
 						listener.handleMessageReceivedLate(event);
@@ -557,7 +557,7 @@ public abstract class DiscordListener implements Listener {
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageSend(GameChatMessagePreProcessEvent event) {
-			synchronized (SimplePlugin.getInstance()) {
+			synchronized (BukkitPlugin.getInstance()) {
 				for (final DiscordListener listener : registeredListeners)
 					try {
 						listener.onMessageSent(event);

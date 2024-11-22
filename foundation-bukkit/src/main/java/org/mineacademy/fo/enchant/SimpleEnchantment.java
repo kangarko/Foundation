@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -462,8 +461,6 @@ public abstract class SimpleEnchantment implements Listener {
 
 	/**
 	 * Return the namedspaced name
-	 *
-	 * Use new NamespacedKey(SimplePlugin.getInstance(), this.name)) to convert on MC 1.13+ to a {@link NamespacedKey}.
 	 *
 	 * @return
 	 */

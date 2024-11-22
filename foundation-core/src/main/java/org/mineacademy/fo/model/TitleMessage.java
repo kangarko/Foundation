@@ -75,7 +75,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 */
 	@Override
 	public SerializedMap serialize() {
-		return SerializedMap.ofArray(
+		return SerializedMap.fromArray(
 				"title", this.titleMessage.toMini(),
 				"subtitle", this.subtitleMessage.toMini(),
 				"fadeIn", this.fadeIn,
@@ -109,8 +109,8 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param fadeOut
 	 * @return
 	 */
-	public static TitleMessage of(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-		return of(SimpleComponent.fromMini(title), SimpleComponent.fromMini(subtitle), fadeIn, stay, fadeOut);
+	public static TitleMessage from(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+		return from(SimpleComponent.fromMini(title), SimpleComponent.fromMini(subtitle), fadeIn, stay, fadeOut);
 	}
 
 	/**
@@ -123,7 +123,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param fadeOut
 	 * @return
 	 */
-	public static TitleMessage of(SimpleComponent title, SimpleComponent subtitle, int fadeIn, int stay, int fadeOut) {
+	public static TitleMessage from(SimpleComponent title, SimpleComponent subtitle, int fadeIn, int stay, int fadeOut) {
 		return new TitleMessage(title, subtitle, fadeIn, stay, fadeOut);
 	}
 }

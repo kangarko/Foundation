@@ -41,7 +41,7 @@ public abstract class SimpleTrait extends Trait {
 	 */
 	@Override
 	public final void load(DataKey key) {
-		final SerializedMap map = SerializedMap.of(Language.JSON, key.getString("Data"));
+		final SerializedMap map = SerializedMap.fromObject(Language.JSON, key.getString("Data"));
 
 		this.load(map);
 	}

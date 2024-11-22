@@ -40,7 +40,7 @@ import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
 
@@ -180,7 +180,7 @@ public final class HookManager {
 				discordSRVHook = new DiscordSRVHook();
 
 			} catch (final ClassNotFoundException ex) {
-				Common.error(ex, "&c" + SimplePlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
+				Common.error(ex, "&c" + BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 
 		if (Platform.isPluginInstalled("Essentials"))
@@ -1388,6 +1388,17 @@ public final class HookManager {
 	}
 
 	/**
+	 * Returns the player's primary permission group using Vault, or an empty
+	 * string if they don't have one.
+	 *
+	 * @param player the player to check.
+	 * @return
+	 */
+	public static String getPlayerPrimaryGroup(final OfflinePlayer player) {
+		return isVaultLoaded() ? vaultHook.getPrimaryGroup(player) : "";
+	}
+
+	/**
 	 * Returns true if Vault was able to find a suitable chat plugin to hook
 	 * into.
 	 *
@@ -2375,6 +2386,15 @@ class VaultHook {
 		}
 	}
 
+	String getPrimaryGroup(final OfflinePlayer player) {
+		try {
+			return this.permissions != null ? this.permissions.getPrimaryGroup((String) null, player) : "";
+
+		} catch (final UnsupportedOperationException t) {
+			return ""; // No supported plugin installed.
+		}
+	}
+
 	// ------------------------------------------------------------------------------
 	// Prefix / Suffix
 	// ------------------------------------------------------------------------------
@@ -2663,7 +2683,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getAuthor() {
-			return SimplePlugin.getInstance().getDescription().getAuthors().toString();
+			return BukkitPlugin.getInstance().getDescription().getAuthors().toString();
 		}
 
 		/**
@@ -2677,7 +2697,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getIdentifier() {
-			return SimplePlugin.getInstance().getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
+			return BukkitPlugin.getInstance().getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
 		}
 
 		/**
@@ -2690,7 +2710,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getVersion() {
-			return SimplePlugin.getInstance().getDescription().getVersion();
+			return BukkitPlugin.getInstance().getDescription().getVersion();
 		}
 
 		/**
@@ -2852,7 +2872,7 @@ class LWCHook {
 			final Object ownerUid = ReflectionUtil.invoke("getOwner", protection);
 
 			if (ownerUid != null) {
-				final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUUID(UUID.fromString(ownerUid.toString()));
+				final OfflinePlayer offlinePlayer = Remain.getOfflinePlayerByUniqueId(UUID.fromString(ownerUid.toString()));
 
 				if (offlinePlayer != null)
 					return offlinePlayer.getName();
@@ -3735,7 +3755,7 @@ class LandsHook {
 
 		final Method of = ReflectionUtil.getMethod(lands, "of", Plugin.class);
 
-		this.landsClass = ReflectionUtil.invokeStatic(of, SimplePlugin.getInstance());
+		this.landsClass = ReflectionUtil.invokeStatic(of, BukkitPlugin.getInstance());
 		this.getArea = ReflectionUtil.getMethod(lands, "getArea", Location.class);
 		this.getLand = ReflectionUtil.getMethod(area, "getLand");
 		this.getName = ReflectionUtil.getMethod(land, "getName");
@@ -3775,11 +3795,21 @@ class LandsHook {
 class LiteBansHook {
 
 	private final Set<String> mutedPlayerUids = new HashSet<>();
-	private final Object instance;
-	private final Method methodPrepareStatement;
+	private Object instance;
+	private Method methodPrepareStatement;
 
 	LiteBansHook() {
-		final Class<?> classDatabase = ReflectionUtil.lookupClass("litebans.api.Database");
+
+		final Class<?> classDatabase;
+
+		try {
+			classDatabase = Class.forName("litebans.api.Database");
+
+		} catch (final ClassNotFoundException ex) {
+			Common.log("LiteBans API not found, skipping integration.");
+
+			return;
+		}
 
 		this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
 		this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
@@ -3791,6 +3821,9 @@ class LiteBansHook {
 
 			@Override
 			public void run() {
+				if (methodPrepareStatement == null)
+					return;
+
 				mutedPlayerUids.clear();
 
 				try (PreparedStatement statement = ReflectionUtil.invoke(methodPrepareStatement, instance, "SELECT * FROM {mutes}")) {

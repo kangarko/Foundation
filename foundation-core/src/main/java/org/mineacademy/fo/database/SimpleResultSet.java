@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.mineacademy.fo.CommonCore;
@@ -12,17 +14,18 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.exception.InvalidRowException;
+import org.mineacademy.fo.exception.InvalidWorldException;
+import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.platform.Platform;
 
-import lombok.AccessLevel;
+import com.google.gson.reflect.TypeToken;
+
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a simple ResultSet wrapper with additional utility methods.
  */
 @Getter
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public final class SimpleResultSet {
 
 	/**
@@ -34,6 +37,11 @@ public final class SimpleResultSet {
 	 * The delegate result set.
 	 */
 	private final ResultSet delegate;
+
+	private SimpleResultSet(Table table, ResultSet resultSet) {
+		this.tableName = table.getName();
+		this.delegate = resultSet;
+	}
 
 	/**
 	 * Closes the ResultSet and frees up any resources.
@@ -68,6 +76,52 @@ public final class SimpleResultSet {
 
 		try {
 			return SerializeUtilCore.deserialize(Language.JSON, typeOf, value);
+
+		} catch (final Throwable ex) {
+			CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+
+			throw new InvalidRowException();
+		}
+	}
+
+	/**
+	 * Retrieve a list of items from the column specified by its label.
+	 *
+	 * @param <T>
+	 * @param columnLabel
+	 * @param typeOf
+	 * @return
+	 * @throws SQLException
+	 */
+	public <T> List<T> getList(String columnLabel, Class<T> typeOf) throws SQLException {
+		final String value = this.getString(columnLabel);
+
+		if (value == null || "".equals(value))
+			return null;
+
+		try {
+			final List<String> stringList = CommonCore.GSON.fromJson(value, new TypeToken<List<String>>() {
+			}.getType());
+
+			final List<T> list = new ArrayList<>();
+
+			for (final String element : stringList) {
+				try {
+					list.add(SerializeUtilCore.deserialize(Language.JSON, typeOf, element));
+
+				} catch (final Throwable ex) {
+					Throwable t = ex;
+
+					while (t.getCause() != null)
+						t = t.getCause();
+
+					// Get to the root cause and then ignore if the world is not loaded anymore.
+					if (t instanceof InvalidWorldException)
+						continue;
+				}
+			}
+
+			return list;
 
 		} catch (final Throwable ex) {
 			CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
@@ -301,6 +355,21 @@ public final class SimpleResultSet {
 	}
 
 	/**
+	 * Retrieve a location from the world and "x y z" columns.
+	 *
+	 * @param worldColumn
+	 * @param positionColumn
+	 * @return
+	 * @throws SQLException
+	 */
+	public SimpleLocation getLocation(String worldColumn, String positionColumn) throws SQLException {
+		final String worldName = this.getStringStrict(worldColumn);
+		final int[] position = this.getLocationArrayStrict(positionColumn);
+
+		return new SimpleLocation(worldName, position[0], position[1], position[2]);
+	}
+
+	/**
 	 * Retrieve a location array (x, y, z) from the column specified by its label strictly.
 	 *
 	 * @param columnLabel the label of the column
@@ -326,9 +395,9 @@ public final class SimpleResultSet {
 		}
 
 		return new int[] {
-				Integer.parseInt(split[0]),
-				Integer.parseInt(split[1]),
-				Integer.parseInt(split[2])
+				(int) Double.parseDouble(split[0]), // convert decimals
+				(int) Double.parseDouble(split[1]),
+				(int) Double.parseDouble(split[2])
 		};
 	}
 
@@ -617,5 +686,16 @@ public final class SimpleResultSet {
 	 */
 	public boolean next() throws SQLException {
 		return delegate.next();
+	}
+
+	/**
+	 * Wrap the given result set with the specified table name.
+	 *
+	 * @param table
+	 * @param resultSet
+	 * @return
+	 */
+	public static SimpleResultSet wrap(Table table, ResultSet resultSet) {
+		return new SimpleResultSet(table, resultSet);
 	}
 }

@@ -38,12 +38,10 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.menu.Menu;
-import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.SimplePlugin;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.CompAttribute;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
@@ -97,7 +95,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param message
 	 */
-	public static void kick(final Player player, final String... message) {
+	/*public static void kick(final Player player, final String... message) {
 		final String reason = CompChatColor.translateColorCodes(String.join("\n", message));
 
 		if (Bukkit.isPrimaryThread())
@@ -105,32 +103,7 @@ public final class PlayerUtil {
 
 		else
 			Platform.runTask(() -> player.kickPlayer(reason));
-	}
-
-	/**
-	 * Kicks the player on the main thread with a component.
-	 *
-	 * This method can safely be called from an async thread.
-	 *
-	 * @param player
-	 * @param component
-	 */
-	public static void kick(final Player player, final SimpleComponent component) {
-		if (Bukkit.isPrimaryThread())
-			kickComponent(player, component);
-
-		else
-			Platform.runTask(() -> kickComponent(player, component));
-	}
-
-	private static void kickComponent(Player player, SimpleComponent component) {
-		try {
-			player.kick(component.toAdventure());
-
-		} catch (final NoSuchMethodError err) {
-			player.kickPlayer(component.toLegacy());
-		}
-	}
+	}*/
 
 	/**
 	 * Converts where the player is looking into a block face.
@@ -536,7 +509,7 @@ public final class PlayerUtil {
 	public static void storeState(final Player player) {
 		Valid.checkBoolean(!hasStoredState(player), "Player " + player.getName() + " already has a stored state!");
 
-		final SerializedMap data = SerializedMap.ofArray(
+		final SerializedMap data = SerializedMap.fromArray(
 				"gameMode", player.getGameMode(),
 				"content", player.getInventory().getContents(),
 				"armorContent", player.getInventory().getArmorContents(),
@@ -729,7 +702,7 @@ public final class PlayerUtil {
 
 		// Re-add metadata if vanished
 		if (vanished)
-			player.setMetadata("vanished", new FixedMetadataValue(SimplePlugin.getInstance(), true));
+			player.setMetadata("vanished", new FixedMetadataValue(BukkitPlugin.getInstance(), true));
 
 		// NMS
 		Remain.setInvisible(player, vanished);

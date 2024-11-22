@@ -15,13 +15,13 @@ import org.mineacademy.fo.settings.Lang;
  * into the chat to process it. Such as the Boss plugin asks to type a Boss
  * name the player wants to create.
  */
-public final class ConversationCommand extends SimpleSubCommand {
+public final class ConversationSubCommand extends SimpleSubCommand {
 
 	/**
 	 * Create a new sub-command with the "conversation" and "convo" aliases registered in your
 	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
 	 */
-	public ConversationCommand() {
+	public ConversationSubCommand() {
 		this("conversation|convo");
 	}
 
@@ -31,7 +31,7 @@ public final class ConversationCommand extends SimpleSubCommand {
 	 *
 	 * @param label
 	 */
-	public ConversationCommand(String label) {
+	public ConversationSubCommand(String label) {
 		super(label);
 
 		this.setProperties();
@@ -42,7 +42,7 @@ public final class ConversationCommand extends SimpleSubCommand {
 	 *
 	 * @param group
 	 */
-	public ConversationCommand(SimpleCommandGroup group) {
+	public ConversationSubCommand(SimpleCommandGroup group) {
 		this(group, "conversation|convo");
 	}
 
@@ -52,7 +52,7 @@ public final class ConversationCommand extends SimpleSubCommand {
 	 * @param group
 	 * @param label
 	 */
-	public ConversationCommand(SimpleCommandGroup group, String label) {
+	public ConversationSubCommand(SimpleCommandGroup group, String label) {
 		super(group, label);
 
 		this.setProperties();

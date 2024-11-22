@@ -67,6 +67,12 @@ public class CommandException extends RuntimeException {
 	 */
 	@Override
 	public final String getMessage() {
-		return this.components != null ? SimpleComponent.fromChildren(this.components).toLegacy() : "";
+		final StringBuilder builder = new StringBuilder();
+
+		if (this.components != null)
+			for (final SimpleComponent component : this.components)
+				builder.append(component.toLegacy());
+
+		return builder.toString();
 	}
 }

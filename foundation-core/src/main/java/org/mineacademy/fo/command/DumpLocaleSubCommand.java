@@ -8,13 +8,13 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-public final class DumpLocaleCommand extends SimpleSubCommandCore {
+public final class DumpLocaleSubCommand extends SimpleSubCommandCore {
 
 	/**
 	 * Create a new sub-command with the "dumplocale" and "dumploc" aliases registered in your
 	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
 	 */
-	public DumpLocaleCommand() {
+	public DumpLocaleSubCommand() {
 		this("dumplocale|dumploc");
 	}
 
@@ -24,7 +24,7 @@ public final class DumpLocaleCommand extends SimpleSubCommandCore {
 	 *
 	 * @param label
 	 */
-	public DumpLocaleCommand(String label) {
+	public DumpLocaleSubCommand(String label) {
 		super(label);
 
 		this.setProperties();
@@ -35,7 +35,7 @@ public final class DumpLocaleCommand extends SimpleSubCommandCore {
 	 *
 	 * @param group
 	 */
-	public DumpLocaleCommand(SimpleCommandGroup group) {
+	public DumpLocaleSubCommand(SimpleCommandGroup group) {
 		this(group, "dumplocale|dumploc");
 	}
 
@@ -45,7 +45,7 @@ public final class DumpLocaleCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param label
 	 */
-	public DumpLocaleCommand(SimpleCommandGroup group, String label) {
+	public DumpLocaleSubCommand(SimpleCommandGroup group, String label) {
 		super(group, label);
 
 		this.setProperties();
