@@ -532,7 +532,6 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public ItemCreator bookPages(List<String> pages) {
-
 		if (this.bookPages == null)
 			this.bookPages = new ArrayList<>();
 
@@ -805,8 +804,12 @@ public final class ItemCreator {
 			if (!this.lores.isEmpty()) {
 				final List<String> coloredLores = new ArrayList<>();
 
-				for (final String lore : this.lores)
-					coloredLores.add(CompChatColor.translateColorCodes((lorePrefix != null ? lorePrefix : "") + lore));
+				for (String lore : this.lores) {
+					lore = CompChatColor.translateColorCodes((lorePrefix != null ? lorePrefix : "") + lore);
+
+					for (final String split : Common.split(lore, 40))
+						coloredLores.add(split);
+				}
 
 				((ItemMeta) compiledMeta).setLore(coloredLores);
 			}
