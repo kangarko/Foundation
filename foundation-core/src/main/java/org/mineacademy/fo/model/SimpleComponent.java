@@ -22,6 +22,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -536,8 +537,11 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	/**
 	 * Return the MiniMessage representation of the component.
 	 *
+	 * @deprecated a bug in MiniMessage converts gradients to appending the color before each letter, breaking placeholders
+	 *             it is advised to replace placeholders on the raw input first, see {@link Lang#plain(String)}
 	 * @return
 	 */
+	@Deprecated
 	public String toMini() {
 		return this.toMini(null);
 	}
@@ -545,9 +549,12 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	/**
 	 * Return the MiniMessage representation of the component for the given receiver.
 	 *
+	 * @deprecated a bug in MiniMessage converts gradients to appending the color before each letter, breaking placeholders
+	 *             it is advised to replace placeholders on the raw input first, see {@link Lang#plain(String)}
 	 * @param receiver
 	 * @return
 	 */
+	@Deprecated
 	public String toMini(FoundationPlayer receiver) {
 		return MiniMessage.miniMessage().serialize(this.toAdventure(receiver));
 	}
