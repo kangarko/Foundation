@@ -8,7 +8,6 @@ import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -30,8 +29,7 @@ public final class ToastMessage implements ConfigSerializable {
 	/**
 	 * The message to show
 	 */
-	@Getter
-	private final SimpleComponent message;
+	private final String message;
 
 	/**
 	 * Displays this toast message to the given player
@@ -39,7 +37,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param player
 	 */
 	public void displayTo(Player player) {
-		Remain.sendToast(player, this.message.toLegacy(), this.icon, this.style);
+		Remain.sendToast(player, CompChatColor.translateColorCodes(this.message), this.icon, this.style);
 	}
 
 	/**
@@ -49,7 +47,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param variableReplacer
 	 */
 	public void displayTo(Player player, Function<SimpleComponent, SimpleComponent> variableReplacer) {
-		Remain.sendToast(player, variableReplacer.apply(this.message).toLegacy(), this.icon, this.style);
+		Remain.sendToast(player, variableReplacer.apply(SimpleComponent.fromMini(this.message)).toLegacy(), this.icon, this.style);
 	}
 
 	/**
@@ -57,7 +55,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 */
 	@Override
 	public String toString() {
-		return this.icon + " " + this.style + " " + " " + this.message.toMini();
+		return this.icon + " " + this.style + " " + " " + this.message;
 	}
 
 	@Override
@@ -65,7 +63,7 @@ public final class ToastMessage implements ConfigSerializable {
 		return SerializedMap.fromArray(
 				"icon", this.icon.toString(),
 				"style", this.style.toString(),
-				"message", this.message.toMini());
+				"message", this.message);
 	}
 
 	/**
@@ -77,7 +75,7 @@ public final class ToastMessage implements ConfigSerializable {
 	public static ToastMessage deserialize(SerializedMap map) {
 		final CompMaterial icon = CompMaterial.fromString(map.getString("icon"));
 		final CompToastStyle style = CompToastStyle.valueOf(map.getString("style"));
-		final SimpleComponent message = map.getComponent("message");
+		final String message = map.getString("message");
 
 		return new ToastMessage(icon, style, message);
 	}
@@ -91,18 +89,6 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @return
 	 */
 	public static ToastMessage from(CompMaterial material, CompToastStyle style, String message) {
-		return from(material, style, SimpleComponent.fromMini(message));
-	}
-
-	/**
-	 * Create a new toast message
-	 *
-	 * @param material
-	 * @param style
-	 * @param component
-	 * @return
-	 */
-	public static ToastMessage from(CompMaterial material, CompToastStyle style, SimpleComponent component) {
-		return new ToastMessage(material, style, component);
+		return from(material, style, message);
 	}
 }
