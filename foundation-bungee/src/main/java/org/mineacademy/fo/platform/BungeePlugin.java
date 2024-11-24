@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
@@ -109,7 +110,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		FoundationFilter.inject();
 	}
 
-	private BungeeAudiences adventure;
+	private BungeeAudiences adventure; // TODO prerobić
 
 	public BungeeAudiences adventure() {
 		Valid.checkNotNull(this.adventure, "Adventure audience provider not initialized yet");
@@ -123,6 +124,13 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 
 		try {
 			this.setVersion();
+
+			FoundationLibraries.load(this);
+
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
+				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
+
+			this.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.3.4");
 
 			BungeePlatform.inject();
 

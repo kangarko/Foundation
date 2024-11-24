@@ -15,6 +15,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ProxyUtil;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
@@ -25,6 +26,7 @@ import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.event.SimpleListener;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.library.BukkitLibraryManager;
+import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.MenuListener;
@@ -44,6 +46,8 @@ import org.mineacademy.fo.proxy.message.OutgoingMessage;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
+
+import net.kyori.adventure.text.Component;
 
 /**
  * Represents a Bukkit plugin.
@@ -141,6 +145,32 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			getInstance();
 
 			this.setVersion();
+
+			FoundationLibraries.load(this);
+
+			// Avoid issues with shading by using a different version for legacy
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
+
+				// Pre-merge: 1.16-1.17
+				if (ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience")) {
+					String version = "4.2.0";
+
+					try {
+						Component.class.getMethod("compact");
+
+					} catch (final ReflectiveOperationException ex) {
+						version = "4.1.0";
+					}
+
+					this.loadLibrary(Library.builder()
+							.groupId("net.kyori")
+							.artifactId("adventure-text-minimessage")
+							.version(version)
+							.url("https://bitbucket.org/kangarko/libraries/raw/master/org/mineacademy/library/adventure-text-minimessage/" + version + "/adventure-text-minimessage-" + version + ".jar")
+							.build());
+
+				} else
+					this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
 
 			BukkitPlatform.inject();
 

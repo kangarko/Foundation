@@ -57,7 +57,6 @@ import org.mineacademy.fo.command.RegionSubCommand;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
@@ -75,7 +74,6 @@ import com.google.gson.JsonElement;
 
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEventSource;
 
 /**
@@ -88,30 +86,6 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	private BukkitPlatform() {
-
-		// Avoid issues with shading by using a different version for legacy
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
-
-			// Pre-merge: 1.16-1.17
-			if (ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience")) {
-				String version = "4.2.0";
-
-				try {
-					Component.class.getMethod("compact");
-
-				} catch (final ReflectiveOperationException ex) {
-					version = "4.1.0";
-				}
-
-				this.getPlugin().loadLibrary(Library.builder()
-						.groupId("net.kyori")
-						.artifactId("adventure-text-minimessage")
-						.version(version)
-						.url("https://bitbucket.org/kangarko/libraries/raw/master/org/mineacademy/library/adventure-text-minimessage/" + version + "/adventure-text-minimessage-" + version + ".jar")
-						.build());
-
-			} else
-				this.getPlugin().loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
 
 		// Inject Yaml constructors and representers.
 		YamlConfig.setCustomConstructor(BukkitYamlConstructor::new);

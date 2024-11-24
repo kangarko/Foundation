@@ -218,6 +218,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 		if (this.loadingFailed)
 			return;
 
+		FoundationLibraries.load(this);
 		VelocityPlatform.inject();
 
 		try {

@@ -63,13 +63,6 @@ final class BungeePlatform extends FoundationPlatform {
 				return name;
 			}
 		});
-
-		final FoundationPlugin plugin = this.getPlugin();
-
-		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
-			plugin.loadLibrary("net.kyori", "adventure-text-minimessage", "4.17.0");
-
-		plugin.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.3.4");
 	}
 
 	@Override
