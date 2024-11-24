@@ -227,13 +227,6 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		// Send as raw to prevent Bukkit stopping deliver if player is having a modal conversation
-		if (this.isConversing()) {
-			this.player.sendRawMessage(SimpleComponent.fromAdventure(component).toLegacy());
-
-			return;
-		}
-
 		// Console does not send empty messages so we add a space
 		if (!this.isPlayer) {
 			final String legacy = SimpleComponent.fromAdventure(component).toLegacy();
