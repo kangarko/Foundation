@@ -607,19 +607,22 @@ public abstract class CommonCore {
 		while (tok.hasMoreTokens()) {
 			final String word = tok.nextToken();
 
-			if (lineLen + word.length() > maxLineLength) {
-				output.append("\n").append(lastColorCode);
+			// Remove color codes to calculate the visible length of the word
+			final String strippedWord = CompChatColor.stripColorCodes(word);
+			final int wordLen = strippedWord.length();
 
+			if (lineLen + wordLen > maxLineLength) {
+				output.append("\n").append(lastColorCode);
 				lineLen = 0;
 			}
+
+			output.append(word).append(" ");
+			lineLen += wordLen + 1;
 
 			final String colorCode = CompChatColor.getLastColors(word);
 
 			if (!colorCode.isEmpty())
 				lastColorCode = colorCode;
-
-			output.append(word).append(" ");
-			lineLen += word.length() + 1;
 		}
 
 		return output.toString().split("\n");
