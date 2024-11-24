@@ -13,7 +13,6 @@ import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
-import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.Platform;
@@ -83,11 +82,13 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 */
 	@Override
 	public final String getPromptText(final ConversationContext context) {
-		return CompChatColor.translateColorCodes(this.getPrompt(context));
+		throw new UnsupportedOperationException("Use SimpleConversation to start a SimplePrompt! (Or call SimplePrompt#show())");
 	}
 
 	/**
-	 * Return the question to the user in this prompt
+	 * Return the question to the user in this prompt.
+	 *
+	 * MiniMessage tags are supported as long as you use {@link SimpleConversation}.
 	 *
 	 * @param context
 	 * @return
