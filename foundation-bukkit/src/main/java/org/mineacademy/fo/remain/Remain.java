@@ -92,9 +92,9 @@ import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.UUIDToNameConverter;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 
 import com.google.gson.JsonObject;
@@ -829,16 +829,12 @@ public final class Remain {
 	 * @return
 	 */
 	public static Biome getBiome(Location location) {
-		try {
-			final Method getBiome = ReflectionUtil.getMethod(World.class, "getBiome", int.class, int.class, int.class);
+		final Method getBiome = ReflectionUtil.getMethod(World.class, "getBiome", int.class, int.class, int.class);
 
+		if (getBiome != null)
 			return ReflectionUtil.invoke(getBiome, location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
-
-		} catch (final NoSuchMethodError err) {
-			final Method getBiome = ReflectionUtil.getMethod(World.class, "getBiome", int.class, int.class);
-
-			return ReflectionUtil.invoke(getBiome, location.getWorld(), location.getBlockX(), location.getBlockZ());
-		}
+		else
+			return location.getWorld().getBiome(location.getBlockX(), location.getBlockZ());
 	}
 
 	/**

@@ -305,9 +305,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, Class<?>... args) {
-		final Class<?> originalClass = clazz;
-
-		while (!clazz.equals(Object.class))
+		while (!clazz.equals(Object.class)) {
 			try {
 				final Method method = clazz.getDeclaredMethod(methodName, args);
 				method.setAccessible(true);
@@ -317,9 +315,12 @@ public final class ReflectionUtil {
 			} catch (final NoSuchMethodException ex) {
 				clazz = clazz.getSuperclass();
 
+				if (clazz == null)
+					break;
+
 			} catch (final Throwable t) {
-				throw new ReflectionException(t, "Error lookup up method " + methodName + " in class " + originalClass + " and her subclasses");
 			}
+		}
 
 		return null;
 	}
