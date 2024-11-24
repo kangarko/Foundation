@@ -19,12 +19,12 @@ public final class TitleMessage implements ConfigSerializable {
 	/**
 	 * The title message.
 	 */
-	private final SimpleComponent titleMessage;
+	private final String titleMessage;
 
 	/**
 	 * The subtitle message.
 	 */
-	private final SimpleComponent subtitleMessage;
+	private final String subtitleMessage;
 
 	/**
 	 * How long is the fade-in animation, in ticks.
@@ -57,7 +57,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param variablesReplacer
 	 */
 	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> variablesReplacer) {
-		audience.sendTitle(this.fadeIn, this.stay, this.fadeOut, variablesReplacer.apply(this.titleMessage), variablesReplacer.apply(this.subtitleMessage));
+		audience.sendTitle(this.fadeIn, this.stay, this.fadeOut, variablesReplacer.apply(SimpleComponent.fromMini(this.titleMessage)), variablesReplacer.apply(SimpleComponent.fromMini(this.subtitleMessage)));
 	}
 
 	/**
@@ -76,8 +76,8 @@ public final class TitleMessage implements ConfigSerializable {
 	@Override
 	public SerializedMap serialize() {
 		return SerializedMap.fromArray(
-				"title", this.titleMessage.toMini(),
-				"subtitle", this.subtitleMessage.toMini(),
+				"title", this.titleMessage,
+				"subtitle", this.subtitleMessage,
 				"fadeIn", this.fadeIn,
 				"stay", this.stay,
 				"fadeOut", this.fadeOut);
@@ -90,8 +90,8 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @return
 	 */
 	public static TitleMessage deserialize(SerializedMap map) {
-		final SimpleComponent title = map.getComponent("title");
-		final SimpleComponent subtitle = map.getComponent("subtitle");
+		final String title = map.getString("title");
+		final String subtitle = map.getString("subtitle");
 		final int fadeIn = map.getInteger("fadeIn");
 		final int stay = map.getInteger("stay");
 		final int fadeOut = map.getInteger("fadeOut");
@@ -110,20 +110,6 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @return
 	 */
 	public static TitleMessage from(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-		return from(SimpleComponent.fromMini(title), SimpleComponent.fromMini(subtitle), fadeIn, stay, fadeOut);
-	}
-
-	/**
-	 * Create a new title message.
-	 *
-	 * @param title
-	 * @param subtitle
-	 * @param fadeIn
-	 * @param stay
-	 * @param fadeOut
-	 * @return
-	 */
-	public static TitleMessage from(SimpleComponent title, SimpleComponent subtitle, int fadeIn, int stay, int fadeOut) {
 		return new TitleMessage(title, subtitle, fadeIn, stay, fadeOut);
 	}
 }

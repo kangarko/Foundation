@@ -41,7 +41,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	/**
 	 * The message to show.
 	 */
-	private final SimpleComponent message;
+	private final String message;
 
 	/**
 	 * Displays this boss bar to the given player.
@@ -59,7 +59,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param messageEditor to replace variables in the message
 	 */
 	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> messageEditor) {
-		audience.sendBossbarTimed(messageEditor.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
+		audience.sendBossbarTimed(messageEditor.apply(SimpleComponent.fromMini(this.message)), this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public final class BossBarMessage implements ConfigSerializable {
 		final BossBar.Overlay overlay = ReflectionUtil.lookupEnum(BossBar.Overlay.class, map.getString("Style"));
 		final int seconds = map.getInteger("Seconds");
 		final float progress = map.getFloat("Progress", 1F);
-		final SimpleComponent message = map.getComponent("Message");
+		final String message = map.getString("Message");
 
 		return new BossBarMessage(color, overlay, seconds, progress, message);
 	}
