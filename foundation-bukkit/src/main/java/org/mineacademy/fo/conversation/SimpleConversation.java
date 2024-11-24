@@ -21,9 +21,9 @@ import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
@@ -279,7 +279,8 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param message
 	 */
 	protected static final void tell(final Conversable conversable, SimpleComponent message) {
-		Platform.runTask(() -> conversable.sendRawMessage(Variables.replace(message, Platform.toPlayer(conversable)).toLegacy()));
+		Platform.toPlayer(conversable).sendMessage(message);
+		//Platform.runTask(() -> conversable.sendRawMessage(Variables.replace(message, Platform.toPlayer(conversable)).toLegacy()));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -382,29 +383,39 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				// Save the time when we showed the question to the player
 				// so that we only show it once per the given threshold
 				final String promptClass = this.currentPrompt.getClass().getSimpleName();
-				String question = this.currentPrompt.getPromptText(this.context);
+				final boolean isSimple = this.currentPrompt instanceof SimplePrompt;
 
-				try {
-					final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) Remain.getAllSessionData(this.context).getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(SimpleConversation.this.getTimeout(), TimeUnit.SECONDS).build());
+				final String question = isSimple ? ((SimplePrompt) this.currentPrompt).getPrompt(this.context) : this.currentPrompt.getPromptText(this.context);
+				final ExpiringMap<String, Void /*dont have expiring set class*/> askedQuestions = (ExpiringMap<String, Void>) Remain.getAllSessionData(this.context).getOrDefault("Asked_" + promptClass, ExpiringMap.builder().expiration(SimpleConversation.this.getTimeout(), TimeUnit.SECONDS).build());
 
-					if (!askedQuestions.containsKey(question)) {
-						askedQuestions.put(question, null);
+				if (!askedQuestions.containsKey(question)) {
+					askedQuestions.put(question, null);
 
-						if (!CompChatColor.stripColorCodes(question).contains(Lang.component("prefix-question").toPlain())) {
-							final String prefix = this.prefix.getPrefix(this.context);
+					SimpleComponent promptComponent = SimpleComponent.empty();
 
-							question = (!prefix.isEmpty() ? prefix : Lang.legacy("prefix-question")) + " " + question;
-						}
+					// Add question prefix if not contained already
+					if (!CompChatColor.stripColorCodes(question).contains(Lang.component("prefix-question").toPlain())) {
+						final String prefix = this.prefix.getPrefix(this.context);
 
-						this.context.setSessionData("Asked_" + promptClass, askedQuestions);
-						this.context.getForWhom().sendRawMessage(question);
+						if (!prefix.isEmpty())
+							promptComponent = promptComponent.appendMini(prefix);
+						else
+							promptComponent = promptComponent.append(Lang.component("prefix-question"));
 					}
-				} catch (final NoSuchMethodError ex) {
-					// Unfortunately, old MC version was detected
+
+					// Add space if not ending with it
+					if (!promptComponent.toPlain().endsWith(" "))
+						promptComponent = promptComponent.appendPlain(" ");
+
+					// Add question itself
+					promptComponent = promptComponent.appendMini(question);
+
+					this.context.setSessionData("Asked_" + promptClass, askedQuestions);
+					tell(this.context.getForWhom(), promptComponent);
 				}
 
 				// Save last prompt if it is our class
-				if (this.currentPrompt instanceof SimplePrompt)
+				if (isSimple)
 					this.lastSimplePrompt = (SimplePrompt) this.currentPrompt;
 
 				if (!this.currentPrompt.blocksForInput(this.context)) {
