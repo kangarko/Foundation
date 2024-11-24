@@ -39,46 +39,46 @@ final class BukkitVariableCollector implements Variables.Collector {
 		if ("server_version".equals(variable))
 			return SimpleComponent.fromPlain(MinecraftVersion.getFullVersion());
 
-		else if ("nms_version".equals(variable))
+		else if ("nms_version".equals(variable) || "server_nms_version".equals(variable))
 			return SimpleComponent.fromPlain(Remain.getNmsVersion());
 
 		else if ("player".equals(variable) || "player_name".equals(variable))
 			return SimpleComponent.fromPlain(audience == null ? "" : audience.getName());
 
-		else if ("player_uuid".equals(variable))
+		else if ("player_uuid".equals(variable) || "player_unique_id".equals(variable))
 			return SimpleComponent.fromPlain(player == null ? "" : player.getUniqueId().toString());
 
-		else if ("town".equals(variable))
+		else if ("town".equals(variable) || "player_town".equals(variable))
 			return SimpleComponent.fromSection(player == null ? "" : HookManager.getTownName(player));
 
-		else if ("nation".equals(variable))
+		else if ("nation".equals(variable) || "player_nation".equals(variable))
 			return SimpleComponent.fromSection(player == null ? "" : HookManager.getNation(player));
 
-		else if ("faction".equals(variable))
+		else if ("faction".equals(variable) || "player_faction".equals(variable))
 			return SimpleComponent.fromSection(player == null ? "" : HookManager.getFaction(player));
 
-		else if ("world".equals(variable))
+		else if ("world".equals(variable) || "player_world".equals(variable))
 			return SimpleComponent.fromSection(player == null ? "" : HookManager.getWorldAlias(player.getWorld()));
 
-		else if ("health".equals(variable))
+		else if ("health".equals(variable) || "player_health".equals(variable))
 			return SimpleComponent.fromSection(player == null ? "" : formatHealth(player));
 
-		else if ("location".equals(variable))
+		else if ("location".equals(variable) || "player_location".equals(variable))
 			return SimpleComponent.fromPlain(player == null ? "" : SerializeUtil.serializeLocation(player.getLocation()));
 
-		else if ("x".equals(variable))
+		else if ("x".equals(variable) || "player_x".equals(variable))
 			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockX()));
 
-		else if ("y".equals(variable))
+		else if ("y".equals(variable) || "player_y".equals(variable))
 			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockY()));
 
-		else if ("z".equals(variable))
+		else if ("z".equals(variable) || "player_z".equals(variable))
 			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockZ()));
 
-		else if ("tab_name".equals(variable))
+		else if ("tab_name".equals(variable) || "player_tab_name".equals(variable))
 			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getPlayerListName());
 
-		else if ("display_name".equals(variable))
+		else if ("display_name".equals(variable) || "player_display_name".equals(variable))
 			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getDisplayName());
 
 		else if ("player_nick".equals(variable) || "nick".equals(variable))
