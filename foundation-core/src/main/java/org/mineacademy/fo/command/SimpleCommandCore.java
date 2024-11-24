@@ -721,7 +721,8 @@ public abstract class SimpleCommandCore {
 	 * Example:
 	 * 	language key: "No such {type}: {value}, available: {available}"
 	 * 	code: checkNoSuchType(bossObject, "boss", "Warrior", Boss.getBosses());
-	 *
+	 * 
+	 * @param <T> 
 	 * @param nonNullValue
 	 * @param type
 	 * @param value
@@ -740,6 +741,7 @@ public abstract class SimpleCommandCore {
 	 * 	language key: "No such {type}: {value}, available: {available}"
 	 * 	code: checkNoSuchType(bossObject, "boss", "Warrior", Boss.getBosses());
 	 *
+	 * @param <T> 
 	 * @param nonNullValue
 	 * @param type
 	 * @param value

@@ -244,7 +244,7 @@ public class NBTReflectionUtil {
 	 * @param meta ItemMeta from which tags should be retrieved
 	 * @return Map containing unhandled (custom) NBT tags
 	 */
-	
+
 	@Deprecated
 	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
 		try {
@@ -487,13 +487,13 @@ public class NBTReflectionUtil {
 	/**
 	 * Returns the List saved with a given key.
 	 *
+	 * @param <T>
 	 * @param comp
 	 * @param key
 	 * @param type
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalid type
 	 */
-	
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
@@ -575,7 +575,8 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Uses Gson to load back a {@link Serializable} object from the Compound
-	 *
+	 * 
+	 * @param <T>
 	 * @param comp
 	 * @param key
 	 * @param type
@@ -595,6 +596,7 @@ public class NBTReflectionUtil {
 	/**
 	 * Creates an Object of the given type using the Json String
 	 *
+	 * @param <T>
 	 * @param json
 	 * @param type
 	 * @return Object that got created, or null if the json is null
@@ -634,7 +636,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
-	
+
 	public static Set<String> getKeys(NBTCompound comp) {
 		final Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
