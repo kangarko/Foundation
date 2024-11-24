@@ -50,6 +50,7 @@ public final class Lang {
 	 * keys with MiniMessage and & colors translated to §.
 	 */
 	private Map<String, String> plainCache;
+	private Map<String, String[]> plainArrayCache;
 	private Map<String, String> legacyCache;
 	private Map<String, String[]> legacyArrayCache;
 	private Map<String, SimpleComponent> componentCache;
@@ -90,6 +91,23 @@ public final class Lang {
 		}
 
 		final String[] stored = this.legacyArrayCache.get(path);
+		return Arrays.copyOf(stored, stored.length);
+	}
+
+	/*
+	 * Return a plain String array from the language file, throwing an error if the key is missing.
+	 */
+	private String[] getPlainArray(String path) {
+		ValidCore.checkNotNull(this.plainArrayCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
+
+		if (!this.plainArrayCache.containsKey(path)) {
+			if (this.plainCache.containsKey(path))
+				throw new FoException("Localization key '" + path + "' is not an array!");
+			else
+				throw new FoException("Missing localization array key '" + path + "'");
+		}
+
+		final String[] stored = this.plainArrayCache.get(path);
 		return Arrays.copyOf(stored, stored.length);
 	}
 
@@ -178,6 +196,18 @@ public final class Lang {
 	 */
 	public static String plain(String path) {
 		return instance.getPlain(path);
+	}
+
+	/**
+	 * Return a plain String array from the language file, throwing an error if the key is missing.
+	 *
+	 * No modifications are done to the key.
+	 *
+	 * @param path
+	 * @return
+	 */
+	public static String[] plainArray(String path) {
+		return instance.getPlainArray(path);
 	}
 
 	/**
@@ -621,6 +651,7 @@ public final class Lang {
 
 			// Cache all the keys for maximum performance
 			final Map<String, String> plainCache = new HashMap<>();
+			final Map<String, String[]> plainArrayCache = new HashMap<>();
 			final Map<String, String> legacyCache = new HashMap<>();
 			final Map<String, String[]> legacyArrayCache = new HashMap<>();
 			final Map<String, SimpleComponent> componentCache = new HashMap<>();
@@ -643,6 +674,7 @@ public final class Lang {
 				else if (value.isJsonArray()) {
 					final JsonArray array = value.getAsJsonArray();
 
+					final List<String> plainList = new ArrayList<>();
 					final List<SimpleComponent> componentList = new ArrayList<>();
 					final List<String> legacyList = new ArrayList<>();
 
@@ -651,6 +683,7 @@ public final class Lang {
 							final String string = element.getAsString();
 							final SimpleComponent component = SimpleComponent.fromMini(string);
 
+							plainList.add(string);
 							componentList.add(component);
 							legacyList.add(component.toLegacy());
 
@@ -660,6 +693,7 @@ public final class Lang {
 							CommonCore.warning("Invalid element in array for lang key " + key + ": " + element + ", only Strings and primitives are supported");
 						}
 
+					plainArrayCache.put(key, plainList.toArray(new String[plainList.size()]));
 					componentArrayCache.put(key, componentList.toArray(new SimpleComponent[componentList.size()]));
 					legacyArrayCache.put(key, legacyList.toArray(new String[legacyList.size()]));
 
@@ -671,6 +705,7 @@ public final class Lang {
 			}
 
 			instance.plainCache = plainCache;
+			instance.plainArrayCache = plainArrayCache;
 			instance.legacyCache = legacyCache;
 			instance.legacyArrayCache = legacyArrayCache;
 			instance.componentCache = componentCache;
