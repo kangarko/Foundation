@@ -86,6 +86,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	private BukkitPlatform() {
+		Platform.setType(Platform.Type.BUKKIT);
 
 		// Inject Yaml constructors and representers.
 		YamlConfig.setCustomConstructor(BukkitYamlConstructor::new);
