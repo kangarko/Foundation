@@ -135,31 +135,31 @@ final class BukkitListener implements Listener {
 			final int pagesDigits = (int) (Math.log10(pages.size()) + 1);
 			final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
 
-			SimpleComponent clickableFooter = SimpleComponent
+			SimpleComponent component = SimpleComponent
 					.fromMini("&8&m" + Common.duplicate("-", multiply) + "&r");
 
 			if (page == 0)
-				clickableFooter = clickableFooter.appendMini(" &7« ");
+				component = component.appendMini(" &7« ");
 			else
-				clickableFooter = clickableFooter
+				component = component
 						.appendMini(" &6« ")
 						.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page)))
 						.onClickRunCmd("/#flp " + page);
 
-			clickableFooter = clickableFooter
+			component = component
 					.appendMini("&f" + (page + 1)).onHover(Lang.componentArray("page-go-to-first-page")).onClickRunCmd("/#flp 1")
 					.appendMini("&7/").onHover(Lang.componentArray("page-tooltip"))
 					.appendMini("&f" + pages.size() + "").onHover(Lang.componentArray("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
 
 			if (page + 1 >= pages.size())
-				clickableFooter = clickableFooter.appendMini(" &7» ");
+				component = component.appendMini(" &7» ");
 			else
-				clickableFooter = clickableFooter
+				component = component
 						.appendMini(" &6» ")
 						.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page + 2)))
 						.onClickRunCmd("/#flp " + (page + 2));
 
-			audience.sendMessage(clickableFooter
+			audience.sendMessage(component
 					.appendMini("&8&m" + Common.duplicate("-", multiply)));
 		}
 

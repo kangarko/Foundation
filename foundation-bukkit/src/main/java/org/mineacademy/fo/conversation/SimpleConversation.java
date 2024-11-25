@@ -391,27 +391,27 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 				if (!askedQuestions.containsKey(question)) {
 					askedQuestions.put(question, null);
 
-					SimpleComponent promptComponent = SimpleComponent.empty();
+					SimpleComponent component = SimpleComponent.empty();
 
 					// Add question prefix if not contained already
 					if (!CompChatColor.stripColorCodes(question).contains(Lang.component("prefix-question").toPlain())) {
 						final String prefix = this.prefix.getPrefix(this.context);
 
 						if (!prefix.isEmpty())
-							promptComponent = promptComponent.appendMini(prefix);
+							component = component.appendMini(prefix);
 						else
-							promptComponent = promptComponent.append(Lang.component("prefix-question"));
+							component = component.append(Lang.component("prefix-question"));
 					}
 
 					// Add space if not ending with it
-					if (!promptComponent.toPlain().endsWith(" "))
-						promptComponent = promptComponent.appendPlain(" ");
+					if (!component.toPlain().endsWith(" "))
+						component = component.appendPlain(" ");
 
 					// Add question itself
-					promptComponent = promptComponent.appendMini(question);
+					component = component.appendMini(question);
 
 					this.context.setSessionData("Asked_" + promptClass, askedQuestions);
-					tell(this.context.getForWhom(), promptComponent);
+					tell(this.context.getForWhom(), component);
 				}
 
 				// Save last prompt if it is our class
