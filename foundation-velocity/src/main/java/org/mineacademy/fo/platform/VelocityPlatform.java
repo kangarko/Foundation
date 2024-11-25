@@ -19,7 +19,6 @@ import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.Remain;
-import org.slf4j.Logger;
 
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
@@ -175,14 +174,9 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public void log(String message) {
-		final String plain = CompChatColor.stripColorCodes(message);
-		final Logger logger = VelocityPlugin.getInstance().getLogger();
+		//final Logger logger = VelocityPlugin.getInstance().getLogger(); // Bugs out with duplicated prefix
 
-		if (plain.startsWith("Warning:") || plain.startsWith("[Warning]") || plain.startsWith("Warn:") || plain.startsWith("[Warn]"))
-			logger.warn(plain);
-
-		else
-			logger.info(plain);
+		System.out.println(CompChatColor.stripColorCodes(message));
 	}
 
 	@Override
