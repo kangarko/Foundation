@@ -275,7 +275,7 @@ public final class JavaScriptExecutor {
 					final Object sender = replacements.get("player");
 
 					if (errorMessageSplit.length == 2 && sender != null)
-						Platform.toPlayer(sender).sendMessage(SimpleComponent.fromPlain(errorMessageSplit[1]));
+						Platform.toPlayer(sender).sendMessage(SimpleComponent.fromMini(errorMessageSplit[1]));
 
 					throw new EventHandledException(true);
 				}
