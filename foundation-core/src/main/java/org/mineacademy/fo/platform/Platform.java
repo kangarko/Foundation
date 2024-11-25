@@ -1,10 +1,14 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.model.Task;
@@ -12,7 +16,9 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.event.HoverEventSource;
 
 /**
@@ -25,6 +31,31 @@ public final class Platform {
 	 * The specific platform implementation instance.
 	 */
 	private static FoundationPlatform instance;
+
+	/**
+	 * The current platform
+	 */
+	private static Type type;
+
+	/**
+	 * Return the current platform type.
+	 *
+	 * @return
+	 */
+	public static Type getType() {
+		ValidCore.checkNotNull(type, "Current platform not set!");
+
+		return type;
+	}
+
+	/**
+	 * Set the current platform
+	 *
+	 * @param type
+	 */
+	static void setType(Type type) {
+		Platform.type = type;
+	}
 
 	/**
 	 * Call an event using the platform-specific event caller.
@@ -416,5 +447,42 @@ public final class Platform {
 	@Deprecated
 	public static void unregisterCommand(SimpleCommandCore command) {
 		getPlatform().unregisterCommand(command);
+	}
+
+	/**
+	 * Represents a platform type
+	 */
+	@RequiredArgsConstructor
+	public enum Type {
+
+		/**
+		 * Represents the Bukkit platform
+		 */
+		BUKKIT(false),
+
+		/**
+		 * Represents the BungeeCord platform
+		 */
+		BUNGEECORD(true),
+
+		/**
+		 * Represents the Velocity platform
+		 */
+		VELOCITY(true);
+
+		/**
+		 * Is this platform a proxy?
+		 */
+		@Getter
+		private final boolean proxy;
+
+		/**
+		 * Return all platforms that are proxies
+		 *
+		 * @return
+		 */
+		public static Set<Type> proxies() {
+			return Arrays.stream(values()).filter(Type::isProxy).collect(Collectors.toSet());
+		}
 	}
 }

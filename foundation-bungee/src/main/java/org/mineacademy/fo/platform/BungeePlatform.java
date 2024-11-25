@@ -43,6 +43,8 @@ final class BungeePlatform extends FoundationPlatform {
 	}
 
 	private BungeePlatform() {
+		Platform.setType(Platform.Type.BUNGEECORD);
+
 		Common.addSimplifier(object -> {
 			if (object instanceof ProxiedPlayer)
 				return ((ProxiedPlayer) object).getName();

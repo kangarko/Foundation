@@ -44,6 +44,8 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	private VelocityPlatform() {
+		Platform.setType(Platform.Type.VELOCITY);
+
 		Common.addSimplifier(object -> {
 			if (object instanceof Player)
 				return ((Player) object).getUsername();
