@@ -113,12 +113,12 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		Component joined = Component.empty();
 
 		for (int i = 0; i < components.length; i++) {
-			String component = components[i].toLegacy();
+			String legacy = components[i].toLegacy();
 
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && component.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				component = String.join("\n", CommonCore.split(component, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
-			joined = joined.append(SimpleComponent.fromSection(component));
+			joined = joined.append(SimpleComponent.fromSection(legacy));
 
 			if (i < components.length - 1)
 				joined = joined.append(Component.newline());
@@ -138,12 +138,12 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		Component joined = Component.empty();
 
 		for (int i = 0; i < messages.length; i++) {
-			String message = messages[i];
+			String legacy = messages[i];
 
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && message.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				message = String.join("\n", CommonCore.split(message, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
-			joined = joined.append(SimpleComponent.fromMini("<gray>" + message));
+			joined = joined.append(SimpleComponent.fromMini("<gray>" + legacy));
 
 			if (i < messages.length - 1)
 				joined = joined.append(Component.newline());

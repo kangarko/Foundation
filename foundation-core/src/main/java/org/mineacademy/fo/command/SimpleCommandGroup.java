@@ -401,16 +401,16 @@ public abstract class SimpleCommandGroup {
 					for (final SimpleComponent component : newUsage)
 						hover.add(subcommand.replacePlaceholders(this.colorizeUsage(component)));
 
-				SimpleComponent line = SimpleComponent
+				SimpleComponent component = SimpleComponent
 						.fromPlain("  /" + this.getLabel())
 						.appendMini(" &n" + subcommand.getSublabel() + "&r ")
 						.onClickSuggestCmd("/" + this.getLabel() + " " + subcommand.getSublabel())
 						.onHover(hover);
 
 				if (subcommand.getUsage() != null)
-					line = line.append(this.colorizeUsage(subcommand.getUsage()));
+					component = component.append(this.colorizeUsage(subcommand.getUsage()));
 
-				lines.add(line);
+				lines.add(component);
 			}
 
 			if (!lines.isEmpty()) {
