@@ -59,7 +59,7 @@ abstract class Message {
 		final Class<?>[] content = this.message.getContent();
 		final Class<?> clazz = content[this.head];
 
-		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Got " + givenType.getSimpleName() + " at position " + this.head + " but expected " + clazz.getSimpleName() + " for " + this.getMessage().name());
+		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Cannot read " + givenType.getSimpleName() + " at position " + this.head + " because " + this.getMessage().name() + " requires " + clazz.getSimpleName());
 		ValidCore.checkBoolean(head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;
