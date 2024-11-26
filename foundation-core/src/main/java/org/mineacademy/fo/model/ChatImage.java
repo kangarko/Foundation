@@ -153,7 +153,7 @@ public final class ChatImage {
 	 */
 	public void send(FoundationPlayer audience) {
 		for (final String line : this.lines)
-			audience.sendMessage(SimpleComponent.fromSection(Variables.replace(line, audience)));
+			audience.sendMessage(SimpleComponent.fromSection(Variables.builder(audience).replace(line)));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

@@ -6,7 +6,6 @@ import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -76,9 +75,9 @@ public class ButtonRemove extends Button {
 				.fromMaterial(CompMaterial.LAVA_BUCKET)
 				.name(title.replace("{name}", this.toRemoveName))
 
-				.lore(Variables.replaceListArray(lore, null, Common.newHashMap(
+				.lore(Variables.builder().placeholderArray(
 						"name", this.toRemoveName,
-						"type", this.toRemoveType)))
+						"type", this.toRemoveType).replaceList(lore))
 
 				.flags(CompItemFlag.HIDE_ATTRIBUTES)
 				.make();

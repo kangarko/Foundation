@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.conversation.SimplePrompt;
 import org.mineacademy.fo.conversation.SimpleStringPrompt;
@@ -268,7 +267,7 @@ public abstract class Button {
 				final ItemStack item = creator.glow(has).make();
 				final ItemMeta meta = item.getItemMeta();
 
-				meta.setLore(Variables.replaceListArray(meta.getLore(), null, Common.newHashMap("status", has ? "&aEnabled" : "&cDisabled")));
+				meta.setLore(Variables.builder().placeholder("status", has ? "&aEnabled" : "&cDisabled").replaceList(meta.getLore()));
 				item.setItemMeta(meta);
 
 				return item;
@@ -425,7 +424,7 @@ public abstract class Button {
 				final ItemStack itemstack = item.make();
 				final ItemMeta meta = itemstack.getItemMeta();
 
-				meta.setLore(Variables.replaceListArray(meta.getLore(), null, Common.newHashMap("current", getter != null ? getter.get().toString() : "")));
+				meta.setLore(Variables.builder().placeholder("current", getter != null ? getter.get().toString() : "").replaceList(meta.getLore()));
 				itemstack.setItemMeta(meta);
 
 				return itemstack;

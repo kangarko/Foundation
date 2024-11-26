@@ -136,6 +136,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 			throw new FoException("Please place @PermissionGroup over " + clazz);
 
 		final List<SimpleComponent> subsectionMessages = new ArrayList<>();
+		final Variables variables = Variables.builder();
 
 		for (final Field field : clazz.getDeclaredFields()) {
 			if (!field.isAnnotationPresent(Permission.class))
@@ -151,7 +152,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 				ValidCore.checkNotNull(defaultGroup, "Found {label} in @Permission under " + field + " while no default command group is set!");
 			}
 
-			info = Variables.replace(info, null);
+			info = variables.replace(info);
 
 			final boolean def = annotation.def();
 

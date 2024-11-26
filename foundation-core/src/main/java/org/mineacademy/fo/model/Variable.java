@@ -213,10 +213,10 @@ public final class Variable extends YamlConfig {
 	 * returns the output
 	 *
 	 * @param audience
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public String getValue(FoundationPlayer audience, Map<String, Object> replacements) {
+	public String getValue(FoundationPlayer audience, Map<String, Object> placeholders) {
 
 		// Replace variables in script
 		final String script;
@@ -225,7 +225,7 @@ public final class Variable extends YamlConfig {
 		try {
 			Variables.setReplaceScript(false);
 
-			script = Variables.replace(this.value, audience, replacements);
+			script = Variables.builder(audience).placeholders(placeholders).replace(this.value);
 
 		} catch (final Throwable t) {
 			final String errorHeadline = "Error replacing placeholders in variable!";
@@ -273,11 +273,12 @@ public final class Variable extends YamlConfig {
 	 * Create the variable and append it to the existing component as if the player initiated it
 	 *
 	 * @param audience
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public SimpleComponent build(FoundationPlayer audience, Map<String, Object> replacements) {
+	public SimpleComponent build(FoundationPlayer audience, Map<String, Object> placeholders) {
 		final boolean replacingScript = Variables.isReplaceScript();
+		final Variables variables = Variables.builder(audience).placeholders(placeholders);
 
 		try {
 			Variables.setReplaceScript(false);
@@ -287,7 +288,7 @@ public final class Variable extends YamlConfig {
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
 				try {
-					final Object result = JavaScriptExecutor.run(Variables.replace(this.senderCondition, audience, replacements), audience);
+					final Object result = JavaScriptExecutor.run(variables.replace(this.senderCondition), audience);
 
 					if (result != null) {
 						ValidCore.checkBoolean(result instanceof Boolean, "Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
@@ -313,7 +314,7 @@ public final class Variable extends YamlConfig {
 				}
 			}
 
-			final String value = this.getValue(audience, replacements);
+			final String value = this.getValue(audience, placeholders);
 
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
@@ -323,12 +324,12 @@ public final class Variable extends YamlConfig {
 					.viewCondition(this.receiverCondition);
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
-				component.onHover(Variables.replace(String.join("\n", this.hoverText), audience, replacements));
+				component.onHoverLegacy(variables.replaceArray(CommonCore.toArray(this.hoverText)));
 
 			if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
 
 				try {
-					final Object result = JavaScriptExecutor.run(Variables.replace(this.hoverItem, audience, replacements), audience);
+					final Object result = JavaScriptExecutor.run(variables.replace(this.hoverItem), audience);
 
 					if (result != null) {
 						ValidCore.checkBoolean(result.getClass().getSimpleName().contains("ItemStack"), "Variable '" + this.getFile() + "' option Hover_Item must return ItemStack not " + result.getClass());
@@ -354,13 +355,13 @@ public final class Variable extends YamlConfig {
 			}
 
 			if (this.openUrl != null && !this.openUrl.isEmpty())
-				component.onClickOpenUrl(Variables.replace(this.openUrl, audience, replacements));
+				component.onClickOpenUrl(variables.replace(this.openUrl));
 
 			if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
-				component.onClickSuggestCmd(Variables.replace(this.suggestCommand, audience, replacements));
+				component.onClickSuggestCmd(variables.replace(this.suggestCommand));
 
 			if (this.runCommand != null && !this.runCommand.isEmpty())
-				component.onClickRunCmd(Variables.replace(this.runCommand, audience, replacements));
+				component.onClickRunCmd(variables.replace(this.runCommand));
 
 			return component;
 
