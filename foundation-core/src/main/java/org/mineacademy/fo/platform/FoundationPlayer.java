@@ -338,8 +338,10 @@ public abstract class FoundationPlayer {
 
 		if (plainMessage.startsWith("<actionbar>"))
 			this.sendActionBar(component.replaceLiteral("<actionbar>", ""));
+
 		else if (plainMessage.startsWith("<toast>"))
 			this.sendToast(component.replaceLiteral("<toast>", ""));
+
 		else if (plainMessage.startsWith("<title>")) {
 			final String stripped = component.toLegacy().replace("<title>", "").trim();
 
@@ -353,6 +355,7 @@ public abstract class FoundationPlayer {
 
 		} else if (plainMessage.startsWith("<bossbar>"))
 			this.sendBossbarTimed(component.replaceLiteral("<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
+
 		else if (plainMessage.startsWith("<center>")) {
 			final String centeredLegacyMessage = ChatUtil.center(component.toLegacy(this).replaceAll("\\<center\\>(\\s|)", ""));
 
