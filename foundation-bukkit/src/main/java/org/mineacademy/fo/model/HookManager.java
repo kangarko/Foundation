@@ -1140,6 +1140,27 @@ public final class HookManager {
 		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImages(player, component) : component;
 	}
 
+	/**
+	 * Use ItemsAdder to replace font images in the message.
+	 *
+	 * @param mesasage the message.
+	 * @return
+	 */
+	public static String replaceFontImagesLegacy(final String mesasage) {
+		return replaceFontImagesLegacy(null, mesasage);
+	}
+
+	/**
+	 * Use ItemsAdder to replace font images in the message based on the player's permission
+	 *
+	 * @param player  the player to use.
+	 * @param message the message.
+	 * @return
+	 */
+	public static String replaceFontImagesLegacy(@Nullable Player player, String message) {
+		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImagesLegacy(player, message) : message;
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Multiverse-Core
 	// ------------------------------------------------------------------------------------------------------------
@@ -3864,8 +3885,8 @@ class LiteBansHook {
 class ItemsAdderHook {
 
 	private Class<?> itemsAdder;
-	private Method replaceFontImages;
-	private Method replaceFontImagesNoPlayer;
+	private Method replaceFontImagesString;
+	private Method replaceFontImagesStringNoPlayer;
 	private Method replaceFontImagesAdventure;
 	private Method replaceFontImagesAdventureNoPlayer;
 	private boolean failed = false;
@@ -3874,26 +3895,28 @@ class ItemsAdderHook {
 	}
 
 	SimpleComponent replaceFontImages(@Nullable final Player player, final SimpleComponent component) {
+		return this.doReplaceFontImages(player, component);
+	}
 
-		if (this.replaceFontImages == null) {
+	String replaceFontImagesLegacy(@Nullable final Player player, final String message) {
+		return this.doReplaceFontImages(player, message);
+	}
 
-			// integration failed, do not spam
-			if (this.failed)
-				return component;
-
+	private <T> T doReplaceFontImages(@Nullable final Player player, final T messageOrComponent) {
+		if (this.replaceFontImagesString == null && this.replaceFontImagesAdventure == null && !this.failed) {
 			try {
 				this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
 
-				this.replaceFontImages = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Permissible.class, String.class);
-				this.replaceFontImagesNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
+				this.replaceFontImagesString = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Permissible.class, String.class);
+				this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
 
 				this.replaceFontImagesAdventure = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Permissible.class, Component.class);
 				this.replaceFontImagesAdventureNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Component.class);
 
 			} catch (final Throwable original) {
 				try {
-					this.replaceFontImages = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Player.class, String.class);
-					this.replaceFontImagesNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
+					this.replaceFontImagesString = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Player.class, String.class);
+					this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
 
 				} catch (final Throwable tt) {
 					CommonCore.warning("Unable to resolve ItemsAdder API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
@@ -3904,15 +3927,39 @@ class ItemsAdderHook {
 			}
 		}
 
-		if (player == null)
-			if (this.replaceFontImagesAdventureNoPlayer != null)
-				return ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component.toAdventure());
-			else
-				return ReflectionUtil.invokeStatic(this.replaceFontImagesNoPlayer, component.toLegacy());
+		if (this.failed)
+			return messageOrComponent;
 
-		if (this.replaceFontImagesAdventure != null)
-			return SimpleComponent.fromAdventure(ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component.toAdventure()));
-		else
-			return SimpleComponent.fromSection(ReflectionUtil.invokeStatic(this.replaceFontImages, player, component.toLegacy()));
+		if (player == null) {
+			if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventureNoPlayer != null) {
+				final Component component = ((SimpleComponent) messageOrComponent).toAdventure();
+				final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component);
+
+				return (T) SimpleComponent.fromAdventure(result);
+
+			} else if (messageOrComponent instanceof String && this.replaceFontImagesStringNoPlayer != null) {
+				final String message = (String) messageOrComponent;
+				final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesStringNoPlayer, message);
+
+				return (T) result;
+			}
+
+		} else {
+			if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventure != null) {
+				final Component component = ((SimpleComponent) messageOrComponent).toAdventure();
+				final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component);
+
+				return (T) SimpleComponent.fromAdventure(result);
+
+			} else if (messageOrComponent instanceof String && this.replaceFontImagesString != null) {
+				final String message = (String) messageOrComponent;
+				final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesString, player, message);
+
+				return (T) result;
+			}
+		}
+
+		// Fallback to original message or component if replacement fails
+		return messageOrComponent;
 	}
 }
