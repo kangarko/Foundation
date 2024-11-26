@@ -134,7 +134,17 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @param messages
 	 * @return
 	 */
-	public SimpleComponent onHover(String... messages) {
+	public SimpleComponent onHoverLegacy(Collection<String> messages) {
+		return this.onHoverLegacy(CommonCore.toArray(messages));
+	}
+
+	/**
+	 * Add a hover event.
+	 *
+	 * @param messages
+	 * @return
+	 */
+	public SimpleComponent onHoverLegacy(String... messages) {
 		Component joined = Component.empty();
 
 		for (int i = 0; i < messages.length; i++) {

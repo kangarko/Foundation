@@ -386,7 +386,7 @@ public abstract class SimpleCommandCore {
 		if (throwable instanceof InvalidCommandArgException) {
 			this.tellError(Lang.componentVars("command-invalid-argument",
 					"arguments", ((InvalidCommandArgException) throwable).getInvalidArgument(),
-					"help_command", SimpleComponent.fromPlain(this.getEffectiveCommand() + " ?").onHover("Click to execute.").onClickRunCmd(this.getEffectiveCommand() + " ?")));
+					"help_command", SimpleComponent.fromPlain(this.getEffectiveCommand() + " ?").onHoverLegacy("Click to execute.").onClickRunCmd(this.getEffectiveCommand() + " ?")));
 
 		} else if (throwable instanceof CommandException) {
 			((CommandException) throwable).sendErrorMessage(audience);
