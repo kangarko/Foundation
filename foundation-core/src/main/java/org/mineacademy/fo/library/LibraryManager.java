@@ -240,7 +240,7 @@ public abstract class LibraryManager {
 		final boolean snapshot = library.isSnapshot();
 		final List<String> repos = this.resolveRepositories(library);
 
-		for (final String repository : repos) {
+		for (final String repository : repos)
 			if (snapshot) {
 				final String url = this.resolveSnapshot(repository, library);
 
@@ -248,7 +248,6 @@ public abstract class LibraryManager {
 					urls.add(repository + url);
 			} else
 				urls.add(repository + library.getPath());
-		}
 
 		return Collections.unmodifiableList(urls);
 	}

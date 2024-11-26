@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.conversation.SimplePrompt;
 import org.mineacademy.fo.conversation.SimpleStringPrompt;
 import org.mineacademy.fo.menu.Menu;
@@ -314,7 +314,7 @@ public abstract class Button {
 
 					@Override
 					protected boolean isInputValid(ConversationContext context, String input) {
-						return Valid.isInteger(input) && Valid.isInRange(Integer.parseInt(input), minMaxRange.getMinLong(), minMaxRange.getMaxLong());
+						return ValidCore.isInteger(input) && ValidCore.isInRange(Integer.parseInt(input), minMaxRange.getMinLong(), minMaxRange.getMaxLong());
 					}
 
 					@Override
@@ -396,7 +396,7 @@ public abstract class Button {
 
 					@Override
 					protected boolean isInputValid(ConversationContext context, String input) {
-						return Valid.isDecimal(input) && Valid.isInRange(Double.parseDouble(input), minMaxRange.getMinDouble(), minMaxRange.getMaxDouble());
+						return ValidCore.isDecimal(input) && ValidCore.isInRange(Double.parseDouble(input), minMaxRange.getMinDouble(), minMaxRange.getMaxDouble());
 					}
 
 					@Override

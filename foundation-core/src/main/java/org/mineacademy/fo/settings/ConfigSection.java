@@ -374,7 +374,7 @@ public class ConfigSection {
 	}
 
 	final String getFullPath() {
-		return fullPath;
+		return this.fullPath;
 	}
 
 	ConfigSection getParent() {

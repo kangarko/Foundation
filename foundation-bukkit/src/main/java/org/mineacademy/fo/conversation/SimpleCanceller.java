@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationCanceller;
 import org.bukkit.conversations.ConversationContext;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 
 /**
  * A simple conversation canceller
@@ -36,7 +36,7 @@ public final class SimpleCanceller implements ConversationCanceller {
 	 * @param cancelPhrases
 	 */
 	public SimpleCanceller(List<String> cancelPhrases) {
-		Valid.checkBoolean(!cancelPhrases.isEmpty(), "Cancel phrases are empty for conversation cancel listener!");
+		ValidCore.checkBoolean(!cancelPhrases.isEmpty(), "Cancel phrases are empty for conversation cancel listener!");
 
 		this.cancelPhrases = cancelPhrases;
 	}

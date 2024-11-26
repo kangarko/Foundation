@@ -170,7 +170,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		else if (value.getClass().isEnum())
 			nbt.setEnum(key, (Enum<?>) value);
 		else {
-			
+
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(value.getClass());
 			if (handler != null)
 				handler.set(nbt, key, value);

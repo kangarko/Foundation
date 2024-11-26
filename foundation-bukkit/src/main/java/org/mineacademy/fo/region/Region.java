@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.BlockUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -69,13 +70,13 @@ public class Region implements ConfigSerializable {
 		this.name = name;
 
 		if (primary != null) {
-			Valid.checkNotNull(primary.getWorld(), "Primary location lacks a world!");
+			ValidCore.checkNotNull(primary.getWorld(), "Primary location lacks a world!");
 
 			this.primary = primary;
 		}
 
 		if (secondary != null) {
-			Valid.checkNotNull(secondary.getWorld(), "Primary location lacks a world!");
+			ValidCore.checkNotNull(secondary.getWorld(), "Primary location lacks a world!");
 
 			this.secondary = secondary;
 		}
@@ -88,7 +89,7 @@ public class Region implements ConfigSerializable {
 		if (this.primary == null || this.secondary == null)
 			return null;
 
-		Valid.checkBoolean(this.primary.getWorld().getName().equals(this.secondary.getWorld().getName()), "Points must be in one world! Primary: " + this.primary + " != secondary: " + this.secondary);
+		ValidCore.checkBoolean(this.primary.getWorld().getName().equals(this.secondary.getWorld().getName()), "Points must be in one world! Primary: " + this.primary + " != secondary: " + this.secondary);
 
 		final int x1 = this.primary.getBlockX(), x2 = this.secondary.getBlockX(),
 				y1 = this.primary.getBlockY(), y2 = this.secondary.getBlockY(),
@@ -114,7 +115,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final Location getCenter() {
-		Valid.checkBoolean(this.isWhole(), "Cannot perform getCenter on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot perform getCenter on a non-complete region: " + this.toString());
 
 		final Location[] centered = this.getCorrectedPoints();
 		final Location primary = centered[0];
@@ -190,7 +191,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final List<Block> getBlocks() {
-		Valid.checkBoolean(this.isWhole(), "Cannot perform getBlocks on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot perform getBlocks on a non-complete region: " + this.toString());
 		final Location[] centered = this.getCorrectedPoints();
 
 		return BlockUtil.getBlocks(centered[0], centered[1]);
@@ -203,7 +204,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final Set<Location> getBoundingBox() {
-		Valid.checkBoolean(this.isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot perform getBoundingBox on a non-complete region: " + this.toString());
 
 		return BlockUtil.getBoundingBox(this.primary, this.secondary);
 	}
@@ -214,7 +215,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final List<Entity> getEntities() {
-		Valid.checkBoolean(this.isWhole(), "Cannot perform getEntities on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot perform getEntities on a non-complete region: " + this.toString());
 
 		final List<Entity> found = new LinkedList<>();
 
@@ -251,7 +252,7 @@ public class Region implements ConfigSerializable {
 		if (this.secondary != null && this.primary == null)
 			return Bukkit.getWorld(this.secondary.getWorld().getName());
 
-		Valid.checkBoolean(this.primary.getWorld().getName().equals(this.secondary.getWorld().getName()), "Worlds of this region not the same: " + this.primary.getWorld() + " != " + this.secondary.getWorld());
+		ValidCore.checkBoolean(this.primary.getWorld().getName().equals(this.secondary.getWorld().getName()), "Worlds of this region not the same: " + this.primary.getWorld() + " != " + this.secondary.getWorld());
 		return Bukkit.getWorld(this.primary.getWorld().getName());
 	}
 
@@ -262,7 +263,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final boolean isWithin(@NonNull final Location location) {
-		Valid.checkBoolean(this.isWhole(), "Cannot perform isWithin on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot perform isWithin on a non-complete region: " + this.toString());
 
 		if (!location.getWorld().getName().equals(this.primary.getWorld().getName()))
 			return false;
@@ -286,7 +287,7 @@ public class Region implements ConfigSerializable {
 	 * @param player
 	 */
 	public void teleportToCenter(Player player) {
-		Valid.checkNotNull(this.isWhole(), "Cannot call teleportToCenter() on a non-complete region: " + this.toString());
+		ValidCore.checkNotNull(this.isWhole(), "Cannot call teleportToCenter() on a non-complete region: " + this.toString());
 
 		final Location toTeleportLocation = this.getCenter().clone();
 		final Location playerLocation = player.getLocation();
@@ -306,7 +307,7 @@ public class Region implements ConfigSerializable {
 	 * @throws FoException if the region's border is not set.
 	 */
 	public final Location getHighestLocation(Location location) {
-		Valid.checkNotNull(this.isWhole(), "Cannot call getHighestLocation() on a non-complete region: " + this.toString());
+		ValidCore.checkNotNull(this.isWhole(), "Cannot call getHighestLocation() on a non-complete region: " + this.toString());
 
 		final int x = location.getBlockX();
 		final int z = location.getBlockZ();
@@ -329,12 +330,10 @@ public class Region implements ConfigSerializable {
 						break highestAvailableLookup;
 					}
 
-				} else {
-					if (!CompMaterial.isAir(block)) {
-						location.setY(y);
+				} else if (!CompMaterial.isAir(block)) {
+					location.setY(y);
 
-						break highestAvailableLookup;
-					}
+					break highestAvailableLookup;
 				}
 			}
 
@@ -352,7 +351,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public final boolean isWithinXZ(@NonNull final Location location) {
-		Valid.checkBoolean(this.isWhole(), "Cannot perform isWithinXZ on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot perform isWithinXZ on a non-complete region: " + this.toString());
 
 		if (!location.getWorld().getName().equals(this.primary.getWorld().getName()))
 			return false;
@@ -521,7 +520,7 @@ public class Region implements ConfigSerializable {
 	 * @return
 	 */
 	public static Region deserialize(final SerializedMap map) {
-		Valid.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
+		ValidCore.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
 
 		final String name = map.getString("Name");
 		final Location prim = map.get("Primary", Location.class);

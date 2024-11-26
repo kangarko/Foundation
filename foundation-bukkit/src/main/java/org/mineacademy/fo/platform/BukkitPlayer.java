@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -50,7 +50,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public SimpleLocation getBukkitLocation() {
-		Valid.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
+		ValidCore.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
 		final Location location = this.player.getLocation();
 
 		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
@@ -68,7 +68,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public UUID getUniqueId() {
-		Valid.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
+		ValidCore.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
 
 		return this.player.getUniqueId();
 	}
@@ -113,7 +113,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void kick(SimpleComponent reason) {
-		Valid.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
+		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
 		if (Bukkit.isPrimaryThread())
 			this.player.kickPlayer(reason.toLegacy());
@@ -179,10 +179,9 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		if (this.isPlayer) {
+		if (this.isPlayer)
 			NMSBossBar.getInstance().sendMessage(this.player, message.toLegacy(), progress, color, overlay);
-
-		} else
+		else
 			this.sender.sendMessage(message.toLegacy());
 	}
 
@@ -199,10 +198,9 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		if (this.isPlayer) {
+		if (this.isPlayer)
 			NMSBossBar.getInstance().sendTimedMessage(this.player, message.toLegacy(), secondsToShow, progress, color, overlay);
-
-		} else
+		else
 			this.sender.sendMessage(message.toLegacy());
 	}
 
@@ -245,7 +243,7 @@ final class BukkitPlayer extends FoundationPlayer {
 				this.player.setPlayerListHeaderFooter(header.toLegacy(), footer.toLegacy());
 
 			} catch (final NoSuchMethodError ex) {
-				Remain.sendTablistLegacyPacket(player, header, footer);
+				Remain.sendTablistLegacyPacket(this.player, header, footer);
 			}
 	}
 
@@ -274,7 +272,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void setTempMetadata(String key, Object value) {
-		Valid.checkBoolean(this.isPlayer, "Cannot set temp metadata for non-players!");
+		ValidCore.checkBoolean(this.isPlayer, "Cannot set temp metadata for non-players!");
 
 		this.player.setMetadata(key, new FixedMetadataValue(BukkitPlugin.getInstance(), value));
 	}

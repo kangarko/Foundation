@@ -14,7 +14,7 @@ import org.bukkit.conversations.ConversationPrefix;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.CompChatColor;
@@ -67,7 +67,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @return
 	 */
 	public final CustomConversation start(final Player player) {
-		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing!");
+		ValidCore.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing!");
 
 		// Do not allow open inventory since they cannot type anyways
 		player.closeInventory();

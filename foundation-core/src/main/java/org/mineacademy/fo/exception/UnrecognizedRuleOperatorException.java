@@ -37,6 +37,6 @@ public final class UnrecognizedRuleOperatorException extends RuntimeException {
 
 	@Override
 	public String getMessage() {
-		return "'" + String.join(" ", args) + "' in " + this.rule.getFile().getName() + " rule " + this.rule.getUniqueName() + (hint != null ? " (did you mean '" + this.hint + "'?)" : "");
+		return "'" + String.join(" ", this.args) + "' in " + this.rule.getFile().getName() + " rule " + this.rule.getUniqueName() + (this.hint != null ? " (did you mean '" + this.hint + "'?)" : "");
 	}
 }

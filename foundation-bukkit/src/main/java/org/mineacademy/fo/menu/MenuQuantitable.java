@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.menu.model.MenuQuantity;
@@ -84,7 +84,7 @@ public interface MenuQuantitable {
 			@Override
 			public final void onClickedInMenu(Player player, Menu clickedMenu, ClickType clickType) {
 				final MenuQuantity nextQuantity = clickType == ClickType.LEFT ? MenuQuantitable.this.getQuantity().previous(MenuQuantitable.this.allowDecimalQuantities()) : MenuQuantitable.this.getQuantity().next(MenuQuantitable.this.allowDecimalQuantities());
-				Valid.checkNotNull(nextQuantity, "Next quantity cannot be null. Current: " + MenuQuantitable.this.getQuantity() + " Click: " + clickType);
+				ValidCore.checkNotNull(nextQuantity, "Next quantity cannot be null. Current: " + MenuQuantitable.this.getQuantity() + " Click: " + clickType);
 
 				MenuQuantitable.this.setQuantity(nextQuantity);
 

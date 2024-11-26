@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
@@ -49,7 +49,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected String getPrompt(final ConversationContext ctx) {
-		Valid.checkNotNull(this.question, "Please either call setQuestion or override getPrompt");
+		ValidCore.checkNotNull(this.question, "Please either call setQuestion or override getPrompt");
 
 		return this.question;
 	}
@@ -61,7 +61,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected boolean isInputValid(final ConversationContext context, final String input) {
-		return Valid.isDecimal(input);
+		return ValidCore.isDecimal(input);
 	}
 
 	/**

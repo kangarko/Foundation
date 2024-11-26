@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.LegacyEnumNameTranslator;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.BungeeCommandImpl;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
@@ -45,7 +45,7 @@ final class BungeePlatform extends FoundationPlatform {
 	private BungeePlatform() {
 		Platform.setType(Platform.Type.BUNGEECORD);
 
-		Common.addSimplifier(object -> {
+		CommonCore.addSimplifier(object -> {
 			if (object instanceof ProxiedPlayer)
 				return ((ProxiedPlayer) object).getName();
 
@@ -69,7 +69,7 @@ final class BungeePlatform extends FoundationPlatform {
 
 	@Override
 	public boolean callEvent(final Object event) {
-		Valid.checkBoolean(event instanceof Event, "Object is not a bungee Event: " + event);
+		ValidCore.checkBoolean(event instanceof Event, "Object is not a bungee Event: " + event);
 		final Event result = BungeePlugin.getServer().getPluginManager().callEvent((Event) event);
 
 		return result instanceof Cancellable ? !((Cancellable) result).isCancelled() : true;
@@ -111,14 +111,14 @@ final class BungeePlatform extends FoundationPlatform {
 	protected FoundationPlayer getPlayer(String name) {
 		final ProxiedPlayer player = BungeePlugin.getServer().getPlayer(name);
 
-		return player != null ? toPlayer(player) : null;
+		return player != null ? this.toPlayer(player) : null;
 	}
 
 	@Override
 	protected FoundationPlayer getPlayer(UUID uniqueId) {
 		final ProxiedPlayer player = BungeePlugin.getServer().getPlayer(uniqueId);
 
-		return player != null && player.isConnected() ? toPlayer(player) : null;
+		return player != null && player.isConnected() ? this.toPlayer(player) : null;
 	}
 
 	@Override
@@ -133,7 +133,7 @@ final class BungeePlatform extends FoundationPlatform {
 
 	@Override
 	public List<Tuple<String, String>> getPlugins() {
-		return Common.convertList(BungeePlugin.getServer().getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getDescription().getName(), plugin.getDescription().getVersion()));
+		return CommonCore.convertList(BungeePlugin.getServer().getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getDescription().getName(), plugin.getDescription().getVersion()));
 	}
 
 	@Override
@@ -145,7 +145,7 @@ final class BungeePlatform extends FoundationPlatform {
 
 	@Override
 	public List<FoundationServer> getServers() {
-		return Common.convertList(Remain.getServers(), server -> new BungeeServer(server));
+		return CommonCore.convertList(Remain.getServers(), BungeeServer::new);
 	}
 
 	@Override
@@ -203,7 +203,7 @@ final class BungeePlatform extends FoundationPlatform {
 
 	@Override
 	public void registerEvents(@NonNull Object listener) {
-		Valid.checkBoolean(listener instanceof Listener, "To register events you must make " + listener.getClass() + " implements Listener");
+		ValidCore.checkBoolean(listener instanceof Listener, "To register events you must make " + listener.getClass() + " implements Listener");
 
 		BungeePlugin.getServer().getPluginManager().registerListener(BungeePlugin.getInstance(), (Listener) listener);
 	}
@@ -231,7 +231,7 @@ final class BungeePlatform extends FoundationPlatform {
 	@Override
 	public void sendPluginMessage(UUID senderUid, String channel, byte[] array) {
 		final ProxiedPlayer player = Remain.getPlayer(senderUid, false);
-		Valid.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
+		ValidCore.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
 		player.sendData(BungeePlugin.BUNGEE_CHANNEL, array);
 	}

@@ -9,7 +9,7 @@ import org.bukkit.entity.LivingEntity;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 
@@ -293,21 +293,19 @@ public enum CompAttribute {
 		if (hasAttributeClass) {
 			if (this.bukkitAttribute != null) {
 				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
-				Valid.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
+				ValidCore.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
 
 				instance.setBaseValue(value);
 			}
 
-		} else {
-			if (this == MAX_HEALTH)
-				entity.setMaxHealth(value);
+		} else if (this == MAX_HEALTH)
+			entity.setMaxHealth(value);
 
-			else if (this.getNmsName() != null) {
-				final Object instance = this.getLegacyAttributeInstance(entity);
-				Valid.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
+		else if (this.getNmsName() != null) {
+			final Object instance = this.getLegacyAttributeInstance(entity);
+			ValidCore.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
 
-				ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
-			}
+			ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
 		}
 	}
 
@@ -325,15 +323,13 @@ public enum CompAttribute {
 				return instance != null;
 			}
 
-		} else {
-			if (this == MAX_HEALTH)
-				return true;
+		} else if (this == MAX_HEALTH)
+			return true;
 
-			else if (this.getNmsName() != null) {
-				final Object instance = this.getLegacyAttributeInstance(entity);
+		else if (this.getNmsName() != null) {
+			final Object instance = this.getLegacyAttributeInstance(entity);
 
-				return instance != null;
-			}
+			return instance != null;
 		}
 
 		return false;

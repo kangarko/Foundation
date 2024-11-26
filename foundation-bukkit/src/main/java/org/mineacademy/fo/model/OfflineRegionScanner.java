@@ -13,14 +13,14 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.event.RegionScanCompleteEvent;
 import org.mineacademy.fo.exception.ReflectionException;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
@@ -105,10 +105,10 @@ public abstract class OfflineRegionScanner {
 	 */
 	private void scan0(World world) {
 
-		Common.log(
-				Common.chatLine(),
+		CommonCore.log(
+				CommonCore.chatLine(),
 				"Scanning regions in " + world.getName(),
-				Common.chatLine());
+				CommonCore.chatLine());
 
 		// Disable watch dog
 		this.disableWatchdog();
@@ -117,7 +117,7 @@ public abstract class OfflineRegionScanner {
 		final File[] files = getRegionFiles(world);
 
 		if (files == null || files.length == 0) {
-			Common.warning("Unable to locate the region files for: " + world.getName());
+			CommonCore.warning("Unable to locate the region files for: " + world.getName());
 
 			return;
 		}
@@ -160,10 +160,10 @@ public abstract class OfflineRegionScanner {
 
 				// Queue finished
 				if (file == null) {
-					Common.log(
-							Common.chatLine(),
+					CommonCore.log(
+							CommonCore.chatLine(),
 							"Region scanner finished. World saved.",
-							Common.chatLine());
+							CommonCore.chatLine());
 
 					Platform.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
 
@@ -205,7 +205,7 @@ public abstract class OfflineRegionScanner {
 				WAIT_TIME_BETWEEN_SCAN_SECONDS = +2;
 
 				System.gc();
-				Common.sleep(5_000);
+				CommonCore.sleep(5_000);
 			} else
 				System.out.print(" [free memory = " + free + " mb]");
 
@@ -235,7 +235,7 @@ public abstract class OfflineRegionScanner {
 							this.onChunkScan(chunk);
 
 						} catch (final Throwable t) {
-							Common.error(t, "Failed to scan chunk " + chunk + ", aborting for safety");
+							CommonCore.error(t, "Failed to scan chunk " + chunk + ", aborting for safety");
 
 							break scan;
 						}
@@ -249,8 +249,8 @@ public abstract class OfflineRegionScanner {
 				RegionAccessor.save(region);
 
 			} catch (final Throwable t) {
-				Common.log("Failed to save region " + file + ", operation stopped.");
-				Common.sneaky(t);
+				CommonCore.log("Failed to save region " + file + ", operation stopped.");
+				CommonCore.sneaky(t);
 			}
 
 		if (this.fastMode)
@@ -367,7 +367,7 @@ class RegionAccessor {
 					: regionFileClass.getMethod(atleast1_13 ? "b" : "c", int.class, int.class);
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.sneaky(ex);
+			CommonCore.sneaky(ex);
 		}
 	}
 

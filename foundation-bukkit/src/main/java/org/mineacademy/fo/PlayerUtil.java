@@ -40,8 +40,8 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompAttribute;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
@@ -97,10 +97,10 @@ public final class PlayerUtil {
 	 */
 	/*public static void kick(final Player player, final String... message) {
 		final String reason = CompChatColor.translateColorCodes(String.join("\n", message));
-
+	
 		if (Bukkit.isPrimaryThread())
 			player.kickPlayer(reason);
-
+	
 		else
 			Platform.runTask(() -> player.kickPlayer(reason));
 	}*/
@@ -308,7 +308,7 @@ public final class PlayerUtil {
 
 		if (statFile.exists())
 			try {
-				final JsonObject json = Common.GSON.fromJson(new FileReader(statFile), JsonObject.class);
+				final JsonObject json = CommonCore.GSON.fromJson(new FileReader(statFile), JsonObject.class);
 				final String statisticName = Remain.getNMSStatisticName(statistic, material, entityType);
 
 				if (json.has("stats")) {
@@ -328,7 +328,7 @@ public final class PlayerUtil {
 					return json.get(statisticName).getAsLong();
 
 			} catch (final Throwable t) {
-				Common.error(t, "Failed to read statistic " + statistic + " for " + player.getName());
+				CommonCore.error(t, "Failed to read statistic " + statistic + " for " + player.getName());
 			}
 
 		return 0L;
@@ -507,7 +507,7 @@ public final class PlayerUtil {
 	 * @param player
 	 */
 	public static void storeState(final Player player) {
-		Valid.checkBoolean(!hasStoredState(player), "Player " + player.getName() + " already has a stored state!");
+		ValidCore.checkBoolean(!hasStoredState(player), "Player " + player.getName() + " already has a stored state!");
 
 		final SerializedMap data = SerializedMap.fromArray(
 				"gameMode", player.getGameMode(),
@@ -575,7 +575,7 @@ public final class PlayerUtil {
 	 */
 	public static void restoreState(final Player player) {
 		final SerializedMap data = storedPlayerStates.remove(player.getUniqueId());
-		Valid.checkNotNull(data, "Player " + player.getName() + " does not have a stored game state!");
+		ValidCore.checkNotNull(data, "Player " + player.getName() + " does not have a stored game state!");
 
 		player.setGameMode(data.get("gameMode", GameMode.class));
 		player.getInventory().setContents((ItemStack[]) data.getObject("content"));
@@ -946,7 +946,7 @@ public final class PlayerUtil {
 	 * @return true if the replace was successful
 	 */
 	public static boolean updateInvSlot(final Inventory inv, final ItemStack search, final ItemStack replaceWith) {
-		Valid.checkNotNull(inv, "Inv = null");
+		ValidCore.checkNotNull(inv, "Inv = null");
 
 		for (int i = 0; i < inv.getSize(); i++) {
 			final ItemStack slot = inv.getItem(i);

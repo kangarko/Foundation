@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
@@ -166,7 +166,7 @@ public final class CompColor {
 		this.name = name;
 		this.dye = dye;
 		this.chatColor = chatColor == null ? name != null ? CompChatColor.fromString(name) : CompChatColor.WHITE : chatColor;
-		this.legacyName = Common.getOrEmpty(legacyName);
+		this.legacyName = CommonCore.getOrEmpty(legacyName);
 
 		values.add(this);
 	}

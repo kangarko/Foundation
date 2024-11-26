@@ -30,9 +30,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 
 import com.google.gson.JsonArray;
@@ -61,7 +60,7 @@ public class JsonItemStack {
 	 * @return The JSON string
 	 */
 	public static String toJson(@Nullable ItemStack itemStack) {
-		return Common.GSON.toJson(toJsonObject(itemStack));
+		return CommonCore.GSON.toJson(toJsonObject(itemStack));
 	}
 
 	/**
@@ -361,7 +360,7 @@ public class JsonItemStack {
 		if (string == null || string.isEmpty() || "{}".equals(string) || "null".equals(string))
 			return null;
 
-		final JsonObject itemJson = Common.GSON.fromJson(string, JsonObject.class);
+		final JsonObject itemJson = CommonCore.GSON.fromJson(string, JsonObject.class);
 
 		ValidCore.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
 
@@ -404,7 +403,7 @@ public class JsonItemStack {
 		if (enchants != null)
 			for (final JsonElement enchantElement : enchants) {
 				final String enchant = enchantElement.getAsString();
-				Valid.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
+				ValidCore.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
 
 				try {
 					final String[] split = enchant.split(":");
@@ -470,7 +469,7 @@ public class JsonItemStack {
 
 					for (final JsonElement patternJson : patterns) {
 						final String pattern = patternJson.getAsString();
-						Valid.checkBoolean(pattern.contains(":"), "Expected : when parsing banner patterns from JSON item, got: " + pattern + ". Full item: " + itemJson);
+						ValidCore.checkBoolean(pattern.contains(":"), "Expected : when parsing banner patterns from JSON item, got: " + pattern + ". Full item: " + itemJson);
 
 						if (pattern.contains(":")) {
 							final String[] splitPattern = pattern.split(":");
@@ -497,7 +496,7 @@ public class JsonItemStack {
 
 					for (final JsonElement enchantElement : storedEnchants) {
 						final String enchant = enchantElement.getAsString();
-						Valid.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
+						ValidCore.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
 
 						try {
 							final String[] splitEnchant = enchant.split(":");
@@ -551,7 +550,7 @@ public class JsonItemStack {
 				if (effects != null)
 					for (final JsonElement effectElement : effects) {
 						final String effect = effectElement.getAsString();
-						Valid.checkBoolean(effect.contains(":"), "Expected : when parsing effects from JSON item, got: " + effects + ". Full item: " + itemJson);
+						ValidCore.checkBoolean(effect.contains(":"), "Expected : when parsing effects from JSON item, got: " + effects + ". Full item: " + itemJson);
 
 						try {
 							final String[] splitPotions = effect.split(":");

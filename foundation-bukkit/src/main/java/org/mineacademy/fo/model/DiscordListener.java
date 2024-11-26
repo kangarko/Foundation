@@ -15,10 +15,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.Remain;
 
 import github.scarsz.discordsrv.DiscordSRV;
@@ -419,7 +419,7 @@ public abstract class DiscordListener implements Listener {
 	 * @return
 	 */
 	protected final String findPlayerName(Member member, User author) {
-		final String discordName = Common.getOrDefaultStrict(member.getNickname(), author.getName());
+		final String discordName = CommonCore.getOrDefaultStrict(member.getNickname(), author.getName());
 		final UUID linkedId = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(author.getId());
 
 		final Player player;
@@ -452,7 +452,7 @@ public abstract class DiscordListener implements Listener {
 					member.kick(reason).complete();
 
 			} catch (final HierarchyException ex) {
-				Common.log("Unable to kick " + discordSender.getName() + " because he appears to be Discord administrator");
+				CommonCore.log("Unable to kick " + discordSender.getName() + " because he appears to be Discord administrator");
 			}
 		});
 	}
@@ -515,7 +515,7 @@ public abstract class DiscordListener implements Listener {
 						// Fail through since we handled that
 
 					} catch (final Throwable t) {
-						Common.error(t,
+						CommonCore.error(t,
 								"Failed to handle DiscordSRV->Minecraft message (pre process)!",
 								"Sender: " + event.getAuthor().getName(),
 								"Channel: " + event.getChannel().getName(),
@@ -540,7 +540,7 @@ public abstract class DiscordListener implements Listener {
 						// Fail through since we handled that
 
 					} catch (final Throwable t) {
-						Common.error(t,
+						CommonCore.error(t,
 								"Failed to handle DiscordSRV->Minecraft message (post process)!",
 								"Sender: " + event.getAuthor().getName(),
 								"Channel: " + event.getChannel().getName(),
@@ -566,7 +566,7 @@ public abstract class DiscordListener implements Listener {
 						// Fail through since we handled that
 
 					} catch (final Throwable t) {
-						Common.error(t,
+						CommonCore.error(t,
 								"Failed to handle Minecraft->DiscordSRV message!",
 								"Sender: " + event.getPlayer().getName(),
 								"Channel: " + event.getChannel(),

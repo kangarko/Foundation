@@ -58,10 +58,9 @@ final class BukkitPluginMessage implements PluginMessageListener {
 
 					final ProxyMessage message = ProxyMessage.getByName(listener, actionName);
 
-					if (message == null) {
+					if (message == null)
 						new NullPointerException("Unknown plugin action '" + actionName + "'. IF YOU UPDATED THE PLUGIN BY RELOADING, stop your entire network, update all servers and start again.").printStackTrace();
-
-					} else {
+					else {
 						final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, input, stream);
 
 						listener.setData(data);

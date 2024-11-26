@@ -3,7 +3,7 @@ package org.mineacademy.fo.menu.button;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.conversation.SimpleConversation;
 import org.mineacademy.fo.conversation.SimplePrompt;
 import org.mineacademy.fo.menu.Menu;
@@ -85,7 +85,7 @@ public final class ButtonConversation extends Button {
 
 	@Override
 	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-		Valid.checkBoolean(this.conversation != null || this.prompt != null, "Conversation and prompt cannot be null!");
+		ValidCore.checkBoolean(this.conversation != null || this.prompt != null, "Conversation and prompt cannot be null!");
 
 		if (this.conversation != null) {
 			this.conversation.setMenuToReturnTo(menu);

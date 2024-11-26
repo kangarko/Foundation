@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -140,7 +140,7 @@ public final class ButtonMenu extends Button {
 			menuToOpen.displayTo(pl);
 
 		} else {
-			Valid.checkNotNull(this.menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
+			ValidCore.checkNotNull(this.menuToOpen, "Report / ButtonTrigger requires either 'late bind menu' or normal menu to be set!");
 
 			if (this.newInstance)
 				this.menuToOpen.newInstance().displayTo(pl);

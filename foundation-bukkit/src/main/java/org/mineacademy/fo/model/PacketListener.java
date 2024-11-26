@@ -208,7 +208,7 @@ public abstract class PacketListener {
 				return;
 
 			// Ignore action bar messages
-			if (this.actionBarMode == -1) {
+			if (this.actionBarMode == -1)
 				if (!packet.getBooleans().getFields().isEmpty())
 					this.actionBarMode = 1;
 
@@ -220,20 +220,18 @@ public abstract class PacketListener {
 
 				else
 					throw new FoException("Unknown way to find if chat packet is action bar, packet: " + packet.getHandle().getClass());
-			}
 
 			if (this.actionBarMode == 1) {
-				if (packet.getBooleans().read(0) == true)
+				if (packet.getBooleans().read(0))
 					return;
 
 			} else if (this.actionBarMode == 2) {
 				if (packet.getBytes().read(0) == (byte) 0)
 					return;
 
-			} else if (this.actionBarMode == 3) {
+			} else if (this.actionBarMode == 3)
 				if (packet.getChatTypes().read(0) == ChatType.GAME_INFO)
 					return;
-			}
 
 			// Cache booleans for faster performance: 0.3ms vs ~1ms
 			if (this.hasAdventure == null) {
@@ -292,7 +290,7 @@ public abstract class PacketListener {
 					if (editJson) {
 						final Component newJson = GsonComponentSerializer.gson().deserialize(json);
 
-						if (!newJson.equals(oldJson)) {
+						if (!newJson.equals(oldJson))
 							if (this.hasAdventure)
 								modifierAdventure.write(0, newJson);
 
@@ -301,7 +299,6 @@ public abstract class PacketListener {
 
 							else if (this.hasIChatBase)
 								modifierIChatBaseComponent.write(0, WrappedChatComponent.fromJson(json));
-						}
 					}
 				}
 

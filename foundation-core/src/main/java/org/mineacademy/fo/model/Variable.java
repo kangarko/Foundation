@@ -286,7 +286,7 @@ public final class Variable extends YamlConfig {
 			if (this.senderPermission != null && !this.senderPermission.isEmpty() && !audience.hasPermission(this.senderPermission))
 				return SimpleComponent.empty();
 
-			if (this.senderCondition != null && !this.senderCondition.isEmpty()) {
+			if (this.senderCondition != null && !this.senderCondition.isEmpty())
 				try {
 					final Object result = JavaScriptExecutor.run(variables.replace(this.senderCondition), audience);
 
@@ -312,7 +312,6 @@ public final class Variable extends YamlConfig {
 
 					throw ex;
 				}
-			}
 
 			final String value = this.getValue(audience, placeholders);
 
@@ -326,8 +325,7 @@ public final class Variable extends YamlConfig {
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
 				component.onHoverLegacy(variables.replaceArray(CommonCore.toArray(this.hoverText)));
 
-			if (this.hoverItem != null && !this.hoverItem.isEmpty()) {
-
+			if (this.hoverItem != null && !this.hoverItem.isEmpty())
 				try {
 					final Object result = JavaScriptExecutor.run(variables.replace(this.hoverItem), audience);
 
@@ -352,7 +350,6 @@ public final class Variable extends YamlConfig {
 
 					throw ex;
 				}
-			}
 
 			if (this.openUrl != null && !this.openUrl.isEmpty())
 				component.onClickOpenUrl(variables.replace(this.openUrl));

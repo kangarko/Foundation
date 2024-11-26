@@ -9,7 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.nbt.NBTCompound;
 import org.mineacademy.fo.remain.nbt.NBTItem;
@@ -69,7 +69,7 @@ public final class CompMonsterEgg {
 	 * @return the entity type, or unknown or error if not found
 	 */
 	public static EntityType lookupEntity(@NonNull final ItemStack item) {
-		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
+		ValidCore.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 		EntityType type = null;
 
 		if (MinecraftVersion.atLeast(V.v1_13))
@@ -108,7 +108,7 @@ public final class CompMonsterEgg {
 	}
 
 	private static EntityType readItemStackNBTEntity(final ItemStack item) {
-		Valid.checkNotNull(item, "Reading entity got null item");
+		ValidCore.checkNotNull(item, "Reading entity got null item");
 
 		final NBTItem nbt = new NBTItem(item);
 		final String type = nbt.hasKey(TAG) ? nbt.getCompound(TAG).getString("entity") : null;
@@ -125,7 +125,7 @@ public final class CompMonsterEgg {
 			if (tagCompound == null)
 				return null;
 
-			Valid.checkNotNull(tagCompound, "Spawn egg lacks tag compound: " + item);
+			ValidCore.checkNotNull(tagCompound, "Spawn egg lacks tag compound: " + item);
 
 			final Method tagGetCompound = tagCompound.getClass().getMethod("getCompound", String.class);
 			final Object entityTag = tagGetCompound.invoke(tagCompound, "EntityTag");
@@ -155,7 +155,7 @@ public final class CompMonsterEgg {
 	 * @return the itemstack
 	 */
 	public static ItemStack setEntity(@NonNull ItemStack item, final EntityType type) {
-		Valid.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
+		ValidCore.checkBoolean(CompMaterial.isMonsterEgg(item.getType()), "Item must be a monster egg not " + item);
 
 		if (MinecraftVersion.atLeast(V.v1_13)) {
 			final CompMaterial material = CompEntityType.getSpawnEgg(type);
@@ -194,8 +194,8 @@ public final class CompMonsterEgg {
 	}
 
 	private static ItemStack writeEntity0(final ItemStack item, final EntityType type) {
-		Valid.checkNotNull(item, "setting nbt got null item");
-		Valid.checkNotNull(type, "setting nbt got null entity");
+		ValidCore.checkNotNull(item, "setting nbt got null item");
+		ValidCore.checkNotNull(type, "setting nbt got null entity");
 
 		final NBTItem nbt = new NBTItem(item);
 		final NBTCompound tag = nbt.addCompound(TAG);

@@ -15,12 +15,12 @@ import org.bukkit.Note;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -1834,9 +1834,9 @@ public enum CompSound {
 	 */
 	public void stopSound(@NonNull Player player) {
 		if (Bukkit.isPrimaryThread())
-			stopSound0(player);
+			this.stopSound0(player);
 		else
-			Platform.runTask(() -> stopSound0(player));
+			Platform.runTask(() -> this.stopSound0(player));
 	}
 
 	private void stopSound0(@NonNull Player player) {
@@ -1857,7 +1857,7 @@ public enum CompSound {
 	 * @return
 	 */
 	public Sound getSound() {
-		return Common.getOrDefault(this.sound, CompSound.ENTITY_PLAYER_LEVELUP.sound);
+		return CommonCore.getOrDefault(this.sound, CompSound.ENTITY_PLAYER_LEVELUP.sound);
 	}
 
 	/**

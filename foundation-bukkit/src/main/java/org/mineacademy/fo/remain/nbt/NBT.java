@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * General utility class for a clean and simple nbt access.
@@ -58,7 +58,7 @@ public class NBT {
 			return true;
 		} catch (final Exception ex) {
 			NbtApiException.confirmedBroken = true;
-			Common.warning("[NBTAPI] Error during loading, some plugin features will not be available!");
+			CommonCore.warning("[NBTAPI] Error during loading, some plugin features will not be available!");
 
 			ex.printStackTrace();
 
@@ -83,10 +83,10 @@ public class NBT {
 	 * generic type T. It then returns the result of the function applied to a new
 	 * NBTItem
 	 *
-	 * @param <T> 
+	 * @param <T>
 	 * @param item   The itemstack you want to get the NBT from
 	 * @param getter A function that takes a ReadableNBT and returns a value of type
-	 *               T.    
+	 *               T.
 	 * @return The function is being returned.
 	 */
 	public static <T> T get(ItemStack item, Function<ReadableItemNBT, T> getter) {
@@ -687,7 +687,7 @@ public class NBT {
 
 	/**
 	 * It takes an block entity and a function to modify the entity via the proxy
-	 * 
+	 *
 	 * @param <T>
 	 * @param <X>
 	 * @param blockState The blockstate you want to modify

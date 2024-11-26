@@ -312,8 +312,8 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static List<Block> getBlocks(final Location primary, final Location secondary) {
-		Valid.checkNotNull(primary, "Primary region point must be set!");
-		Valid.checkNotNull(secondary, "Secondary region point must be set!");
+		ValidCore.checkNotNull(primary, "Primary region point must be set!");
+		ValidCore.checkNotNull(secondary, "Secondary region point must be set!");
 
 		final List<Block> blocks = new ArrayList<>();
 
@@ -701,7 +701,7 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static int findHighestNetherAirBlock(@NonNull World world, int x, int z) {
-		Valid.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
+		ValidCore.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
 
 		for (int y = 0; y < world.getMaxHeight(); y++) {
 			final Block block = world.getBlockAt(x, y, z);

@@ -3,7 +3,7 @@ package org.mineacademy.fo.platform;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleLocation;
@@ -56,7 +56,7 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public UUID getUniqueId() {
-		Valid.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
+		ValidCore.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
 
 		return this.player.getUniqueId();
 	}
@@ -97,7 +97,7 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public void kick(SimpleComponent reason) {
-		Valid.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
+		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
 		this.player.disconnect(reason.toLegacy());
 	}

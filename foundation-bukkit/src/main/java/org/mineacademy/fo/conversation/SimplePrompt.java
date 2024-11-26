@@ -10,7 +10,7 @@ import org.bukkit.conversations.ValidatingPrompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -123,7 +123,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @return
 	 */
 	protected final Player getPlayer(final ConversationContext ctx) {
-		Valid.checkBoolean(ctx.getForWhom() instanceof Player, "Conversable is not a player but: " + ctx.getForWhom());
+		ValidCore.checkBoolean(ctx.getForWhom() instanceof Player, "Conversable is not a player but: " + ctx.getForWhom());
 
 		return (Player) ctx.getForWhom();
 	}
@@ -135,7 +135,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final String message) {
-		Valid.checkNotNull(this.player, "Cannot use tell() when player not yet set!");
+		ValidCore.checkNotNull(this.player, "Cannot use tell() when player not yet set!");
 
 		this.tell(this.player, message);
 	}
@@ -147,7 +147,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final SimpleComponent message) {
-		Valid.checkNotNull(this.player, "Cannot use tell() when player not yet set!");
+		ValidCore.checkNotNull(this.player, "Cannot use tell() when player not yet set!");
 
 		this.tell(this.player, message);
 	}
@@ -239,7 +239,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @return
 	 */
 	public final Conversation show(final Player player) {
-		Valid.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + this.getClass().getSimpleName() + " instead!");
+		ValidCore.checkBoolean(!player.isConversing(), "Player " + player.getName() + " is already conversing! Show them their next prompt in acceptValidatedInput() in " + this.getClass().getSimpleName() + " instead!");
 
 		this.player = player;
 

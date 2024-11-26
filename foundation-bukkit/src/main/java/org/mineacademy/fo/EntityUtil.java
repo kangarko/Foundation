@@ -155,7 +155,7 @@ public final class EntityUtil {
 		location.setY(0);
 
 		final Entity entity = world.spawnEntity(location, type);
-		Valid.checkBoolean(entity instanceof LivingEntity, "Cannot use getDefaultHealth for non-living entity: " + type);
+		ValidCore.checkBoolean(entity instanceof LivingEntity, "Cannot use getDefaultHealth for non-living entity: " + type);
 
 		final double health = Remain.getHealth((LivingEntity) entity);
 

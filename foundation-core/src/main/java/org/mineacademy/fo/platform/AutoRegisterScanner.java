@@ -98,7 +98,7 @@ final class AutoRegisterScanner {
 				final Class<? extends Annotation> eventHandlerClass = ReflectionUtil.lookupClassSilently("org.bukkit.event.EventHandler");
 				final Class<?> listenerClass = ReflectionUtil.lookupClassSilently("org.bukkit.event.Listener");
 
-				if (eventHandlerClass != null && listenerClass != null) {
+				if (eventHandlerClass != null && listenerClass != null)
 					try {
 						for (final Method method : clazz.getMethods())
 							if (method.isAnnotationPresent(eventHandlerClass))
@@ -107,7 +107,6 @@ final class AutoRegisterScanner {
 					} catch (final Error err) {
 						// Ignore, such as Citizens api will throw that when not present
 					}
-				}
 
 				// Handled above
 				if (YamlStaticConfig.class.isAssignableFrom(clazz))
@@ -273,10 +272,9 @@ final class AutoRegisterScanner {
 				plugin.setDefaultProxyListener((ProxyListener) instance);
 			}
 
-		} else if (SimpleCommandCore.class.isAssignableFrom(clazz)) {
+		} else if (SimpleCommandCore.class.isAssignableFrom(clazz))
 			plugin.registerCommand((SimpleCommandCore) instance);
-
-		} else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
+		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
 			final SimpleCommandGroup group = (SimpleCommandGroup) instance;
 
 			// Special case, do it at the end
@@ -287,12 +285,10 @@ final class AutoRegisterScanner {
 
 			Variables.addExpansion((SimpleExpansion) instance);
 
-		} else if (YamlConfig.class.isAssignableFrom(clazz)) {
-
+		} else if (YamlConfig.class.isAssignableFrom(clazz))
 			// Automatically called onLoadFinish when getting instance
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
-
-		} else if (customRegisterHandler.autoRegister(clazz, tuple)) {
+		else if (customRegisterHandler.autoRegister(clazz, tuple)) {
 			// Handled by custom handler
 
 		} else

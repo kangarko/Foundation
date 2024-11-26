@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * Wraps NMS and CRAFT classes
@@ -122,7 +122,7 @@ enum ClassWrapper {
 				this.clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "[NBTAPI] Error while trying to resolve class '" + clazzName + "'! Plugin will continue to function but some features will be limited.");
+			CommonCore.error(ex, "[NBTAPI] Error while trying to resolve class '" + clazzName + "'! Plugin will continue to function but some features will be limited.");
 		}
 	}
 

@@ -31,7 +31,7 @@ public final class VelocityCommandImpl implements com.velocitypowered.api.comman
 	 */
 	@Override
 	public void execute(Invocation invocation) {
-		delegate.delegateExecute(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());
+		this.delegate.delegateExecute(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());
 	}
 
 	/**
@@ -39,6 +39,6 @@ public final class VelocityCommandImpl implements com.velocitypowered.api.comman
 	 */
 	@Override
 	public List<String> suggest(Invocation invocation) {
-		return delegate.delegateTabComplete(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());
+		return this.delegate.delegateTabComplete(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());
 	}
 }

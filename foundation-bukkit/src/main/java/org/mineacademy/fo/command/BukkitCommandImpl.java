@@ -45,7 +45,7 @@ public final class BukkitCommandImpl extends Command {
 	 */
 	@Override
 	public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-		delegate.delegateExecute(Platform.toPlayer(sender), commandLabel, args);
+		this.delegate.delegateExecute(Platform.toPlayer(sender), commandLabel, args);
 
 		return true;
 	}
@@ -55,6 +55,6 @@ public final class BukkitCommandImpl extends Command {
 	 */
 	@Override
 	public List<String> tabComplete(CommandSender sender, String label, String[] args) throws IllegalArgumentException {
-		return delegate.delegateTabComplete(Platform.toPlayer(sender), label, args);
+		return this.delegate.delegateTabComplete(Platform.toPlayer(sender), label, args);
 	}
 }

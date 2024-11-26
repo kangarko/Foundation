@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.ItemUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.platform.Platform;
 
@@ -32,7 +32,7 @@ public abstract class Tool {
 	 * @param tool the tool
 	 */
 	static void register(Tool tool) {
-		Valid.checkBoolean(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
+		ValidCore.checkBoolean(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
 
 		tools.add(tool);
 	}

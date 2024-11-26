@@ -25,17 +25,18 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.SerializeUtilCore;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.ConfigSerializable;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.nbt.NBT;
 import org.mineacademy.fo.remain.nbt.ReadableNBT;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -212,13 +213,13 @@ public final class CompMetadata {
 	 */
 	public static String getMetadata(@NonNull final ItemStack item, @NonNull final String key) {
 		return CompMaterial.isAir(item.getType()) ? null : NBT.get(item, nbt -> {
-			String value = Common.getOrNull(nbt.getString(key));
+			String value = CommonCore.getOrNull(nbt.getString(key));
 
 			if (value == null) {
 				final ReadableNBT compound = nbt.getCompound(BukkitPlugin.getInstance().getName() + "_NbtTag");
 
 				if (compound != null && compound.hasTag(key))
-					value = Common.getOrNull(compound.getString(key));
+					value = CommonCore.getOrNull(compound.getString(key));
 			}
 
 			return value;
@@ -247,10 +248,9 @@ public final class CompMetadata {
 				}
 			}
 
-		if (hasPersistentMetadata) {
+		if (hasPersistentMetadata)
 			return getPersistentMetadata(entity, key);
-
-		} else
+		else
 			return getFileMetadata(entity.getUniqueId(), key);
 	}
 
@@ -273,10 +273,9 @@ public final class CompMetadata {
 	 * @return
 	 */
 	public static String getMetadata(@NonNull final BlockState entity, @NonNull final String key) {
-		if (hasPersistentMetadata) {
+		if (hasPersistentMetadata)
 			return getPersistentMetadata(entity, key);
-
-		} else
+		else
 			return MetadataFile.getInstance().getMetadata(entity, key);
 	}
 
@@ -375,18 +374,18 @@ public final class CompMetadata {
 	 * Returns persistent metadata with our plugin assigned as namedspaced key for MC 1.14+
 	 */
 	private static String getPersistentMetadata(final Object entity, final String key) {
-		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
+		ValidCore.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
 		final NamespacedKey namespacedKey = (NamespacedKey) getOrCacheKey(key);
 
-		return Common.getOrNull(data.get(namespacedKey, PersistentDataType.STRING));
+		return CommonCore.getOrNull(data.get(namespacedKey, PersistentDataType.STRING));
 	}
 
 	/*
 	 * Sets persistent metadata with our plugin assigned as namedspaced key for MC 1.14+
 	 */
 	private static void setPersistentMetadata(final Object entity, final String key, final String value) {
-		Valid.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
+		ValidCore.checkBoolean(entity instanceof PersistentDataHolder, "Can only use CompMetadata#setMetadata(" + key + ") for persistent data holders, got " + entity.getClass());
 
 		final PersistentDataContainer data = ((PersistentDataHolder) entity).getPersistentDataContainer(); // Prevents no class def error on legacy MC
 		final boolean remove = value == null || "".equals(value);
@@ -428,11 +427,11 @@ public final class CompMetadata {
 			this.migrateOldFile();
 			this.setPathPrefix("Metadata");
 			this.setHeader(
-					Common.configLine(),
+					CommonCore.configLine(),
 					" DO NOT EDIT - THIS FILE IS MACHINE-GENERATED",
 					" ",
 					" Stores plugin-related metadata for entities and blocks.",
-					Common.configLine());
+					CommonCore.configLine());
 		}
 
 		private void migrateOldFile() {
@@ -557,7 +556,7 @@ public final class CompMetadata {
 			this.blockMetadata.clear();
 
 			for (final String locationString : this.getMap("Block").keySet()) {
-				final Location location = SerializeUtil.deserialize(SerializeUtil.Language.YAML, Location.class, locationString);
+				final Location location = SerializeUtilCore.deserialize(SerializeUtil.Language.YAML, Location.class, locationString);
 
 				final Block block = location.getBlock();
 				final BlockCache blockCache = this.get("Block." + locationString, BlockCache.class);
@@ -620,12 +619,11 @@ public final class CompMetadata {
 				final String meta = iterator.next();
 				final String value = getTag(meta, key);
 
-				if (value != null && !value.isEmpty()) {
+				if (value != null && !value.isEmpty())
 					if (hasSinceChanged)
 						iterator.remove();
 					else
 						return value;
-				}
 			}
 
 			return null;

@@ -32,15 +32,15 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
 
@@ -180,7 +180,7 @@ public final class HookManager {
 				discordSRVHook = new DiscordSRVHook();
 
 			} catch (final ClassNotFoundException ex) {
-				Common.error(ex, "&c" + BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
+				CommonCore.error(ex, "&c" + BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
 			}
 
 		if (Platform.isPluginInstalled("Essentials"))
@@ -190,7 +190,7 @@ public final class HookManager {
 		final Plugin factions = Bukkit.getPluginManager().getPlugin("Factions");
 
 		if (Platform.isPluginInstalled("FactionsX") && factions == null)
-			Common.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
+			CommonCore.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
 
 		else if (factions != null) {
 			final String ver = factions.getDescription().getVersion();
@@ -209,7 +209,7 @@ public final class HookManager {
 				if (mplayer != null)
 					factionsHook = new FactionsMassive();
 				else
-					Common.warning("Recognized MCore Factions, but it isn't hooked! Check if you have the latest version!");
+					CommonCore.warning("Recognized MCore Factions, but it isn't hooked! Check if you have the latest version!");
 
 			}
 		}
@@ -250,7 +250,7 @@ public final class HookManager {
 			if (ver.startsWith("7.") || ver.startsWith("6.") || ver.startsWith("5.") || ver.startsWith("3."))
 				plotSquaredHook = new PlotSquaredHook();
 			else
-				Common.warning("Could not hook into PlotSquared. Version 3.x, 5.x or 6.x required, you have " + ver);
+				CommonCore.warning("Could not hook into PlotSquared. Version 3.x, 5.x or 6.x required, you have " + ver);
 		}
 
 		if (Platform.isPluginInstalled("PremiumVanish"))
@@ -268,7 +268,7 @@ public final class HookManager {
 			} catch (final Throwable t) {
 				protocolLibHook = null;
 
-				Common.warning("You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
+				CommonCore.warning("You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
 			}
 
 		if (Platform.isPluginInstalled("Residence"))
@@ -1000,8 +1000,8 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isIgnoring(final UUID player, final UUID who) {
-		Valid.checkBoolean(player != null, "Player to check ignore from cannot be null/empty");
-		Valid.checkBoolean(who != null, "Player to check ignore to cannot be null/empty");
+		ValidCore.checkBoolean(player != null, "Player to check ignore from cannot be null/empty");
+		ValidCore.checkBoolean(who != null, "Player to check ignore to cannot be null/empty");
 
 		return isEssentialsLoaded() ? essentialsHook.isIgnoring(player, who) : isCMILoaded() ? CMIHook.isIgnoring(player, who) : false;
 	}
@@ -1350,7 +1350,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean hasVaultPermission(final OfflinePlayer offlinePlayer, final String perm) {
-		Valid.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
+		ValidCore.checkBoolean(isVaultLoaded(), "hasVaultPermission called - Please install Vault to enable this functionality!");
 
 		return vaultHook.hasPerm(offlinePlayer, perm);
 	}
@@ -1564,7 +1564,7 @@ public final class HookManager {
 	 * @param adapter the adapter to add.
 	 */
 	public static void addPacketListener(/* Uses an Object to prevent errors if the plugin is not installed. */final Object adapter) {
-		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot add packet listeners if ProtocolLib isn't installed");
+		ValidCore.checkBoolean(isProtocolLibLoaded(), "Cannot add packet listeners if ProtocolLib isn't installed");
 
 		protocolLibHook.addPacketListener(adapter);
 	}
@@ -1577,7 +1577,7 @@ public final class HookManager {
 	 * @param adapter the adapter to remove.
 	 */
 	public static void removePacketListener(final Object adapter) {
-		Valid.checkBoolean(isProtocolLibLoaded(), "Cannot remove packet listeners if ProtocolLib isn't installed");
+		ValidCore.checkBoolean(isProtocolLibLoaded(), "Cannot remove packet listeners if ProtocolLib isn't installed");
 
 		protocolLibHook.removePacketListener(adapter);
 	}
@@ -1589,7 +1589,7 @@ public final class HookManager {
 	 * @param packetContainer the packet container to send.
 	 */
 	public static void sendPacket(final Player player, final Object packetContainer) {
-		Valid.checkBoolean(isProtocolLibLoaded(), "Sending packets requires ProtocolLib to be installed and loaded");
+		ValidCore.checkBoolean(isProtocolLibLoaded(), "Sending packets requires ProtocolLib to be installed and loaded");
 
 		protocolLibHook.sendPacket(player, packetContainer);
 	}
@@ -1945,7 +1945,7 @@ class EssentialsHook {
 		if (user == null)
 			return player;
 
-		final String essNick = Common.getOrEmpty(user.getNickname());
+		final String essNick = CommonCore.getOrEmpty(user.getNickname());
 
 		return "".equals(essNick) ? null : essNick;
 	}
@@ -1971,7 +1971,7 @@ class EssentialsHook {
 				final User user = users.getUser(userId);
 
 				if (user != null && user.getNickname() != null && SimpleComponent.fromMini(user.getNickname()).toPlain().toLowerCase().equals(maybeNick))
-					return Common.getOrDefault(user.getName(), maybeNick);
+					return CommonCore.getOrDefault(user.getName(), maybeNick);
 			}
 
 		return maybeNick;
@@ -2121,7 +2121,7 @@ class TownyHook {
 		try {
 			//import com.palmergames.bukkit.towny.object.TownyUniverse;
 
-			return Common.convertList(TownyUniverse.getInstance().getTowns(), Town::getName);
+			return CommonCore.convertList(TownyUniverse.getInstance().getTowns(), Town::getName);
 
 		} catch (final Throwable e) {
 			return new ArrayList<>();
@@ -2198,19 +2198,19 @@ class ProtocolLibHook {
 		this.manager = ProtocolLibrary.getProtocolManager();
 
 		if (this.manager == null)
-			Common.warning("Unable to get protocol manager. Ensure ProtocolLib threw no errors in your startup log and is compatible with your server version. "
+			CommonCore.warning("Unable to get protocol manager. Ensure ProtocolLib threw no errors in your startup log and is compatible with your server version. "
 					+ "If you're a developer, place ProtocolLib to softDepend in plugin.yml. Packet features won't function.");
 	}
 
 	final void addPacketListener(final Object listener) {
-		Valid.checkBoolean(listener instanceof com.comphenix.protocol.events.PacketListener, "Listener must extend or implements com.comphenix.protocol.events.PacketListener or PacketAdapter");
+		ValidCore.checkBoolean(listener instanceof com.comphenix.protocol.events.PacketListener, "Listener must extend or implements com.comphenix.protocol.events.PacketListener or PacketAdapter");
 
 		if (this.manager != null) {
 			try {
 				this.manager.addPacketListener((com.comphenix.protocol.events.PacketListener) listener);
 
 			} catch (final Throwable t) {
-				Common.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
+				CommonCore.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
 
 				return;
 			}
@@ -2220,16 +2220,16 @@ class ProtocolLibHook {
 	}
 
 	final void removePacketListener(final Object listener) {
-		Valid.checkBoolean(listener instanceof com.comphenix.protocol.events.PacketListener, "Listener must extend or implements com.comphenix.protocol.events.PacketListener or PacketAdapter");
+		ValidCore.checkBoolean(listener instanceof com.comphenix.protocol.events.PacketListener, "Listener must extend or implements com.comphenix.protocol.events.PacketListener or PacketAdapter");
 
 		if (this.manager != null) {
-			Valid.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
+			ValidCore.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
 
 			try {
 				this.manager.removePacketListener((com.comphenix.protocol.events.PacketListener) listener);
 
 			} catch (final Throwable t) {
-				Common.error(t, "Failed to unregister ProtocolLib packet listener!");
+				CommonCore.error(t, "Failed to unregister ProtocolLib packet listener!");
 
 				return;
 			}
@@ -2244,15 +2244,15 @@ class ProtocolLibHook {
 	}
 
 	final void sendPacket(final Player player, final Object packet) {
-		Valid.checkNotNull(player);
-		Valid.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
+		ValidCore.checkNotNull(player);
+		ValidCore.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
 
 		if (this.manager != null)
 			try {
 				this.manager.sendServerPacket(player, (PacketContainer) packet);
 
 			} catch (final Exception e) {
-				Common.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
+				CommonCore.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
 			}
 	}
 
@@ -2304,11 +2304,11 @@ class VaultHook {
 	// ------------------------------------------------------------------------------
 
 	String getCurrencyNameSG() {
-		return this.economy != null ? Common.getOrEmpty(this.economy.currencyNameSingular()) : "Money";
+		return this.economy != null ? CommonCore.getOrEmpty(this.economy.currencyNameSingular()) : "Money";
 	}
 
 	String getCurrencyNamePL() {
-		return this.economy != null ? Common.getOrEmpty(this.economy.currencyNamePlural()) : "Money";
+		return this.economy != null ? CommonCore.getOrEmpty(this.economy.currencyNamePlural()) : "Money";
 	}
 
 	double getBalance(final Player player) {
@@ -2338,7 +2338,7 @@ class VaultHook {
 			return this.permissions.playerHas((World) null, player.getName(), permission);
 
 		} catch (final Throwable t) {
-			Common.logTimed(900,
+			CommonCore.logTimed(900,
 					"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has '" + permission + "' permission, returning false. "
 							+ "This error only shows every 15 minutes. "
 							+ "Run /vault-info and check if your permissions plugin is running correctly.");
@@ -2352,7 +2352,7 @@ class VaultHook {
 			return this.permissions != null ? perm != null ? this.permissions.playerHas((String) null, player, perm) : true : null;
 
 		} catch (final Throwable t) {
-			Common.logTimed(900,
+			CommonCore.logTimed(900,
 					"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has " + perm + " permission, returning false. "
 							+ "This error only shows every 15 minutes. "
 							+ "Run /vault-info and check if your permissions plugin is running correctly.");
@@ -2449,7 +2449,7 @@ class VaultHook {
 					list.add(part);
 			}
 
-		return Common.join(list, vaultPart == VaultPart.GROUP ? ", " : "");
+		return CommonCore.join(list, vaultPart == VaultPart.GROUP ? ", " : "");
 	}
 
 	enum VaultPart {
@@ -2465,20 +2465,20 @@ final class PlaceholderAPIHook {
 	private Map<String, Object> hooks;
 
 	PlaceholderAPIHook() {
-		injector = new VariablesInjector();
+		this.injector = new VariablesInjector();
 
 		try {
-			injector.register();
+			this.injector.register();
 
 		} catch (final Throwable throwable) {
-			Common.error(throwable, "Failed to inject our variables into PlaceholderAPI!");
+			CommonCore.error(throwable, "Failed to inject our variables into PlaceholderAPI!");
 		}
 	}
 
 	void unregister() {
-		if (injector != null)
+		if (this.injector != null)
 			try {
-				injector.unregister();
+				this.injector.unregister();
 
 			} catch (final Throwable t) {
 				// Silence, the plugin probably got removed in the meantime.
@@ -2490,7 +2490,7 @@ final class PlaceholderAPIHook {
 			return this.setPlaceholders(player, msg);
 
 		} catch (final Throwable t) {
-			Common.error(t,
+			CommonCore.error(t,
 					"PlaceholderAPI failed to replace variables!",
 					"Player: " + (player == null ? "none" : player.getName()),
 					"Message: " + msg,
@@ -2570,7 +2570,7 @@ final class PlaceholderAPIHook {
 			return message;
 
 		} catch (final Throwable t) {
-			Common.error(t,
+			CommonCore.error(t,
 					"PlaceholderAPI failed to replace relation variables!",
 					"Player one: " + one,
 					"Player two: " + two,
@@ -2610,7 +2610,7 @@ final class PlaceholderAPIHook {
 				}
 
 			} catch (final Throwable t) {
-				Common.error(t,
+				CommonCore.error(t,
 						"PlaceholderAPI failed to replace relation variables!",
 						"Player one: " + firstAudience,
 						"Player two: " + secondAudience,
@@ -2746,7 +2746,7 @@ final class PlaceholderAPIHook {
 				}
 
 			} catch (final Exception ex) {
-				Common.error(ex,
+				CommonCore.error(ex,
 						"Error replacing PlaceholderAPI variables",
 						"Identifier: " + identifier,
 						"Player: " + player.getName());
@@ -2790,21 +2790,21 @@ class MVdWPlaceholderHook {
 
 		try {
 			final Class<?> placeholderAPI = ReflectionUtil.lookupClass("be.maximvdw.placeholderapi.PlaceholderAPI");
-			Valid.checkNotNull(placeholderAPI, "Failed to look up class be.maximvdw.placeholderapi.PlaceholderAPI");
+			ValidCore.checkNotNull(placeholderAPI, "Failed to look up class be.maximvdw.placeholderapi.PlaceholderAPI");
 
 			final Method replacePlaceholders = ReflectionUtil.getMethod(placeholderAPI, "replacePlaceholders", OfflinePlayer.class, String.class);
-			Valid.checkNotNull(replacePlaceholders, "Failed to look up method PlaceholderAPI#replacePlaceholders(Player, String)");
+			ValidCore.checkNotNull(replacePlaceholders, "Failed to look up method PlaceholderAPI#replacePlaceholders(Player, String)");
 
 			final String replaced = ReflectionUtil.invoke(replacePlaceholders, null, player, message);
 
 			return replaced == null ? "" : replaced;
 
 		} catch (final IllegalArgumentException ex) {
-			if (!Common.getOrEmpty(ex.getMessage()).contains("Illegal group reference"))
+			if (!CommonCore.getOrEmpty(ex.getMessage()).contains("Illegal group reference"))
 				ex.printStackTrace();
 
 		} catch (final Throwable t) {
-			Common.error(t,
+			CommonCore.error(t,
 					"MvdWPlaceholderAPI placeholders failed!",
 					"Player: " + player.getName(),
 					"Message: '" + message + "'",
@@ -3154,7 +3154,7 @@ final class FactionsMassive extends FactionsHook {
 
 	@Override
 	public Collection<String> getFactions() {
-		return Common.convertList(com.massivecraft.factions.entity.FactionColl.get().getAll(), object -> CompChatColor.stripColorCodes(object.getName()));
+		return CommonCore.convertList(com.massivecraft.factions.entity.FactionColl.get().getAll(), object -> CompChatColor.stripColorCodes(object.getName()));
 	}
 
 	@Override
@@ -3288,7 +3288,7 @@ class PlotSquaredHook {
 	 */
 	PlotSquaredHook() {
 		final Plugin plugin = Bukkit.getPluginManager().getPlugin("PlotSquared");
-		Valid.checkNotNull(plugin, "PlotSquared not hooked yet!");
+		ValidCore.checkNotNull(plugin, "PlotSquared not hooked yet!");
 
 		this.legacy = plugin.getDescription().getVersion().startsWith("3");
 	}
@@ -3317,7 +3317,7 @@ class PlotSquaredHook {
 		}
 
 		final Object plotPlayer = ReflectionUtil.invokeStatic(wrap, player);
-		Valid.checkNotNull(plotPlayer, "Failed to convert player " + player.getName() + " to PlotPlayer!");
+		ValidCore.checkNotNull(plotPlayer, "Failed to convert player " + player.getName() + " to PlotPlayer!");
 
 		final Object currentPlot = ReflectionUtil.invoke("getCurrentPlot", plotPlayer);
 
@@ -3455,7 +3455,7 @@ class CMIHook {
 
 		for (final CMIUser user : CMI.getInstance().getPlayerManager().getAllUsers().values())
 			if (user != null && user.getNickName() != null && CompChatColor.stripColorCodes(user.getNickName()).toLowerCase().equals(nick))
-				return Common.getOrDefault(user.getName(), nick);
+				return CommonCore.getOrDefault(user.getName(), nick);
 
 		return nick;
 	}
@@ -3481,7 +3481,7 @@ class CitizensHook {
 
 			return reg != null ? reg.isNPC(entity) : false;
 		} catch (final NoClassDefFoundError err) {
-			Common.logTimed(60 * 30, "Unable to check if " + entity + " is Citizens NPC, got " + err + ". This error only shows once per 30min.");
+			CommonCore.logTimed(60 * 30, "Unable to check if " + entity + " is Citizens NPC, got " + err + ". This error only shows once per 30min.");
 
 			return false;
 		}
@@ -3581,7 +3581,7 @@ class BanManagerHook {
 
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class"))
-				Common.log("Unable to check if " + player.getName() + " is muted at BanManager. Is the API hook outdated? Got: " + t);
+				CommonCore.log("Unable to check if " + player.getName() + " is muted at BanManager. Is the API hook outdated? Got: " + t);
 
 			return false;
 		}
@@ -3668,7 +3668,7 @@ class BossHook {
 			}
 
 		} catch (final Throwable t) {
-			Common.log("Unable to check if " + entity + " is a Boss. Is the API hook outdated? Got: " + t);
+			CommonCore.log("Unable to check if " + entity + " is a Boss. Is the API hook outdated? Got: " + t);
 		}
 
 		return null;
@@ -3690,7 +3690,7 @@ class MythicMobsHook {
 			this.legacyVersion = false;
 
 		else
-			Common.warning("Skipping hooking into unsupported MythicMob version " + version + "! Only 4.X.X and 5.X.X are supported.");
+			CommonCore.warning("Skipping hooking into unsupported MythicMob version " + version + "! Only 4.X.X and 5.X.X are supported.");
 
 	}
 
@@ -3806,7 +3806,7 @@ class LiteBansHook {
 			classDatabase = Class.forName("litebans.api.Database");
 
 		} catch (final ClassNotFoundException ex) {
-			Common.log("LiteBans API not found, skipping integration.");
+			CommonCore.log("LiteBans API not found, skipping integration.");
 
 			return;
 		}
@@ -3821,12 +3821,12 @@ class LiteBansHook {
 
 			@Override
 			public void run() {
-				if (methodPrepareStatement == null)
+				if (LiteBansHook.this.methodPrepareStatement == null)
 					return;
 
-				mutedPlayerUids.clear();
+				LiteBansHook.this.mutedPlayerUids.clear();
 
-				try (PreparedStatement statement = ReflectionUtil.invoke(methodPrepareStatement, instance, "SELECT * FROM {mutes}")) {
+				try (PreparedStatement statement = ReflectionUtil.invoke(LiteBansHook.this.methodPrepareStatement, LiteBansHook.this.instance, "SELECT * FROM {mutes}")) {
 					statement.execute();
 
 					final ResultSet resultSet = statement.getResultSet();
@@ -3840,12 +3840,12 @@ class LiteBansHook {
 							if (until != 0 && until < System.currentTimeMillis())
 								continue;
 
-							mutedPlayerUids.add(uuid);
+							LiteBansHook.this.mutedPlayerUids.add(uuid);
 						}
 					}
 
 				} catch (final Throwable t) {
-					Common.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
+					CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
 
 					this.cancel();
 				}
@@ -3896,7 +3896,7 @@ class ItemsAdderHook {
 					this.replaceFontImagesNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
 
 				} catch (final Throwable tt) {
-					Common.warning("Unable to resolve ItemsAdder API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
+					CommonCore.warning("Unable to resolve ItemsAdder API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
 
 					original.printStackTrace();
 					this.failed = true;
@@ -3905,12 +3905,12 @@ class ItemsAdderHook {
 		}
 
 		if (player == null)
-			if (replaceFontImagesAdventureNoPlayer != null)
+			if (this.replaceFontImagesAdventureNoPlayer != null)
 				return ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component.toAdventure());
 			else
 				return ReflectionUtil.invokeStatic(this.replaceFontImagesNoPlayer, component.toLegacy());
 
-		if (replaceFontImagesAdventure != null)
+		if (this.replaceFontImagesAdventure != null)
 			return SimpleComponent.fromAdventure(ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component.toAdventure()));
 		else
 			return SimpleComponent.fromSection(ReflectionUtil.invokeStatic(this.replaceFontImages, player, component.toLegacy()));

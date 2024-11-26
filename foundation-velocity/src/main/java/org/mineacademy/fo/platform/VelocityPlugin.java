@@ -7,9 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
@@ -159,7 +159,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 		instance = this;
 
 		try {
-			this.file = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+			this.file = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 
 			// Hacky due to Velocity lacking simpler implementation
 			final Plugin annotation = this.getClass().getDeclaredAnnotation(Plugin.class);
@@ -173,9 +173,9 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 
 				// If annotation isn't used, try to load from velocity-plugin.json directly. You can place this file to your src/main/resources and use variables in it.
 				final List<String> lines = FileUtil.readLinesFromInternalPath(this.getFile(), "velocity-plugin.json");
-				Valid.checkBoolean(lines != null, "Either place @Plugin annotation over your main class or write velocity-plugin.json to your resources folder!");
+				ValidCore.checkBoolean(lines != null, "Either place @Plugin annotation over your main class or write velocity-plugin.json to your resources folder!");
 
-				final JsonObject json = Common.GSON.fromJson(String.join("", lines), JsonObject.class);
+				final JsonObject json = CommonCore.GSON.fromJson(String.join("", lines), JsonObject.class);
 
 				this.version = json.get("version").getAsString();
 				this.name = json.get("name").getAsString();
@@ -192,8 +192,8 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 				}
 			}
 
-			Valid.checkBoolean(this.version != null && !this.version.contains("${project.version}"), "Invalid plugin version: " + this.version);
-			Valid.checkBoolean(this.name != null && !this.name.contains("${project.name}"), "Invalid plugin name: " + this.name);
+			ValidCore.checkBoolean(this.version != null && !this.version.contains("${project.version}"), "Invalid plugin version: " + this.version);
+			ValidCore.checkBoolean(this.name != null && !this.name.contains("${project.name}"), "Invalid plugin name: " + this.name);
 
 			this.proxy = proxy;
 			this.logger = logger;
@@ -223,7 +223,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 
 		try {
 			if (this.getStartupLogo() != null)
-				Common.log(this.getStartupLogo());
+				CommonCore.log(this.getStartupLogo());
 
 			// Register the proxy listener and channel
 			this.proxy.getChannelRegistrar().register(LEGACY_BUNGEE_CHANNEL, MODERN_BUNGEE_CHANNEL);
@@ -262,7 +262,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 			this.onPluginStop();
 
 		} catch (final Throwable t) {
-			Common.warning("Plugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
+			CommonCore.warning("Plugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
 
 		Objects.requireNonNull(instance, "Instance of " + this.dataFolder.getName() + " already nulled!");
@@ -321,7 +321,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 			this.onPluginReload();
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
+			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
 		}
 	}
 
@@ -364,7 +364,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	 */
 	@Override
 	public final void setDefaultCommandGroup(SimpleCommandGroup group) {
-		Valid.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
+		ValidCore.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
 
 		this.defaultCommandGroup = group;
 	}

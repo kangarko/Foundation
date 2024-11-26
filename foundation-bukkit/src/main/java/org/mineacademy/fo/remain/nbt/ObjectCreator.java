@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.lang.reflect.Constructor;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * This Enum wraps Constructors for NMS classes
@@ -33,7 +33,7 @@ enum ObjectCreator {
 			this.construct.setAccessible(true);
 
 		} catch (final Exception ex) {
-			Common.error(ex, "[NBTAPI] Unable to find constructor for class '" + clazz.getName() + "'! Plugin will continue to function but some features will be limited.");
+			CommonCore.error(ex, "[NBTAPI] Unable to find constructor for class '" + clazz.getName() + "'! Plugin will continue to function but some features will be limited.");
 		}
 	}
 

@@ -1,8 +1,8 @@
 package org.mineacademy.fo.model;
 
 import org.mineacademy.fo.SerializeUtilCore;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 
 import lombok.Data;

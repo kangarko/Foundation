@@ -9,7 +9,7 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.settings.Lang;
 
 /**
@@ -143,7 +143,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	@Override
 	public final void onConversationEnd(SimpleConversation conversation, ConversationAbandonedEvent event) {
 		if (event.gracefulExit()) {
-			Valid.checkNotNull(this.name, "Prompt failed to carry " + this.objectName + " name");
+			ValidCore.checkNotNull(this.name, "Prompt failed to carry " + this.objectName + " name");
 
 			this.onCreateFinish(this.getPlayer(event.getContext()), this.create(this.name));
 		}

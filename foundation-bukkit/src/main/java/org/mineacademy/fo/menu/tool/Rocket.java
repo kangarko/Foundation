@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 
 import lombok.Getter;
@@ -81,8 +81,8 @@ public abstract class Rocket extends Tool {
 	 * @param flightSpeed
 	 */
 	protected Rocket(Class<? extends Projectile> projectile, float flightSpeed, float explosionPower, boolean breakBlocks) {
-		Valid.checkBoolean(flightSpeed <= 10F, "Rocket cannot have speed over 10");
-		Valid.checkBoolean(explosionPower <= 30F, "Rocket cannot have explosion power over 30");
+		ValidCore.checkBoolean(flightSpeed <= 10F, "Rocket cannot have speed over 10");
+		ValidCore.checkBoolean(explosionPower <= 30F, "Rocket cannot have explosion power over 30");
 
 		this.projectile = projectile;
 		this.flightSpeed = flightSpeed;

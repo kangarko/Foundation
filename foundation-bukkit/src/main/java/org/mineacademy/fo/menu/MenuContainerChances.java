@@ -8,9 +8,9 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -306,7 +306,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 				final Double dropChance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
 
 				if (item != null && !CompMaterial.isAir(item)) {
-					Valid.checkNotNull(dropChance, "Drop chances cannot be null on slot " + slot + " for " + item);
+					ValidCore.checkNotNull(dropChance, "Drop chances cannot be null on slot " + slot + " for " + item);
 
 					items.put(slot, new Tuple<>(item, dropChance));
 					placed = true;
@@ -391,7 +391,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 		 * @return
 		 */
 		private EditMode next() {
-			return Common.getNext(this, EditMode.values(), true);
+			return CommonCore.getNext(this, EditMode.values(), true);
 		}
 	}
 }

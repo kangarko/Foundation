@@ -54,30 +54,18 @@ public abstract class FoundationPlayer {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
-		if (command.startsWith("@announce ")) {
+		if (command.startsWith("@announce "))
 			Messenger.announce(this, command.replace("@announce ", ""));
-		}
-
-		else if (command.startsWith("@warn ")) {
+		else if (command.startsWith("@warn "))
 			Messenger.warn(this, command.replace("@warn ", ""));
-		}
-
-		else if (command.startsWith("@error ")) {
+		else if (command.startsWith("@error "))
 			Messenger.error(this, command.replace("@error ", ""));
-		}
-
-		else if (command.startsWith("@info ")) {
+		else if (command.startsWith("@info "))
 			Messenger.info(this, command.replace("@info ", ""));
-		}
-
-		else if (command.startsWith("@question ")) {
+		else if (command.startsWith("@question "))
 			Messenger.question(this, command.replace("@question ", ""));
-		}
-
-		else if (command.startsWith("@success ")) {
+		else if (command.startsWith("@success "))
 			Messenger.success(this, command.replace("@success ", ""));
-		}
-
 		else {
 			command = Variables.builder(this).replace(command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command);
 
@@ -348,13 +336,11 @@ public abstract class FoundationPlayer {
 	public final void sendMessage(SimpleComponent component) {
 		final String plainMessage = component.toPlain(this);
 
-		if (plainMessage.startsWith("<actionbar>")) {
+		if (plainMessage.startsWith("<actionbar>"))
 			this.sendActionBar(component.replaceLiteral("<actionbar>", ""));
-
-		} else if (plainMessage.startsWith("<toast>")) {
+		else if (plainMessage.startsWith("<toast>"))
 			this.sendToast(component.replaceLiteral("<toast>", ""));
-
-		} else if (plainMessage.startsWith("<title>")) {
+		else if (plainMessage.startsWith("<title>")) {
 			final String stripped = component.toLegacy().replace("<title>", "").trim();
 
 			if (!stripped.isEmpty()) {
@@ -365,10 +351,9 @@ public abstract class FoundationPlayer {
 				this.sendTitle(0, 60, 0, title, subtitle);
 			}
 
-		} else if (plainMessage.startsWith("<bossbar>")) {
+		} else if (plainMessage.startsWith("<bossbar>"))
 			this.sendBossbarTimed(component.replaceLiteral("<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
-
-		} else if (plainMessage.startsWith("<center>")) {
+		else if (plainMessage.startsWith("<center>")) {
 			final String centeredLegacyMessage = ChatUtil.center(component.toLegacy(this).replaceAll("\\<center\\>(\\s|)", ""));
 
 			this.sendLegacyMessage(centeredLegacyMessage);
@@ -430,7 +415,7 @@ public abstract class FoundationPlayer {
 			final List<Component> newChildren = new ArrayList<>();
 
 			for (final Component child : adventure.children())
-				newChildren.add(fixHoverLosingStyleInLegacyMultiline(child));
+				newChildren.add(this.fixHoverLosingStyleInLegacyMultiline(child));
 
 			adventure = adventure.children(newChildren);
 		}

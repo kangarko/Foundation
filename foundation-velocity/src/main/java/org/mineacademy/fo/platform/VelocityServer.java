@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.messages.LegacyChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
@@ -38,7 +39,7 @@ final class VelocityServer implements FoundationServer {
 	@Override
 	public List<FoundationPlayer> getPlayers() {
 		return this.server.getPlayersConnected().stream()
-				.filter(player -> player.isActive())
+				.filter(Player::isActive)
 				.map(VelocityPlayer::new)
 				.collect(Collectors.toList());
 	}

@@ -10,13 +10,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.platform.FoundationPlayer;
@@ -145,8 +145,8 @@ public final class Book implements ConfigSerializable {
 
 			new ChatPaginator()
 					.setFoundationHeader(Lang.legacyVars("command-book-page-header",
-							"title", Common.getOrDefault(this.title, Lang.legacy("command-book-unnamed")),
-							"author", Common.getOrDefault(this.author, Lang.legacy("command-book-unsigned"))))
+							"title", CommonCore.getOrDefault(this.title, Lang.legacy("command-book-unnamed")),
+							"author", CommonCore.getOrDefault(this.author, Lang.legacy("command-book-unsigned"))))
 					.setPages(pages)
 					.send(audience);
 
@@ -177,7 +177,7 @@ public final class Book implements ConfigSerializable {
 		// Update file name
 		this.fileName = fileName;
 
-		config.set("Data", SerializeUtil.serialize(Language.YAML, this.serialize()));
+		config.set("Data", SerializeUtilCore.serialize(Language.YAML, this.serialize()));
 		config.save();
 
 		// If it exists, we return true since we had to override it
@@ -281,7 +281,7 @@ public final class Book implements ConfigSerializable {
 	 * @return
 	 */
 	public static Book deserialize(SerializedMap map) {
-		Valid.checkBoolean(!map.isEmpty(), "Cannot deserialize empty map to book!");
+		ValidCore.checkBoolean(!map.isEmpty(), "Cannot deserialize empty map to book!");
 
 		final String title = map.getString("Title");
 		final String author = map.getString("Author");
@@ -324,7 +324,7 @@ public final class Book implements ConfigSerializable {
 	 * @return
 	 */
 	public static Book newEmptyBook() {
-		return new Book(null, null, Common.toList(""), false, System.currentTimeMillis(), null, UUID.randomUUID());
+		return new Book(null, null, CommonCore.toList(""), false, System.currentTimeMillis(), null, UUID.randomUUID());
 	}
 
 	/**
@@ -366,7 +366,7 @@ public final class Book implements ConfigSerializable {
 		final File file = FileUtil.getFile("books/" + fileName + (fileName.endsWith(".yml") ? "" : ".yml"));
 
 		if (!file.exists())
-			throw new IllegalArgumentException("No such book: '" + fileName + "'. Available: " + Common.join(Book.getBookNames()));
+			throw new IllegalArgumentException("No such book: '" + fileName + "'. Available: " + CommonCore.join(Book.getBookNames()));
 
 		final YamlConfig config = YamlConfig.fromFile(file);
 
@@ -396,7 +396,7 @@ public final class Book implements ConfigSerializable {
 	 * @return
 	 */
 	public static List<String> getBookNames() {
-		return Common.convertArrayToList(FileUtil.getFiles("books", ".yml"), FileUtil::getFileName);
+		return CommonCore.convertArrayToList(FileUtil.getFiles("books", ".yml"), FileUtil::getFileName);
 	}
 
 	/**
@@ -405,6 +405,6 @@ public final class Book implements ConfigSerializable {
 	 * @return
 	 */
 	public static List<Book> getBooks() {
-		return Common.convertArrayToList(FileUtil.getFiles("books", ".yml"), file -> Book.fromFile(file.getName()));
+		return CommonCore.convertArrayToList(FileUtil.getFiles("books", ".yml"), file -> Book.fromFile(file.getName()));
 	}
 }

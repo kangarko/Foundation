@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.CommonCore.Stringer;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -251,7 +252,7 @@ public interface SharedBukkitCommandCore {
 		final World world = Bukkit.getWorld(name);
 		this.checkBoolean(world != null, Lang.componentVars("command-invalid-world",
 				"world", name,
-				"available", CommonCore.join(Bukkit.getWorlds(), otherWorld -> otherWorld.getName())));
+				"available", CommonCore.join(Bukkit.getWorlds(), (Stringer<World>) World::getName)));
 
 		return world;
 	}

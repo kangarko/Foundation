@@ -214,37 +214,27 @@ public final class OutgoingMessage extends Message {
 
 		for (final Object data : dataArray)
 			try {
-				if (data instanceof Integer) {
+				if (data instanceof Integer)
 					out.writeInt((Integer) data);
-
-				} else if (data instanceof Double) {
+				else if (data instanceof Double)
 					out.writeDouble((Double) data);
-
-				} else if (data instanceof Long) {
+				else if (data instanceof Long)
 					out.writeLong((Long) data);
-
-				} else if (data instanceof Boolean) {
+				else if (data instanceof Boolean)
 					out.writeBoolean((Boolean) data);
-
-				} else if (data instanceof String) {
+				else if (data instanceof String)
 					this.writeCompressedString(out, (String) data);
-
-				} else if (data instanceof SimpleComponent) {
+				else if (data instanceof SimpleComponent)
 					this.writeCompressedString(out, ((SimpleComponent) data).serialize().toJson());
-
-				} else if (data instanceof SerializedMap) {
+				else if (data instanceof SerializedMap)
 					this.writeCompressedString(out, ((SerializedMap) data).toJson());
-
-				} else if (data instanceof UUID) {
+				else if (data instanceof UUID)
 					out.writeUTF(((UUID) data).toString());
-
-				} else if (data instanceof Enum) {
+				else if (data instanceof Enum)
 					out.writeUTF(((Enum<?>) data).toString());
-
-				} else if (data instanceof byte[]) {
+				else if (data instanceof byte[])
 					out.write((byte[]) data);
-
-				} else
+				else
 					throw new IllegalArgumentException("Unknown data type to write as plugin message: " + data.getClass());
 
 			} catch (final Throwable t) {
@@ -362,8 +352,8 @@ public final class OutgoingMessage extends Message {
 				return;
 			}
 
-			if (byteArray.length >= OutgoingMessage.MAX_MESSAGE_SIZE) {
-				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + OutgoingMessage.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+			if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
+				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
 
 				return;
 			}
@@ -377,7 +367,7 @@ public final class OutgoingMessage extends Message {
 	 * Broadcasts the message to all servers
 	 */
 	public void broadcast() {
-		broadcastExcept(null);
+		this.broadcastExcept(null);
 	}
 
 	/**
@@ -404,8 +394,8 @@ public final class OutgoingMessage extends Message {
 
 				final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, otherServer.getName());
 
-				if (byteArray.length >= OutgoingMessage.MAX_MESSAGE_SIZE) {
-					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + OutgoingMessage.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+				if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
+					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
 
 					return;
 				}

@@ -16,14 +16,14 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.InvalidWorldException;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.visual.VisualizedRegion;
@@ -43,14 +43,10 @@ public final class DiskRegion extends YamlConfig {
 	/**
 	 * All loaded disk regions
 	 */
-	private static final ConfigItems<DiskRegion> loadedRegions = ConfigItems.fromFolder("regions", DiskRegion.class, new Function<List<DiskRegion>, List<DiskRegion>>() {
+	private static final ConfigItems<DiskRegion> loadedRegions = ConfigItems.fromFolder("regions", DiskRegion.class, (Function<List<DiskRegion>, List<DiskRegion>>) list -> {
+		Collections.sort(list, Comparator.comparing(DiskRegion::getFileName, String.CASE_INSENSITIVE_ORDER));
 
-		@Override
-		public List<DiskRegion> apply(List<DiskRegion> list) {
-			Collections.sort(list, Comparator.comparing(DiskRegion::getFileName, String.CASE_INSENSITIVE_ORDER));
-
-			return list;
-		}
+		return list;
 	});
 
 	/**
@@ -81,17 +77,17 @@ public final class DiskRegion extends YamlConfig {
 		this.border = border;
 
 		final SimpleCommandGroup defaultGroup = Platform.getPlugin().getDefaultCommandGroup();
-		Valid.checkNotNull(defaultGroup, "Cannot use DiskRegion without default command group! Set Main_Command_Aliases key in settings.yml!");
+		ValidCore.checkNotNull(defaultGroup, "Cannot use DiskRegion without default command group! Set Main_Command_Aliases key in settings.yml!");
 		final String label = defaultGroup.getLabel();
 
 		this.setHeader(
-				Common.configLine(),
+				CommonCore.configLine(),
 				"This file stores a cuboid region.",
 				"",
 				"To create one, get the region tool via '/" + label + " tools' and follow",
 				"instructions. To remove a region, use the '/" + label + " region' command",
 				"or stop your server and remove this file.",
-				Common.configLine() + "\n");
+				CommonCore.configLine() + "\n");
 
 		this.loadAndExtract(NO_DEFAULT, "regions/" + name + ".yml");
 	}
@@ -120,10 +116,10 @@ public final class DiskRegion extends YamlConfig {
 				ex = ex.getCause();
 
 			if (ex instanceof InvalidWorldException)
-				Common.log("Skipping region with invalid world. Region data: " + map);
+				CommonCore.log("Skipping region with invalid world. Region data: " + map);
 
 			else
-				Common.error(ex, "Failed to load region from map: " + map);
+				CommonCore.error(ex, "Failed to load region from map: " + map);
 		}
 	}
 
@@ -248,7 +244,7 @@ public final class DiskRegion extends YamlConfig {
 	 * @param color
 	 */
 	public void visualize(Player player, Color color) {
-		Valid.checkNotNull(this.border, "Cannot call visualize using a region with no border");
+		ValidCore.checkNotNull(this.border, "Cannot call visualize using a region with no border");
 
 		if (!this.border.canSeeParticles(player)) {
 
@@ -266,7 +262,7 @@ public final class DiskRegion extends YamlConfig {
 
 	@Override
 	public String toString() {
-		return "DiskRegion{name=" + getFileName() + ", primary=" + SerializeUtil.serializeLocation(getPrimary()) + ", secondary=" + SerializeUtil.serializeLocation(getSecondary()) + "}";
+		return "DiskRegion{name=" + this.getFileName() + ", primary=" + SerializeUtil.serializeLocation(this.getPrimary()) + ", secondary=" + SerializeUtil.serializeLocation(this.getSecondary()) + "}";
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -280,10 +276,10 @@ public final class DiskRegion extends YamlConfig {
 	 * @return
 	 */
 	public static VisualizedRegion getCreatedRegion(Player player) {
-		Valid.checkNotNull(regionGetter, "Please call DiskRegion#setRegionGetter before getting the region for player!");
+		ValidCore.checkNotNull(regionGetter, "Please call DiskRegion#setRegionGetter before getting the region for player!");
 
 		final VisualizedRegion region = regionGetter.apply(player);
-		Valid.checkNotNull(region, "Wrong implementation! Player " + player.getName() + " has null region! Always return a non-empty region in DiskRegion#setRegionGetter");
+		ValidCore.checkNotNull(region, "Wrong implementation! Player " + player.getName() + " has null region! Always return a non-empty region in DiskRegion#setRegionGetter");
 
 		return region;
 	}

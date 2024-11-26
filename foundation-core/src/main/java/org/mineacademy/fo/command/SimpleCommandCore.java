@@ -383,18 +383,16 @@ public abstract class SimpleCommandCore {
 	 * Handle the command error, send the error message to the player and log.
 	 */
 	private void handleCommandError(Throwable throwable) {
-		if (throwable instanceof InvalidCommandArgException) {
+		if (throwable instanceof InvalidCommandArgException)
 			this.tellError(Lang.componentVars("command-invalid-argument",
 					"arguments", ((InvalidCommandArgException) throwable).getInvalidArgument(),
 					"help_command", SimpleComponent.fromPlain(this.getEffectiveCommand() + " ?").onHoverLegacy("Click to execute.").onClickRunCmd(this.getEffectiveCommand() + " ?")));
-
-		} else if (throwable instanceof CommandException) {
-			((CommandException) throwable).sendErrorMessage(audience);
-
-		} else {
+		else if (throwable instanceof CommandException)
+			((CommandException) throwable).sendErrorMessage(this.audience);
+		else {
 			this.tellError(Lang.component("command-error"));
 
-			CommonCore.error(throwable, "Error executing " + this.getEffectiveCommand() + " " + String.join(" ", args));
+			CommonCore.error(throwable, "Error executing " + this.getEffectiveCommand() + " " + String.join(" ", this.args));
 		}
 	}
 
@@ -721,8 +719,8 @@ public abstract class SimpleCommandCore {
 	 * Example:
 	 * 	language key: "No such {type}: {value}, available: {available}"
 	 * 	code: checkNoSuchType(bossObject, "boss", "Warrior", Boss.getBosses());
-	 * 
-	 * @param <T> 
+	 *
+	 * @param <T>
 	 * @param nonNullValue
 	 * @param type
 	 * @param value
@@ -741,7 +739,7 @@ public abstract class SimpleCommandCore {
 	 * 	language key: "No such {type}: {value}, available: {available}"
 	 * 	code: checkNoSuchType(bossObject, "boss", "Warrior", Boss.getBosses());
 	 *
-	 * @param <T> 
+	 * @param <T>
 	 * @param nonNullValue
 	 * @param type
 	 * @param value
@@ -1441,7 +1439,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final SimpleComponent getCooldownMessage() {
-		return cooldownMessage;
+		return this.cooldownMessage;
 	}
 
 	/**
@@ -1618,15 +1616,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	final SimpleComponent colorizeUsage(SimpleComponent usage) {
-		return usage.replaceMatch(PATTERN_TABLE, (match, result) -> {
-			return result.color(NamedTextColor.GOLD);
-
-		}).replaceMatch(PATTERN_FILTER, (match, result) -> {
-			return result.color(NamedTextColor.DARK_GREEN);
-
-		}).replaceMatch(PATTERN_DASH, (match, result) -> {
-			return result.color(NamedTextColor.GRAY);
-		});
+		return usage.replaceMatch(PATTERN_TABLE, (match, result) -> result.color(NamedTextColor.GOLD)).replaceMatch(PATTERN_FILTER, (match, result) -> result.color(NamedTextColor.DARK_GREEN)).replaceMatch(PATTERN_DASH, (match, result) -> result.color(NamedTextColor.GRAY));
 	}
 
 	/**
@@ -1666,7 +1656,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	public final String[] getArgs() {
-		return args;
+		return this.args;
 	}
 
 	/**
@@ -1739,7 +1729,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	public final Task runTask(final Runnable runnable) {
-		return runTask(0, runnable);
+		return this.runTask(0, runnable);
 	}
 
 	/**
