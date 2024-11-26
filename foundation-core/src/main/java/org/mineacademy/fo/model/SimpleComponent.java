@@ -656,8 +656,13 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	public Component toAdventure(FoundationPlayer receiver) {
 		final List<Component> children = new ArrayList<>();
 
-		for (final ConditionalComponent part : this.subcomponents)
-			children.add(part.build(receiver));
+		for (final ConditionalComponent part : this.subcomponents) {
+			final Component builtPart = part.build(receiver);
+
+			// If sender condition or permission does not match, we return null
+			if (builtPart != null)
+				children.add(builtPart);
+		}
 
 		return Component.textOfChildren(children.toArray(new Component[children.size()]));
 	}
