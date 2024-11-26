@@ -11,7 +11,7 @@ import org.bukkit.block.Block;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -508,7 +508,7 @@ public enum CompBiome {
 	 * @return
 	 */
 	public final String getBukkitName() {
-		Valid.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
+		ValidCore.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
 
 		return ReflectionUtil.getEnumName(this.biome);
 	}
@@ -529,7 +529,7 @@ public enum CompBiome {
 	 * @param chunk
 	 */
 	public void setBiome(@NonNull Chunk chunk) {
-		Valid.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
+		ValidCore.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
 
 		if (!chunk.isLoaded())
 			if (!chunk.load(true))
@@ -560,8 +560,8 @@ public enum CompBiome {
 	 * @since 1.0.0
 	 */
 	public void setBiome(@NonNull Location start, @NonNull Location end) {
-		Valid.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
-		Valid.checkBoolean(start.getWorld().equals(end.getWorld()), "Locations must be in the same world, got " + start.getWorld().getName() + " and " + end.getWorld().getName());
+		ValidCore.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
+		ValidCore.checkBoolean(start.getWorld().equals(end.getWorld()), "Locations must be in the same world, got " + start.getWorld().getName() + " and " + end.getWorld().getName());
 
 		final World world = start.getWorld();
 		final int heightMax = HAS_HORIZONTAL_SUPPORT ? world.getMaxHeight() : 1;

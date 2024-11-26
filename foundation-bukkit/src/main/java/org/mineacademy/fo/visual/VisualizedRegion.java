@@ -10,7 +10,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.BlockUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.model.Task;
@@ -126,8 +126,8 @@ public final class VisualizedRegion extends Region {
 	 * @param color
 	 */
 	public void showParticles(final Player player, @Nullable Color color) {
-		Valid.checkBoolean(!this.canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
-		Valid.checkBoolean(this.isWhole(), "Cannot show particles of an incomplete region " + this);
+		ValidCore.checkBoolean(!this.canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
+		ValidCore.checkBoolean(this.isWhole(), "Cannot show particles of an incomplete region " + this);
 
 		this.viewers.put(player, color);
 
@@ -141,7 +141,7 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 */
 	public void hideParticles(final Player player) {
-		Valid.checkBoolean(this.canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
+		ValidCore.checkBoolean(this.canSeeParticles(player), "Player " + player.getName() + " is not seeing region " + this);
 
 		this.viewers.remove(player);
 
@@ -163,8 +163,8 @@ public final class VisualizedRegion extends Region {
 	 * Starts visualizing this region if it is whole
 	 */
 	private void startVisualizing() {
-		Valid.checkBoolean(this.task == null, "Already visualizing region " + this + "!");
-		Valid.checkBoolean(this.isWhole(), "Cannot visualize incomplete region " + this + "!");
+		ValidCore.checkBoolean(this.task == null, "Already visualizing region " + this + "!");
+		ValidCore.checkBoolean(this.isWhole(), "Cannot visualize incomplete region " + this + "!");
 
 		this.task = Platform.runTaskTimer(this.delayTicks, new SimpleRunnable() {
 			@Override
@@ -199,7 +199,7 @@ public final class VisualizedRegion extends Region {
 	 * Stops the region from being visualized
 	 */
 	private void stopVisualizing() {
-		Valid.checkNotNull(this.task, "Region " + this + " not visualized");
+		ValidCore.checkNotNull(this.task, "Region " + this + " not visualized");
 
 		this.task.cancel();
 		this.task = null;
@@ -227,7 +227,7 @@ public final class VisualizedRegion extends Region {
 		if (map.isEmpty())
 			return new VisualizedRegion();
 
-		Valid.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
+		ValidCore.checkBoolean(map.containsKey("Primary") && map.containsKey("Secondary"), "The region must have Primary and a Secondary location");
 
 		final String name = map.getString("Name");
 		final Location prim = map.get("Primary", Location.class);

@@ -61,13 +61,13 @@ public class YamlConfig extends FileConfig {
 	 * The custom constructor to convert strings to values in the config
 	 */
 	@Setter
-	private static Function<LoadSettings, YamlConstructor> customConstructor = loadSettings -> new YamlConstructor(loadSettings);
+	private static Function<LoadSettings, YamlConstructor> customConstructor = YamlConstructor::new;
 
 	/**
 	 * The custom representer to convert values to strings in the config
 	 */
 	@Setter
-	private static Function<DumpSettings, YamlRepresenter> customRepresenter = dumpSettings -> new YamlRepresenter(dumpSettings);
+	private static Function<DumpSettings, YamlRepresenter> customRepresenter = YamlRepresenter::new;
 
 	/**
 	 * The dumper to convert the node tree to a string.
@@ -283,13 +283,12 @@ public class YamlConfig extends FileConfig {
 			if (defaults != null && !defaults.isStored(path)) {
 				boolean isUncommentedSection = false;
 
-				for (final String uncommented : this.uncommentedSections) {
+				for (final String uncommented : this.uncommentedSections)
 					if (path.startsWith(uncommented)) {
 
 						isUncommentedSection = true;
 						break;
 					}
-				}
 
 				if (!isUncommentedSection) {
 					unusedKeys.put(path, entry.getValue());
@@ -331,13 +330,12 @@ public class YamlConfig extends FileConfig {
 
 				deepPath = innerSection.getFullPath();
 
-				for (final String uncommented : this.uncommentedSections) {
+				for (final String uncommented : this.uncommentedSections)
 					if (deepPath.startsWith(uncommented)) {
 						isUncommentedSection = true;
 
 						break;
 					}
-				}
 
 				if (hasDiskValue)
 					ValidCore.checkBoolean(diskValue instanceof ConfigSection, "Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got " + diskValue.getClass().getSimpleName());
@@ -545,7 +543,7 @@ public class YamlConfig extends FileConfig {
 	 * @return
 	 */
 	public final Set<String> getUncommentedSections() {
-		return uncommentedSections;
+		return this.uncommentedSections;
 	}
 
 	/**
@@ -618,7 +616,7 @@ public class YamlConfig extends FileConfig {
 
 		@Override
 		public Object construct(Node node) {
-			return constructObject(node);
+			return this.constructObject(node);
 		}
 
 		private static class ConstructComment extends ConstructScalar {

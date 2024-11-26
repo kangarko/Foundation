@@ -11,7 +11,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -224,7 +224,7 @@ final class ToggleableTool {
 
 			else if (unparsed instanceof Class && Tool.class.isAssignableFrom((Class<?>) unparsed)) {
 				final Method getInstance = ReflectionUtil.getMethod((Class<?>) unparsed, "getInstance");
-				Valid.checkNotNull(getInstance, "Class " + unparsed + " must have a public static method getInstance() returning a Tool");
+				ValidCore.checkNotNull(getInstance, "Class " + unparsed + " must have a public static method getInstance() returning a Tool");
 
 				this.item = ((Tool) ReflectionUtil.invokeStatic(getInstance)).getItem();
 

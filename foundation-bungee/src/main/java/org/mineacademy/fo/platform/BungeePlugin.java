@@ -3,11 +3,10 @@ package org.mineacademy.fo.platform;
 import java.io.File;
 import java.util.Objects;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.SimpleCommandGroup;
@@ -113,7 +112,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	private BungeeAudiences adventure; // TODO prerobić
 
 	public BungeeAudiences adventure() {
-		Valid.checkNotNull(this.adventure, "Adventure audience provider not initialized yet");
+		ValidCore.checkNotNull(this.adventure, "Adventure audience provider not initialized yet");
 
 		return this.adventure;
 	}
@@ -157,7 +156,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		if (bungeeVersion.startsWith("git:")) {
 			final String[] split = bungeeVersion.split("\\:");
 
-			Valid.checkBoolean(split.length > 1, "Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
+			ValidCore.checkBoolean(split.length > 1, "Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
 			bungeeVersion = split[2];
 		} else
 			throw new FoException("Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
@@ -183,7 +182,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 
 		try {
 			if (this.getStartupLogo() != null)
-				Common.log(this.getStartupLogo());
+				CommonCore.log(this.getStartupLogo());
 
 			// Register the proxy listener and channel
 			this.registerEvents(new BungeeListener());
@@ -229,7 +228,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			this.onPluginStop();
 
 		} catch (final Throwable t) {
-			Common.warning("Plugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
+			CommonCore.warning("Plugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
 
 		Objects.requireNonNull(instance, "Instance of " + this.getDataFolder().getName() + " already nulled!");
@@ -288,7 +287,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			this.onPluginReload();
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
+			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
 		}
 	}
 
@@ -329,7 +328,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	 */
 	@Override
 	public final void setDefaultCommandGroup(SimpleCommandGroup group) {
-		Valid.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
+		ValidCore.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
 
 		this.defaultCommandGroup = group;
 	}

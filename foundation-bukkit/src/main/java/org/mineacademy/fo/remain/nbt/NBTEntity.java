@@ -3,7 +3,7 @@ package org.mineacademy.fo.remain.nbt;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 
 /**
  * NBT class to access vanilla tags from Entities. Entities don't support custom
@@ -92,7 +92,7 @@ public class NBTEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTEntity#getPersistentDataContainer requires Minecraft 1.14+");
+		ValidCore.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTEntity#getPersistentDataContainer requires Minecraft 1.14+");
 
 		return new NBTPersistentDataContainer(this.ent.getPersistentDataContainer());
 	}

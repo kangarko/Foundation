@@ -305,7 +305,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, Class<?>... args) {
-		while (!clazz.equals(Object.class)) {
+		while (!clazz.equals(Object.class))
 			try {
 				final Method method = clazz.getDeclaredMethod(methodName, args);
 				method.setAccessible(true);
@@ -320,7 +320,6 @@ public final class ReflectionUtil {
 
 			} catch (final Throwable t) {
 			}
-		}
 
 		return null;
 	}

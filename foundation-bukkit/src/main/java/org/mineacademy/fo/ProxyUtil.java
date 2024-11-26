@@ -5,8 +5,8 @@ import javax.annotation.Nullable;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
@@ -169,7 +169,7 @@ public final class ProxyUtil {
 			for (final Object datum : data) {
 
 				if (data == null)
-					throw new FoException("Found null object when sending proxy plugin message! Data: " + CommonCore.join(data, t -> CommonCore.getOrDefault(SerializeUtil.serialize(SerializeUtil.Language.YAML, t), "").toString()));
+					throw new FoException("Found null object when sending proxy plugin message! Data: " + CommonCore.join(data, t -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtil.Language.YAML, t), "").toString()));
 
 				if (datum instanceof Integer)
 					out.writeInt((Integer) datum);

@@ -31,13 +31,13 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.projectiles.ProjectileSource;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -131,7 +131,7 @@ public abstract class SimpleEnchantment implements Listener {
 		namespacedName = namespacedName.toLowerCase().replace(" ", "_");
 		namespacedName = ChatUtil.replaceDiacritic(namespacedName);
 
-		Valid.checkBoolean(VALID_NAMESPACE.matcher(namespacedName).matches(), "Enchant name must only contain English alphabet names: " + name);
+		ValidCore.checkBoolean(VALID_NAMESPACE.matcher(namespacedName).matches(), "Enchant name must only contain English alphabet names: " + name);
 
 		this.name = name;
 		this.namespacedName = namespacedName;
@@ -256,7 +256,7 @@ public abstract class SimpleEnchantment implements Listener {
 	public final Enchantment toBukkit() {
 		if (this.isAvailable()) {
 			final Enchantment enchantment = this.handle.toBukkit();
-			Valid.checkNotNull(enchantment, "Failed to convert " + this + " into a Bukkit class");
+			ValidCore.checkNotNull(enchantment, "Failed to convert " + this + " into a Bukkit class");
 
 			return enchantment;
 		}
@@ -318,7 +318,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @return
 	 */
 	public Set<CompEquipmentSlot> getActiveSlots() {
-		return Common.newSet(CompEquipmentSlot.values());
+		return CommonCore.newSet(CompEquipmentSlot.values());
 	}
 
 	/**
@@ -622,12 +622,11 @@ public abstract class SimpleEnchantment implements Listener {
 				// Some weird problem in third party plugin
 			}
 
-			for (final String line : lore) {
+			for (final String line : lore)
 				if (colorLess.contains(SimpleComponent.fromMini(line).toPlain()))
 					foEnchanted = true;
 				else
 					newLore.add(line);
-			}
 
 			if (!foEnchanted)
 				return null;
@@ -670,7 +669,7 @@ public abstract class SimpleEnchantment implements Listener {
 
 			if (item.hasItemMeta()) {
 				final ItemMeta meta = item.getItemMeta();
-				if (meta instanceof EnchantmentStorageMeta) {
+				if (meta instanceof EnchantmentStorageMeta)
 					for (final Map.Entry<Enchantment, Integer> entry : ((EnchantmentStorageMeta) meta).getStoredEnchants().entrySet()) {
 						final Enchantment enchantment = entry.getKey();
 						final SimpleEnchantment simpleEnchantment = fromBukkit(enchantment);
@@ -682,7 +681,6 @@ public abstract class SimpleEnchantment implements Listener {
 								customEnchants.add(CompChatColor.translateColorCodes(FO_ENCHANT_PREFIX + lore));
 						}
 					}
-				}
 			}
 
 		} catch (final NullPointerException ex) {

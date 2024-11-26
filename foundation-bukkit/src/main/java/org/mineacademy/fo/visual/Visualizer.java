@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
@@ -38,7 +38,7 @@ public final class Visualizer {
 	 * @param blockName
 	 */
 	public static void visualize(@NonNull final Block block, final CompMaterial mask, final String blockName) {
-		Valid.checkBoolean(!isVisualized(block), "Block at " + block.getLocation() + " already visualized");
+		ValidCore.checkBoolean(!isVisualized(block), "Block at " + block.getLocation() + " already visualized");
 		final Location location = block.getLocation();
 
 		final FallingBlock falling = spawnFallingBlock(location, mask, blockName);
@@ -76,7 +76,7 @@ public final class Visualizer {
 	 * @param block
 	 */
 	public static void stopVisualizing(@NonNull final Block block) {
-		Valid.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");
+		ValidCore.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");
 
 		final Object fallingBlock = visualizedBlocks.remove(block.getLocation());
 

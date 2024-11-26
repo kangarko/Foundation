@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
@@ -136,7 +136,7 @@ final class BukkitListener implements Listener {
 			final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
 
 			SimpleComponent component = SimpleComponent
-					.fromMini("&8&m" + Common.duplicate("-", multiply) + "&r");
+					.fromMini("&8&m" + CommonCore.duplicate("-", multiply) + "&r");
 
 			if (page == 0)
 				component = component.appendMini(" &7« ");
@@ -160,7 +160,7 @@ final class BukkitListener implements Listener {
 						.onClickRunCmd("/#flp " + (page + 2));
 
 			audience.sendMessage(component
-					.appendMini("&8&m" + Common.duplicate("-", multiply)));
+					.appendMini("&8&m" + CommonCore.duplicate("-", multiply)));
 		}
 
 		// Prevent "Unknown command message"

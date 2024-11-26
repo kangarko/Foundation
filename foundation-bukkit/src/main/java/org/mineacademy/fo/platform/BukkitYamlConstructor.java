@@ -38,12 +38,10 @@ final class BukkitYamlConstructor extends YamlConfig.YamlConstructor {
 			if (raw.containsKey(ConfigurationSerialization.SERIALIZED_TYPE_KEY)) {
 				final String classPath = (String) raw.get(ConfigurationSerialization.SERIALIZED_TYPE_KEY);
 
-				if (classPath.equals("ItemMeta")) {
-
+				if (classPath.equals("ItemMeta"))
 					// https://github.com/PaperMC/Paper/issues/11423
 					if (raw.containsKey("internal") && this.atLeast1_21)
 						raw.put("custom", raw.get("internal"));
-				}
 
 				final Map<String, Object> typed = new LinkedHashMap<>(raw.size());
 

@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.ReflectionException;
 
 import lombok.SneakyThrows;
@@ -327,7 +327,7 @@ public enum CompParticle {
 	 * @param particleSize
 	 */
 	public void spawn(Location location, Color color, float particleSize) {
-		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
+		ValidCore.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
 
 		if (atLeast1_13)
 			location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, 1, 0, 0, 0, 0, new DustOptions(color, particleSize));
@@ -351,7 +351,7 @@ public enum CompParticle {
 	 * @param particleSize
 	 */
 	public void spawn(Player player, Location location, Color color, float particleSize) {
-		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
+		ValidCore.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
 
 		if (atLeast1_13)
 			player.spawnParticle((Particle) this.bukkitEnumParticle, location, 1, 0, 0, 0, 0, new DustOptions(color, particleSize));
@@ -381,7 +381,7 @@ public enum CompParticle {
 	 * @param data
 	 */
 	public final void spawn(Location location, CompMaterial data) {
-		Valid.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
+		ValidCore.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
 
 		if (atLeast1_12) {
 			if (atLeast1_13)
@@ -477,7 +477,7 @@ public enum CompParticle {
 	 * @param data
 	 */
 	public final void spawn(Player player, Location location, CompMaterial data) {
-		Valid.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
+		ValidCore.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
 
 		if (atLeast1_12) {
 			if (atLeast1_13)

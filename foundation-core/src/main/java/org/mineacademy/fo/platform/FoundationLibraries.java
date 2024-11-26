@@ -11,7 +11,7 @@ final class FoundationLibraries {
 
 	/**
 	 * Load libraries for the platform's plugin.
-	 * 
+	 *
 	 * @param plugin
 	 */
 	public static void load(FoundationPlugin plugin) {

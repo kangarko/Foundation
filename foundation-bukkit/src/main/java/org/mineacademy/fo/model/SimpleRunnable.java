@@ -13,7 +13,7 @@ public abstract class SimpleRunnable implements Runnable {
 	public final synchronized void cancel() throws IllegalStateException {
 		this.checkScheduled();
 
-		task.cancel();
+		this.task.cancel();
 		this.onCancel();
 	}
 
@@ -32,9 +32,9 @@ public abstract class SimpleRunnable implements Runnable {
 	 * @throws IllegalStateException    if this was already scheduled
 	 */
 	public final synchronized Task runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
-		checkNotYetScheduled();
+		this.checkNotYetScheduled();
 
-		return setupTask(Platform.runTask(this));
+		return this.setupTask(Platform.runTask(this));
 	}
 
 	/**
@@ -46,9 +46,9 @@ public abstract class SimpleRunnable implements Runnable {
 	 * @throws IllegalStateException    if this was already scheduled
 	 */
 	public final synchronized Task runTaskAsync(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
-		checkNotYetScheduled();
+		this.checkNotYetScheduled();
 
-		return setupTask(Platform.runTaskAsync(this));
+		return this.setupTask(Platform.runTaskAsync(this));
 	}
 
 	/**
@@ -61,9 +61,9 @@ public abstract class SimpleRunnable implements Runnable {
 	 * @throws IllegalStateException    if this was already scheduled
 	 */
 	public final synchronized Task runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
-		checkNotYetScheduled();
+		this.checkNotYetScheduled();
 
-		return setupTask(Platform.runTask((int) delay, this));
+		return this.setupTask(Platform.runTask((int) delay, this));
 	}
 
 	/**
@@ -76,9 +76,9 @@ public abstract class SimpleRunnable implements Runnable {
 	 * @throws IllegalStateException    if this was already scheduled
 	 */
 	public final synchronized Task runTaskLaterAsynchronously(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
-		checkNotYetScheduled();
+		this.checkNotYetScheduled();
 
-		return setupTask(Platform.runTaskAsync((int) delay, this));
+		return this.setupTask(Platform.runTaskAsync((int) delay, this));
 	}
 
 	/**
@@ -93,9 +93,9 @@ public abstract class SimpleRunnable implements Runnable {
 	 * @throws IllegalStateException    if this was already scheduled
 	 */
 	public final synchronized Task runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
-		checkNotYetScheduled();
+		this.checkNotYetScheduled();
 
-		return setupTask(Platform.runTaskTimer((int) delay, (int) period, this));
+		return this.setupTask(Platform.runTaskTimer((int) delay, (int) period, this));
 	}
 
 	/**
@@ -110,18 +110,18 @@ public abstract class SimpleRunnable implements Runnable {
 	 * @throws IllegalStateException    if this was already scheduled
 	 */
 	public final synchronized Task runTaskTimerAsynchronously(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
-		checkNotYetScheduled();
+		this.checkNotYetScheduled();
 
-		return setupTask(Platform.runTaskTimerAsync((int) delay, (int) period, this));
+		return this.setupTask(Platform.runTaskTimerAsync((int) delay, (int) period, this));
 	}
 
 	private void checkScheduled() {
-		if (task == null)
+		if (this.task == null)
 			throw new IllegalStateException("Not scheduled yet");
 	}
 
 	private void checkNotYetScheduled() {
-		if (task != null)
+		if (this.task != null)
 			throw new IllegalStateException("Already scheduled");
 	}
 

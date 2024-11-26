@@ -26,7 +26,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Takes in any NMS Compound to wrap it
-	 * 
+	 *
 	 * @param nbt
 	 * @deprecated Use NBT.wrapNMSTag
 	 */
@@ -42,7 +42,7 @@ public class NBTContainer extends NBTCompound {
 
 	/**
 	 * Reads in a NBT InputStream
-	 * 
+	 *
 	 * @param inputsteam
 	 * @deprecated Use NBT.readNBT
 	 */
@@ -55,7 +55,7 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
 	 * {@link NbtApiException} in case something goes wrong.
-	 * 
+	 *
 	 * @param nbtString
 	 * @deprecated Use NBT.parseNBT
 	 */

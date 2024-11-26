@@ -95,10 +95,9 @@ public final class FilterLocation extends Filter {
 		int z;
 
 		// if split has 5 elements, get the world manually, otherwise, use the player's world or complain if sender is not a player
-		if (split.length == 5) {
+		if (split.length == 5)
 			worldName = split[0];
-
-		} else {
+		else {
 			if (!audience.isPlayer()) {
 				Messenger.error(audience, "When running from console, specify the location world.");
 

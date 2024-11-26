@@ -61,12 +61,12 @@ public final class DumpLocaleSubCommand extends SimpleSubCommandCore {
 
 	@Override
 	protected void onCommand() {
-		tellInfo("Dumping or updating " + SimpleSettings.LOCALE + " locale file...");
+		this.tellInfo("Dumping or updating " + SimpleSettings.LOCALE + " locale file...");
 
 		final File dumped = Lang.Storage.createAndDumpToFile();
 		final File rootFile = Platform.getPlugin().getDataFolder();
 
-		tellSuccess("Locale file dumped to " + dumped.getAbsolutePath().replace(rootFile.getParentFile().getAbsolutePath(), "") + ". Existing keys were updated, see console for details.");
+		this.tellSuccess("Locale file dumped to " + dumped.getAbsolutePath().replace(rootFile.getParentFile().getAbsolutePath(), "") + ". Existing keys were updated, see console for details.");
 	}
 
 	/**

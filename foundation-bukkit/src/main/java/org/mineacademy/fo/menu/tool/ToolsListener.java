@@ -22,7 +22,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.projectiles.ProjectileSource;
 import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
@@ -91,7 +92,7 @@ public final class ToolsListener implements Listener {
 				event.setCancelled(true);
 
 				Common.tell(player, Lang.component("tool-error"));
-				Common.error(t, "Failed to handle " + event.getAction() + " using tool: " + tool.getClass());
+				CommonCore.error(t, "Failed to handle " + event.getAction() + " using tool: " + tool.getClass());
 			}
 	}
 
@@ -122,7 +123,7 @@ public final class ToolsListener implements Listener {
 				event.setCancelled(true);
 
 				Common.tell(player, Lang.component("tool-error"));
-				Common.error(t, "Failed to handle right clicking on entity " + event.getRightClicked().getType() + " using tool: " + tool.getClass());
+				CommonCore.error(t, "Failed to handle right clicking on entity " + event.getRightClicked().getType() + " using tool: " + tool.getClass());
 			}
 	}
 
@@ -150,7 +151,7 @@ public final class ToolsListener implements Listener {
 				event.setCancelled(true);
 
 				Common.tell(player, Lang.component("tool-error"));
-				Common.error(t, "Failed to handle placing " + event.getBlock() + " using tool: " + tool.getClass());
+				CommonCore.error(t, "Failed to handle placing " + event.getBlock() + " using tool: " + tool.getClass());
 			}
 	}
 
@@ -240,9 +241,9 @@ public final class ToolsListener implements Listener {
 					Platform.runTask(() -> shot.remove());
 
 					Platform.runTask(1, () -> {
-						Valid.checkNotNull(shot, "shot = null");
-						Valid.checkNotNull(world, "shot.world = null");
-						Valid.checkNotNull(loc, "shot.location = null");
+						ValidCore.checkNotNull(shot, "shot = null");
+						ValidCore.checkNotNull(world, "shot.world = null");
+						ValidCore.checkNotNull(loc, "shot.location = null");
 
 						final Location directedLoc = player.getEyeLocation().add(player.getEyeLocation().getDirection().setY(0).normalize().multiply(1.05)).add(0, 0.2, 0);
 
@@ -282,7 +283,7 @@ public final class ToolsListener implements Listener {
 				event.setCancelled(true);
 
 				Common.tell(player, Lang.component("tool-error"));
-				Common.error(t, "Failed to shoot rocket " + tool.getClass());
+				CommonCore.error(t, "Failed to shoot rocket " + tool.getClass());
 			}
 	}
 
@@ -316,7 +317,7 @@ public final class ToolsListener implements Listener {
 
 			} catch (final Throwable t) {
 				Common.tell(shooter, Lang.component("tool-error"));
-				Common.error(t, "Failed to handle impact by rocket " + shot.getRocket().getClass());
+				CommonCore.error(t, "Failed to handle impact by rocket " + shot.getRocket().getClass());
 			}
 		}
 	}

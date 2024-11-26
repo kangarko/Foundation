@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.MenuClickLocation;
 import org.mineacademy.fo.platform.Platform;
@@ -106,7 +107,7 @@ public final class MenuListener implements Listener {
 						Common.tell(player, Lang.component("menu-error"));
 						player.closeInventory();
 
-						Common.error(t, "Error clicking in menu " + menu);
+						CommonCore.error(t, "Error clicking in menu " + menu);
 					}
 
 				if (!allowed) {
@@ -170,7 +171,7 @@ class InventoryDragEventListener implements Listener {
 				if (slot > size)
 					continue;
 
-				final ItemStack cursor = Common.getOrDefault(event.getCursor(), event.getOldCursor());
+				final ItemStack cursor = CommonCore.getOrDefault(event.getCursor(), event.getOldCursor());
 
 				if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor, InventoryAction.PLACE_SOME)) {
 					event.setCancelled(true);

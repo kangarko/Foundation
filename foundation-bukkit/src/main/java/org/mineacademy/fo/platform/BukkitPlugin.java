@@ -10,13 +10,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.RegionSubCommand;
@@ -217,7 +215,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 		// Check the required Minecraft server version
 		if (MinecraftVersion.olderThan(V.v1_8)) {
-			Common.logFramed(false,
+			CommonCore.logFramed(false,
 					this.getDataFolder().getName() + " requires Minecraft 1.8.8 or newer to run.",
 					"Please upgrade your server.");
 
@@ -227,7 +225,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 		try {
 			if (this.getStartupLogo() != null)
-				Common.log(this.getStartupLogo());
+				CommonCore.log(this.getStartupLogo());
 
 			// Expand auto register functionality
 			AutoRegisterScanner.setCustomRegisterHandler(new AutoRegisterHandler() {
@@ -273,7 +271,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 						return true;
 					}
 
-					if (clazz == RegionTool.class && (!areRegionsEnabled() || !areToolsEnabled()))
+					if (clazz == RegionTool.class && (!BukkitPlugin.this.areRegionsEnabled() || !BukkitPlugin.this.areToolsEnabled()))
 						return true;
 
 					return false;
@@ -291,14 +289,14 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 					final Object instance = tuple.getValue();
 
 					if (SimpleListener.class.isAssignableFrom(clazz)) {
-						enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						return true;
 					}
 
 					else if (PacketListener.class.isAssignableFrom(clazz)) {
 						// Automatically registered by means of adding packet adapters
-						enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						((PacketListener) instance).onRegister();
 
@@ -307,7 +305,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 					else if (DiscordListener.class.isAssignableFrom(clazz)) {
 						// Automatically registered in its constructor
-						enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						((DiscordListener) instance).register();
 
@@ -315,12 +313,12 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 					} else if (SimpleEnchantment.class.isAssignableFrom(clazz)) {
 						// Automatically registered in its constructor
-						enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						if (!this.enchantListenersRegistered) {
 							this.enchantListenersRegistered = true;
 
-							registerEvents(SimpleEnchantment.Listener.getInstance());
+							BukkitPlugin.this.registerEvents(SimpleEnchantment.Listener.getInstance());
 
 							if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null)
 								BukkitPacketListener.getInstance().onRegister();
@@ -333,14 +331,14 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 					else if (Tool.class.isAssignableFrom(clazz)) {
 						// Automatically registered in its constructor that is called when we find instance
-						enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						return true;
 
 					}
 
 					if (instance instanceof Listener) {
-						registerEvents(instance);
+						BukkitPlugin.this.registerEvents(instance);
 
 						return true;
 					}
@@ -414,160 +412,160 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		for (final CompAttribute comp : CompAttribute.values())
 			try {
 				CompAttribute.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (comp.getNmsName() != null)
 					Common.log("Invalid CompAttribute " + comp.name());
 			}
-
+	
 		for (final CompColor comp : CompColor.values())
 			try {
 				if (comp.getDye() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompColor " + comp.getName());
 			}
-
+	
 		for (final CompItemFlag comp : CompItemFlag.values())
 			try {
 				ItemFlag.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompItemFlag " + comp);
 			}
-
+	
 		for (final CompMaterial comp : CompMaterial.values())
 			try {
 				if (comp.toItem() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompMaterial " + comp);
 			}
-
+	
 		for (final CompParticle comp : CompParticle.values())
 			try {
 				Particle.valueOf(comp.name());
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Skip
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (!comp.isRemoved())
 					Common.log("Invalid CompParticle " + comp);
 			}
-
+	
 		if (MinecraftVersion.atLeast(V.v1_21))
 			for (final CompSound comp : CompSound.values())
 				try {
 					Sound.valueOf(comp.name());
-
+	
 				} catch (final IllegalArgumentException ex) {
 					Common.log("Invalid CompSound " + comp.name());
 				}
-
+	
 		for (final CompVillagerProfession comp : CompVillagerProfession.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerProfession " + comp);
 			}
-
+	
 		for (final CompVillagerType comp : CompVillagerType.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
 	}
-
+	
 	private void scanModernEnumsForUpdates() {
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final DyeColor bukkit : DyeColor.values())
 			try {
 				CompColor.fromDye(bukkit);
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompColor for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final Enchantment bukkit : Enchantment.values())
 			try {
 				if (CompEnchantment.getByName(bukkit.getKey().toString()) == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompEnchantment for Bukkit's " + bukkit);
 			}
-
+	
 		for (final ItemFlag bukkit : ItemFlag.values())
 			try {
 				CompItemFlag.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompItemFlag for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Material bukkit : Material.values())
 			try {
 				CompMaterial.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompMaterial for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Particle bukkit : Particle.values())
 			try {
 				CompParticle.fromName(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompParticle for Bukkit's " + bukkit);
 			}
-
+	
 		for (final PotionEffectType bukkit : PotionEffectType.values())
 			try {
 				CompPotionEffectType.getByName(bukkit.getKey().toString());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompPotionEffectType for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Sound bukkit : Sound.values())
 			try {
 				CompSound.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompSound for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Profession bukkit : Villager.Profession.values())
 			try {
 				CompVillagerProfession.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerProfession for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Type bukkit : Villager.Type.values())
 			try {
 				CompVillagerType.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerType for Bukkit's " + bukkit);
 			}
@@ -595,7 +593,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		private static final long serialVersionUID = 1L;
 
 		public ShadingException() {
-			if (!getName().equals(BukkitPlugin.this.getDescription().getName())) {
+			if (!BukkitPlugin.this.getName().equals(BukkitPlugin.this.getDescription().getName())) {
 				Bukkit.getLogger().severe("We have a class path problem in the Foundation library");
 				Bukkit.getLogger().severe("preventing " + BukkitPlugin.this.getDescription().getName() + " from loading correctly!");
 				Bukkit.getLogger().severe("");
@@ -604,7 +602,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				Bukkit.getLogger().severe("relocale the package! If you are testing using");
 				Bukkit.getLogger().severe("Ant, only test one plugin at the time.");
 				Bukkit.getLogger().severe("");
-				Bukkit.getLogger().severe("Possible cause: " + getName());
+				Bukkit.getLogger().severe("Possible cause: " + BukkitPlugin.this.getName());
 				Bukkit.getLogger().severe("Foundation package: " + BukkitPlugin.class.getPackage().getName());
 
 				throw new FoException("Shading exception, see above for details.");
@@ -625,7 +623,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			this.onPluginStop();
 
 		} catch (final Throwable t) {
-			Common.log("&cPlugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
+			CommonCore.log("&cPlugin might not shut down property. Got " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
 
 		if (CompMetadata.isLegacy() && CompMetadata.MetadataFile.getInstance().getFile() != null)
@@ -636,7 +634,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				SimpleScoreboard.clearBoardsFor(online);
 
 			} catch (final Throwable t) {
-				Common.error(t, "Error clearing scoreboard for player " + online.getName());
+				CommonCore.error(t, "Error clearing scoreboard for player " + online.getName());
 			}
 
 			try {
@@ -646,7 +644,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 					online.closeInventory();
 
 			} catch (final Throwable t) {
-				Common.error(t, "Error closing menu for player " + online.getName());
+				CommonCore.error(t, "Error closing menu for player " + online.getName());
 			}
 		}
 
@@ -656,7 +654,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 					region.save();
 
 				} catch (final Throwable t) {
-					Common.error(t, "Error saving region " + region.getFileName() + "...");
+					CommonCore.error(t, "Error saving region " + region.getFileName() + "...");
 				}
 
 		Objects.requireNonNull(instance, "Instance of " + this.getDataFolder().getName() + " already nulled!");
@@ -719,7 +717,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				DiskRegion.loadRegions();
 
 		} catch (final Throwable t) {
-			Common.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
+			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
 		}
 	}
 
@@ -769,7 +767,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 */
 	@Override
 	public final void setDefaultCommandGroup(SimpleCommandGroup group) {
-		Valid.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
+		ValidCore.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
 
 		this.defaultCommandGroup = group;
 	}

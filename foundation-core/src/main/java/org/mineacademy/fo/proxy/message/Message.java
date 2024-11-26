@@ -60,7 +60,7 @@ abstract class Message {
 		final Class<?> clazz = content[this.head];
 
 		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Cannot read " + givenType.getSimpleName() + " at position " + this.head + " because " + this.getMessage().name() + " requires " + clazz.getSimpleName());
-		ValidCore.checkBoolean(head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
+		ValidCore.checkBoolean(this.head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;
 	}
@@ -71,7 +71,7 @@ abstract class Message {
 	 * @return
 	 */
 	public final ProxyListener getListener() {
-		return listener;
+		return this.listener;
 	}
 
 	/**
@@ -81,7 +81,7 @@ abstract class Message {
 	 * @return
 	 */
 	public final <T extends ProxyMessage> T getMessage() {
-		return (T) message;
+		return (T) this.message;
 	}
 
 	@Override

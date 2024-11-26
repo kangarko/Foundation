@@ -18,10 +18,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.MenuCloseEvent;
 import org.mineacademy.fo.event.MenuOpenEvent;
 import org.mineacademy.fo.exception.EventHandledException;
@@ -278,7 +279,7 @@ public abstract class Menu {
 	private static Menu getMenu0(final Player player, final String tag) {
 		if (player.hasMetadata(tag)) {
 			final Menu menu = (Menu) player.getMetadata(tag).get(0).value();
-			Valid.checkNotNull(menu, "Menu missing from " + player.getName() + "'s metadata '" + tag + "' tag!");
+			ValidCore.checkNotNull(menu, "Menu missing from " + player.getName() + "'s metadata '" + tag + "' tag!");
 
 			return menu;
 		}
@@ -298,7 +299,7 @@ public abstract class Menu {
 	 * @param button
 	 */
 	protected final void registerButton(final Button button) {
-		Valid.checkBoolean(button.getSlot() != -1, "When calling registerButton, you must set the slot of the button either in the constructor or by overriding Button#getSlot()!");
+		ValidCore.checkBoolean(button.getSlot() != -1, "When calling registerButton, you must set the slot of the button either in the constructor or by overriding Button#getSlot()!");
 
 		this.buttons.add(button);
 	}
@@ -349,7 +350,7 @@ public abstract class Menu {
 		if (Button.class.isAssignableFrom(type)) {
 			final Button button = (Button) ReflectionUtil.getFieldContent(this, field);
 
-			Valid.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
+			ValidCore.checkNotNull(button, "Null button field named " + field.getName() + " in " + this);
 			final Position position = field.getAnnotation(Position.class);
 
 			this.registeredButtons.put(button, position);
@@ -401,7 +402,7 @@ public abstract class Menu {
 			final Button button = entry.getKey();
 			final Position position = entry.getValue();
 
-			Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
+			ValidCore.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 
 			if (position == null && button.getSlot() == -1 && ItemUtil.isSimilar(fromItem, button.getItem()))
 				return button;
@@ -422,7 +423,7 @@ public abstract class Menu {
 
 		// Cannot put Button#getSlot into registeredButtonPositions because it can be dynamically set each time the menu is opened
 		for (final Button button : this.registeredButtons.keySet()) {
-			Valid.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
+			ValidCore.checkNotNull(button, "Menu button is null at " + this.getClass().getSimpleName());
 
 			if (button.getSlot() != -1 && button.getSlot() == slot)
 				return button;
@@ -470,8 +471,8 @@ public abstract class Menu {
 	 * @param player the player
 	 */
 	public final void displayTo(final Player player) {
-		Valid.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
-		Valid.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
+		ValidCore.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
+		ValidCore.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
 
 		this.viewer = player;
 		this.registerButtonsIfHasnt();
@@ -517,7 +518,7 @@ public abstract class Menu {
 				this.onDisplay(drawer, player);
 
 			} catch (final Throwable t) {
-				Common.error(t, "Error opening menu " + Menu.this);
+				CommonCore.error(t, "Error opening menu " + Menu.this);
 
 				return;
 			}
@@ -599,10 +600,10 @@ public abstract class Menu {
 	final void restartMenu(final String animatedTitle, final boolean callOnMenuClose) {
 
 		final Player player = this.getViewer();
-		Valid.checkNotNull(player, "Cannot restartMenu if it was not yet shown to a player! Menu: " + this);
+		ValidCore.checkNotNull(player, "Cannot restartMenu if it was not yet shown to a player! Menu: " + this);
 
 		final Inventory inventory = Remain.getTopInventoryFromOpenInventory(player);
-		Valid.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
+		ValidCore.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
 
 		// Most plugins save items here
 		if (callOnMenuClose)
@@ -683,10 +684,9 @@ public abstract class Menu {
 			final Button button = entry.getKey();
 			final Position position = entry.getValue();
 
-			if (button.getSlot() != -1) {
+			if (button.getSlot() != -1)
 				items.put(button.getSlot(), button.getItem());
-
-			} else if (position != null) {
+			else if (position != null) {
 				int slot = position.value();
 				final StartPosition startPosition = position.start();
 
@@ -766,7 +766,7 @@ public abstract class Menu {
 	 * @param task
 	 */
 	protected final void animate(final int periodTicks, final MenuRunnable task) {
-		Valid.checkNotNull(this.viewer, "Cannot call animate() before the menu is shown, call your method in onDisplay() method instead.");
+		ValidCore.checkNotNull(this.viewer, "Cannot call animate() before the menu is shown, call your method in onDisplay() method instead.");
 
 		Platform.runTaskTimer(2, periodTicks, this.wrapAnimation(task));
 	}
@@ -790,7 +790,7 @@ public abstract class Menu {
 	 * @param task
 	 */
 	protected final void animateAsync(final int periodTicks, final MenuRunnable task) {
-		Valid.checkNotNull(this.viewer, "Cannot call animate() before the menu is shown, call your method in onDisplay() method instead.");
+		ValidCore.checkNotNull(this.viewer, "Cannot call animate() before the menu is shown, call your method in onDisplay() method instead.");
 
 		Platform.runTaskTimerAsync(2, periodTicks, this.wrapAnimation(task));
 	}
@@ -1000,10 +1000,10 @@ public abstract class Menu {
 	 * @return
 	 */
 	protected final Inventory getInventory() {
-		Valid.checkNotNull(this.viewer, "Cannot get inventory when there is no viewer!");
+		ValidCore.checkNotNull(this.viewer, "Cannot get inventory when there is no viewer!");
 
 		final Inventory topInventory = Remain.getTopInventoryFromOpenInventory(this.viewer);
-		Valid.checkNotNull(topInventory, "Top inventory is null!");
+		ValidCore.checkNotNull(topInventory, "Top inventory is null!");
 
 		return topInventory;
 	}

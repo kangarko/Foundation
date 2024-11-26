@@ -28,11 +28,11 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompColor;
@@ -609,7 +609,7 @@ public final class ItemCreator {
 	public ItemStack make() {
 
 		// First, make sure the ItemStack is not null (it can be null if you create this class only using material)
-		Valid.checkBoolean(this.material != null || this.item != null, "Material or item must be set!");
+		ValidCore.checkBoolean(this.material != null || this.item != null, "Material or item must be set!");
 
 		ItemStack compiledItem = this.item != null ? this.item.clone() : this.material.toItem();
 
@@ -631,7 +631,7 @@ public final class ItemCreator {
 		color:
 		if (this.color != null)
 			if (compiledItem.getType().toString().contains("LEATHER")) {
-				Valid.checkBoolean(compiledMeta instanceof LeatherArmorMeta, "Expected a leather item, cannot apply color to " + compiledItem);
+				ValidCore.checkBoolean(compiledMeta instanceof LeatherArmorMeta, "Expected a leather item, cannot apply color to " + compiledItem);
 				((LeatherArmorMeta) compiledMeta).setColor(this.color.getColor());
 
 				// Hack: If you put WHITE_WOOL and a color, we automatically will change the material to the colorized version
@@ -683,7 +683,7 @@ public final class ItemCreator {
 
 				// Probably version incompatible
 				if (entity == null)
-					Common.log("The following item could not be transformed into " + entityRaw + " egg, item: " + compiledItem);
+					CommonCore.log("The following item could not be transformed into " + entityRaw + " egg, item: " + compiledItem);
 			}
 
 			if (entity != null)
@@ -720,7 +720,7 @@ public final class ItemCreator {
 					}
 				}
 
-			if (this.skullUid != null) {
+			if (this.skullUid != null)
 				try {
 					skullMeta.setPlayerProfile(Bukkit.createProfile(this.skullUid));
 
@@ -737,7 +737,6 @@ public final class ItemCreator {
 						}
 					}
 				}
-			}
 
 			if (this.skullUrl != null)
 				compiledMeta = Remain.setSkullMetaBase64(skullMeta, Remain.convertSkinTextureUrlToBase64(this.skullUrl));
@@ -759,10 +758,10 @@ public final class ItemCreator {
 			}
 
 			if (this.bookAuthor != null)
-				bookMeta.setAuthor(Common.getOrEmpty(this.bookAuthor));
+				bookMeta.setAuthor(CommonCore.getOrEmpty(this.bookAuthor));
 
 			if (this.bookTitle != null)
-				bookMeta.setTitle(Common.getOrEmpty(this.bookTitle));
+				bookMeta.setTitle(CommonCore.getOrEmpty(this.bookTitle));
 
 			// Fix "Corrupted NBT tag" error when any of these fields are not set
 			if (bookMeta.getPages() == null)
@@ -776,7 +775,7 @@ public final class ItemCreator {
 		}
 
 		if (compiledMeta instanceof ItemMeta) {
-			if (this.glow && this.enchants.isEmpty()) {
+			if (this.glow && this.enchants.isEmpty())
 				try {
 					((ItemMeta) compiledMeta).setEnchantmentGlintOverride(true);
 
@@ -785,7 +784,6 @@ public final class ItemCreator {
 
 					this.flags.add(CompItemFlag.HIDE_ENCHANTS);
 				}
-			}
 
 			for (final Map.Entry<Enchantment, Integer> entry : this.enchants.entrySet()) {
 				final Enchantment enchant = entry.getKey();
@@ -807,7 +805,7 @@ public final class ItemCreator {
 				for (String lore : this.lores) {
 					lore = CompChatColor.translateColorCodes((lorePrefix != null ? lorePrefix : "") + lore);
 
-					for (final String split : Common.split(lore, 40))
+					for (final String split : CommonCore.split(lore, 40))
 						coloredLores.add(split);
 				}
 
@@ -890,7 +888,7 @@ public final class ItemCreator {
 	 * @return
 	 */
 	public static ItemCreator from(final CompMaterial material, final String name, @NonNull final Collection<String> lore) {
-		return from(material, name, Common.toArray(lore));
+		return from(material, name, CommonCore.toArray(lore));
 	}
 
 	/**
@@ -1045,7 +1043,7 @@ public final class ItemCreator {
 	 * @return the new item creator
 	 */
 	public static ItemCreator fromMaterial(final CompMaterial mat) {
-		Valid.checkNotNull(mat, "Material cannot be null!");
+		ValidCore.checkNotNull(mat, "Material cannot be null!");
 
 		return new ItemCreator().material(mat);
 	}

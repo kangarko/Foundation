@@ -10,8 +10,8 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.BungeePlugin;
+import org.mineacademy.fo.platform.FoundationPlugin;
 
 import lombok.AccessLevel;
 import lombok.Getter;

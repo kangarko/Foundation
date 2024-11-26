@@ -4,7 +4,7 @@ public interface ProxyList<T extends NBTProxy> extends Iterable<T> {
 
 	/**
 	 * Adds a new compound tag to the current compound tag
-	 * 
+	 *
 	 * @return A new instance of the class.
 	 */
 	T addCompound();
@@ -26,7 +26,7 @@ public interface ProxyList<T extends NBTProxy> extends Iterable<T> {
 
 	/**
 	 * Get the object with the given id.
-	 * 
+	 *
 	 * @param id The id of the object to get.
 	 * @return The object with the given id.
 	 */
@@ -34,7 +34,7 @@ public interface ProxyList<T extends NBTProxy> extends Iterable<T> {
 
 	/**
 	 * Removes the element at the specified position in this list
-	 * 
+	 *
 	 * @param i The index of the element to remove.
 	 */
 	void remove(int i);

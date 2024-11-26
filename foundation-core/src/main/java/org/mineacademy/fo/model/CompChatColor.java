@@ -702,10 +702,9 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 						(nextChar >= 'k' && nextChar <= 'o') ||
 						(nextChar >= 'K' && nextChar <= 'O') ||
 						nextChar == 'r' || nextChar == 'R' ||
-						nextChar == 'x') {
+						nextChar == 'x')
 					i++; // Skip the valid color code
-
-				} else
+				else
 					strippedMessage[resultIndex++] = currentChar;
 
 			} else

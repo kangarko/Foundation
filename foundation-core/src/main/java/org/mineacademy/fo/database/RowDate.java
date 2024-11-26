@@ -46,6 +46,6 @@ public abstract class RowDate extends Row {
 	 * @return
 	 */
 	public final long getDate() {
-		return date;
+		return this.date;
 	}
 }

@@ -575,7 +575,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Uses Gson to load back a {@link Serializable} object from the Compound
-	 * 
+	 *
 	 * @param <T>
 	 * @param comp
 	 * @param key

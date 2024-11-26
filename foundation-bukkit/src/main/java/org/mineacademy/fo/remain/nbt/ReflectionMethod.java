@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * This class caches method reflections, keeps track of method name changes
@@ -366,7 +366,7 @@ enum ReflectionMethod {
 				this.methodName = this.targetVersion.name;
 
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				Common.error(ex, "[NBTAPI] Unable to find method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName())
+				CommonCore.error(ex, "[NBTAPI] Unable to find method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName())
 						+ "' Args: " + Arrays.toString(args) + " Enum: " + this + ". Plugin will continue to function, but some features will be limited.");
 			}
 		}

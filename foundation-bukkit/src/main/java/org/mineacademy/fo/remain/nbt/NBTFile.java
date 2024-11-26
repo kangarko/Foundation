@@ -18,7 +18,7 @@ public class NBTFile extends NBTCompound implements NBTFileHandle {
 	/**
 	 * Creates a NBTFile that uses @param file to store its data. If this file
 	 * exists, the data will be loaded.
-	 * 
+	 *
 	 * @param file
 	 * @throws IOException
 	 * @deprecated Use NBT.getFileHandle(file)
@@ -39,7 +39,7 @@ public class NBTFile extends NBTCompound implements NBTFileHandle {
 
 	/**
 	 * Saves the data to the file
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Override

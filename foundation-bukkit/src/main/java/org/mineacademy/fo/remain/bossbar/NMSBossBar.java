@@ -18,10 +18,10 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.Task;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
@@ -79,7 +79,7 @@ public final class NMSBossBar implements Listener {
 		else
 			this.entityClass = NMSDragon_v1_9.class;
 
-		Valid.checkNotNull(this.entityClass, "Failed to load Boss bar on Minecraft " + MinecraftVersion.getFullVersion() + "!");
+		ValidCore.checkNotNull(this.entityClass, "Failed to load Boss bar on Minecraft " + MinecraftVersion.getFullVersion() + "!");
 
 		Platform.registerEvents(this);
 
@@ -181,7 +181,7 @@ public final class NMSBossBar implements Listener {
 	 *                                  bounds.
 	 */
 	public void sendMessage(Player player, String message, float progress, BossBar.Color color, BossBar.Overlay overlay) {
-		Valid.checkBoolean(0F <= progress && progress <= 1.0F, "Percent must be between 0F and 1.0F, but was: " + progress);
+		ValidCore.checkBoolean(0F <= progress && progress <= 1.0F, "Percent must be between 0F and 1.0F, but was: " + progress);
 
 		if (this.entityClass == null)
 			return;
@@ -227,8 +227,8 @@ public final class NMSBossBar implements Listener {
 	 * @throws IllegalArgumentException If seconds is zero or below.
 	 */
 	public void sendTimedMessage(final Player player, String message, final int seconds, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
-		Valid.checkBoolean(0F <= progress && progress <= 1.0F, "Progress must be between 0F and 1.0F, but was: " + progress);
-		Valid.checkBoolean(seconds > 0, "Seconds must be > 1 ");
+		ValidCore.checkBoolean(0F <= progress && progress <= 1.0F, "Progress must be between 0F and 1.0F, but was: " + progress);
+		ValidCore.checkBoolean(seconds > 0, "Seconds must be > 1 ");
 
 		if (this.entityClass == null)
 			return;

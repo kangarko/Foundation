@@ -11,7 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.mineacademy.fo.SerializeUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -119,10 +119,10 @@ public abstract class SimpleHologram {
 	 * @return
 	 */
 	public SimpleHologram spawn() {
-		Valid.checkBoolean(!this.isSpawned(), this + " is already spawned!");
+		ValidCore.checkBoolean(!this.isSpawned(), this + " is already spawned!");
 
 		this.entity = this.createEntity();
-		Valid.checkNotNull(this.entity, "Failed to spawn entity from " + this);
+		ValidCore.checkNotNull(this.entity, "Failed to spawn entity from " + this);
 
 		this.drawLore(this.lastTeleportLocation);
 
@@ -268,7 +268,7 @@ public abstract class SimpleHologram {
 	 * @param location
 	 */
 	public final void teleport(Location location) {
-		Valid.checkBoolean(this.pendingTeleport == null, this + " is already pending teleport to " + this.pendingTeleport);
+		ValidCore.checkBoolean(this.pendingTeleport == null, this + " is already pending teleport to " + this.pendingTeleport);
 		this.checkSpawned("teleport");
 
 		this.lastTeleportLocation.setX(location.getY());
@@ -294,7 +294,7 @@ public abstract class SimpleHologram {
 	 * A helper method to check if this entity is spawned
 	 */
 	private void checkSpawned(String method) {
-		Valid.checkBoolean(this.isSpawned(), this + " is not spawned, cannot call " + method + "!");
+		ValidCore.checkBoolean(this.isSpawned(), this + " is not spawned, cannot call " + method + "!");
 	}
 
 	/**

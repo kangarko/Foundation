@@ -38,11 +38,11 @@ public class BungeeLibraryManager extends LibraryManager {
 	 */
 	@Override
 	protected void addToClasspath(Path file) {
-		classLoader.addToClasspath(file);
+		this.classLoader.addToClasspath(file);
 	}
 
 	@Override
 	protected InputStream getResourceAsStream(String path) {
-		return plugin.getResourceAsStream(path);
+		return this.plugin.getResourceAsStream(path);
 	}
 }

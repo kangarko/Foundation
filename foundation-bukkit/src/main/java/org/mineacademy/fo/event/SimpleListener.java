@@ -13,14 +13,14 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.EventExecutor;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 
 import lombok.RequiredArgsConstructor;
@@ -88,8 +88,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 
 		if (event instanceof PlayerEvent)
 			this.player = ((PlayerEvent) event).getPlayer();
-
-		else {
+		else
 			try {
 				final Method getPlayer = ReflectionUtil.getMethod(event.getClass(), "getPlayer");
 
@@ -97,7 +96,6 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 					this.player = ReflectionUtil.invoke(getPlayer, event);
 			} catch (final Throwable ignored) {
 			}
-		}
 
 		try {
 			this.execute(this.eventClass.cast(event));
@@ -112,7 +110,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 				((Cancellable) event).setCancelled(true);
 
 		} catch (final Throwable t) {
-			Common.error(t, "Unhandled exception listening to " + this.eventClass.getSimpleName());
+			CommonCore.error(t, "Unhandled exception listening to " + this.eventClass.getSimpleName());
 
 		} finally {
 			if (!eventIgnored)
@@ -144,7 +142,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * used for messaging
 	 */
 	private Player findPlayer() {
-		Valid.checkNotNull(this.player, "Call setPlayer() early in your event to set the player");
+		ValidCore.checkNotNull(this.player, "Call setPlayer() early in your event to set the player");
 
 		return this.player;
 	}

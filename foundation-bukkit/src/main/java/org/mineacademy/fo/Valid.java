@@ -44,7 +44,7 @@ public final class Valid extends ValidCore {
 	 * @param asyncErrorMessage
 	 */
 	public static void checkSync(final String asyncErrorMessage) {
-		Valid.checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
+		ValidCore.checkBoolean(Bukkit.isPrimaryThread(), asyncErrorMessage);
 	}
 
 	/**
@@ -54,7 +54,7 @@ public final class Valid extends ValidCore {
 	 * @param syncErrorMessage
 	 */
 	public static void checkAsync(final String syncErrorMessage) {
-		Valid.checkBoolean(!Bukkit.isPrimaryThread() || Remain.isFolia(), syncErrorMessage);
+		ValidCore.checkBoolean(!Bukkit.isPrimaryThread() || Remain.isFolia(), syncErrorMessage);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

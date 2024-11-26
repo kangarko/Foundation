@@ -49,7 +49,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if there is an issue when closing the ResultSet.
 	 */
 	public void close() throws SQLException {
-		delegate.close();
+		this.delegate.close();
 	}
 
 	/**
@@ -105,7 +105,7 @@ public final class SimpleResultSet {
 
 			final List<T> list = new ArrayList<>();
 
-			for (final String element : stringList) {
+			for (final String element : stringList)
 				try {
 					list.add(SerializeUtilCore.deserialize(Language.JSON, typeOf, element));
 
@@ -119,7 +119,6 @@ public final class SimpleResultSet {
 					if (t instanceof InvalidWorldException)
 						continue;
 				}
-			}
 
 			return list;
 
@@ -138,7 +137,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		return delegate.getBoolean(columnIndex);
+		return this.delegate.getBoolean(columnIndex);
 	}
 
 	/**
@@ -149,7 +148,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public boolean getBoolean(String columnLabel) throws SQLException {
-		return delegate.getBoolean(columnLabel);
+		return this.delegate.getBoolean(columnLabel);
 	}
 
 	/**
@@ -181,7 +180,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public byte getByte(int columnIndex) throws SQLException {
-		return delegate.getByte(columnIndex);
+		return this.delegate.getByte(columnIndex);
 	}
 
 	/**
@@ -192,7 +191,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public Date getDate(int columnIndex) throws SQLException {
-		return delegate.getDate(columnIndex);
+		return this.delegate.getDate(columnIndex);
 	}
 
 	/**
@@ -203,7 +202,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public Date getDate(String columnLabel) throws SQLException {
-		return delegate.getDate(columnLabel);
+		return this.delegate.getDate(columnLabel);
 	}
 
 	/**
@@ -214,7 +213,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public double getDouble(int columnIndex) throws SQLException {
-		return delegate.getDouble(columnIndex);
+		return this.delegate.getDouble(columnIndex);
 	}
 
 	/**
@@ -225,7 +224,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public double getDouble(String columnLabel) throws SQLException {
-		return delegate.getDouble(columnLabel);
+		return this.delegate.getDouble(columnLabel);
 	}
 
 	/**
@@ -308,7 +307,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public float getFloat(int columnIndex) throws SQLException {
-		return delegate.getFloat(columnIndex);
+		return this.delegate.getFloat(columnIndex);
 	}
 
 	/**
@@ -319,7 +318,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public int getInt(int columnIndex) throws SQLException {
-		return delegate.getInt(columnIndex);
+		return this.delegate.getInt(columnIndex);
 	}
 
 	/**
@@ -330,7 +329,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public int getInt(String columnLabel) throws SQLException {
-		return delegate.getInt(columnLabel);
+		return this.delegate.getInt(columnLabel);
 	}
 
 	/**
@@ -409,7 +408,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public long getLong(int columnIndex) throws SQLException {
-		return delegate.getLong(columnIndex);
+		return this.delegate.getLong(columnIndex);
 	}
 
 	/**
@@ -420,7 +419,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public long getLong(String columnLabel) throws SQLException {
-		return delegate.getLong(columnLabel);
+		return this.delegate.getLong(columnLabel);
 	}
 
 	/**
@@ -452,7 +451,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public Object getObject(int columnIndex) throws SQLException {
-		return delegate.getObject(columnIndex);
+		return this.delegate.getObject(columnIndex);
 	}
 
 	/**
@@ -465,7 +464,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-		return delegate.getObject(columnIndex, type);
+		return this.delegate.getObject(columnIndex, type);
 	}
 
 	/**
@@ -476,7 +475,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public short getShort(int columnIndex) throws SQLException {
-		return delegate.getShort(columnIndex);
+		return this.delegate.getShort(columnIndex);
 	}
 
 	/**
@@ -516,7 +515,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public String getString(int columnIndex) throws SQLException {
-		return CommonCore.getOrEmpty(delegate.getString(columnIndex));
+		return CommonCore.getOrEmpty(this.delegate.getString(columnIndex));
 	}
 
 	/**
@@ -527,7 +526,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public String getString(String columnLabel) throws SQLException {
-		return CommonCore.getOrEmpty(delegate.getString(columnLabel));
+		return CommonCore.getOrEmpty(this.delegate.getString(columnLabel));
 	}
 
 	/**
@@ -558,7 +557,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public Time getTime(int columnIndex) throws SQLException {
-		return delegate.getTime(columnIndex);
+		return this.delegate.getTime(columnIndex);
 	}
 
 	/**
@@ -569,7 +568,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public Time getTime(String columnLabel) throws SQLException {
-		return delegate.getTime(columnLabel);
+		return this.delegate.getTime(columnLabel);
 	}
 
 	/**
@@ -580,7 +579,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public Timestamp getTimestamp(int columnIndex) throws SQLException {
-		return delegate.getTimestamp(columnIndex);
+		return this.delegate.getTimestamp(columnIndex);
 	}
 
 	/**
@@ -592,7 +591,7 @@ public final class SimpleResultSet {
 	 * @throws InvalidRowException if the timestamp format is invalid
 	 */
 	public long getTimestamp(String columnLabel) throws SQLException {
-		final String rawTimestamp = delegate.getString(columnLabel);
+		final String rawTimestamp = this.delegate.getString(columnLabel);
 
 		if (rawTimestamp == null)
 			return 0;
@@ -616,7 +615,7 @@ public final class SimpleResultSet {
 	 * @throws InvalidRowException if the timestamp format is invalid
 	 */
 	public long getTimestampStrict(String columnLabel) throws SQLException {
-		final String rawTimestamp = delegate.getString(columnLabel);
+		final String rawTimestamp = this.delegate.getString(columnLabel);
 
 		if (rawTimestamp == null) {
 			CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
@@ -685,7 +684,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 */
 	public boolean next() throws SQLException {
-		return delegate.next();
+		return this.delegate.next();
 	}
 
 	/**

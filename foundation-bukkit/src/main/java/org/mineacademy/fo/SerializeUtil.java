@@ -107,7 +107,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 			return deserialize(Language.JSON, ItemStack.class, value);
 
 		} catch (final Throwable ex) {
-			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			CommonCore.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 
 			throw new InvalidRowException();
 		}
@@ -130,7 +130,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 			return deserialize(Language.JSON, ItemStack.class, value);
 
 		} catch (final Throwable ex) {
-			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			CommonCore.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 			throw new InvalidRowException();
 		}
 	}
@@ -168,11 +168,11 @@ public final class SerializeUtil extends SerializeUtilCore {
 		final String value = resultSet.getString(columnLabel);
 
 		if (value == null || "".equals(value)) {
-			Common.warning(BukkitPlugin.getInstance().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
+			CommonCore.warning(BukkitPlugin.getInstance().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
 
 			throw new InvalidRowException();
 		}
 
-		return SerializeUtil.deserialize(Language.JSON, ItemStack[].class, value);
+		return SerializeUtilCore.deserialize(Language.JSON, ItemStack[].class, value);
 	}
 }

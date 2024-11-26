@@ -12,10 +12,10 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
@@ -285,7 +285,7 @@ public abstract class MenuPaged<T> extends Menu {
 			autoPageSize = this.slots.size();
 
 		this.pages.clear();
-		this.pages.putAll(Common.fillPages(autoPageSize, this.items));
+		this.pages.putAll(CommonCore.fillPages(autoPageSize, this.items));
 	}
 
 	@SuppressWarnings("unused")
@@ -336,17 +336,17 @@ public abstract class MenuPaged<T> extends Menu {
 	 */
 	public Button formPreviousButton() {
 		return new Button() {
-			final boolean canGo = getCurrentPage() > 1;
+			final boolean canGo = MenuPaged.this.getCurrentPage() > 1;
 
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				if (this.canGo)
-					setCurrentPage(MathUtil.range(getCurrentPage() - 1, 1, getPages().size()));
+					MenuPaged.this.setCurrentPage(MathUtil.range(MenuPaged.this.getCurrentPage() - 1, 1, MenuPaged.this.getPages().size()));
 			}
 
 			@Override
 			public ItemStack getItem() {
-				final int previousPage = getCurrentPage() - 1;
+				final int previousPage = MenuPaged.this.getCurrentPage() - 1;
 
 				return ItemCreator
 						.fromMaterial(this.canGo ? MenuPaged.getActivePageButton() : MenuPaged.getInactivePageButton())
@@ -367,23 +367,23 @@ public abstract class MenuPaged<T> extends Menu {
 	 */
 	public Button formNextButton() {
 		return new Button() {
-			final boolean canGo = getCurrentPage() < getPages().size();
+			final boolean canGo = MenuPaged.this.getCurrentPage() < MenuPaged.this.getPages().size();
 
 			@Override
 			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				if (this.canGo)
-					setCurrentPage(MathUtil.range(getCurrentPage() + 1, 1, getPages().size()));
+					MenuPaged.this.setCurrentPage(MathUtil.range(MenuPaged.this.getCurrentPage() + 1, 1, MenuPaged.this.getPages().size()));
 			}
 
 			@Override
 			public ItemStack getItem() {
-				final boolean lastPage = getCurrentPage() == getPages().size();
+				final boolean lastPage = MenuPaged.this.getCurrentPage() == MenuPaged.this.getPages().size();
 
 				return ItemCreator
 						.fromMaterial(this.canGo ? MenuPaged.getActivePageButton() : MenuPaged.getInactivePageButton())
 						.name(lastPage
 								? Lang.legacy("menu-page-last")
-								: Lang.legacyVars("menu-page-next", "page", String.valueOf(getCurrentPage() + 1)))
+								: Lang.legacyVars("menu-page-next", "page", String.valueOf(MenuPaged.this.getCurrentPage() + 1)))
 						.make();
 			}
 		};
@@ -582,7 +582,7 @@ public abstract class MenuPaged<T> extends Menu {
 
 	// Get all items in a page
 	private List<T> getCurrentPageItems() {
-		Valid.checkBoolean(this.pages.containsKey(this.currentPage - 1), "The menu has only " + this.pages.size() + " pages, not " + this.currentPage + "!");
+		ValidCore.checkBoolean(this.pages.containsKey(this.currentPage - 1), "The menu has only " + this.pages.size() + " pages, not " + this.currentPage + "!");
 
 		return this.pages.get(this.currentPage - 1);
 	}

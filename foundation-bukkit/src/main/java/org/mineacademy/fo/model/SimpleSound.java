@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.CompSound;
 
@@ -97,7 +97,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 */
 	public void play(Player player) {
 		if (this.enabled) {
-			Valid.checkNotNull(this.sound);
+			ValidCore.checkNotNull(this.sound);
 
 			try {
 				player.playSound(player.getLocation(), this.sound, this.volume, this.getPitch());
@@ -114,7 +114,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 */
 	public void play(Location location) {
 		if (this.enabled) {
-			Valid.checkNotNull(this.sound);
+			ValidCore.checkNotNull(this.sound);
 
 			try {
 				location.getWorld().playSound(location, this.sound, this.volume, this.getPitch());
@@ -168,7 +168,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 
 		final SimpleSound sound = new SimpleSound();
 
-		Valid.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds");
+		ValidCore.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds");
 		sound.sound = compSound.getSound();
 
 		if (values.length == 1) {
@@ -178,7 +178,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 			return sound;
 		}
 
-		Valid.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
+		ValidCore.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
 
 		final String volumeRaw = values[1];
 		final String pitchRaw = values[2];

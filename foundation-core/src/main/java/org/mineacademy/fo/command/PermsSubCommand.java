@@ -166,7 +166,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 
 			final boolean has = this.audience == null ? false : this.hasPerm(node.replaceAll("\\.\\{.*?\\}", ""));
 
-			if (phrase == null || node.contains(phrase)) {
+			if (phrase == null || node.contains(phrase))
 				subsectionMessages.add(SimpleComponent
 						.fromMini("  " + (has ? "&a" : "&7") + node + (def ? " " + Lang.legacy("command-perms-true-by-default") : ""))
 						.onClickOpenUrl("")
@@ -175,7 +175,6 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 								"info", info,
 								"default", def ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"),
 								"state", has ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"))));
-			}
 		}
 
 		if (!subsectionMessages.isEmpty()) {

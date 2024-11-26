@@ -32,7 +32,7 @@ public class FoScriptException extends FoException {
 	}
 
 	public String getErrorLine() {
-		final String[] lines = javascript.split("\n");
+		final String[] lines = this.javascript.split("\n");
 		final int actualLine = this.lineNumber - 1;
 
 		if (actualLine < 0 || actualLine >= lines.length)

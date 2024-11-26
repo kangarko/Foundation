@@ -83,7 +83,7 @@ public final class Common extends CommonCore {
 	 * @param message
 	 */
 	public static void tellLater(final int delayTicks, final CommandSender sender, final String message) {
-		Common.tellLater(delayTicks, Platform.toPlayer(sender), message);
+		CommonCore.tellLater(delayTicks, Platform.toPlayer(sender), message);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public final class Common extends CommonCore {
 	 * @param message
 	 */
 	public static void tellLater(final int delayTicks, final CommandSender sender, final SimpleComponent message) {
-		Common.tellLater(delayTicks, Platform.toPlayer(sender), message);
+		CommonCore.tellLater(delayTicks, Platform.toPlayer(sender), message);
 	}
 
 	/**

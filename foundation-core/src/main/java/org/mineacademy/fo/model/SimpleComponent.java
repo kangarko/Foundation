@@ -125,7 +125,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		}
 
 		final Component finalComponent = joined.asComponent();
-		return modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
+		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
 	}
 
 	/**
@@ -161,7 +161,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 
 		final Component finalComponent = joined.asComponent();
 
-		return modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
+		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
 	}
 
 	/**
@@ -171,7 +171,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onHover(HoverEventSource<?> hover) {
-		return modifyLastComponentAndReturn(component -> component.hoverEvent(hover));
+		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(hover));
 	}
 
 	/**
@@ -181,7 +181,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onClickRunCmd(String text) {
-		return modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.runCommand(text)));
+		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.runCommand(text)));
 	}
 
 	/**
@@ -191,7 +191,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onClickSuggestCmd(String text) {
-		return modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.suggestCommand(text)));
+		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.suggestCommand(text)));
 	}
 
 	/**
@@ -201,7 +201,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onClickOpenUrl(String url) {
-		return modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.openUrl(url)));
+		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.openUrl(url)));
 	}
 
 	/**
@@ -211,7 +211,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onClickCopyToClipboard(String url) {
-		return modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.copyToClipboard(url)));
+		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.copyToClipboard(url)));
 	}
 
 	/**
@@ -221,7 +221,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onClickInsert(String insertion) {
-		return modifyLastComponentAndReturn(component -> component.insertion(insertion));
+		return this.modifyLastComponentAndReturn(component -> component.insertion(insertion));
 	}
 
 	/**
@@ -261,7 +261,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			color = NamedTextColor.nearestTo(color);
 
 		final TextColor finalColor = color;
-		return modifyLastComponentAndReturn(component -> component.color(finalColor));
+		return this.modifyLastComponentAndReturn(component -> component.color(finalColor));
 	}
 
 	/**
@@ -271,7 +271,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent decoration(TextDecoration color) {
-		return modifyLastComponentAndReturn(component -> component.decoration(color, true));
+		return this.modifyLastComponentAndReturn(component -> component.decoration(color, true));
 	}
 
 	/**

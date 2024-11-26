@@ -73,7 +73,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.MathUtil;
@@ -84,6 +83,7 @@ import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
@@ -326,7 +326,7 @@ public final class Remain {
 			isCommandSenderAudience = Audience.class.isAssignableFrom(CommandSender.class);
 
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to find Audience class");
+			CommonCore.error(t, "Failed to find Audience class");
 		}
 
 		hasBookEvent = ReflectionUtil.isClassAvailable("org.bukkit.event.player.PlayerEditBookEvent");
@@ -338,21 +338,21 @@ public final class Remain {
 			getPlayersMethod = Bukkit.class.getMethod("getOnlinePlayers");
 			isGetPlayersCollection = getPlayersMethod.getReturnType() == Collection.class;
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to find Bukkit.getOnlinePlayers()");
+			CommonCore.error(t, "Failed to find Bukkit.getOnlinePlayers()");
 		}
 
 		try {
 			getHealthMethod = LivingEntity.class.getMethod("getHealth");
 			isGetHealthDouble = getHealthMethod.getReturnType() == double.class;
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to find LivingEntity.getHealth()");
+			CommonCore.error(t, "Failed to find LivingEntity.getHealth()");
 		}
 
 		try {
 			fieldPlayerConnection = Remain.getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
 					.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : "playerConnection");
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to find EntityPlayer.playerConnection");
+			CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_12))
@@ -367,7 +367,7 @@ public final class Remain {
 			sendPacket = Remain.getNMSClass("PlayerConnection", "net.minecraft.server.network.PlayerConnection")
 					.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to find PlayerConnection.sendPacket()");
+			CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_16)) {
@@ -459,7 +459,7 @@ public final class Remain {
 
 			} catch (final Throwable t) {
 				if (!isThermos)
-					Common.error(t, "Unable to setup chat internals");
+					CommonCore.error(t, "Unable to setup chat internals");
 			}
 
 		if (isFolia)
@@ -470,7 +470,7 @@ public final class Remain {
 				runDelayed = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class);
 				cancel = ReflectionUtil.getMethod(ReflectionUtil.lookupClass("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), "cancel");
 			} catch (final Throwable t) {
-				Common.error(t, "Failed to setup Folia scheduler");
+				CommonCore.error(t, "Failed to setup Folia scheduler");
 			}
 	}
 
@@ -531,7 +531,7 @@ public final class Remain {
 	 */
 	public static void sendPacket(final Player player, final Object packet) {
 		if (sendPacket == null || fieldPlayerConnection == null) {
-			Common.log("Cannot send packet " + packet.getClass() + " (known to be broken on Cauldron).");
+			CommonCore.log("Cannot send packet " + packet.getClass() + " (known to be broken on Cauldron).");
 
 			return;
 		}
@@ -777,7 +777,7 @@ public final class Remain {
 			return asNmsCopy.invoke(null, itemStack);
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.throwError(ex, "Unable to convert item to NMS item: " + itemStack);
+			CommonCore.throwError(ex, "Unable to convert item to NMS item: " + itemStack);
 
 			return null;
 		}
@@ -926,7 +926,7 @@ public final class Remain {
 	 */
 	private static Object getHandle(Object instance, String methodName) {
 		final Method handle = ReflectionUtil.getMethod(instance.getClass(), methodName);
-		Valid.checkNotNull(handle, "Cannot call " + methodName + "() for " + instance.getClass() + " (" + instance + ")");
+		ValidCore.checkNotNull(handle, "Cannot call " + methodName + "() for " + instance.getClass() + " (" + instance + ")");
 
 		return ReflectionUtil.invoke(handle, instance);
 	}
@@ -1187,7 +1187,7 @@ public final class Remain {
 			else
 				nmsStatistic = craftStatistic.getMethod("getMaterialStatistic", stat.getClass(), mat.getClass()).invoke(null, stat, mat);
 
-			Valid.checkNotNull(nmsStatistic, "Could not get NMS statistic from Bukkit's " + stat);
+			ValidCore.checkNotNull(nmsStatistic, "Could not get NMS statistic from Bukkit's " + stat);
 
 			if (MinecraftVersion.equals(V.v1_8)) {
 				final Field f = nmsStatistic.getClass().getField("name");
@@ -1213,7 +1213,7 @@ public final class Remain {
 
 		} catch (final NoSuchMethodError err) {
 			if (Bukkit.isPrimaryThread())
-				Common.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + BukkitPlugin.getInstance().getName() + " plugin authors.");
+				CommonCore.log("getOfflinePlayerByUUID required two blocking calls on main thread - please notify " + BukkitPlugin.getInstance().getName() + " plugin authors.");
 
 			try {
 				final String name = new UUIDToNameConverter(uniqueId).call();
@@ -1221,7 +1221,7 @@ public final class Remain {
 				return Bukkit.getOfflinePlayer(name);
 
 			} catch (final Throwable t) {
-				Common.error(t, "Failed to get offline player by UUID: " + uniqueId);
+				CommonCore.error(t, "Failed to get offline player by UUID: " + uniqueId);
 
 				return null;
 			}
@@ -1308,7 +1308,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Score getScore(final Objective obj, String entry) {
-		Valid.checkNotNull(obj, "Objective cannot be null");
+		ValidCore.checkNotNull(obj, "Objective cannot be null");
 
 		entry = CompChatColor.translateColorCodes(entry);
 
@@ -1559,9 +1559,9 @@ public final class Remain {
 	 * @param book
 	 */
 	public static void openBook(Player player, ItemStack book) {
-		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
-		Valid.checkBoolean(book.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta, "openBook method called for not a book item: " + book);
-		Valid.checkBoolean(CompMaterial.fromMaterial(book.getType()) == CompMaterial.WRITTEN_BOOK, "Can only call openBook for WRITTEN_BOOK! Got: " + book);
+		ValidCore.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
+		ValidCore.checkBoolean(book.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta, "openBook method called for not a book item: " + book);
+		ValidCore.checkBoolean(CompMaterial.fromMaterial(book.getType()) == CompMaterial.WRITTEN_BOOK, "Can only call openBook for WRITTEN_BOOK! Got: " + book);
 
 		// Fix "Invalid book tag" error when author/title is empty
 		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) book.getItemMeta();
@@ -1608,7 +1608,7 @@ public final class Remain {
 	 */
 	public static void openSign(Player player, Block signBlock) {
 		final BlockState state = signBlock.getState();
-		Valid.checkBoolean(state instanceof Sign, "Block is not a sign: " + signBlock);
+		ValidCore.checkBoolean(state instanceof Sign, "Block is not a sign: " + signBlock);
 
 		final Sign sign = (Sign) state;
 
@@ -1645,7 +1645,7 @@ public final class Remain {
 		final CommandMap commandMap = getCommandMap();
 		commandMap.register(command.getLabel(), command);
 
-		Valid.checkBoolean(command.isRegistered(), "Command /" + command.getLabel() + " could not have been registered properly!");
+		ValidCore.checkBoolean(command.isRegistered(), "Command /" + command.getLabel() + " could not have been registered properly!");
 	}
 
 	/**
@@ -1695,7 +1695,7 @@ public final class Remain {
 	private static void sendChestAction(Block block, int action) {
 
 		final BlockState state = block.getState();
-		Valid.checkBoolean(state instanceof Chest, "You can only send chest action packet for chests not " + block);
+		ValidCore.checkBoolean(state instanceof Chest, "You can only send chest action packet for chests not " + block);
 
 		try {
 			if (action == 1)
@@ -1770,7 +1770,7 @@ public final class Remain {
 				for (final Player receiver : receivers) {
 
 					// Sleep to mitigate sending not working at once
-					Common.sleep(100);
+					CommonCore.sleep(100);
 
 					Platform.runTask(() -> {
 						final String colorized = CompChatColor.translateColorCodes(message.apply(receiver));
@@ -1812,7 +1812,7 @@ public final class Remain {
 				for (final FoundationPlayer receiver : receivers) {
 
 					// Sleep to mitigate sending not working at once
-					Common.sleep(100);
+					CommonCore.sleep(100);
 
 					Platform.runTask(() -> {
 						final String colorized = CompChatColor.translateColorCodes(message.apply(receiver));
@@ -1892,13 +1892,12 @@ public final class Remain {
 		if (message != null && !message.isEmpty()) {
 			final String colorized = CompChatColor.translateColorCodes(message.replace("|", "\n"));
 
-			if (!colorized.isEmpty()) {
+			if (!colorized.isEmpty())
 				if (hasAdvancements)
 					Platform.runTask(() -> new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver));
 
 				else
 					receiver.sendMessage(colorized);
-			}
 		}
 	}
 
@@ -2050,7 +2049,7 @@ public final class Remain {
 				world.setGameRuleValue(gameRule, "" + value);
 
 		} catch (final Throwable t) {
-			Common.error(t, "Game rule " + gameRule + " not found.");
+			CommonCore.error(t, "Game rule " + gameRule + " not found.");
 		}
 	}
 
@@ -2070,7 +2069,7 @@ public final class Remain {
 
 		else {
 			final Object nmsEntity = entity.getClass().toString().contains("net.minecraft.server") ? entity : entity instanceof LivingEntity ? getHandleEntity(entity) : null;
-			Valid.checkNotNull(nmsEntity, "setInvisible requires either a LivingEntity or a NMS Entity, got: " + entity.getClass());
+			ValidCore.checkNotNull(nmsEntity, "setInvisible requires either a LivingEntity or a NMS Entity, got: " + entity.getClass());
 			final Method setInvisible = ReflectionUtil.getMethod(nmsEntity.getClass(), "setInvisible", boolean.class);
 
 			// https://www.spigotmc.org/threads/how-do-i-make-an-entity-go-invisible-without-using-potioneffects.321227/
@@ -2104,7 +2103,7 @@ public final class Remain {
 	 * @param pages
 	 */
 	public static void setPages(Object metaObject, SimpleComponent... pages) {
-		Valid.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta, "Object must be BookMeta, got: " + metaObject.getClass());
+		ValidCore.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta, "Object must be BookMeta, got: " + metaObject.getClass());
 
 		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
 
@@ -2123,7 +2122,7 @@ public final class Remain {
 					spigotPages.add(component.toBungee(MinecraftVersion.atLeast(V.v1_16)));
 
 				} catch (final Throwable t) {
-					Common.error(t, "Failed to turn simple component into bungee component: " + component);
+					CommonCore.error(t, "Failed to turn simple component into bungee component: " + component);
 				}
 
 			meta.spigot().setPages(spigotPages);
@@ -2224,7 +2223,7 @@ public final class Remain {
 	 * @param message
 	 */
 	public static void sendActionBarLegacyPacket(Player player, SimpleComponent message) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
+		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		sendLegacyChat(player, convertLegacyToIChatBase(message.toLegacy()), (byte) 2);
 	}
@@ -2259,7 +2258,7 @@ public final class Remain {
 	}
 
 	public static void sendTitleLegacyPacket(Player player, int fadeIn, int stay, int fadeOut, SimpleComponent title, SimpleComponent subtitle) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
+		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (titleConstructor == null)
@@ -2298,7 +2297,7 @@ public final class Remain {
 	 * @param player
 	 */
 	public static void resetTitleLegacy(final Player player) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
+		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (resetTitleConstructor == null)
@@ -2321,7 +2320,7 @@ public final class Remain {
 	 * @param footer
 	 */
 	public static void sendTablistLegacyPacket(final Player player, final SimpleComponent header, final SimpleComponent footer) {
-		Valid.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
+		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (tabConstructor == null)
@@ -2351,7 +2350,7 @@ public final class Remain {
 			Remain.sendPacket(player, packet);
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.error(ex, "Failed to send tablist to " + player.getName() + ", title: " + header + " " + footer);
+			CommonCore.error(ex, "Failed to send tablist to " + player.getName() + ", title: " + header + " " + footer);
 		}
 	}
 
@@ -2445,7 +2444,7 @@ public final class Remain {
 			final Class<?> craftServerClass = Remain.getOBCClass("CraftServer");
 
 			final Object bukkitItem = craftItemClass.getConstructor(craftServerClass, nmsItemClass).newInstance(Bukkit.getServer(), nmsEntity);
-			Valid.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
+			ValidCore.checkBoolean(bukkitItem instanceof Item, "Failed to make an dropped item, got " + bukkitItem.getClass().getSimpleName());
 
 			// Default delay to 750ms
 			try {
@@ -2465,7 +2464,7 @@ public final class Remain {
 			return (Item) bukkitItem;
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.error(ex, "Error spawning item " + item.getType() + " at " + location);
+			CommonCore.error(ex, "Error spawning item " + item.getType() + " at " + location);
 
 			return null;
 		}
@@ -2539,7 +2538,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static HoverEvent<?> convertItemStackToHoverEvent(ItemStack item) {
-		Valid.checkBoolean(item != null && !CompMaterial.isAir(item), "Hover item must not be null or air");
+		ValidCore.checkBoolean(item != null && !CompMaterial.isAir(item), "Hover item must not be null or air");
 
 		if (item instanceof HoverEventSource)
 			return ((HoverEventSource<?>) item).asHoverEvent();
@@ -2573,7 +2572,7 @@ public final class Remain {
 		final Class<?> craftItemstack = Remain.getOBCClass("inventory.CraftItemStack");
 		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
 
-		Valid.checkNotNull(asNMSCopyMethod, "Unable to find " + craftItemstack + "#asNMSCopy() method for server version " + Bukkit.getBukkitVersion());
+		ValidCore.checkNotNull(asNMSCopyMethod, "Unable to find " + craftItemstack + "#asNMSCopy() method for server version " + Bukkit.getBukkitVersion());
 
 		// NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
 		final Class<?> nmsItemStack = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
@@ -2596,7 +2595,7 @@ public final class Remain {
 			final Class<?> nbtTagCompound = Remain.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
 			final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.equals(V.v1_18) || MinecraftVersion.equals(V.v1_19) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() < 5) ? "b" : "save", nbtTagCompound);
 
-			Valid.checkNotNull(saveItemstackMethod, "Unable to find " + nmsItemStack + "#save() method for server version " + Bukkit.getBukkitVersion());
+			ValidCore.checkNotNull(saveItemstackMethod, "Unable to find " + nmsItemStack + "#save() method for server version " + Bukkit.getBukkitVersion());
 
 			final Object nmsNbtTagCompoundObj = ReflectionUtil.instantiate(nbtTagCompound);
 			final Object itemAsJsonObject = ReflectionUtil.invoke(saveItemstackMethod, nmsItemStackObj, nmsNbtTagCompoundObj);
@@ -2760,7 +2759,7 @@ public final class Remain {
 						final int inventorySize = topInventory.getSize() / 9;
 
 						if (inventorySize < 1 || inventorySize > 6) {
-							Common.log("Cannot update title for " + player.getName() + " as his inventory has non typical size: " + inventorySize + " rows");
+							CommonCore.log("Cannot update title for " + player.getName() + " as his inventory has non typical size: " + inventorySize + " rows");
 
 							return;
 						}
@@ -2791,7 +2790,7 @@ public final class Remain {
 				entityPlayer.getClass().getMethod("updateInventory", Remain.getNMSClass("Container", "net.minecraft.world.inventory.Container")).invoke(entityPlayer, activeContainer);
 
 			} catch (final ReflectiveOperationException ex) {
-				Common.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
+				CommonCore.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
 			}
 		}
 	}
@@ -3257,7 +3256,7 @@ public final class Remain {
 				return fakeProfileInstance;
 
 		} catch (final ReflectiveOperationException ex) {
-			Common.throwError(ex);
+			CommonCore.throwError(ex);
 
 			return null;
 		}
@@ -3271,7 +3270,7 @@ public final class Remain {
 	 * @throws IllegalArgumentException If the URL does not start with 'http://' or 'https://'.
 	 */
 	public static String convertSkinTextureUrlToBase64(final String url) {
-		Valid.checkBoolean(url.startsWith("http://") || url.startsWith("https://"), "URL for skull must start with http:// or https://, given: " + url);
+		ValidCore.checkBoolean(url.startsWith("http://") || url.startsWith("https://"), "URL for skull must start with http:// or https://, given: " + url);
 
 		final URI actualUrl;
 
@@ -3452,7 +3451,7 @@ final class SimpleBukkitTask implements Task {
 			ReflectionUtil.invoke(this.foliaCancelMethod, this.foliaTaskInstance);
 
 		else
-			Bukkit.getScheduler().cancelTask(taskId);
+			Bukkit.getScheduler().cancelTask(this.taskId);
 
 		this.cancelled = true;
 	}
@@ -3536,7 +3535,7 @@ final class AdvancementAccessor {
 		json.add("criteria", criteria);
 		json.add("display", display);
 
-		return Common.GSON.toJson(json);
+		return CommonCore.GSON.toJson(json);
 	}
 
 	private void grantAdvancement(final Player plazer) {
@@ -3575,7 +3574,7 @@ final class PotionSetter {
 	 * @param level
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final long durationTicks, final int level) {
-		Valid.checkBoolean(item.getItemMeta() instanceof org.bukkit.inventory.meta.PotionMeta, "Can only use setPotion for items with PotionMeta not: " + item.getItemMeta());
+		ValidCore.checkBoolean(item.getItemMeta() instanceof org.bukkit.inventory.meta.PotionMeta, "Can only use setPotion for items with PotionMeta not: " + item.getItemMeta());
 
 		final org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) item.getItemMeta();
 		final PotionType wrapped = PotionType.getByEffect(type);

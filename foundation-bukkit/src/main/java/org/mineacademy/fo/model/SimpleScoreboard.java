@@ -13,10 +13,10 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.BukkitPlugin;
 
 import lombok.Getter;
@@ -210,7 +210,7 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	public final void show(final Player player) {
-		Valid.checkBoolean(!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
+		ValidCore.checkBoolean(!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
 
 		if (this.title == null)
 			this.title = "";
@@ -229,7 +229,7 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	public final void hide(final Player player) {
-		Valid.checkBoolean(this.isViewing(player), "Player " + player.getName() + " is not viewing scoreboard: " + this.getTitle());
+		ValidCore.checkBoolean(this.isViewing(player), "Player " + player.getName() + " is not viewing scoreboard: " + this.getTitle());
 
 		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 		this.viewers.remove(player.getUniqueId());
@@ -301,7 +301,7 @@ public class SimpleScoreboard {
 	 * @param entries
 	 */
 	public final void addRows(final List<String> entries) {
-		Valid.checkBoolean((this.rows.size() + entries.size()) <= 15, "You are trying to add too many rows (the limit is 15)");
+		ValidCore.checkBoolean((this.rows.size() + entries.size()) <= 15, "You are trying to add too many rows (the limit is 15)");
 		final List<String> lines = new ArrayList<>();
 
 		for (final String line : entries)
@@ -317,7 +317,7 @@ public class SimpleScoreboard {
 	 * @param value
 	 */
 	public final void setRow(final int index, final String value) {
-		Valid.checkBoolean(index < this.rows.size(), "The row for index " + index + " is currently not existing. Please use addRows()!");
+		ValidCore.checkBoolean(index < this.rows.size(), "The row for index " + index + " is currently not existing. Please use addRows()!");
 
 		this.rows.set(index, value == null ? "" : value);
 	}
@@ -355,7 +355,7 @@ public class SimpleScoreboard {
 	 * Starts visualizing this scoreboard
 	 */
 	private void start() {
-		Valid.checkBoolean(this.updateTask == null, "Scoreboard " + this + " already running");
+		ValidCore.checkBoolean(this.updateTask == null, "Scoreboard " + this + " already running");
 
 		this.updateTask = Bukkit.getScheduler().runTaskTimer(BukkitPlugin.getInstance(), () -> {
 			try {
@@ -373,7 +373,7 @@ public class SimpleScoreboard {
 				}
 
 			} catch (final Throwable t) {
-				Common.error(t,
+				CommonCore.error(t,
 						"Failed to render scoreboard: " + this,
 						"Entries: " + this.rows,
 						"Title: " + this.title,
@@ -418,11 +418,11 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	private String replaceTheme(final String row) {
-		final CompChatColor primary = Common.getOrDefault(this.primaryTheme, CompChatColor.RESET);
+		final CompChatColor primary = CommonCore.getOrDefault(this.primaryTheme, CompChatColor.RESET);
 		final String[] split = row.split("\\:");
 
 		if (split.length > 1)
-			return primary + split[0] + ":" + Common.getOrDefault(this.secondaryTheme, CompChatColor.RESET) + split[1];
+			return primary + split[0] + ":" + CommonCore.getOrDefault(this.secondaryTheme, CompChatColor.RESET) + split[1];
 
 		else
 			return primary + row;
@@ -432,7 +432,7 @@ public class SimpleScoreboard {
 	 * Cancels the update task
 	 */
 	private void cancelUpdateTask() {
-		Valid.checkNotNull(this.updateTask, "Scoreboard " + this + " not running");
+		ValidCore.checkNotNull(this.updateTask, "Scoreboard " + this + " not running");
 
 		this.updateTask.cancel();
 		this.updateTask = null;
@@ -473,14 +473,14 @@ public class SimpleScoreboard {
 					line = scoreboard.registerNewTeam("line" + scoreboardLineNumber);
 
 				final String scoreboardLineRaw = this.rows.get(lineNumber).replace("{player}", player.getName());
-				final String finishedRow = CompChatColor.translateColorCodes(replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
+				final String finishedRow = CompChatColor.translateColorCodes(this.replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
 				final boolean rowUsed = rowsDone.contains(finishedRow);
 				final int[] splitPoints = { this.atLeast1_13 ? 64 : 16, this.atLeast1_18 ? 32767 : 40, this.atLeast1_13 ? 64 : 16 };
 
 				if (rowUsed)
 					splitPoints[1] = splitPoints[1] - 2;
 
-				final List<String> copy = copyColors(finishedRow, splitPoints);
+				final List<String> copy = this.copyColors(finishedRow, splitPoints);
 				final String prefix = copy.isEmpty() ? "" : copy.get(0);
 				String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1) + (rowUsed ? COLOR_CHAR + COLORS[lineNumber] : "");
 
@@ -493,12 +493,11 @@ public class SimpleScoreboard {
 				if (!line.getPrefix().equals(prefix))
 					line.setPrefix(prefix);
 
-				if (line.getEntries().size() > 1) {
+				if (line.getEntries().size() > 1)
 					for (final String teamEntry : line.getEntries()) {
 						line.removeEntry(teamEntry);
 						scoreboard.resetScores(teamEntry);
 					}
-				}
 
 				if (!line.getEntries().contains(entry)) {
 					if (!line.getEntries().isEmpty()) {

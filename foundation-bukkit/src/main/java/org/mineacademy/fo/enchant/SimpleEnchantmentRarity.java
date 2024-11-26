@@ -19,6 +19,6 @@ public enum SimpleEnchantmentRarity {
 	 * @return the weight
 	 */
 	public int getWeight() {
-		return weight;
+		return this.weight;
 	}
 }

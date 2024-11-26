@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 import lombok.Getter;
@@ -150,7 +150,7 @@ public enum CompEquipmentSlot {
 	 */
 	public void applyTo(@NonNull LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
 		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
-		Valid.checkNotNull(equipment);
+		ValidCore.checkNotNull(equipment);
 
 		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND");
 
@@ -180,7 +180,7 @@ public enum CompEquipmentSlot {
 				break;
 
 			case OFF_HAND:
-				Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_9), "Setting off hand item requires Minecraft 1.9+");
+				ValidCore.checkBoolean(MinecraftVersion.atLeast(V.v1_9), "Setting off hand item requires Minecraft 1.9+");
 
 				equipment.setItemInOffHand(item);
 
@@ -223,7 +223,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-
+			
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}
@@ -236,7 +236,7 @@ public enum CompEquipmentSlot {
 	 * @return
 	 */
 	public String getBukkitName() {
-		Valid.checkNotNull(this.bukkitName, "CompEquipmentSlot." + name() + " does not have a Bukkit counterpart!");
+		ValidCore.checkNotNull(this.bukkitName, "CompEquipmentSlot." + this.name() + " does not have a Bukkit counterpart!");
 
 		return this.bukkitName;
 	}
@@ -414,7 +414,7 @@ public enum CompEquipmentSlot {
 		public static Type fromArmor(CompMaterial armorMaterial) {
 			final String n = armorMaterial.name();
 
-			Valid.checkBoolean(n.contains("LEATHER") || n.contains("CHAINMAIL") || n.contains("IRON") || n.contains("GOLD") || n.contains("DIAMOND") || n.contains("NETHERITE"),
+			ValidCore.checkBoolean(n.contains("LEATHER") || n.contains("CHAINMAIL") || n.contains("IRON") || n.contains("GOLD") || n.contains("DIAMOND") || n.contains("NETHERITE"),
 					"Only leather to netherite armors are supported, not: " + armorMaterial);
 
 			return Type.valueOf(n.split("_")[0]);

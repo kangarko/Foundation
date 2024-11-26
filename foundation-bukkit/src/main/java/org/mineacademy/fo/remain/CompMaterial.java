@@ -37,12 +37,12 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -1830,7 +1830,7 @@ public enum CompMaterial {
 					break;
 			}
 
-		this.material = Common.getOrDefault(mat, Material.STONE);
+		this.material = CommonCore.getOrDefault(mat, Material.STONE);
 	}
 
 	CompMaterial(int data, String... legacy) {
@@ -1983,7 +1983,7 @@ public enum CompMaterial {
 	 * @return
 	 */
 	public static boolean isDamageable(final CompMaterial type) {
-		Valid.checkNotNull(type);
+		ValidCore.checkNotNull(type);
 
 		try {
 			if (MinecraftVersion.atLeast(V.v1_13))
@@ -2449,7 +2449,7 @@ public enum CompMaterial {
 		if (compmaterial == null)
 			compmaterial = fromString(material);
 
-		Valid.checkNotNull(compmaterial, "Could not convert item to CompMaterial. Item: " + item);
+		ValidCore.checkNotNull(compmaterial, "Could not convert item to CompMaterial. Item: " + item);
 
 		return compmaterial;
 	}
@@ -2467,7 +2467,7 @@ public enum CompMaterial {
 
 		} catch (final Throwable t) {
 			final CompMaterial compmaterial = fromLegacy(ReflectionUtil.getEnumName(material), UNKNOWN_DATA_VALUE);
-			Valid.checkNotNull(compmaterial, "Unsupported material with no data value: " + material);
+			ValidCore.checkNotNull(compmaterial, "Unsupported material with no data value: " + material);
 
 			return compmaterial;
 
@@ -2484,7 +2484,7 @@ public enum CompMaterial {
 	public static CompMaterial fromStringStrict(final String key) {
 		final CompMaterial material = fromString(key);
 
-		Valid.checkNotNull(material, "Invalid material '" + key + "'! For valid names, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html (Note that names change across MC versions!)");
+		ValidCore.checkNotNull(material, "Invalid material '" + key + "'! For valid names, see: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html (Note that names change across MC versions!)");
 		return material;
 	}
 

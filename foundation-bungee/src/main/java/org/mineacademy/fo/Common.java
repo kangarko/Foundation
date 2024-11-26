@@ -11,6 +11,7 @@ import org.mineacademy.fo.remain.Remain;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -62,6 +63,6 @@ public final class Common extends CommonCore {
 	 * @return
 	 */
 	public static List<String> getServerNames() {
-		return new ArrayList<>(convertList(Remain.getServers(), server -> server.getName()));
+		return new ArrayList<>(convertList(Remain.getServers(), ServerInfo::getName));
 	}
 }

@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ReflectionUtil.LegacyEnumNameTranslator;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.VelocityCommandImpl;
@@ -45,7 +45,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	private VelocityPlatform() {
 		Platform.setType(Platform.Type.VELOCITY);
 
-		Common.addSimplifier(object -> {
+		CommonCore.addSimplifier(object -> {
 			if (object instanceof Player)
 				return ((Player) object).getUsername();
 
@@ -116,14 +116,14 @@ final class VelocityPlatform extends FoundationPlatform {
 	protected FoundationPlayer getPlayer(String name) {
 		final Player player = VelocityPlugin.getServer().getPlayer(name).orElse(null);
 
-		return player != null ? toPlayer(player) : null;
+		return player != null ? this.toPlayer(player) : null;
 	}
 
 	@Override
 	protected FoundationPlayer getPlayer(UUID uniqueId) {
 		final Player player = VelocityPlugin.getServer().getPlayer(uniqueId).orElse(null);
 
-		return player != null && player.isActive() ? toPlayer(player) : null;
+		return player != null && player.isActive() ? this.toPlayer(player) : null;
 	}
 
 	@Override
@@ -138,7 +138,7 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public List<Tuple<String, String>> getPlugins() {
-		return Common.convertList(VelocityPlugin.getServer().getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getDescription().getName().orElse("Unnamed"), plugin.getDescription().getVersion().orElse("")));
+		return CommonCore.convertList(VelocityPlugin.getServer().getPluginManager().getPlugins(), plugin -> new Tuple<>(plugin.getDescription().getName().orElse("Unnamed"), plugin.getDescription().getVersion().orElse("")));
 	}
 
 	@Override
@@ -150,7 +150,7 @@ final class VelocityPlatform extends FoundationPlatform {
 
 	@Override
 	public List<FoundationServer> getServers() {
-		return Common.convertList(VelocityPlugin.getServer().getAllServers(), server -> new VelocityServer(server));
+		return CommonCore.convertList(VelocityPlugin.getServer().getAllServers(), VelocityServer::new);
 	}
 
 	@Override
@@ -166,7 +166,7 @@ final class VelocityPlatform extends FoundationPlatform {
 		if (present)
 			Platform.runTaskAsync(0, () -> {
 				if (!manager.isLoaded(name) && !manager.isLoaded(name.toLowerCase()))
-					Common.warning(VelocityPlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + VelocityPlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
+					CommonCore.warning(VelocityPlugin.getInstance().getName() + " could not hook into " + name + " as the plugin is disabled! (DO NOT REPORT THIS TO " + VelocityPlugin.getInstance().getName() + ", look for errors above and contact support of '" + name + "')");
 			});
 
 		return present;
@@ -195,7 +195,7 @@ final class VelocityPlatform extends FoundationPlatform {
 					manager.unregister(oldAlias);
 			}
 
-		manager.register(command.getLabel(), new VelocityCommandImpl(command), Common.toArray(command.getAliases()));
+		manager.register(command.getLabel(), new VelocityCommandImpl(command), CommonCore.toArray(command.getAliases()));
 	}
 
 	@Override
@@ -231,7 +231,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	@Override
 	public void sendPluginMessage(UUID senderUid, String channel, byte[] array) {
 		final Player player = Remain.getPlayer(senderUid, false);
-		Valid.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
+		ValidCore.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
 		player.sendPluginMessage(VelocityPlugin.LEGACY_BUNGEE_CHANNEL, array);
 	}
