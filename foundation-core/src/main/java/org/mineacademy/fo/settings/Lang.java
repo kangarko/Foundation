@@ -238,13 +238,13 @@ public final class Lang {
 	 * MiniMessage tags and & legacy colors are translated to §.
 	 *
 	 * @param path
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public static String legacyVars(String path, Object... replacements) {
+	public static String legacyVars(String path, Object... placeholders) {
 		final String value = legacy(path);
 
-		return Variables.replace(value, null, CommonCore.newHashMap(replacements));
+		return Variables.builder().placeholderArray(placeholders).replace(value);
 	}
 
 	/**
@@ -278,15 +278,15 @@ public final class Lang {
 	 * MiniMessage tags and & legacy colors are translated to §.
 	 *
 	 * @param path
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public static String[] legacyArrayVars(String path, Object... replacements) {
+	public static String[] legacyArrayVars(String path, Object... placeholders) {
 		final String[] lines = instance.getLegacyArray(path);
-		final Map<String, Object> replacementsMap = CommonCore.newHashMap(replacements);
+		final Variables variables = Variables.builder().placeholderArray(placeholders);
 
 		for (int i = 0; i < lines.length; i++)
-			lines[i] = Variables.replace(lines[i], null, replacementsMap);
+			lines[i] = variables.replace(lines[i]);
 
 		return lines;
 	}
@@ -315,13 +315,13 @@ public final class Lang {
 	 * key from the locale path.
 	 *
 	 * @param path
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public static SimpleComponent componentVars(String path, Object... replacements) {
+	public static SimpleComponent componentVars(String path, Object... placeholders) {
 		final SimpleComponent component = component(path);
 
-		return Variables.replace(component, null, CommonCore.newHashMap(replacements));
+		return Variables.builder().placeholderArray(placeholders).replace(component);
 	}
 
 	/**
@@ -348,11 +348,11 @@ public final class Lang {
 	 * key from the locale path.
 	 *
 	 * @param path
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public static List<SimpleComponent> componentListVars(String path, Object... replacements) {
-		return Arrays.asList(componentArrayVars(path, replacements));
+	public static List<SimpleComponent> componentListVars(String path, Object... placeholders) {
+		return Arrays.asList(componentArrayVars(path, placeholders));
 	}
 
 	/**
@@ -379,15 +379,15 @@ public final class Lang {
 	 * key from the locale path.
 	 *
 	 * @param path
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 */
-	public static SimpleComponent[] componentArrayVars(String path, Object... replacements) {
+	public static SimpleComponent[] componentArrayVars(String path, Object... placeholders) {
 		final SimpleComponent[] components = instance.getComponentArray(path);
-		final Map<String, Object> replacementsMap = CommonCore.newHashMap(replacements);
+		final Variables variables = Variables.builder().placeholderArray(placeholders);
 
 		for (int i = 0; i < components.length; i++)
-			components[i] = Variables.replace(components[i], null, replacementsMap);
+			components[i] = variables.replace(components[i]);
 
 		return components;
 	}

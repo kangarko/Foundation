@@ -132,12 +132,13 @@ public final class Book implements ConfigSerializable {
 		if (MinecraftVersion.olderThan(V.v1_8) || !audience.isPlayer()) {
 			final List<SimpleComponent> pages = new ArrayList<>();
 			int pageNumber = 1;
+			final Variables variables = Variables.builder(audience);
 
 			for (final String page : this.pages) {
 				pages.add(Lang.componentVars("command-book-page", "page", pageNumber++));
 
 				for (final String line : page.split("\n"))
-					pages.add(SimpleComponent.fromMini(" &7- &r" + Variables.replace(this.replaceVariablesBack(line), audience)));
+					pages.add(SimpleComponent.fromMini(" &7- &r" + variables.replace(this.replaceVariablesBack(line))));
 
 				pages.add(SimpleComponent.empty());
 			}
@@ -222,12 +223,13 @@ public final class Book implements ConfigSerializable {
 	public ItemStack toWrittenBook(FoundationPlayer audience) {
 		final ItemStack clone = new ItemStack(CompMaterial.WRITTEN_BOOK.getMaterial());
 		final BookMeta bookMeta = (BookMeta) clone.getItemMeta();
+		final Variables variables = Variables.builder(audience);
 
 		// Replace our variables
 		final List<SimpleComponent> pagesClone = new ArrayList<>();
 
 		for (final String page : this.pages)
-			pagesClone.add(Variables.replace(SimpleComponent.fromMini(this.replaceVariablesBack(page)), audience));
+			pagesClone.add(variables.replace(SimpleComponent.fromMini(this.replaceVariablesBack(page))));
 
 		Remain.setPages(bookMeta, pagesClone);
 		bookMeta.setTitle(this.title == null ? "Blank" : this.title);

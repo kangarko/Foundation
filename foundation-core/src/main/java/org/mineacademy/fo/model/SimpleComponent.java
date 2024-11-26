@@ -913,7 +913,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 					return null;
 
 				try {
-					final Object result = JavaScriptExecutor.run(Variables.replace(this.viewCondition, receiver), receiver);
+					final Object result = JavaScriptExecutor.run(Variables.builder(receiver).replace(this.viewCondition), receiver);
 
 					if (result != null) {
 						ValidCore.checkBoolean(result instanceof Boolean, "View condition must return Boolean not " + (result == null ? "null" : result.getClass()) + " for component: " + this);

@@ -79,8 +79,7 @@ public abstract class FoundationPlayer {
 		}
 
 		else {
-			command = command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command;
-			command = Variables.replace(command, this);
+			command = Variables.builder(this).replace(command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command);
 
 			// Workaround for JSON in tellraw getting HEX colors replaced
 			if (!command.startsWith("tellraw"))

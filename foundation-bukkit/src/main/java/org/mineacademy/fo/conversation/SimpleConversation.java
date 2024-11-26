@@ -259,7 +259,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param message
 	 */
 	protected static final void tell(final Conversable conversable, String message) {
-		Platform.runTask(() -> conversable.sendRawMessage(Variables.replace(message, Platform.toPlayer(conversable))));
+		tell(conversable, SimpleComponent.fromMini(message));
 	}
 
 	/**
@@ -279,8 +279,9 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param message
 	 */
 	protected static final void tell(final Conversable conversable, SimpleComponent message) {
-		Platform.toPlayer(conversable).sendMessage(message);
-		//Platform.runTask(() -> conversable.sendRawMessage(Variables.replace(message, Platform.toPlayer(conversable)).toLegacy()));
+		final FoundationPlayer player = Platform.toPlayer(conversable);
+
+		player.sendMessage(Variables.builder(player).replace(message));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

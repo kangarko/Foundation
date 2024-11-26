@@ -156,13 +156,13 @@ public final class JavaScriptExecutor {
 	 *
 	 * @param javascript
 	 * @param audience
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, final FoundationPlayer audience, Map<String, Object> replacements) throws FoScriptException {
-		if (replacements == null)
-			replacements = new HashMap<>();
+	public static Object run(@NonNull String javascript, final FoundationPlayer audience, Map<String, Object> placeholders) throws FoScriptException {
+		if (placeholders == null)
+			placeholders = new HashMap<>();
 
 		if (audience == null && javascript.contains("player.")) {
 			CommonCore.warning("Not running JavaScript because it contains 'player' but player was not provided. Script: " + javascript);
@@ -197,9 +197,9 @@ public final class JavaScriptExecutor {
 		}
 
 		if (audience != null && audience.isPlayer())
-			replacements.put("player", audience.getPlayer());
+			placeholders.put("player", audience.getPlayer());
 
-		return run(javascript, replacements);
+		return run(javascript, placeholders);
 	}
 
 	/**
@@ -207,11 +207,11 @@ public final class JavaScriptExecutor {
 	 * as well as the bukkit event (use "event" variable there)
 	 *
 	 * @param javascript
-	 * @param replacements
+	 * @param placeholders
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, Map<String, Object> replacements) throws FoScriptException {
+	public static Object run(@NonNull String javascript, Map<String, Object> placeholders) throws FoScriptException {
 		if (engine == null) {
 			CommonCore.warning("Not running JavaScript code because nashorn-core library is missing (see earlier logs for details). Ignoring code: " + javascript);
 
@@ -219,8 +219,8 @@ public final class JavaScriptExecutor {
 		}
 
 		synchronized (engine) {
-			if (replacements == null)
-				replacements = new HashMap<>();
+			if (placeholders == null)
+				placeholders = new HashMap<>();
 
 			// Speed up
 			if (javascript.equals("true") || javascript.equals("!false") || javascript.equals("yes"))
@@ -233,12 +233,12 @@ public final class JavaScriptExecutor {
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
 			// Put new variables
-			for (final Map.Entry<String, Object> replacement : replacements.entrySet()) {
-				final String key = replacement.getKey();
-				ValidCore.checkNotNull(key, "Key can't be null in javascript variables for code " + javascript + ": " + replacements);
+			for (final Map.Entry<String, Object> placeholder : placeholders.entrySet()) {
+				final String key = placeholder.getKey();
+				ValidCore.checkNotNull(key, "Key can't be null in javascript placeholders for code " + javascript + ": " + placeholders);
 
-				final Object value = replacement.getValue();
-				ValidCore.checkNotNull(value, "Value can't be null in javascript variables for key " + key + ": " + replacements);
+				final Object value = placeholder.getValue();
+				ValidCore.checkNotNull(value, "Value can't be null in javascript placeholders for key " + key + ": " + placeholders);
 
 				engine.put(key, value);
 			}
@@ -272,7 +272,7 @@ public final class JavaScriptExecutor {
 
 				if (ex.getCause() != null && cause.contains("event handled")) {
 					final String[] errorMessageSplit = cause.contains("event handled: ") ? cause.split("event handled\\: ") : new String[0];
-					final Object sender = replacements.get("player");
+					final Object sender = placeholders.get("player");
 
 					if (errorMessageSplit.length == 2 && sender != null)
 						Platform.toPlayer(sender).sendMessage(SimpleComponent.fromMini(errorMessageSplit[1]));
