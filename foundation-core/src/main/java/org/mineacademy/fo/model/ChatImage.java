@@ -7,18 +7,18 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
+import java.util.Collection;
 
 import javax.imageio.ImageIO;
 
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.platform.FoundationPlayer;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
+import net.kyori.adventure.text.format.TextColor;
 
 /**
  * Represents a way to show an image in chat.
@@ -29,21 +29,14 @@ import lombok.Setter;
 public final class ChatImage {
 
 	/**
-	 * Returns the default length, 8.
+	 * Represents the height of the image.
 	 */
-	public final static int DEFAULT_HEIGHT = 8;
+	private int height = 8;
 
 	/**
-	 * Represents empty char.
+	 * Represents the fillter character of the image.
 	 */
-	private final static char TRANSPARENT_CHAR = ' ';
-
-	/**
-	 * Represents Minotar API endpoint from where we fetch the image.
-	 */
-	@Getter
-	@Setter
-	public static String chatHeadEndpoint = "https://mc-heads.net/avatar/{PLAYER_NAME}/{HEIGHT}.png";
+	private FillerCharacter fillerCharacter = FillerCharacter.BLOCK;
 
 	/**
 	 * The strategy to resize the image. By default, the TYPE_NEAREST_NEIGHBOR does not
@@ -52,298 +45,148 @@ public final class ChatImage {
 	 *
 	 * @see AffineTransformOp
 	 */
-	@Getter
-	@Setter
-	private static int resizeMethod = AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
+	private int resizeMethod = AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
 
 	/**
 	 * Edit the color used as background for PNG images, by default WHITE.
 	 */
-	@Getter
-	@Setter
-	private static Color backgroundColor = Color.WHITE;
+	private Color backgroundColor = Color.WHITE;
 
 	/**
 	 * Represents the currently loaded lines.
 	 */
-	@Getter
 	private String[] lines;
 
 	/**
-	 * Appends the given text next to the image.
+	 * Sets the height of the image.
 	 *
-	 * @param text
+	 * @param height
 	 * @return
 	 */
-	public ChatImage appendText(String... text) {
-		for (int y = 0; y < this.lines.length; y++)
-			if (text.length > y) {
-				final String line = text[y];
-
-				this.lines[y] += " " + line;
-			}
+	public ChatImage height(int height) {
+		this.height = height;
 
 		return this;
 	}
 
 	/**
-	 * Appends the given text next to the image.
+	 * Sets the character type for the image.
 	 *
-	 * @param text
+	 * @param fillerCharacter
 	 * @return
 	 */
-	public ChatImage appendText(List<String> text) {
-		for (int y = 0; y < this.lines.length; y++)
-			if (text.size() > y) {
-				final String line = text.get(y);
-
-				this.lines[y] += " " + line;
-			}
+	public ChatImage fillerCharacter(FillerCharacter fillerCharacter) {
+		this.fillerCharacter = fillerCharacter;
 
 		return this;
 	}
 
 	/**
-	 * Appends the given text as centered, next to the image.
-	 * Beware that using formatting colors or unicode might break centering!
+	 * Sets the resize method for the image.
 	 *
-	 * @param text
+	 * @param resizeMethod
 	 * @return
 	 */
-	public ChatImage appendCenteredText(String... text) {
-		for (int y = 0; y < this.lines.length; y++)
-			if (text.length > y) {
-				final int len = 20 - this.lines[y].length();
-
-				this.lines[y] = this.lines[y] + this.center(text[y], len);
-
-			} else
-				return this;
+	public ChatImage resizeMethod(int resizeMethod) {
+		this.resizeMethod = resizeMethod;
 
 		return this;
 	}
 
-	/*
-	 * Centers the given message according to the given length.
-	 */
-	private String center(String message, int length) {
-		if (message.length() > length)
-			return message.substring(0, length);
-
-		else if (message.length() == length)
-			return message;
-
-		else {
-			final int leftPadding = (length - message.length()) / 2;
-			final StringBuilder leftBuilder = new StringBuilder();
-
-			for (int i = 0; i < leftPadding; i++)
-				leftBuilder.append(" ");
-
-			return leftBuilder.toString() + message;
-		}
-	}
-
 	/**
-	 * Sends this image to the given player.
+	 * Sets the background color for PNG images.
 	 *
-	 * @see FoundationPlayer#sendMessage(SimpleComponent)
-	 *
-	 * @param audience
-	 */
-	public void send(FoundationPlayer audience) {
-		for (final String line : this.lines)
-			audience.sendMessage(SimpleComponent.fromSection(Variables.builder(audience).replace(line)));
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Static
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Create a player head image from the player username. Uses DARK_SHADE font
-	 * and {@link #DEFAULT_HEIGHT}. Invokes a blocking web request to
-	 * {@link #chatHeadEndpoint} and throws an error on any failure.
-	 *
-	 * @param playerName
+	 * @param backgroundColor
 	 * @return
-	 * @throws IOException
 	 */
-	public static ChatImage fromHead(String playerName) throws IOException {
-		return fromHead(playerName, DEFAULT_HEIGHT);
+	public ChatImage backgroundColor(Color backgroundColor) {
+		this.backgroundColor = backgroundColor;
+
+		return this;
 	}
 
 	/**
-	 * Create a player head image from the player username. Uses DARK_SHADE font.
-	 * Invokes a blocking web request to {@link #chatHeadEndpoint} and throws
-	 * an error on any failure.
-	 *
-	 * @param playerName
-	 * @param height
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromHead(String playerName, int height) throws IOException {
-		return fromHead(playerName, height, ChatImage.Type.DARK_SHADE);
-	}
-
-	/**
-	 * Create a player head image from the player username. Invokes a blocking web request
-	 * to {@link #chatHeadEndpoint} and throws an error on any failure.
-	 *
-	 * @param playerName
-	 * @param height
-	 * @param characterType
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromHead(String playerName, int height, Type characterType) throws IOException {
-		return fromImage(chatHeadEndpoint.replace("{PLAYER_NAME}", playerName).replace("{HEIGHT}", String.valueOf(height)), height, characterType);
-	}
-
-	/**
-	 * Create a chat image from the given remote URL, the {@link #DEFAULT_HEIGHT} and DARK_SHADE
-	 * character type. Invokes a blocking web request and throws an error on any failure.
-	 *
-	 * @param webUrl
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromImage(String webUrl) throws IOException {
-		return fromImage(webUrl, DEFAULT_HEIGHT);
-	}
-
-	/**
-	 * Create a chat image from the given remote URL, the given line height and DARK_SHADE character type.
-	 * Invokes a blocking web request and throws an error on any failure.
-	 *
-	 * @param webUrl
-	 * @param height
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromImage(String webUrl, int height) throws IOException {
-		return fromImage(webUrl, height, Type.DARK_SHADE);
-	}
-
-	/**
-	 * Create a chat image from the given remote URL, the given line height and character type.
-	 * Invokes a blocking web request and throws an error on any failure.
-	 *
-	 * @param webUrl
-	 * @param height
-	 * @param characterType
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromImage(@NonNull String webUrl, int height, Type characterType) throws IOException {
-		final BufferedImage image = ImageIO.read(new URL(webUrl));
-
-		if (image == null)
-			throw new NullPointerException("Unable to load image from URL ");
-
-		else
-			return fromSource(image, height, characterType);
-	}
-
-	/**
-	 * Create an image to show in a chat message from the given path
-	 * in your plugin's JAR, with {@link #DEFAULT_HEIGHT} and DARK_SHADE character type.
-	 *
-	 * @param file
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromFile(@NonNull File file) throws IOException {
-		return fromFile(file, DEFAULT_HEIGHT);
-	}
-
-	/**
-	 * Create an image to show in a chat message from the given path
-	 * in your plugin's JAR, with the given height and DARK_SHADE character type.
-	 *
-	 * @param file
-	 * @param height
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromFile(@NonNull File file, int height) throws IOException {
-		return fromFile(file, height, ChatImage.Type.DARK_SHADE);
-	}
-
-	/**
-	 * Create an image to show in a chat message from the given path
-	 * in your plugin's JAR, with the given height and the given character type.
-	 *
-	 * @param file
-	 * @param height
-	 * @param characterType
-	 * @return
-	 * @throws IOException
-	 */
-	public static ChatImage fromFile(@NonNull File file, int height, Type characterType) throws IOException {
-		ValidCore.checkBoolean(file.exists(), "Cannot load image from non existing file " + file.toPath());
-
-		final BufferedImage image = ImageIO.read(file);
-
-		if (image == null)
-			throw new NullPointerException("Unable to load image size " + file.length() + " bytes from " + file.toPath());
-
-		else
-			return fromSource(image, height, characterType);
-	}
-
-	/*
-	 * Helper to load the image
-	 */
-	private static ChatImage fromSource(@NonNull BufferedImage image, int height, @NonNull Type characterType) {
-		ValidCore.checkBoolean(height >= 2, "File image height must be equal or above 2");
-
-		final BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-		newImage.createGraphics().drawImage(image, 0, 0, backgroundColor, null);
-
-		final CompChatColor[][] chatColors = parseImage(newImage, height);
-		final ChatImage chatImage = new ChatImage();
-
-		chatImage.lines = parseColors(chatColors, characterType);
-
-		return chatImage;
-	}
-
-	/**
-	 * Return a chat image from finished lines that were already created from {@link #fromFile(File, int, Type)}
-	 * Useful when loading from a disk file or a remote databsae
+	 * Sets the lines of the image.
 	 *
 	 * @param lines
 	 * @return
 	 */
-	public static ChatImage fromLines(String[] lines) {
-		final ChatImage chatImage = new ChatImage();
-		chatImage.lines = lines;
+	public ChatImage lines(String[] lines) {
+		this.lines = lines;
 
-		return chatImage;
+		return this;
+	}
+
+	/**
+	 * Draw the image from the given player's head. Warning: This is a blocking operation.
+	 *
+	 * @param playerName
+	 * @return
+	 * @throws IOException
+	 */
+	public ChatImage drawFromHead(String playerName) throws IOException {
+		return this.drawFromUrl("https://mc-heads.net/avatar/" + playerName + "/" + this.height + ".png");
+	}
+
+	/**
+	 * Draw the image from the given file. Warning: This is a blocking operation.
+	 *
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
+	public ChatImage drawFromFile(File file) throws IOException {
+		ValidCore.checkBoolean(file.exists(), "Cannot load image from non existing file " + file.toPath());
+
+		return this.draw(ImageIO.read(file));
+	}
+
+	/**
+	 * Draw the image from the given URL. Warning: This is a blocking operation.
+	 *
+	 * @param webUrl
+	 * @return
+	 * @throws IOException
+	 */
+	public ChatImage drawFromUrl(String webUrl) throws IOException {
+		return this.draw(ImageIO.read(new URL(webUrl)));
+	}
+
+	/**
+	 * Draw the image from the given Java image.
+	 *
+	 * @param image
+	 * @return
+	 */
+	public ChatImage draw(BufferedImage image) {
+		ValidCore.checkBoolean(this.height >= 2, "File image height must be equal or above 2");
+
+		final BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+		newImage.createGraphics().drawImage(image, 0, 0, this.backgroundColor, null);
+
+		final TextColor[][] colors = this.parseImage(newImage);
+
+		this.lines = this.parseColors(colors);
+
+		return this;
 	}
 
 	/*
 	 * Parse the given image into chat colors.
 	 */
-	private static CompChatColor[][] parseImage(BufferedImage newImage, int height) {
+	private TextColor[][] parseImage(BufferedImage newImage) {
 		final double ratio = (double) newImage.getHeight() / newImage.getWidth();
-		int width = (int) (height / ratio);
+		int width = (int) (this.height / ratio);
 
 		if (width > 10)
 			width = 10;
 
-		final BufferedImage resized = resizeImage(newImage, (int) (height / ratio), height);
-		final CompChatColor[][] chatImg = new CompChatColor[resized.getWidth()][resized.getHeight()];
+		final BufferedImage resized = this.resizeImage(newImage, (int) (this.height / ratio), this.height);
+		final TextColor[][] chatImg = new TextColor[resized.getWidth()][resized.getHeight()];
 
 		for (int x = 0; x < resized.getWidth(); x++)
-			for (int y = 0; y < resized.getHeight(); y++) {
-				final int rgb = resized.getRGB(x, y);
-				final CompChatColor closest = CompChatColor.getClosestLegacyColor(new Color(rgb, true));
-
-				chatImg[x][y] = closest;
-			}
+			for (int y = 0; y < resized.getHeight(); y++)
+				chatImg[x][y] = TextColor.color(resized.getRGB(x, y));
 
 		return chatImg;
 	}
@@ -351,14 +194,14 @@ public final class ChatImage {
 	/*
 	 * Resize the given image.
 	 */
-	private static BufferedImage resizeImage(BufferedImage originalImage, int width, int height) {
+	private BufferedImage resizeImage(BufferedImage originalImage, int width, int height) {
 		final AffineTransform af = new AffineTransform();
 
 		af.scale(
 				width / (double) originalImage.getWidth(),
 				height / (double) originalImage.getHeight());
 
-		final AffineTransformOp operation = new AffineTransformOp(af, resizeMethod);
+		final AffineTransformOp operation = new AffineTransformOp(af, this.resizeMethod);
 
 		return operation.filter(originalImage, null);
 	}
@@ -366,22 +209,77 @@ public final class ChatImage {
 	/*
 	 * Parse the given 2D colors to fit lines.
 	 */
-	private static String[] parseColors(CompChatColor[][] colors, Type imgchar) {
+	private String[] parseColors(TextColor[][] colors) {
 		final String[] lines = new String[colors[0].length];
 
 		for (int y = 0; y < colors[0].length; y++) {
 			String line = "";
 
-			for (final CompChatColor[] color2 : colors) {
-				final CompChatColor color = color2[y];
+			for (final TextColor[] lineColors : colors) {
+				final TextColor color = lineColors[y];
 
-				line += color != null ? color2[y].toString() + imgchar : TRANSPARENT_CHAR;
+				line += color != null ? "<" + color.toString() + ">" + this.fillerCharacter : ' ';
 			}
 
 			lines[y] = line + CompChatColor.RESET;
 		}
 
 		return lines;
+	}
+
+	/**
+	 * Appends the given text next to the image. We use MiniMessage tags for the color
+	 * which you need to parse yourself.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public String[] toString(Collection<String> text) {
+		return this.toString(CommonCore.toArray(text));
+	}
+
+	/**
+	 * Appends the given text next to the image. We use MiniMessage tags for the color
+	 * which you need to parse yourself.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public String[] toString(@NonNull String... text) {
+		ValidCore.checkBoolean(this.lines != null && this.lines.length > 0, "Set lines first using draw() methods or setLines()");
+
+		final String[] lines = this.lines.clone();
+
+		for (int y = 0; y < lines.length; y++)
+			if (text.length > y) {
+				final String line = text[y];
+
+				lines[y] += " " + line;
+			}
+
+		return lines;
+	}
+
+	/**
+	 * Return the raw image lines.
+	 *
+	 * @return
+	 */
+	public String[] getImageLines() {
+		return this.lines;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Static
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Create a new chat image builder.
+	 *
+	 * @return
+	 */
+	public static ChatImage builder() {
+		return new ChatImage();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -393,7 +291,7 @@ public final class ChatImage {
 	 *
 	 * @author bobacadodl
 	 */
-	public enum Type {
+	public enum FillerCharacter {
 
 		BLOCK('\u2588'),
 		DARK_SHADE('\u2593'),
@@ -406,7 +304,7 @@ public final class ChatImage {
 		@Getter
 		private final char character;
 
-		Type(char c) {
+		FillerCharacter(char c) {
 			this.character = c;
 		}
 
