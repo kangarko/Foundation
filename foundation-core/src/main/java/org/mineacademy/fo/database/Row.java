@@ -4,6 +4,8 @@ import java.sql.SQLException;
 
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.model.Tuple;
+import org.mineacademy.fo.platform.Platform;
 
 import lombok.ToString;
 
@@ -61,17 +63,31 @@ public abstract class Row {
 	public abstract Table getTable();
 
 	/**
-	 * Save this row to the database by adding it to the queue.
+	 * Get the unique column name of this row, if any
+	 *
+	 * @return
 	 */
-	public final void save() {
-		this.getTable().getDatabase().addToQueue(this);
+	public Tuple<String, Object> getUniqueColumn() {
+		return null;
 	}
 
 	/**
-	 * Save this row to the database immediately.
+	 * Save this row to the database by adding it to the queue. This will add it as a new row.
 	 */
-	public final void saveNow() {
-		this.getTable().getDatabase().insert(this.getTable(), this.toMap());
+	public final void insertToQueue() {
+		this.getTable().getDatabase().insertToQueue(this);
+	}
+
+	/**
+	 * Save this row to the database by adding it to the queue. This will replace the existing row exists.
+	 *
+	 * If using SQLIte, override {@link #getUniqueColumn()} and make sure the table has a unique column.
+	 */
+	public final void upsert() {
+		if (Platform.isAsync())
+			this.getTable().getDatabase().upsert(this);
+		else
+			Platform.runTaskAsync(() -> this.getTable().getDatabase().upsert(this));
 	}
 
 	/**
