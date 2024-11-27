@@ -265,8 +265,17 @@ public final class ChatImage {
 	 *
 	 * @return
 	 */
-	public String[] getImageLines() {
+	public String[] getLines() {
 		return this.lines;
+	}
+
+	/**
+	 * Return if the image has lines.
+	 *
+	 * @return
+	 */
+	public boolean hasLines() {
+		return this.lines != null && this.lines.length > 0;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

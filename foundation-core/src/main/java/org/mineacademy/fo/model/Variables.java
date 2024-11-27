@@ -135,6 +135,15 @@ public final class Variables {
 	}
 
 	/**
+	 * Return the placeholders map.
+	 *
+	 * @return
+	 */
+	public Map<String, Object> placeholders() {
+		return this.placeholders;
+	}
+
+	/**
 	 * Add an array of placeholders to the placeholders map.
 	 * They must be in the format: string, value, string, value etc.
 	 * Where value must be either a String, a primitive or a SimpleComponent.
