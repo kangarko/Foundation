@@ -25,6 +25,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidRowException;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.Platform;
 
 import lombok.AccessLevel;
@@ -115,7 +116,7 @@ public class SimpleDatabase {
 	public final void connect(final String url, final String user, final String password) {
 		try {
 			if (url.startsWith("jdbc:sqlite")) {
-				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.47.0.0");
+				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.47.1.0");
 
 				Class.forName("org.sqlite.JDBC");
 
@@ -223,7 +224,15 @@ public class SimpleDatabase {
 		ValidCore.checkNotNull(this.lastCredentials, "Last credentials are null, did you call connect() on " + this + "?");
 
 		try {
-			if (!this.connection.isValid(0) || this.connection.isClosed())
+			boolean isValid = true;
+
+			try {
+				isValid = this.connection.isValid(0);
+			} catch (final AbstractMethodError ex) {
+				// Unsupported driver
+			}
+
+			if (!isValid || this.connection.isClosed())
 				this.connect(this.lastCredentials.getUrl(), this.lastCredentials.getUser(), this.lastCredentials.getPassword());
 
 		} catch (final SQLException | AbstractMethodError ex) {
@@ -243,7 +252,7 @@ public class SimpleDatabase {
 	 * @param id
 	 * @return
 	 */
-	public final <T extends Row> T getRow(Table table, int id) {
+	public final <T extends Row> T getRow(final Table table, final int id) {
 		final List<T> list = new ArrayList<>();
 
 		this.select(table, Where.builder().equals("Id", id), resultSet -> list.add(table.createRow(resultSet)));
@@ -264,7 +273,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @return
 	 */
-	public final <T extends Row> List<T> getRows(Table table) {
+	public final <T extends Row> List<T> getRows(final Table table) {
 		final List<T> entries = new ArrayList<>();
 
 		this.selectAll(table, resultSet -> entries.add(table.createRow(resultSet)));
@@ -282,9 +291,9 @@ public class SimpleDatabase {
 	 * @param where
 	 * @return
 	 */
-	public <T extends Row> T getRowWhere(Table table, Where where) {
+	public <T extends Row> T getRowWhere(final Table table, final Where where) {
 		final List<T> rows = this.getRowsWhere(table, where);
-		ValidCore.checkBoolean(rows.size() <= 1, "Found more than one row in " + table.getName() + " where " + where + ": " + rows);
+		ValidCore.checkBoolean(rows.size() <= 1, "Found more than one (" + rows.size() + ") row in " + table.getName() + " where " + where + ": " + rows);
 
 		return rows.isEmpty() ? null : rows.get(0);
 	}
@@ -297,7 +306,7 @@ public class SimpleDatabase {
 	 * @param where
 	 * @return
 	 */
-	public <T extends Row> List<T> getRowsWhere(Table table, Where where) {
+	public <T extends Row> List<T> getRowsWhere(final Table table, final Where where) {
 		final List<T> entries = new ArrayList<>();
 
 		this.select(table, where, resultSet -> entries.add((T) table.createRow(resultSet)));
@@ -308,11 +317,26 @@ public class SimpleDatabase {
 	}
 
 	/**
-	 * Add a map of data to the queue for the given table
+	 * Inserts the given row into the database table, replacing any existing rows.
+	 *
+	 * This is a blocking operation.
 	 *
 	 * @param row
 	 */
-	public final void addToQueue(final Row row) {
+	public final void upsert(final Row row) {
+		ValidCore.checkNotNull(row, "To use Database#upsert(), override " + row.getClass().getSimpleName() + "#getUniqueColumn()");
+
+		this.upsert(row.getTable(), row.getUniqueColumn(), row.toMap());
+	}
+
+	/**
+	 * Add a map of data to the queue for the given table, appending as a new row.
+	 *
+	 * This is a non-blocking operation.
+	 *
+	 * @param row
+	 */
+	public final void insertToQueue(final Row row) {
 		RowQueueWriter.getInstance().addToQueue(row);
 	}
 
@@ -322,7 +346,7 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param row
 	 */
-	public final void deleteRow(Table table, Row row) {
+	public final void deleteRow(final Table table, final Row row) {
 		this.delete(table, Where.builder().equals("Id", row.getId()));
 	}
 
@@ -398,25 +422,46 @@ public class SimpleDatabase {
 	}
 
 	/**
-	 * Inserts the given map into the database table.
+	 * Inserts the given map into the database table, replacing any existing rows.
 	 *
 	 * @param table
+	 * @param uniqueColumnName
 	 * @param columnsAndValues
 	 */
-	protected final void insert(final Table table, @NonNull final SerializedMap columnsAndValues) {
+	protected final void upsert(final Table table, @NonNull Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
 		final String tableName = this.replaceVariables(table.getName());
 
 		// Building column names and placeholders for values (?)
 		final String columns = String.join(",", columnsAndValues.keySet());
 		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
 
-		// Prepare the duplicate update clause for MySQL
-		final String duplicateUpdate = columnsAndValues.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
+		final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
 
-		final StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
+		if (!this.isSQLite) {
 
-		if (!this.isSQLite)
+			// Prepare the duplicate update clause for MySQL
+			final String duplicateUpdate = columnsAndValues.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
+
 			sql.append(" ON DUPLICATE KEY UPDATE ").append(duplicateUpdate);
+
+		} else {
+			// Reason for this extra ugly connection is that Minecraft 1.8.8 ships with outdated SQLite
+			// And we can't use Libby to download a new one due to a conflict.
+			final String removeSql = "DELETE FROM " + tableName + " WHERE " + uniqueColumn.getKey() + " = ?;";
+
+			try (PreparedStatement preparedStatement = this.prepareStatement(removeSql)) {
+				preparedStatement.setObject(1, uniqueColumn.getValue());
+
+				Debugger.debug("mysql", "[sqlite/remove] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+				preparedStatement.executeUpdate();
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error removing old SQLite column",
+						"Table: " + tableName,
+						"Query: " + removeSql);
+			}
+		}
 
 		// Execute the query using PreparedStatement
 		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
@@ -425,9 +470,15 @@ public class SimpleDatabase {
 			for (final Object value : columnsAndValues.values()) {
 				if (value == null || value.equals("NULL"))
 					preparedStatement.setNull(index++, java.sql.Types.NULL);
+
+				else if (value instanceof String)
+					preparedStatement.setString(index++, (String) value);
+
 				else
-					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value)); // TODO test this
+					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
 			}
+
+			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
 			preparedStatement.executeUpdate();
 
@@ -440,7 +491,49 @@ public class SimpleDatabase {
 	}
 
 	/**
-	 * Insert the batch map into the database
+	 * Appends the given map into the database table as a new row.
+	 *
+	 * @param table
+	 * @param columnsAndValues
+	 */
+	protected final void insert(final Table table, @NonNull final SerializedMap columnsAndValues) {
+		final String tableName = this.replaceVariables(table.getName());
+
+		// Building column names and placeholders for values (?)
+		final String columns = String.join(",", columnsAndValues.keySet());
+		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
+
+		final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
+
+		// Execute the query using PreparedStatement
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+			int index = 1;
+
+			for (final Object value : columnsAndValues.values()) {
+				if (value == null || value.equals("NULL"))
+					preparedStatement.setNull(index++, java.sql.Types.NULL);
+
+				else if (value instanceof String)
+					preparedStatement.setString(index++, (String) value);
+
+				else
+					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
+			}
+
+			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+			preparedStatement.executeUpdate();
+
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error inserting into database",
+					"Table: " + tableName,
+					"Query: " + sql);
+		}
+	}
+
+	/**
+	 * Insert the batch map into the database as new rows.
 	 *
 	 * @param table
 	 * @param maps
@@ -452,9 +545,8 @@ public class SimpleDatabase {
 			for (final SerializedMap map : maps) {
 				final String columns = CommonCore.join(map.keySet());
 				final String values = CommonCore.join(map.values(), ", ", this::parseValue);
-				final String duplicateUpdate = CommonCore.join(map.entrySet(), ", ", entry -> entry.getKey() + " = VALUES (" + entry.getKey() + ")");
 
-				final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + values + ")" + (this.isSQLite ? "" : " ON DUPLICATE KEY UPDATE " + duplicateUpdate + ";");
+				final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + values + ");";
 				Debugger.debug("mysql", "Inserting batch SQL: " + sql);
 
 				sqls.add(sql);
@@ -550,6 +642,8 @@ public class SimpleDatabase {
 					preparedStatement.setObject(index++, value);
 			}
 
+			Debugger.debug("mysql", "[select] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next())
 					try {
@@ -577,7 +671,7 @@ public class SimpleDatabase {
 	 * @param columns
 	 * @param consumer
 	 */
-	protected final void selectColumns(Table table, List<String> columns, final ResultReader consumer) {
+	protected final void selectColumns(final Table table, final List<String> columns, final ResultReader consumer) {
 		this.selectColumns(table, columns, null, consumer);
 	}
 
@@ -589,7 +683,7 @@ public class SimpleDatabase {
 	 * @param where
 	 * @param consumer
 	 */
-	protected final void selectColumns(Table table, List<String> columns, Where where, final ResultReader consumer) {
+	protected final void selectColumns(final Table table, final List<String> columns, final Where where, final ResultReader consumer) {
 		final String tableName = table.getName();
 		final StringBuilder sql = new StringBuilder("SELECT ");
 
@@ -605,6 +699,8 @@ public class SimpleDatabase {
 				for (final Object value : where.getValues())
 					preparedStatement.setObject(index++, value);
 			}
+
+			Debugger.debug("mysql", "[select columns] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				while (resultSet.next())
@@ -629,7 +725,7 @@ public class SimpleDatabase {
 	 * @param conditions
 	 * @return
 	 */
-	protected final int count(Table table, final SerializedMap conditions) {
+	protected final int count(final Table table, final SerializedMap conditions) {
 		final String tableName = this.replaceVariables(table.getName());
 
 		final StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(*) FROM ").append(tableName);
@@ -641,13 +737,15 @@ public class SimpleDatabase {
 
 		final String sql = queryBuilder.toString();
 
-		try (PreparedStatement statement = this.prepareStatement(sql)) {
+		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
 			int index = 1;
 
 			for (final Map.Entry<String, Object> entry : conditions.entrySet())
-				statement.setObject(index++, entry.getValue());
+				preparedStatement.setObject(index++, entry.getValue());
 
-			try (ResultSet resultSet = statement.executeQuery()) {
+			Debugger.debug("mysql", "[count] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next())
 					return resultSet.getInt(1);
 			}
@@ -668,7 +766,7 @@ public class SimpleDatabase {
 	 * @param table The database table to delete from.
 	 * @param where The where conditions.
 	 */
-	protected final void delete(Table table, Where where) {
+	protected final void delete(final Table table, final Where where) {
 		ValidCore.checkBoolean(where != null && !where.getConditions().isEmpty(), "The where conditions cannot be empty for a delete operation!");
 		final String sql = "DELETE FROM " + table.getName() + " WHERE " + where.buildSql();
 
@@ -677,6 +775,8 @@ public class SimpleDatabase {
 
 			for (final Object value : where.getValues())
 				preparedStatement.setObject(index++, value);
+
+			Debugger.debug("mysql", "[delete] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
 			preparedStatement.executeUpdate();
 
@@ -694,11 +794,14 @@ public class SimpleDatabase {
 	 * @param table The table from which to delete rows.
 	 * @param timestamp The timestamp limit. Rows with 'Date' earlier than this will be deleted.
 	 */
-	protected final void deleteOlderThan(Table table, @NonNull Timestamp timestamp) {
+	protected final void deleteOlderThan(final Table table, @NonNull final Timestamp timestamp) {
 		final String sql = "DELETE FROM " + table.getName() + " WHERE Date < ?";
 
 		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
 			preparedStatement.setTimestamp(1, timestamp);
+
+			Debugger.debug("mysql", "[delete older than] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
 			preparedStatement.executeUpdate();
 
 		} catch (final SQLException ex) {
@@ -739,11 +842,13 @@ public class SimpleDatabase {
 	 * @return
 	 * @throws SQLException
 	 */
-	protected final boolean doesColumnExist(Table table, String column) throws SQLException {
+	protected final boolean doesColumnExist(final Table table, final String column) throws SQLException {
 		final String tableName = table.getName();
 
 		if (this.isSQLite) {
 			final String sql = "PRAGMA table_info(" + tableName + ");";
+
+			Debugger.debug("mysql", "[does column exist/sqlite] Running SQL: " + sql);
 
 			try (PreparedStatement statement = this.prepareStatement(sql);
 					ResultSet resultSet = statement.executeQuery()) {
@@ -767,12 +872,14 @@ public class SimpleDatabase {
 		} else {
 			final String sql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?";
 
-			try (PreparedStatement statement = this.prepareStatement(sql)) {
-				statement.setString(1, this.lastCredentials.getDatabaseName());
-				statement.setString(2, tableName);
-				statement.setString(3, column);
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+				preparedStatement.setString(1, this.lastCredentials.getDatabaseName());
+				preparedStatement.setString(2, tableName);
+				preparedStatement.setString(3, column);
 
-				try (ResultSet resultSet = statement.executeQuery()) {
+				Debugger.debug("mysql", "[does column exist/mysql] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
 					if (resultSet.next())
 						return resultSet.getInt(1) > 0;
 				}
@@ -883,7 +990,7 @@ public class SimpleDatabase {
 	/*
 	 * Replace the {table} and {@link #sqlVariables} in the sql query
 	 */
-	private String replaceVariables(String sql) {
+	private String replaceVariables(final String sql) {
 		final StringBuilder builder = new StringBuilder(sql);
 
 		this.sqlVariables.forEach((key, value) -> {
@@ -976,7 +1083,7 @@ public class SimpleDatabase {
 		 * @param value
 		 * @return
 		 */
-		public Where equals(String column, String value) {
+		public Where equals(final String column, final String value) {
 			this.conditions.add(column + " = ?");
 			this.values.add(value);
 
@@ -990,7 +1097,7 @@ public class SimpleDatabase {
 		 * @param value
 		 * @return
 		 */
-		public Where equals(String column, Number value) {
+		public Where equals(final String column, final Number value) {
 			this.conditions.add(column + " = ?");
 			this.values.add(value);
 
@@ -1004,7 +1111,7 @@ public class SimpleDatabase {
 		 * @param pattern
 		 * @return
 		 */
-		public Where like(String column, String pattern) {
+		public Where like(final String column, final String pattern) {
 			this.conditions.add(column + " LIKE ?");
 			this.values.add(pattern);
 
@@ -1018,7 +1125,7 @@ public class SimpleDatabase {
 		 * @param value
 		 * @return
 		 */
-		public Where greaterThan(String column, Number value) {
+		public Where greaterThan(final String column, final Number value) {
 			this.conditions.add(column + " > ?");
 			this.values.add(value);
 			return this;
@@ -1031,7 +1138,7 @@ public class SimpleDatabase {
 		 * @param value
 		 * @return
 		 */
-		public Where lessThan(String column, Number value) {
+		public Where lessThan(final String column, final Number value) {
 			this.conditions.add(column + " < ?");
 			this.values.add(value);
 
@@ -1045,7 +1152,7 @@ public class SimpleDatabase {
 		 * @param values
 		 * @return
 		 */
-		public Where in(String column, @NonNull Collection<?> values) {
+		public Where in(final String column, @NonNull final Collection<?> values) {
 			if (values.isEmpty())
 				return this;
 
@@ -1066,7 +1173,7 @@ public class SimpleDatabase {
 		 * @param values
 		 * @return
 		 */
-		public Where notIn(String column, @NonNull Collection<?> values) {
+		public Where notIn(final String column, @NonNull final Collection<?> values) {
 			if (values.isEmpty())
 				return this;
 
@@ -1086,7 +1193,7 @@ public class SimpleDatabase {
 		 * @param column
 		 * @return
 		 */
-		public Where isNull(String column) {
+		public Where isNull(final String column) {
 			this.conditions.add(column + " IS NULL");
 
 			return this;
@@ -1098,7 +1205,7 @@ public class SimpleDatabase {
 		 * @param column
 		 * @return
 		 */
-		public Where isNotNull(String column) {
+		public Where isNotNull(final String column) {
 			this.conditions.add(column + " IS NOT NULL");
 
 			return this;
@@ -1112,7 +1219,7 @@ public class SimpleDatabase {
 		 * @param upperValue
 		 * @return
 		 */
-		public Where between(String column, Number lowerValue, Number upperValue) {
+		public Where between(final String column, final Number lowerValue, final Number upperValue) {
 			this.conditions.add(column + " BETWEEN ? AND ?");
 			this.values.add(lowerValue);
 			this.values.add(upperValue);
@@ -1126,7 +1233,7 @@ public class SimpleDatabase {
 		 * @param anotherClause
 		 * @return
 		 */
-		public Where or(Where anotherClause) {
+		public Where or(final Where anotherClause) {
 			if (!anotherClause.getConditions().isEmpty()) {
 				this.conditions.add("(" + String.join(" OR ", anotherClause.getConditions()) + ")");
 
@@ -1142,7 +1249,7 @@ public class SimpleDatabase {
 		 * @param anotherClause
 		 * @return
 		 */
-		public Where and(Where anotherClause) {
+		public Where and(final Where anotherClause) {
 			if (!anotherClause.getConditions().isEmpty()) {
 				this.conditions.add("(" + String.join(" AND ", anotherClause.getConditions()) + ")");
 
@@ -1150,6 +1257,32 @@ public class SimpleDatabase {
 			}
 
 			return this;
+		}
+
+		/**
+		 * @deprecated do not use, not to be mixed with other equals methods
+		 */
+		@Deprecated
+		@Override
+		public boolean equals(final Object obj) {
+			throw new UnsupportedOperationException("Cannot use Java native equals method on Where");
+		}
+
+		/**
+		 * Get a string representation of the conditions.
+		 */
+		@Override
+		public String toString() {
+			final List<String> merged = new ArrayList<>();
+
+			for (int i = 0; i < this.conditions.size(); i++) {
+				final String condition = this.conditions.get(i);
+				final Object value = this.values.get(i);
+
+				merged.add(condition.replace("?", "").trim() + " " + value);
+			}
+
+			return String.join(", ", merged);
 		}
 
 		/**
