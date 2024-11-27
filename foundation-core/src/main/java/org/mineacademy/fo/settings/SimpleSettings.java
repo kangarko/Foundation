@@ -113,7 +113,7 @@ public class SimpleSettings extends YamlStaticConfig {
 
 		if (isSetDefault("Server_Name")) {
 			final String serverName = getString("Server_Name");
-			ValidCore.checkBoolean(serverName.length() < 33, "Server_Name cannot be longer than 33 characters!");
+			ValidCore.checkBoolean(serverName.length() < 64, "Server_Name cannot be longer than 64 characters!");
 
 			Platform.setCustomServerName(serverName.isEmpty() ? "server" : serverName);
 		}
