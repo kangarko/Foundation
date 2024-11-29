@@ -1,0 +1,108 @@
+package org.mineacademy.fo.platform;
+
+import org.bukkit.entity.Player;
+import org.mineacademy.fo.PlayerUtil;
+import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.model.CompChatColor;
+import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleExpansion;
+import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.remain.Remain;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+/**
+ * Expands the functionality of {@link Variables} to include Bukkit-specific variables,
+ * and also hooks into PlaceholderAPI.
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+final class BukkitPlaceholders extends SimpleExpansion {
+
+	@Getter
+	private final static BukkitPlaceholders instance = new BukkitPlaceholders();
+
+	@Override
+	protected SimpleComponent onReplace(FoundationPlayer audience, String identifier) {
+		final Player player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
+
+		if ("player_tab_name".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getPlayerListName());
+
+		else if ("player_display_name".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getDisplayName());
+
+		else if ("player_nick".equals(identifier) || "nick".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? audience.getName() : HookManager.getNickColored(player));
+
+		else if ("player_prefix".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerPrefix(player));
+
+		else if ("player_suffix".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerSuffix(player));
+
+		else if ("player_group".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerPermissionGroup(player));
+
+		else if ("player_primary_group".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerPrimaryGroup(player));
+
+		else if ("player_vanished".equals(identifier))
+			return SimpleComponent.fromPlain(player == null ? "false" : String.valueOf(PlayerUtil.isVanished(player)));
+
+		else if ("player_town".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getTownName(player));
+
+		else if ("player_nation".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getNation(player));
+
+		else if ("player_faction".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getFaction(player));
+
+		else if ("player_world".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : HookManager.getWorldAlias(player.getWorld()));
+
+		else if ("player_health".equals(identifier))
+			return SimpleComponent.fromSection(player == null ? "" : formatHealth(player));
+
+		else if ("player_location".equals(identifier))
+			return SimpleComponent.fromPlain(player == null ? "" : SerializeUtil.serializeLocation(player.getLocation()));
+
+		else if ("player_x".equals(identifier))
+			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockX()));
+
+		else if ("player_y".equals(identifier))
+			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockY()));
+
+		else if ("player_z".equals(identifier))
+			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockZ()));
+
+		else if ("nms_version".equals(identifier) || "server_nms_version".equals(identifier))
+			return SimpleComponent.fromPlain(Remain.getNmsVersion());
+
+		else {
+			final String placeholderAPIValue = HookManager.getPlaceholderAPIValue(player, identifier);
+
+			if (placeholderAPIValue != null)
+				return SimpleComponent.fromSection(placeholderAPIValue);
+		}
+
+		return null;
+	}
+
+	/*
+	 * Formats the {health} variable
+	 */
+	private static String formatHealth(Player player) {
+		final int health = Remain.getHealth(player);
+
+		return (health > 10 ? CompChatColor.DARK_GREEN : health > 5 ? CompChatColor.GOLD : CompChatColor.RED) + "" + health + CompChatColor.RESET;
+	}
+
+	@Override
+	public int getPriority() {
+		return 9;
+	}
+}

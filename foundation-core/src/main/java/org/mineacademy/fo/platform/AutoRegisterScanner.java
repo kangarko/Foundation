@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -118,6 +119,10 @@ final class AutoRegisterScanner {
 
 				// Require our annotation to be used
 				if (autoRegister != null || ProxyListener.class.isAssignableFrom(clazz) || SimpleExpansion.class.isAssignableFrom(clazz) || customRegisterHandler.canAutoRegister(clazz)) {
+					final Platform.Type[] requiredType = autoRegister != null ? autoRegister.requirePlatform() : null;
+
+					if (requiredType != null && requiredType.length > 0 && !Arrays.asList(requiredType).contains(Platform.getType()))
+						continue;
 
 					if (customRegisterHandler.isIgnored(clazz, printWarnings))
 						continue;

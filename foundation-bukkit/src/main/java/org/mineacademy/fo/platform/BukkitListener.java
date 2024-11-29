@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -45,6 +46,19 @@ final class BukkitListener implements Listener {
 	}
 
 	/**
+	 * Listen to console command sending to reload PlaceholderAPI cache.
+	 *
+	 * @param event
+	 */
+	@EventHandler
+	public void onServerCommand(ServerCommandEvent event) {
+		final String command = event.getCommand();
+
+		if (command.equals("papi reload") || command.equals("placeholderapi reload"))
+			Platform.runTask(10, () -> HookManager.reloadPlaceholderAPIHooks());
+	}
+
+	/**
 	 * Handler for {@link ChatPaginator}
 	 *
 	 * @param event
@@ -56,115 +70,117 @@ final class BukkitListener implements Listener {
 		final FoundationPlayer audience = Platform.toPlayer(player);
 		final String message = event.getMessage();
 
-		if (!message.startsWith("/#flp"))
-			return;
+		if (message.equals("/papi reload") || message.equals("/placeholderapi reload")) {
+			Platform.runTask(10, () -> HookManager.reloadPlaceholderAPIHooks());
 
-		final String[] args = message.split(" ");
+		} else if (message.startsWith("/#flp")) {
+			final String[] args = message.split(" ");
 
-		if (args.length != 2) {
-			audience.sendMessage(Lang.component("page-no-page-number"));
+			if (args.length != 2) {
+				audience.sendMessage(Lang.component("page-no-page-number"));
 
-			event.setCancelled(true);
-			return;
-		}
+				event.setCancelled(true);
+				return;
+			}
 
-		if (!player.hasMetadata(CompMetadata.TAG_PAGINATION)) {
-			event.setCancelled(true);
+			if (!player.hasMetadata(CompMetadata.TAG_PAGINATION)) {
+				event.setCancelled(true);
 
-			return;
-		}
+				return;
+			}
 
-		final String numberRaw = args[1];
-		int page = -1;
+			final String numberRaw = args[1];
+			int page = -1;
 
-		try {
-			page = Integer.parseInt(numberRaw) - 1;
+			try {
+				page = Integer.parseInt(numberRaw) - 1;
 
-		} catch (final NumberFormatException ex) {
-			audience.sendMessage(Lang.componentVars("page-invalid-page", "input", numberRaw));
+			} catch (final NumberFormatException ex) {
+				audience.sendMessage(Lang.componentVars("page-invalid-page", "input", numberRaw));
 
-			event.setCancelled(true);
-			return;
-		}
+				event.setCancelled(true);
+				return;
+			}
 
-		final ChatPaginator chatPages = (ChatPaginator) player.getMetadata(CompMetadata.TAG_PAGINATION).get(0).value();
-		final Map<Integer, List<SimpleComponent>> pages = chatPages.getPages();
+			final ChatPaginator chatPages = (ChatPaginator) player.getMetadata(CompMetadata.TAG_PAGINATION).get(0).value();
+			final Map<Integer, List<SimpleComponent>> pages = chatPages.getPages();
 
-		// Remove empty lines
-		pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+			// Remove empty lines
+			pages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 
-		if (pages.isEmpty() || !pages.containsKey(page)) {
-			Messenger.error(player, pages.isEmpty()
-					? Lang.component("page-no-pages")
-					: Lang.component("page-no-page"));
+			if (pages.isEmpty() || !pages.containsKey(page)) {
+				Messenger.error(player, pages.isEmpty()
+						? Lang.component("page-no-pages")
+						: Lang.component("page-no-page"));
 
-			event.setCancelled(true);
+				event.setCancelled(true);
 
-			return;
-		}
+				return;
+			}
 
-		{ // Send the message body
-			for (final SimpleComponent component : chatPages.getHeader())
-				audience.sendMessage(component);
+			{ // Send the message body
+				for (final SimpleComponent component : chatPages.getHeader())
+					audience.sendMessage(component);
 
-			final List<SimpleComponent> messagesOnPage = pages.get(page);
-			int count = 1;
+				final List<SimpleComponent> messagesOnPage = pages.get(page);
+				int count = 1;
 
-			for (final SimpleComponent component : messagesOnPage)
-				audience.sendMessage(component.replaceBracket("count", String.valueOf(page + count++)));
+				for (final SimpleComponent component : messagesOnPage)
+					audience.sendMessage(component.replaceBracket("count", String.valueOf(page + count++)));
 
-			int whiteLines = chatPages.getLinesPerPage();
+				int whiteLines = chatPages.getLinesPerPage();
 
-			if (whiteLines == 15 && pages.size() == 1)
-				if (messagesOnPage.size() < 17)
-					whiteLines = 7;
+				if (whiteLines == 15 && pages.size() == 1)
+					if (messagesOnPage.size() < 17)
+						whiteLines = 7;
+					else
+						whiteLines += 2;
+
+				for (int i = messagesOnPage.size(); i < whiteLines; i++)
+					audience.sendMessage(SimpleComponent.fromPlain(" "));
+
+				for (final SimpleComponent component : chatPages.getFooter())
+					audience.sendMessage(component);
+			}
+
+			// Fill in the pagination line
+			if (pages.size() > 1) {
+				player.sendMessage(" ");
+
+				final int pagesDigits = (int) (Math.log10(pages.size()) + 1);
+				final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
+
+				SimpleComponent component = SimpleComponent
+						.fromMini("&8&m" + CommonCore.duplicate("-", multiply) + "&r");
+
+				if (page == 0)
+					component = component.appendMini(" &7« ");
 				else
-					whiteLines += 2;
+					component = component
+							.appendMini(" &6« ")
+							.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page)))
+							.onClickRunCmd("/#flp " + page);
 
-			for (int i = messagesOnPage.size(); i < whiteLines; i++)
-				audience.sendMessage(SimpleComponent.fromPlain(" "));
-
-			for (final SimpleComponent component : chatPages.getFooter())
-				audience.sendMessage(component);
-		}
-
-		// Fill in the pagination line
-		if (pages.size() > 1) {
-			player.sendMessage(" ");
-
-			final int pagesDigits = (int) (Math.log10(pages.size()) + 1);
-			final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
-
-			SimpleComponent component = SimpleComponent
-					.fromMini("&8&m" + CommonCore.duplicate("-", multiply) + "&r");
-
-			if (page == 0)
-				component = component.appendMini(" &7« ");
-			else
 				component = component
-						.appendMini(" &6« ")
-						.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page)))
-						.onClickRunCmd("/#flp " + page);
+						.appendMini("&f" + (page + 1)).onHover(Lang.componentArray("page-go-to-first-page")).onClickRunCmd("/#flp 1")
+						.appendMini("&7/").onHover(Lang.componentArray("page-tooltip"))
+						.appendMini("&f" + pages.size() + "").onHover(Lang.componentArray("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
 
-			component = component
-					.appendMini("&f" + (page + 1)).onHover(Lang.componentArray("page-go-to-first-page")).onClickRunCmd("/#flp 1")
-					.appendMini("&7/").onHover(Lang.componentArray("page-tooltip"))
-					.appendMini("&f" + pages.size() + "").onHover(Lang.componentArray("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
+				if (page + 1 >= pages.size())
+					component = component.appendMini(" &7» ");
+				else
+					component = component
+							.appendMini(" &6» ")
+							.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page + 2)))
+							.onClickRunCmd("/#flp " + (page + 2));
 
-			if (page + 1 >= pages.size())
-				component = component.appendMini(" &7» ");
-			else
-				component = component
-						.appendMini(" &6» ")
-						.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page + 2)))
-						.onClickRunCmd("/#flp " + (page + 2));
+				audience.sendMessage(component
+						.appendMini("&8&m" + CommonCore.duplicate("-", multiply)));
+			}
 
-			audience.sendMessage(component
-					.appendMini("&8&m" + CommonCore.duplicate("-", multiply)));
+			// Prevent "Unknown command message"
+			event.setCancelled(true);
 		}
-
-		// Prevent "Unknown command message"
-		event.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)

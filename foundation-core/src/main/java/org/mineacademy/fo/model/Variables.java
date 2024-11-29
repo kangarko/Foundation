@@ -4,22 +4,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.command.SimpleCommandGroup;
+import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.settings.SimpleSettings;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -58,6 +54,11 @@ public final class Variables {
 	private static final String MAGIC_STRING_CONCATENATION = "%FLPV%";
 
 	/**
+	 * The cache for variables that expire after 5 seconds.
+	 */
+	private static final Map<String, SimpleComponent> cache = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
+
+	/**
 	 * Variables added to Foundation by you or other plugins
 	 *
 	 * This is used to dynamically replace the variable based on its content, like
@@ -66,23 +67,7 @@ public final class Variables {
 	 * We also hook into PlaceholderAPI, however, you'll have to use your plugin's prefix before
 	 * all variables when called from there.
 	 */
-	private static final Set<SimpleExpansion> expansions = new HashSet<>();
-
-	/**
-	 * Set the collector to collect variables for the specified audience
-	 *
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	private static List<Collector> collectors = new ArrayList<>(); // TODO merge with expansions
-
-	/**
-	 * If PlaceholderAPI is installed to replace its placeholders within.
-	 *
-	 * @deprecated oh for a better way to do this
-	 */
-	@Deprecated
-	private static Boolean hasPlaceholderAPI = null;
+	private static final List<SimpleExpansion> expansions = new ArrayList<>();
 
 	/**
 	 * Whether we should replace JavaScript variables in replace() methods.
@@ -231,24 +216,12 @@ public final class Variables {
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
 
-		// Cache for repeated variable lookups to avoid redundant processing.
-		final HashMap<String, SimpleComponent> variableCache = new HashMap<>();
-
 		while (matcher.find()) {
 			final String variable = matcher.group(1);
 
 			result.append(message, lastMatchEnd, matcher.start());
 
-			SimpleComponent value;
-
-			if (variableCache.containsKey(variable))
-				value = variableCache.get(variable);
-			else {
-				value = this.replaceVariable(variable);
-
-				if (value != null)
-					variableCache.put(variable, value);
-			}
+			final SimpleComponent value = this.replaceVariable(variable);
 
 			if (value != null)
 				switch (this.legacyMode) {
@@ -262,6 +235,7 @@ public final class Variables {
 						result.append(value.toMini());
 						break;
 				}
+
 			else
 				result.append(matcher.group());
 
@@ -318,105 +292,6 @@ public final class Variables {
 			backSpace = true;
 		}
 
-		// Needed for the PlaceholderAPI split
-		final int index = variable.indexOf("_");
-		String pluginIdentifier = "";
-		String params = "";
-
-		if (!(index <= 0 || index >= variable.length())) {
-			pluginIdentifier = variable.substring(0, index).toLowerCase();
-
-			params = variable.substring(index + 1);
-		}
-
-		if (hasPlaceholderAPI == null)
-			hasPlaceholderAPI = Platform.isPluginInstalled("PlaceholderAPI");
-
-		// If PlaceholderAPI is installed, the replaced below uses it
-		if (!hasPlaceholderAPI)
-			for (final SimpleExpansion expansion : expansions) {
-				final SimpleComponent value = expansion.replacePlaceholders(this.audience, params);
-
-				if (value != null) {
-					replacedValue = value;
-
-					break;
-				}
-			}
-
-		if (this.audience != null && replaceScript) {
-			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
-
-			if (javascriptKey != null) {
-				final SimpleComponent value = javascriptKey.build(this.audience, this.placeholders);
-
-				if (value != null)
-					replacedValue = value;
-			}
-		}
-
-		for (final Collector collector : collectors) {
-			final SimpleComponent collectedVariable = collector.replaceVariable(pluginIdentifier, params, variable, this.audience);
-
-			if (collectedVariable != null)
-				replacedValue = collectedVariable;
-		}
-
-		if ("prefix_plugin".equals(variable))
-			replacedValue = SimpleSettings.PREFIX;
-
-		else if ("prefix_info".equals(variable))
-			replacedValue = Messenger.getInfoPrefix();
-
-		else if ("prefix_success".equals(variable))
-			replacedValue = Messenger.getSuccessPrefix();
-
-		else if ("prefix_warn".equals(variable))
-			replacedValue = Messenger.getWarnPrefix();
-
-		else if ("prefix_error".equals(variable))
-			replacedValue = Messenger.getErrorPrefix();
-
-		else if ("prefix_question".equals(variable))
-			replacedValue = Messenger.getQuestionPrefix();
-
-		else if ("prefix_announce".equals(variable))
-			replacedValue = Messenger.getAnnouncePrefix();
-
-		else if ("server_name".equals(variable))
-			replacedValue = Platform.hasCustomServerName() ? SimpleComponent.fromPlain(Platform.getCustomServerName()) : SimpleComponent.empty();
-
-		else if ("date".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(TimeUtil.getFormattedDate());
-
-		else if ("date_short".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(TimeUtil.getFormattedDateShort());
-
-		else if ("date_month".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(TimeUtil.getFormattedDateMonth());
-
-		else if ("chat_line".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(CommonCore.chatLine());
-
-		else if ("chat_line_smooth".equals(variable))
-			replacedValue = SimpleComponent.fromSection(CommonCore.chatLineSmooth());
-
-		else if ("sender_is_discord".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(this.audience != null && this.audience.isDiscord() ? "true" : "false");
-
-		else if ("sender_is_console".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(this.audience != null && this.audience.isConsole() ? "true" : "false");
-
-		else if ("sender_is_player".equals(variable))
-			replacedValue = SimpleComponent.fromPlain(this.audience.isPlayer() ? "true" : "false");
-
-		else if ("label".equals(variable)) {
-			final SimpleCommandGroup defaultGroup = Platform.getPlugin().getDefaultCommandGroup();
-
-			if (defaultGroup != null)
-				replacedValue = SimpleComponent.fromPlain(defaultGroup.getLabel());
-		}
-
 		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
 			final String key = entry.getKey();
 
@@ -445,6 +320,36 @@ public final class Variables {
 			}
 		}
 
+		if (replacedValue == null)
+			replacedValue = cache.get(variable);
+
+		if (replacedValue == null && this.audience != null && replaceScript) {
+			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
+
+			if (javascriptKey != null) {
+				final SimpleComponent value = javascriptKey.build(this.audience, this.placeholders);
+
+				if (value != null)
+					replacedValue = value;
+			}
+		}
+
+		if (replacedValue == null)
+			for (final SimpleExpansion expansion : expansions) {
+				final SimpleComponent value = expansion.replacePlaceholders(this.audience, variable);
+
+				if (value != null) {
+					replacedValue = value;
+
+					break;
+				}
+			}
+
+		if (replacedValue != null)
+			cache.put(variable, replacedValue);
+		else
+			cache.put(variable, SimpleComponent.fromPlain(variable));
+
 		if (frontSpace)
 			replacedValue = SimpleComponent.fromPlain(" ").append(replacedValue);
 
@@ -465,6 +370,8 @@ public final class Variables {
 	 */
 	public static void addExpansion(SimpleExpansion expansion) {
 		expansions.add(expansion);
+
+		expansions.sort((first, second) -> Integer.compare(second.getPriority(), first.getPriority()));
 	}
 
 	/**
@@ -472,19 +379,8 @@ public final class Variables {
 	 *
 	 * @return
 	 */
-	public static Set<SimpleExpansion> getExpansions() {
+	public static List<SimpleExpansion> getExpansions() {
 		return expansions;
-	}
-
-	/**
-	 * Add a collector to collect variables for an audience.
-	 *
-	 * @param collector
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	public static void addCollector(@NonNull Collector collector) {
-		collectors.add(collector);
 	}
 
 	/**
@@ -531,15 +427,5 @@ public final class Variables {
 		 * Convert the components to mini text such as \<green\>Hello
 		 */
 		TO_MINI;
-	}
-
-	/**
-	 * Collects variables for the specified audience.
-	 *
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	public interface Collector {
-		SimpleComponent replaceVariable(String plugin, String params, String variable, FoundationPlayer audience);
 	}
 }

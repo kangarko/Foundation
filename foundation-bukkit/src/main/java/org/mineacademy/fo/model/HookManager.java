@@ -1460,8 +1460,11 @@ public final class HookManager {
 	 *
 	 * @param player  the player to parse the placeholders against.
 	 * @param message the message to parse the placeholders in.
+	 *
+	 * @deprecated MvdwPlaceholderAPI support is deprecated
 	 * @return
 	 */
+	@Deprecated
 	public static String replacePlaceholders(final @Nullable OfflinePlayer player, String message) {
 		if (message == null || "".equals(message.trim()))
 			return message;
@@ -1473,23 +1476,28 @@ public final class HookManager {
 	}
 
 	/**
+	 * Uses PlaceholderAPI to replace the given variable in a message.
 	 *
-	 * @return
+	 * @param player
+	 * @param variable the full variable incl. plugin identifier, i.e. player_ping or chatcontrol_player_channels
+	 *
+	 * @return the value or null if not found or PAPI not installed
 	 */
-	public static Map<String, Object> getPlaceholderAPIHooks() {
-		return isPlaceholderAPILoaded() ? placeholderAPIHook.getHooks() : new HashMap<>();
+	public static String getPlaceholderAPIValue(Player player, String variable) {
+		return isPlaceholderAPILoaded() ? placeholderAPIHook.getValue(player, variable) : null;
 	}
 
 	/**
+	 * Reloads PlaceholderAPI hooks. We cache them for performance reasons as
+	 * each fresh lookup takes ~0.03ms which can easily 100x for long formats
+	 * such as those in ChatControl.
 	 *
-	 * @param placeholderExpansion
-	 * @param identifier
-	 * @param param
-	 * @param params
-	 * @return
+	 * @deprecated internal use only
 	 */
-	public static String getPlaceholderAPIValue(Object placeholderExpansion, String identifier, Player param, String params) {
-		return isPlaceholderAPILoaded() ? placeholderAPIHook.getValue(placeholderExpansion, identifier, param, params) : "";
+	@Deprecated
+	public static void reloadPlaceholderAPIHooks() {
+		if (isPlaceholderAPILoaded())
+			placeholderAPIHook.reloadHooks();
 	}
 
 	/**
@@ -1500,12 +1508,12 @@ public final class HookManager {
 	 * @param message the message to parse the placeholders in.
 	 * @return
 	 */
-	public static String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
+	/*public static String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
 		if (message == null || "".equals(message.trim()))
 			return message;
-
+	
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, message) : message;
-	}
+	}*/
 
 	/**
 	 * Uses PlaceholderAPI to replace relational placeholders in a message.
@@ -1515,9 +1523,9 @@ public final class HookManager {
 	 * @param component
 	 * @return
 	 */
-	public static SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer firstAudience, @Nullable final FoundationPlayer secondAudience, final SimpleComponent component) {
+	/*public static SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer firstAudience, @Nullable final FoundationPlayer secondAudience, final SimpleComponent component) {
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(firstAudience, secondAudience, component) : component;
-	}
+	}*/
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Factions
@@ -2482,11 +2490,11 @@ class VaultHook {
 
 final class PlaceholderAPIHook {
 
-	private final VariablesInjector injector;
+	private final FoundationPlaceholderAPIInjector injector;
 	private Map<String, Object> hooks;
 
 	PlaceholderAPIHook() {
-		this.injector = new VariablesInjector();
+		this.injector = new FoundationPlaceholderAPIInjector();
 
 		try {
 			this.injector.register();
@@ -2521,16 +2529,22 @@ final class PlaceholderAPIHook {
 		}
 	}
 
-	Map<String, Object> getHooks() {
-		if (this.hooks == null) {
-			this.hooks = new HashMap<>();
-
-			// MineAcademy edit: Case insensitive
-			for (final PlaceholderExpansion expansion : PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions())
-				this.hooks.put(expansion.getIdentifier().toLowerCase(), expansion);
-		}
+	private Map<String, Object> getHooks() {
+		if (this.hooks == null)
+			this.reloadHooks();
 
 		return this.hooks;
+	}
+
+	void reloadHooks() {
+		this.hooks = new HashMap<>();
+
+		// MineAcademy edit: Case insensitive
+		for (final PlaceholderExpansion expansion : PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions())
+
+			// Ignore our internal expansion
+			if (!expansion.getVersion().equals("foundation-internal"))
+				this.hooks.put(expansion.getIdentifier().toLowerCase(), expansion);
 	}
 
 	private String setPlaceholders(final OfflinePlayer player, String text) {
@@ -2564,7 +2578,7 @@ final class PlaceholderAPIHook {
 			final String params = variable.substring(index + 1);
 
 			if (hooks.containsKey(identifier)) {
-				String value = this.getValue(hooks.get(identifier), identifier, player, params);
+				String value = this.getValue(hooks.get(identifier), player, params);
 
 				if (value != null) {
 					value = Matcher.quoteReplacement(CompChatColor.translateColorCodes(value));
@@ -2577,8 +2591,31 @@ final class PlaceholderAPIHook {
 		return message;
 	}
 
-	String getValue(Object placeholderExpansion, String identifier, OfflinePlayer player, String params) {
+	private String getValue(Object placeholderExpansion, OfflinePlayer player, String params) {
 		return ((PlaceholderExpansion) placeholderExpansion).onRequest(player, params);
+	}
+
+	String getValue(OfflinePlayer player, String variable) {
+		final int index = variable.indexOf("_");
+
+		String pluginIdentifier = "";
+		String params = "";
+
+		if (!(index <= 0 || index >= variable.length())) {
+			pluginIdentifier = variable.substring(0, index).toLowerCase();
+			params = variable.substring(index + 1);
+
+			final Object expansion = this.getHooks().get(pluginIdentifier);
+
+			if (expansion != null) {
+				final String value = this.getValue(expansion, player, params);
+
+				if (value != null)
+					return value;
+			}
+		}
+
+		return null;
 	}
 
 	String replaceRelationPlaceholders(final Player one, final Player two, String message) {
@@ -2671,7 +2708,7 @@ final class PlaceholderAPIHook {
 		return text;
 	}
 
-	private class VariablesInjector extends PlaceholderExpansion {
+	class FoundationPlaceholderAPIInjector extends PlaceholderExpansion {
 
 		/**
 		 * Because this is an internal class,
@@ -2731,7 +2768,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getVersion() {
-			return BukkitPlugin.getInstance().getDescription().getVersion();
+			return "foundation-internal";
 		}
 
 		/**

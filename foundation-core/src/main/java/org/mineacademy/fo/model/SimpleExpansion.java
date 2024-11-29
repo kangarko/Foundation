@@ -31,14 +31,14 @@ public abstract class SimpleExpansion {
 	 * The corearena_ is removed automatically.
 	 *
 	 * @param audience
-	 * @param params
+	 * @param identifier
 	 *
 	 * @return the value or null if not valid
 	 */
-	public final SimpleComponent replacePlaceholders(FoundationPlayer audience, String params) {
-		this.args = params.split("\\_");
+	public final SimpleComponent replacePlaceholders(FoundationPlayer audience, String identifier) {
+		this.args = identifier.split("\\_");
 
-		return this.onReplace(audience, params);
+		return this.onReplace(audience, identifier);
 	}
 
 	/**
@@ -46,11 +46,11 @@ public abstract class SimpleExpansion {
 	 * identifier.
 	 *
 	 * @param audience the player or null if not given
-	 * @param params everything after your plugin name such as if user types {corearena_player_health},
+	 * @param identifier everything after your plugin name such as if user types {corearena_player_health},
 	 * 		  we return only "player_health". You can also use {@link #args} here.
 	 * @return
 	 */
-	protected abstract SimpleComponent onReplace(FoundationPlayer audience, String params);
+	protected abstract SimpleComponent onReplace(FoundationPlayer audience, String identifier);
 
 	/**
 	 * Automatically joins the {@link #args} from the given index
@@ -71,5 +71,16 @@ public abstract class SimpleExpansion {
 	 */
 	protected final String join(int startIndex, int stopIndex) {
 		return CommonCore.joinRange(startIndex, stopIndex, this.args);
+	}
+
+	/**
+	 * Return the priority of this expansion, the higher the sooner
+	 * it will be called. You can override FoundationPlaceholders if
+	 * you change this to 20 or more.
+	 *
+	 * @return
+	 */
+	public int getPriority() {
+		return 1;
 	}
 }
