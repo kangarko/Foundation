@@ -6,6 +6,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.mineacademy.fo.platform.Platform;
+
 /**
  * An annotation that instructs Foundation to automatically register the following
  * classes when the plugin starts or is reloaded:
@@ -41,4 +43,11 @@ public @interface AutoRegister {
 	 * @return
 	 */
 	boolean hideIncompatibilityWarnings() default false;
+
+	/**
+	 * When set, we will only register the class on the specified platforms.
+	 *
+	 * @return
+	 */
+	Platform.Type[] requirePlatform() default {};
 }
