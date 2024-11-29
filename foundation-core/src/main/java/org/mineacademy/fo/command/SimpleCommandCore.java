@@ -1224,12 +1224,16 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final String joinArgs(final int from, final int to) {
-		String message = "";
+		final StringBuilder message = new StringBuilder();
 
-		for (int i = from; i < this.args.length && i < to; i++)
-			message += this.args[i] + (i + 1 == this.args.length ? "" : " ");
+		for (int i = from; i < this.args.length && i < to; i++) {
+			if (message.length() > 0)
+				message.append(' ');
 
-		return message;
+			message.append(this.args[i]);
+		}
+
+		return message.toString();
 	}
 
 	// ----------------------------------------------------------------------
