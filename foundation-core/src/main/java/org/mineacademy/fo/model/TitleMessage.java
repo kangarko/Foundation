@@ -5,7 +5,6 @@ import java.util.function.Function;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.platform.FoundationPlayer;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -13,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  * Represents a simple title message.
  */
 @Getter
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public final class TitleMessage implements ConfigSerializable {
 
 	/**
@@ -61,6 +60,16 @@ public final class TitleMessage implements ConfigSerializable {
 	}
 
 	/**
+	 * Displays this title message to the given audience.
+	 *
+	 * @param audience
+	 * @param variablesReplacer
+	 */
+	public void displayLegacyTo(FoundationPlayer audience, Function<String, String> variablesReplacer) {
+		audience.sendTitle(this.fadeIn, this.stay, this.fadeOut, variablesReplacer.apply(this.titleMessage), variablesReplacer.apply(this.subtitleMessage));
+	}
+
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -96,20 +105,6 @@ public final class TitleMessage implements ConfigSerializable {
 		final int stay = map.getInteger("stay");
 		final int fadeOut = map.getInteger("fadeOut");
 
-		return new TitleMessage(title, subtitle, fadeIn, stay, fadeOut);
-	}
-
-	/**
-	 * Create a new title message.
-	 *
-	 * @param title
-	 * @param subtitle
-	 * @param fadeIn
-	 * @param stay
-	 * @param fadeOut
-	 * @return
-	 */
-	public static TitleMessage from(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
 		return new TitleMessage(title, subtitle, fadeIn, stay, fadeOut);
 	}
 }
