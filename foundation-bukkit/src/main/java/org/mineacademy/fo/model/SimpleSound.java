@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ValidCore;
@@ -26,7 +25,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 * The Bukkit sound value
 	 */
 	@NonNull
-	private Sound sound;
+	private CompSound sound;
 
 	/**
 	 * The volume value
@@ -48,24 +47,11 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 */
 	private boolean enabled = true;
 
-	/**
-	 * Create a new sound
-	 *
-	 * @param sound
-	 * @param volume
-	 * @param pitch
-	 */
-	public SimpleSound(Sound sound, float volume, float pitch) {
+	private SimpleSound(CompSound sound, float volume, float pitch) {
 		this(sound, volume, pitch, false, true);
 	}
 
-	/**
-	 * Create a new sound with a random pitch
-	 *
-	 * @param sound
-	 * @param volume
-	 */
-	public SimpleSound(Sound sound, float volume) {
+	private SimpleSound(CompSound sound, float volume) {
 		this(sound, volume, 1.0F, true, true);
 	}
 
@@ -100,7 +86,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 			ValidCore.checkNotNull(this.sound);
 
 			try {
-				player.playSound(player.getLocation(), this.sound, this.volume, this.getPitch());
+				player.playSound(player.getLocation(), this.sound.getSound(), this.volume, this.getPitch());
 			} catch (final NoSuchMethodError err) {
 				// Legacy MC
 			}
@@ -117,7 +103,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 			ValidCore.checkNotNull(this.sound);
 
 			try {
-				location.getWorld().playSound(location, this.sound, this.volume, this.getPitch());
+				location.getWorld().playSound(location, this.sound.getSound(), this.volume, this.getPitch());
 			} catch (final NoSuchMethodError err) {
 				// Legacy MC
 			}
@@ -161,7 +147,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 */
 	public static SimpleSound fromString(String line) {
 		if ("none".equals(line))
-			return new SimpleSound(CompSound.UI_BUTTON_CLICK.getSound(), 0.0F, 1.0F, false, false);
+			return new SimpleSound(CompSound.UI_BUTTON_CLICK, 0.0F, 1.0F, false, false);
 
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
 		final CompSound compSound = CompSound.fromName(values[0]);
@@ -169,7 +155,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 		final SimpleSound sound = new SimpleSound();
 
 		ValidCore.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds");
-		sound.sound = compSound.getSound();
+		sound.sound = compSound;
 
 		if (values.length == 1) {
 			sound.volume = 1F;
@@ -194,5 +180,30 @@ public final class SimpleSound implements ConfigStringSerializable {
 			sound.pitch = Float.parseFloat(pitchRaw);
 
 		return sound;
+	}
+
+	/**
+	 * Create a new sound
+	 *
+	 * @param sound
+	 * @param volume
+	 * @param pitch
+	 *
+	 * @return
+	 */
+	public static SimpleSound fromSound(@NonNull CompSound sound, float volume, float pitch) {
+		return new SimpleSound(sound, volume, pitch);
+	}
+
+	/**
+	 * Create a new sound with a random pitch
+	 *
+	 * @param sound
+	 * @param volume
+	 *
+	 * @return
+	 */
+	public static SimpleSound fromSound(@NonNull CompSound sound, float volume) {
+		return new SimpleSound(sound, volume);
 	}
 }
