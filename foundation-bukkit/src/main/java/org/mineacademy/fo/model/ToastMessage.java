@@ -7,13 +7,12 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a simple toast message
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public final class ToastMessage implements ConfigSerializable {
 
 	/**
@@ -46,8 +45,8 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param player
 	 * @param variableReplacer
 	 */
-	public void displayTo(Player player, Function<SimpleComponent, SimpleComponent> variableReplacer) {
-		Remain.sendToast(player, variableReplacer.apply(SimpleComponent.fromMini(this.message)).toLegacy(), this.icon, this.style);
+	public void displayTo(Player player, Function<String, String> variableReplacer) {
+		Remain.sendToast(player, variableReplacer.apply(this.message), this.icon, this.style);
 	}
 
 	/**
@@ -78,17 +77,5 @@ public final class ToastMessage implements ConfigSerializable {
 		final String message = map.getString("message");
 
 		return new ToastMessage(icon, style, message);
-	}
-
-	/**
-	 * Create a new toast message
-	 *
-	 * @param material
-	 * @param style
-	 * @param message
-	 * @return
-	 */
-	public static ToastMessage from(CompMaterial material, CompToastStyle style, String message) {
-		return from(material, style, message);
 	}
 }
