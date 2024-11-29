@@ -282,18 +282,6 @@ public interface FoundationPlugin {
 	}
 
 	/**
-	 * Should we remove diacritical marks before matching regex?
-	 * Defaults to true.
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	default boolean isRegexStrippingAccents() {
-		return true;
-	}
-
-	/**
 	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in the Common class?
 	 *
 	 * May impose a slight performance penalty but useful for non-English servers.

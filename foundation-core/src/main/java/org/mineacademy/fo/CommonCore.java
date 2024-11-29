@@ -786,8 +786,6 @@ public abstract class CommonCore {
 	 * @return A Pattern object that represents the compiled regular expression with applied platform settings.
 	 */
 	public static final Pattern compilePattern(String regex) {
-		regex = Platform.getPlugin().isRegexStrippingAccents() ? ChatUtil.replaceDiacritic(regex) : regex;
-
 		if (Platform.getPlugin().isRegexCaseInsensitive())
 			return Pattern.compile(regex, Platform.getPlugin().isRegexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
 
