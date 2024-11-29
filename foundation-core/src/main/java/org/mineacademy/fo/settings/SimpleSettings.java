@@ -75,6 +75,12 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static ZoneId TIMEZONE = ZoneId.systemDefault();
 
 	/**
+	 * Should we find all Tool classes (on Bukkit platforms) and listen for player interact event to make them functional
+	 * automatically?
+	 */
+	public static Boolean REGISTER_TOOLS = true;
+
+	/**
 	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to -1 to disable.
 	 * <p>
 	 * Typically for ChatControl:
@@ -150,6 +156,9 @@ public class SimpleSettings extends YamlStaticConfig {
 					throw new IllegalArgumentException("No such time-zone in 'Timezone' key in " + getFileName() + ": '" + raw + "'! Available: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids");
 				}
 		}
+
+		if (isSetDefault("Register_Tools"))
+			REGISTER_TOOLS = getBoolean("Register_Tools");
 
 		if (isSetDefault("Log_Lag_Over_Milis")) {
 			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
