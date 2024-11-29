@@ -114,7 +114,7 @@ public final class Variables {
 	 * @return
 	 */
 	public Variables placeholders(@NonNull Map<String, Object> placeholders) {
-		this.placeholders = placeholders;
+		this.placeholders.putAll(placeholders);
 
 		return this;
 	}
