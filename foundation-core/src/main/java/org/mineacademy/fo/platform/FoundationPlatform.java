@@ -3,22 +3,17 @@ package org.mineacademy.fo.platform;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.UUID;
 
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.GeoAPI;
-import org.mineacademy.fo.GeoAPI.GeoResponse;
 import org.mineacademy.fo.Messenger;
-import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.model.CompChatColor;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
@@ -30,57 +25,6 @@ import net.kyori.adventure.text.event.HoverEventSource;
  * An implementation of a {@link Platform}
  */
 public abstract class FoundationPlatform {
-
-	/**
-	 * Expands the functionality of {@link Variables} to include Bukkit-specific variables,
-	 * and also hooks into PlaceholderAPI.
-	 */
-	private final class PlatfomIndependentVariableCollector implements Variables.Collector {
-
-		@Override
-		public SimpleComponent replaceVariable(String pluginIdentifier, String params, String variable, FoundationPlayer audience) {
-			if ("server_version".equals(variable))
-				return SimpleComponent.fromPlain(MinecraftVersion.hasVersion() ? MinecraftVersion.getFullVersion() : Platform.getPlatformVersion());
-
-			else if ("player".equals(variable) || "player_name".equals(variable))
-				return SimpleComponent.fromPlain(audience == null ? "" : audience.getName());
-
-			else if ("player_uuid".equals(variable))
-				return SimpleComponent.fromPlain(audience == null || !audience.isPlayer() ? "" : audience.getUniqueId().toString());
-
-			else if ("player_server".equals(variable))
-				return SimpleComponent.fromPlain(audience == null || !audience.isPlayer() ? "" : audience.getServer().getName());
-
-			else if ("player_ip".equals(variable))
-				return SimpleComponent.fromPlain(audience == null || !audience.isPlayer() ? "" : audience.getAddress().getAddress().toString().split("\\:")[0]);
-
-			else if ("country_code".equals(variable) || "country_name".equals(variable) || "region_name".equals(variable) || "isp".equals(variable)) {
-				final InetSocketAddress ip = audience == null ? null : audience.getAddress();
-
-				if (ip == null)
-					return SimpleComponent.fromPlain("");
-
-				final GeoResponse geoResponse = GeoAPI.getCountry(ip);
-
-				if (geoResponse == null)
-					return SimpleComponent.fromPlain("");
-
-				else if ("country_code".equals(variable))
-					return SimpleComponent.fromPlain(geoResponse.getCountryCode());
-
-				else if ("country_name".equals(variable))
-					return SimpleComponent.fromPlain(geoResponse.getCountryName());
-
-				else if ("region_name".equals(variable))
-					return SimpleComponent.fromPlain(geoResponse.getRegionName());
-
-				else if ("isp".equals(variable))
-					return SimpleComponent.fromPlain(geoResponse.getIsp());
-			}
-
-			return null;
-		}
-	}
 
 	private String customServerName;
 
@@ -104,9 +48,6 @@ public abstract class FoundationPlatform {
 
 				continue;
 			}
-
-		// Initialize platform-specific variables
-		Variables.addCollector(new PlatfomIndependentVariableCollector());
 	}
 
 	public abstract boolean callEvent(Object event);

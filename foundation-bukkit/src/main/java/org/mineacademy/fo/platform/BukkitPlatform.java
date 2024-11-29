@@ -59,7 +59,6 @@ import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.CompEnchantment;
 import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -91,9 +90,6 @@ final class BukkitPlatform extends FoundationPlatform {
 		// Inject Yaml constructors and representers.
 		YamlConfig.setCustomConstructor(BukkitYamlConstructor::new);
 		YamlConfig.setCustomRepresenter(BukkitYamlRepresenter::new);
-
-		// Initialize platform-specific variables
-		Variables.addCollector(new BukkitVariableCollector());
 
 		CommonCore.addSimplifier(object -> {
 			if (object instanceof Entity)
