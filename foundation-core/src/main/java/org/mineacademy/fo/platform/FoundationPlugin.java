@@ -294,17 +294,6 @@ public interface FoundationPlugin {
 	}
 
 	/**
-	 * Strip colors from checked message while checking it against a regex?
-	 *
-	 * @see CommonCore#compilePattern(String)
-	 *
-	 * @return
-	 */
-	default boolean isRegexStrippingColors() {
-		return true;
-	}
-
-	/**
 	 * Should Pattern.UNICODE_CASE be applied when compiling regular expressions in the Common class?
 	 *
 	 * May impose a slight performance penalty but useful for non-English servers.
