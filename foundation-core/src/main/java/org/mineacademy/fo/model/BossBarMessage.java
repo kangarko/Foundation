@@ -63,6 +63,16 @@ public final class BossBarMessage implements ConfigSerializable {
 	}
 
 	/**
+	 * Displays this boss bar to the given player.
+	 *
+	 * @param audience
+	 * @param messageEditor to replace variables in the message
+	 */
+	public void displayLegacyTo(FoundationPlayer audience, Function<String, String> messageEditor) {
+		audience.sendBossbarTimed(messageEditor.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
+	}
+
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
