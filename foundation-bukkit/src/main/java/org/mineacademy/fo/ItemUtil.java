@@ -15,6 +15,9 @@ import org.mineacademy.fo.remain.nbt.ReadableNBT;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Utility class relating to item stacks.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ItemUtil {
 
@@ -98,7 +101,6 @@ public final class ItemUtil {
 	}
 
 	private static boolean listMatchPlain(List<String> first, List<String> second) {
-
 		if (first == null)
 			first = new ArrayList<>();
 
