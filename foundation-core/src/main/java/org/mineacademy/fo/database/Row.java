@@ -7,16 +7,13 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.Platform;
 
-import lombok.ToString;
-
 /**
  * Represents a row in the database
  */
-@ToString
 public abstract class Row {
 
 	/**
-	 * The unique ID of this row
+	 * The unique ID of this row, can be null.
 	 */
 	private final Integer id;
 
@@ -28,7 +25,8 @@ public abstract class Row {
 	}
 
 	/**
-	 * Create a new row
+	 * Create a new row from the result set.
+	 * This will assume the Id column exists and error out if not.
 	 *
 	 * @param resultSet
 	 * @throws SQLException
@@ -50,7 +48,7 @@ public abstract class Row {
 	 * @return
 	 */
 	public final int getId() {
-		ValidCore.checkNotNull(this.id, "ID not set for " + this);
+		ValidCore.checkNotNull(this.id, "ID not set for " + this.toMap());
 
 		return this.id;
 	}
@@ -95,5 +93,10 @@ public abstract class Row {
 	 */
 	public final void delete() {
 		this.getTable().getDatabase().deleteRow(this.getTable(), this);
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + this.toMap().toStringFormatted();
 	}
 }
