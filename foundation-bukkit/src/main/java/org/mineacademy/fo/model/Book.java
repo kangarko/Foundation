@@ -28,6 +28,7 @@ import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 
 /**
  * Represents a book handler that can show player books
@@ -354,6 +355,23 @@ public final class Book implements ConfigSerializable {
 		final long lastModified = System.currentTimeMillis();
 
 		return new Book(title, author, pages, signed, lastModified, null, UUID.randomUUID());
+	}
+
+	/**
+	 * Converts an Adventure book to our book.
+	 *
+	 * @param book
+	 * @return
+	 */
+	public static Book fromAdventure(net.kyori.adventure.inventory.Book book) {
+		final String title = SimpleComponent.fromAdventure(book.title()).toLegacy();
+		final String author = SimpleComponent.fromAdventure(book.author()).toLegacy();
+		final List<String> pages = new ArrayList<>();
+
+		for (final Component page : book.pages())
+			pages.add(SimpleComponent.fromAdventure(page).toLegacy());
+
+		return new Book(title, author, pages, false, System.currentTimeMillis(), null, UUID.randomUUID());
 	}
 
 	/**
