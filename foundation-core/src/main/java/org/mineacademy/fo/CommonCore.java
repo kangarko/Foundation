@@ -1489,6 +1489,22 @@ public abstract class CommonCore {
 	}
 
 	/**
+	 * Create a new modifiable array list from the given iterable.
+	 *
+	 * @param <T>
+	 * @param iterable
+	 * @return
+	 */
+	public static final <T> List<T> toList(final Iterable<T> iterable) {
+		final List<T> list = new ArrayList<>();
+
+		for (final T element : iterable)
+			list.add(element);
+
+		return list;
+	}
+
+	/**
 	 * Reverse elements in the array.
 	 *
 	 * @param <T>
