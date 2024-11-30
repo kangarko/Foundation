@@ -320,6 +320,8 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 
 			this.onPluginReload();
 
+			this.internalPostEnable();
+
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
 		}
