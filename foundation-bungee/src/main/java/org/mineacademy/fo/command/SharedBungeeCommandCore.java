@@ -22,16 +22,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public interface SharedBungeeCommandCore {
 
 	/**
-	 * Checks if the player is a console and throws an error if he is.
-	 *
-	 * @throws CommandException
-	 */
-	default void checkConsole() throws CommandException {
-		if (!this.isPlayer())
-			throw new CommandException(Lang.component("command-requires-player"));
-	}
-
-	/**
 	 * Convenience method for completing all player names. Exclude vanished players
 	 * if the sender is a player.
 	 *
