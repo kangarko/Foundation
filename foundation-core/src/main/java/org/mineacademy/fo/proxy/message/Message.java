@@ -16,14 +16,6 @@ import lombok.RequiredArgsConstructor;
 abstract class Message {
 
 	/**
-	 * Whether to compress strings when sending or reading messages
-	 *
-	 * @deprecated will be removed once chatcontrol 11 is out
-	 */
-	@Deprecated
-	public static boolean COMPRESS_STRINGS = true;
-
-	/**
 	 * Represents the largest size that an individual plugin message may be.
 	 */
 	public static final int MAX_MESSAGE_SIZE = 1048576;
@@ -58,8 +50,9 @@ abstract class Message {
 
 		final Class<?>[] content = this.message.getContent();
 		final Class<?> clazz = content[this.head];
+		final String operation = this instanceof OutgoingMessage ? "write" : "read";
 
-		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Cannot read " + givenType.getSimpleName() + " at position " + this.head + " because " + this.getMessage().name() + " requires " + clazz.getSimpleName());
+		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Cannot " + operation + " " + givenType.getSimpleName() + " at position " + this.head + " because " + this.getMessage().name() + " requires " + clazz.getSimpleName());
 		ValidCore.checkBoolean(this.head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;

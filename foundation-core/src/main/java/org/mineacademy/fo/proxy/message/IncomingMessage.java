@@ -297,29 +297,19 @@ public final class IncomingMessage extends Message {
 	 * Helper util to read the next compressed string
 	 */
 	private String readCompressedString() {
-		if (COMPRESS_STRINGS)
-			try {
-				final int length = this.input.readInt();
-				final byte[] compressed = new byte[length];
+		try {
+			final int length = this.input.readInt();
+			final byte[] compressed = new byte[length];
 
-				this.input.readFully(compressed);
+			this.input.readFully(compressed);
 
-				return CommonCore.decompress(compressed);
+			return CommonCore.decompress(compressed);
 
-			} catch (final IOException ex) {
-				CommonCore.sneaky(ex);
+		} catch (final IOException ex) {
+			CommonCore.sneaky(ex);
 
-				return null;
-			}
-		else
-			try {
-				return this.input.readUTF();
-
-			} catch (final IOException ex) {
-				CommonCore.sneaky(ex);
-
-				return null;
-			}
+			return null;
+		}
 	}
 
 	/**
