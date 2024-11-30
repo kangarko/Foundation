@@ -451,6 +451,16 @@ public abstract class SimpleCommandCore {
 	// ----------------------------------------------------------------------
 
 	/**
+	 * Checks if the player is a console and throws an error if he is.
+	 *
+	 * @throws CommandException
+	 */
+	protected final void checkConsole() throws CommandException {
+		if (!this.audience.isPlayer())
+			throw new CommandException(Lang.component("command-requires-player"));
+	}
+
+	/**
 	 * Checks if the current sender has the given permission
 	 *
 	 * @param permission
@@ -1255,7 +1265,7 @@ public abstract class SimpleCommandCore {
 	@Deprecated
 	public final List<String> delegateTabComplete(final FoundationPlayer audience, final String label, final String[] args) {
 		this.audience = audience;
-		this.args = args;
+		this.args = args.length == 0 ? new String[] { "" } : args;
 
 		try {
 			if (this.hasPerm(this.getPermission())) {
