@@ -16,15 +16,15 @@ import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleLocation;
+import org.mineacademy.fo.platform.BossBarTask.TimedBar;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.remain.bossbar.NMSBossBar;
 
 import lombok.Getter;
 import lombok.NonNull;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.bossbar.BossBar.Color;
-import net.kyori.adventure.bossbar.BossBar.Overlay;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
 
 /**
@@ -36,11 +36,21 @@ final class BukkitPlayer extends FoundationPlayer {
 	private final boolean isPlayer;
 	private final Player player;
 	private final CommandSender sender;
+	private final Audience audience;
 
 	public BukkitPlayer(@NonNull CommandSender sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
+		this.audience = BukkitPlatform.getAdventure().sender(sender);
+	}
+
+	@Override
+	public void chat(String message) {
+		if (this.isPlayer)
+			this.player.chat(message);
+		else
+			this.sender.sendMessage(message);
 	}
 
 	@Override
@@ -57,13 +67,13 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public FoundationServer getServer() {
-		return BukkitServer.getInstance();
+	protected String getSenderName0() {
+		return this.sender.getName();
 	}
 
 	@Override
-	protected String getSenderName0() {
-		return this.sender.getName();
+	public FoundationServer getServer() {
+		return BukkitServer.getInstance();
 	}
 
 	@Override
@@ -84,6 +94,17 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
+	protected void hideBossBar0(TimedBar bar) {
+		if (this.isPlayer) {
+			if (Remain.isCommandSenderAudience())
+				this.sender.hideBossBar(bar.getBar());
+
+			else
+				this.audience.hideBossBar(bar.getBar());
+		}
+	}
+
+	@Override
 	public boolean isCommandSender() {
 		return true;
 	}
@@ -93,22 +114,19 @@ final class BukkitPlayer extends FoundationPlayer {
 		return this.sender instanceof ConsoleCommandSender;
 	}
 
-	private boolean isConversing() {
-		return this.isPlayer && this.player.isConversing();
-	}
-
 	@Override
 	public boolean isDiscord() {
 		return this.sender instanceof DiscordSender;
 	}
 
-	public boolean isOnline() {
-		return this.isPlayer && this.player.isOnline();
-	}
-
 	@Override
 	public boolean isPlayer() {
 		return this.isPlayer;
+	}
+
+	@Override
+	public boolean isPlayerOnline() {
+		return this.isPlayer && this.player.isOnline();
 	}
 
 	@Override
@@ -123,28 +141,35 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	protected void performPlayerCommand0(String replacedCommand) {
-		if (Bukkit.isPrimaryThread())
-			this.player.chat("/" + replacedCommand);
-		else
-			Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
+	public void openBook(Book book) {
+		org.mineacademy.fo.model.Book.fromAdventure(book).open(this);
 	}
 
 	@Override
-	public void removeBossBar() {
-		if (this.isPlayer)
-			NMSBossBar.getInstance().removeBar(this.player);
+	protected void performPlayerCommand0(String replacedCommand) {
+		if (this.isPlayer) {
+			if (Bukkit.isPrimaryThread())
+				this.player.chat("/" + replacedCommand);
+			else
+				Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
+
+		} else
+			Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> Bukkit.dispatchCommand(this.sender, replacedCommand));
 	}
 
 	@Override
 	public void resetTitle() {
-		if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
-			try {
-				this.player.resetTitle();
+		if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8)) {
+			if (MinecraftVersion.atLeast(V.v1_8))
+				this.showTitle("", "");
+			else
+				try {
+					this.player.resetTitle();
 
-			} catch (final NoSuchMethodError ex) {
-				Remain.resetTitleLegacy(this.player);
-			}
+				} catch (final NoSuchMethodError ex) {
+					Remain.resetTitleLegacy(this.player);
+				}
+		}
 	}
 
 	@Override
@@ -170,49 +195,14 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendBossbarPercent(SimpleComponent message, float progress, Color color, Overlay overlay) {
+	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
+		if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
+			try {
+				this.player.setPlayerListHeaderFooter(header.toLegacy(), footer.toLegacy());
 
-		// Native is fastest
-		if (Remain.isCommandSenderAudience()) {
-			this.sender.showBossBar(BossBar.bossBar(message, progress, color, overlay));
-
-			return;
-		}
-
-		if (this.isPlayer)
-			NMSBossBar.getInstance().sendMessage(this.player, message.toLegacy(), progress, color, overlay);
-		else
-			this.sender.sendMessage(message.toLegacy());
-	}
-
-	@Override
-	public void sendBossbarTimed(SimpleComponent message, int secondsToShow, float progress, Color color, Overlay overlay) {
-
-		// Native is fastest
-		if (Remain.isCommandSenderAudience()) {
-			final BossBar bar = BossBar.bossBar(message, progress, color, overlay);
-
-			this.sender.showBossBar(bar);
-			Platform.runTask(secondsToShow * 20, () -> this.sender.hideBossBar(bar));
-
-			return;
-		}
-
-		if (this.isPlayer)
-			NMSBossBar.getInstance().sendTimedMessage(this.player, message.toLegacy(), secondsToShow, progress, color, overlay);
-		else
-			this.sender.sendMessage(message.toLegacy());
-	}
-
-	@Override
-	protected void sendLegacyMessage(String message) {
-
-		// Ugly hack since most conversations prevent players from receiving messages through other API calls
-		if (this.isConversing())
-			this.player.sendRawMessage(message);
-
-		else
-			this.sender.sendMessage(message);
+			} catch (final NoSuchMethodError ex) {
+				Remain.sendTablistLegacyPacket(this.player, header, footer);
+			}
 	}
 
 	@Override
@@ -237,32 +227,6 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendTablist(SimpleComponent header, SimpleComponent footer) {
-		if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
-			try {
-				this.player.setPlayerListHeaderFooter(header.toLegacy(), footer.toLegacy());
-
-			} catch (final NoSuchMethodError ex) {
-				Remain.sendTablistLegacyPacket(this.player, header, footer);
-			}
-	}
-
-	@Override
-	public void sendTitle(int fadeIn, int stay, int fadeOut, SimpleComponent title, SimpleComponent subtitle) {
-		if (!this.isPlayer || MinecraftVersion.olderThan(V.v1_8)) {
-			this.sendMessage(title);
-			this.sendMessage(subtitle);
-
-		} else
-			try {
-				this.player.sendTitle(title.toLegacy(), subtitle.toLegacy(), fadeIn, stay, fadeOut);
-
-			} catch (final NoSuchMethodError ex) {
-				Remain.sendTitleLegacyPacket(this.player, fadeIn, stay, fadeOut, title, subtitle);
-			}
-	}
-
-	@Override
 	public void sendToast(SimpleComponent message, CompToastStyle style) {
 		if (this.isPlayer)
 			Remain.sendToast(this.player, message.toLegacy(), style);
@@ -275,5 +239,33 @@ final class BukkitPlayer extends FoundationPlayer {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot set temp metadata for non-players!");
 
 		this.player.setMetadata(key, new FixedMetadataValue(BukkitPlugin.getInstance(), value));
+	}
+
+	@Override
+	protected void showBossBar0(TimedBar bar) {
+		if (this.isPlayer) {
+			if (Remain.isCommandSenderAudience())
+				this.sender.showBossBar(bar.getBar());
+			else
+				this.audience.showBossBar(bar.getBar());
+
+		} else
+			this.sendRawMessage(bar.getBar().name());
+	}
+
+	@Override
+	public void showTitle(Title title) {
+		if (Remain.isCommandSenderAudience()) {
+			this.sender.showTitle(title);
+
+			return;
+		}
+
+		if (!this.isPlayer || MinecraftVersion.olderThan(V.v1_8)) {
+			this.sendMessage(title.title());
+			this.sendMessage(title.subtitle());
+
+		} else
+			this.audience.showTitle(title);
 	}
 }
