@@ -249,6 +249,7 @@ public interface FoundationPlugin {
 		}
 
 		Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
+		Platform.runTaskTimerAsync(20, BossBarTask.getInstance());
 
 		if (SimpleSettings.NOTIFY_NEW_VERSIONS)
 			Platform.runTaskAsync(new BuiltByBitUpdateCheck());

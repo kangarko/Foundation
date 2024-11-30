@@ -49,7 +49,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param audience
 	 */
 	public void displayTo(FoundationPlayer audience) {
-		audience.sendBossbarTimed(this.message, this.seconds, this.progress, this.color, this.overlay);
+		audience.showBossbarTimed(this.message, this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**
@@ -59,7 +59,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param messageEditor to replace variables in the message
 	 */
 	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> messageEditor) {
-		audience.sendBossbarTimed(messageEditor.apply(SimpleComponent.fromMini(this.message)), this.seconds, this.progress, this.color, this.overlay);
+		audience.showBossbarTimed(messageEditor.apply(SimpleComponent.fromMini(this.message)), this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param messageEditor to replace variables in the message
 	 */
 	public void displayLegacyTo(FoundationPlayer audience, Function<String, String> messageEditor) {
-		audience.sendBossbarTimed(messageEditor.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
+		audience.showBossbarTimed(messageEditor.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**

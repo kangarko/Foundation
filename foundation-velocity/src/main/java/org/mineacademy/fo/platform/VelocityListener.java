@@ -25,7 +25,13 @@ import com.velocitypowered.api.proxy.messages.ChannelMessageSource;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.util.UuidUtils;
 
-final class VelocityListener {
+/**
+ * A listener for handling incoming plugin messages
+ *
+ * @deprecated internal use only
+ */
+@Deprecated
+public final class VelocityListener {
 
 	/**
 	 * Handle the received message automatically if it matches our tag

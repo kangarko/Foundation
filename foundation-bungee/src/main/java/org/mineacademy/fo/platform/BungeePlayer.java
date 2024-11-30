@@ -1,22 +1,29 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
+import java.util.Set;
 import java.util.UUID;
 
+import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleLocation;
+import org.mineacademy.fo.platform.BossBarTask.TimedBar;
 
 import lombok.Getter;
 import lombok.NonNull;
-import net.kyori.adventure.bossbar.BossBar.Color;
-import net.kyori.adventure.bossbar.BossBar.Overlay;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.ChatMessageType;
+import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.chat.ComponentSerializer;
+import net.md_5.bungee.protocol.ProtocolConstants;
+import net.md_5.bungee.protocol.packet.SystemChat;
 
 /**
  * An implementation of {@link FoundationPlayer} for Bukkit.
@@ -24,6 +31,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 @Getter
 final class BungeePlayer extends FoundationPlayer {
 
+	private final Audience audience;
 	private final boolean isPlayer;
 	private final ProxiedPlayer player;
 	private final CommandSender sender;
@@ -32,6 +40,69 @@ final class BungeePlayer extends FoundationPlayer {
 		this.sender = sender;
 		this.isPlayer = sender instanceof ProxiedPlayer;
 		this.player = this.isPlayer ? (ProxiedPlayer) sender : null;
+		this.audience = BungeePlatform.getAdventure().sender(sender);
+	}
+
+	@Override
+	public void chat(String message) {
+		final String json = SimpleComponent.fromPlain(message).toAdventureJson(!this.hasHexColorSupport());
+
+		if (this.isPlayer) {
+			if (this.player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_19)
+				this.player.unsafe().sendPacket(new SystemChat(TextComponent.fromArray(ComponentSerializer.deserialize(json)), (byte) 0));
+			else
+				this.player.chat(message);
+		} else
+			this.sendMessage(SimpleComponent.fromPlain(message));
+	}
+
+	private int createBossBarColor(final net.kyori.adventure.bossbar.BossBar.Color color) {
+		if (color == net.kyori.adventure.bossbar.BossBar.Color.PINK)
+			return 0;
+		else if (color == net.kyori.adventure.bossbar.BossBar.Color.BLUE)
+			return 1;
+		else if (color == net.kyori.adventure.bossbar.BossBar.Color.RED)
+			return 2;
+		else if (color == net.kyori.adventure.bossbar.BossBar.Color.GREEN)
+			return 3;
+		else if (color == net.kyori.adventure.bossbar.BossBar.Color.YELLOW)
+			return 4;
+		else if (color == net.kyori.adventure.bossbar.BossBar.Color.PURPLE)
+			return 5;
+		else if (color == net.kyori.adventure.bossbar.BossBar.Color.WHITE)
+			return 6;
+
+		return 5;
+	}
+
+	private byte createBossBarFlag(final Set<net.kyori.adventure.bossbar.BossBar.Flag> flags) {
+		byte bit = 0;
+
+		for (final net.kyori.adventure.bossbar.BossBar.@NotNull Flag flag : flags) {
+			if (flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN)
+				bit |= 1;
+			else if (flag == net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC)
+				bit |= 1 << 1;
+			else if (flag == net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG)
+				bit |= 1 << 2;
+		}
+
+		return bit;
+	}
+
+	private int createBossBarOverlay(final net.kyori.adventure.bossbar.BossBar.Overlay overlay) {
+		if (overlay == net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS)
+			return 0;
+		else if (overlay == net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_6)
+			return 1;
+		else if (overlay == net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_10)
+			return 2;
+		else if (overlay == net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_12)
+			return 3;
+		else if (overlay == net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_20)
+			return 4;
+
+		return 0;
 	}
 
 	@Override
@@ -45,13 +116,13 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public FoundationServer getServer() {
-		return this.isPlayer ? new BungeeServer(this.player.getServer().getInfo()) : null;
+	protected String getSenderName0() {
+		return this.isPlayer ? this.player.getName() : "Console";
 	}
 
 	@Override
-	protected String getSenderName0() {
-		return this.isPlayer ? this.player.getName() : "Console";
+	public FoundationServer getServer() {
+		return this.isPlayer ? new BungeeServer(this.player.getServer().getInfo()) : null;
 	}
 
 	@Override
@@ -72,6 +143,12 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
+	public void hideBossBar0(TimedBar bar) {
+		if (this.isPlayer && this.player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_9)
+			this.player.unsafe().sendPacket(new net.md_5.bungee.protocol.packet.BossBar(bar.getUniqueId(), 1 /* remove action */));
+	}
+
+	@Override
 	public boolean isCommandSender() {
 		return true;
 	}
@@ -86,13 +163,14 @@ final class BungeePlayer extends FoundationPlayer {
 		return false;
 	}
 
-	public boolean isOnline() {
-		return this.isPlayer && this.player.isConnected();
-	}
-
 	@Override
 	public boolean isPlayer() {
 		return this.isPlayer;
+	}
+
+	@Override
+	public boolean isPlayerOnline() {
+		return this.isPlayer && this.player.isConnected();
 	}
 
 	@Override
@@ -103,74 +181,42 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	protected void performPlayerCommand0(String replacedCommand) {
-		this.player.chat("/" + replacedCommand);
+	public void openBook(Book book) {
+		throw new UnsupportedOperationException("Not supported on " + Platform.getType());
 	}
 
 	@Override
-	public void removeBossBar() {
-		throw new UnsupportedOperationException("Not supported in BungeeCord");
+	protected void performPlayerCommand0(String replacedCommand) {
+		ProxyServer.getInstance().getPluginManager().dispatchCommand(this.sender, replacedCommand);
 	}
 
 	@Override
 	public void resetTitle() {
-		throw new UnsupportedOperationException("Not supported in BungeeCord");
+		if (this.isPlayer) {
+			if (this.player.getPendingConnection().getVersion() > ProtocolConstants.MINECRAFT_1_8)
+				this.audience.resetTitle();
+			else
+				this.showTitle("", ""); // fix adventure for some reason only resetting title but not subtitle
+		}
 	}
 
 	@Override
 	public void sendActionBar(SimpleComponent message) {
-		if (this.isPlayer)
-			this.player.sendMessage(ChatMessageType.ACTION_BAR, message.toBungee(!this.hasHexColorSupport()));
-		else
-			this.sender.sendMessage(message.toBungee(!this.hasHexColorSupport()));
+		this.audience.sendActionBar(message.toAdventure());
 	}
 
 	@Override
-	public void sendBossbarPercent(SimpleComponent message, float progress, Color color, Overlay overlay) {
-		throw new UnsupportedOperationException("Not supported in BungeeCord");
-	}
-
-	@Override
-	public void sendBossbarTimed(SimpleComponent message, int secondsToShow, float progress, Color color, Overlay overlay) {
-		throw new UnsupportedOperationException("Not supported in BungeeCord");
-	}
-
-	@Override
-	protected void sendLegacyMessage(String message) {
-		this.sender.sendMessage(message);
+	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
+		this.audience.sendPlayerListHeaderAndFooter(header.toAdventure(), footer.toAdventure());
 	}
 
 	@Override
 	public void sendRawMessage(Component component) {
-		this.sender.sendMessage(SimpleComponent.fromAdventure(component).toBungee(!this.hasHexColorSupport()));
-	}
+		// Due to adventure bug (another one), players on modern MC are getting kicked out due to invalid
+		// packet -- unless we serialize using md_5's method
+		final String json = SimpleComponent.fromAdventure(component).toAdventureJson(!this.hasHexColorSupport());
 
-	@Override
-	public void sendTablist(SimpleComponent header, SimpleComponent footer) {
-		if (this.isPlayer)
-			this.player.setTabHeader(header.toBungee(!this.hasHexColorSupport()), footer.toBungee(!this.hasHexColorSupport()));
-	}
-
-	@Override
-	public void sendTitle(int fadeIn, int stay, int fadeOut, SimpleComponent title, SimpleComponent subtitle) {
-		if (title == null)
-			title = SimpleComponent.empty();
-
-		if (subtitle == null)
-			subtitle = SimpleComponent.empty();
-
-		final ProxyServer server = ProxyServer.getInstance();
-
-		if (this.isPlayer)
-			server.createTitle().fadeIn(fadeIn).stay(stay).fadeOut(fadeOut).title(title.toBungee(!this.hasHexColorSupport())).subTitle(subtitle.toBungee(!this.hasHexColorSupport())).send(this.player);
-
-		else {
-			if (!title.isEmpty())
-				this.sender.sendMessage(title.toBungee(!this.hasHexColorSupport()));
-
-			if (!subtitle.isEmpty())
-				this.sender.sendMessage(subtitle.toBungee(!this.hasHexColorSupport()));
-		}
+		this.sender.sendMessage(ComponentSerializer.parse(json));
 	}
 
 	@Override
@@ -180,6 +226,33 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public void setTempMetadata(String key, Object value) {
-		throw new UnsupportedOperationException("Not supported in Velocity");
+		throw new UnsupportedOperationException("Not supported on " + Platform.getType());
+	}
+
+	@Override
+	public void showBossBar0(TimedBar bar) {
+		if (this.isPlayer) {
+			if (this.player.getPendingConnection().getVersion() < ProtocolConstants.MINECRAFT_1_9) {
+				// Not really supported unless we spawn a false ender dragon, a lot of hassle
+				this.sendMessage(bar.getBar().name());
+
+				return;
+			}
+
+			final net.md_5.bungee.protocol.packet.BossBar barPacket = new net.md_5.bungee.protocol.packet.BossBar(bar.getUniqueId(), 0 /* remove action */);
+
+			barPacket.setTitle(new TextComponent(SimpleComponent.fromAdventure(bar.getBar().name()).toBungee(!this.hasHexColorSupport())));
+			barPacket.setHealth(bar.getBar().progress());
+			barPacket.setColor(this.createBossBarColor(bar.getBar().color()));
+			barPacket.setDivision(this.createBossBarOverlay(bar.getBar().overlay()));
+			barPacket.setFlags(this.createBossBarFlag(bar.getBar().flags()));
+
+			this.player.unsafe().sendPacket(barPacket);
+		}
+	}
+
+	@Override
+	public void showTitle(Title title) {
+		this.audience.showTitle(title);
 	}
 }

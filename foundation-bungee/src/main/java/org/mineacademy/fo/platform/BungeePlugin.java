@@ -18,7 +18,6 @@ import org.mineacademy.fo.model.BStatsBungee;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 
-import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -109,14 +108,6 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		FoundationFilter.inject();
 	}
 
-	private BungeeAudiences adventure; // TODO prerobić
-
-	public BungeeAudiences adventure() {
-		ValidCore.checkNotNull(this.adventure, "Adventure audience provider not initialized yet");
-
-		return this.adventure;
-	}
-
 	@Override
 	public final void onLoad() {
 		instance = this;
@@ -178,7 +169,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		if (this.loadingFailed)
 			return;
 
-		this.adventure = BungeeAudiences.create(this);
+		BungeePlatform.createAudiences(this);
 
 		try {
 			if (this.getStartupLogo() != null)
@@ -218,11 +209,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		if (this.loadingFailed)
 			return;
 
-		if (this.adventure != null) {
-			this.adventure.close();
-
-			this.adventure = null;
-		}
+		BungeePlatform.closeAudiences();
 
 		try {
 			this.onPluginStop();
@@ -285,6 +272,8 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			AutoRegisterScanner.reloadSettings();
 
 			this.onPluginReload();
+
+			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());

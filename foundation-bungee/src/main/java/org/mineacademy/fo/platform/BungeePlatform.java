@@ -18,9 +18,11 @@ import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Keyed;
+import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -31,12 +33,28 @@ import net.md_5.bungee.api.plugin.Cancellable;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Event;
 import net.md_5.bungee.api.plugin.Listener;
+import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.PluginManager;
 
 /**
  * An implementation of {@link FoundationPlatform} for Bukkit.
  */
 final class BungeePlatform extends FoundationPlatform {
+
+	@Getter
+	private static BungeeAudiences adventure;
+
+	public static void closeAudiences() {
+		if (adventure != null) {
+			adventure.close();
+
+			adventure = null;
+		}
+	}
+
+	public static void createAudiences(Plugin plugin) {
+		adventure = BungeeAudiences.create(plugin);
+	}
 
 	public static void inject() {
 		Platform.setInstance(new BungeePlatform());

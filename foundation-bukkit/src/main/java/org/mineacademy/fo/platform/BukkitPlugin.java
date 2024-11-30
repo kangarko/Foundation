@@ -173,6 +173,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 			BukkitPlatform.inject();
 
+			this.loadLibrary("net.kyori", "adventure-platform-bukkit", "4.3.4");
+
 			this.onPluginLoad();
 
 		} catch (final Throwable t) {
@@ -227,6 +229,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		try {
 			if (this.getStartupLogo() != null)
 				CommonCore.log(this.getStartupLogo());
+
+			BukkitPlatform.createAudiences(this);
 
 			// Expand auto register functionality
 			AutoRegisterScanner.setCustomRegisterHandler(new AutoRegisterHandler() {
@@ -620,6 +624,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		if (this.loadingFailed)
 			return;
 
+		BukkitPlatform.closeAudiences();
+
 		try {
 			this.onPluginStop();
 
@@ -716,6 +722,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 			if (this.areRegionsEnabled())
 				DiskRegion.loadRegions();
+
+			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());

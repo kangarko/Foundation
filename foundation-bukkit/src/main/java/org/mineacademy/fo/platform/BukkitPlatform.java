@@ -71,14 +71,31 @@ import org.mineacademy.fo.settings.YamlConfig;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
+import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.event.HoverEventSource;
 
 /**
  * An implementation of {@link FoundationPlatform} for Bukkit.
  */
 final class BukkitPlatform extends FoundationPlatform {
+
+	@Getter
+	private static BukkitAudiences adventure;
+
+	public static void closeAudiences() {
+		if (adventure != null) {
+			adventure.close();
+
+			adventure = null;
+		}
+	}
+
+	public static void createAudiences(Plugin plugin) {
+		adventure = BukkitAudiences.create(plugin);
+	}
 
 	public static void inject() {
 		Platform.setInstance(new BukkitPlatform());
