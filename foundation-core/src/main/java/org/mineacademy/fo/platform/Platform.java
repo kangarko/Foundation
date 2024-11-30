@@ -11,6 +11,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
@@ -458,17 +459,23 @@ public final class Platform {
 		/**
 		 * Represents the Bukkit platform
 		 */
-		BUKKIT(false),
+		BUKKIT("Bukkit", false),
 
 		/**
 		 * Represents the BungeeCord platform
 		 */
-		BUNGEECORD(true),
+		BUNGEECORD("BungeeCord", true),
 
 		/**
 		 * Represents the Velocity platform
 		 */
-		VELOCITY(true);
+		VELOCITY("Velocity", true);
+
+		/**
+		 * The name of this platform
+		 */
+		@Getter
+		private final String key;
 
 		/**
 		 * Is this platform a proxy?
@@ -483,6 +490,25 @@ public final class Platform {
 		 */
 		public static Set<Type> proxies() {
 			return Arrays.stream(values()).filter(Type::isProxy).collect(Collectors.toSet());
+		}
+
+		/**
+		 * Return the platform type from the given key.
+		 *
+		 * @param key
+		 * @return
+		 */
+		public static Platform.Type fromKey(String key) {
+			for (final Platform.Type type : Platform.Type.values())
+				if (type.getKey().equalsIgnoreCase(key))
+					return type;
+
+			throw new FoException("Unknown platform type: " + key);
+		}
+
+		@Override
+		public String toString() {
+			return this.key;
 		}
 	}
 }
