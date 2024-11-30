@@ -516,6 +516,16 @@ public abstract class CommonCore {
 		return GSON.toJson(list);
 	}
 
+	/**
+	 * Return the given list as JSON
+	 *
+	 * @param list
+	 * @return
+	 */
+	public static String convertUniqueIdListToJson(final Collection<UUID> list) {
+		return GSON.toJson(list);
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Aesthetics
 	// ------------------------------------------------------------------------------------------------------------
