@@ -543,8 +543,8 @@ public class SimpleDatabase {
 			final List<String> sqls = new ArrayList<>();
 
 			for (final SerializedMap map : maps) {
-				final String columns = CommonCore.join(map.keySet());
-				final String values = CommonCore.join(map.values(), ", ", this::parseValue);
+				final String columns = String.join(", ", map.keySet());
+				final String values = joinSQLValues(map.values());
 
 				final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + values + ");";
 				Debugger.debug("mysql", "Inserting batch SQL: " + sql);
@@ -554,6 +554,27 @@ public class SimpleDatabase {
 
 			this.batchUpdate(sqls);
 		}
+	}
+
+	/*
+	 * Joins SQL values
+	 */
+	private static <T> String joinSQLValues(final Collection<T> list) {
+		final StringBuilder builder = new StringBuilder();
+		boolean first = true;
+
+		for (final T element : list) {
+			if (!first)
+				builder.append(", ");
+			else
+				first = false;
+
+			if (element != null && !(element instanceof Number) && !(element instanceof Boolean) && !(element instanceof String))
+				throw new FoException("Unsupported type " + element.getClass() + " for SQL value: " + element);
+
+			builder.append(element == null || "NULL".equals(element) ? "NULL" : element instanceof Number ? String.valueOf(element) : element instanceof Boolean ? ((boolean) element) ? "1" : "0" : "'" + element.toString() + "'");
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -600,15 +621,6 @@ public class SimpleDatabase {
 						"SQLs (" + sqls.size() + "): " + sqls);
 			}
 		}
-	}
-
-	/*
-	 * A helper method to insert compatible value to db.
-	 */
-	private final String parseValue(final Object value) {
-		final Object serialized = SerializeUtilCore.serialize(Language.JSON, value);
-
-		return value == null || value.equals("NULL") ? "NULL" : serialized instanceof Number ? String.valueOf(serialized) : serialized instanceof Boolean ? ((boolean) serialized) ? "1" : "0" : "'" + serialized.toString() + "'";
 	}
 
 	/**
