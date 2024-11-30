@@ -1105,17 +1105,20 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static final <T> String join(final Iterable<T> list, final String delimiter, final Stringer<T> stringer) {
-		final Iterator<T> it = list.iterator();
-		String message = "";
+		final StringBuilder builder = new StringBuilder();
+		boolean first = true;
 
-		while (it.hasNext()) {
-			final T next = it.next();
+		for (final T element : list) {
+			if (element != null) {
+				if (!first)
+					builder.append(delimiter);
+				else
+					first = false;
 
-			if (next != null)
-				message += stringer.toString(next) + (it.hasNext() ? delimiter : "");
+				builder.append(stringer.toString(element));
+			}
 		}
-
-		return message;
+		return builder.toString();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
