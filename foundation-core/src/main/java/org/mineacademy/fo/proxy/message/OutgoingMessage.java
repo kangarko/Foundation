@@ -305,23 +305,15 @@ public final class OutgoingMessage extends Message {
 	 * @param data
 	 */
 	private void writeCompressedString(DataOutput out, String data) {
-		if (COMPRESS_STRINGS) {
-			final byte[] compressed = CommonCore.compress(data);
+		final byte[] compressed = CommonCore.compress(data);
 
-			try {
-				out.writeInt(compressed.length);
-				out.write(compressed);
+		try {
+			out.writeInt(compressed.length);
+			out.write(compressed);
 
-			} catch (final Exception ex) {
-				throw new FoException("Failed to write compressed String: " + data, ex);
-			}
-		} else
-			try {
-				out.writeUTF(data);
-
-			} catch (final IOException ex) {
-				throw new FoException("Failed to write String: " + data, ex);
-			}
+		} catch (final Exception ex) {
+			throw new FoException("Failed to write compressed String: " + data, ex);
+		}
 	}
 
 	/**
