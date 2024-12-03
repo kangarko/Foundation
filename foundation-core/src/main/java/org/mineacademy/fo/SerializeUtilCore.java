@@ -256,13 +256,18 @@ public abstract class SerializeUtilCore {
 		else if (classOf == Short.class)
 			object = Short.parseShort(object.toString().replace("_", ""));
 
-		else if (classOf == Integer.class)
-			object = Integer.parseInt(object.toString().replace("_", ""));
+		else if (classOf == Integer.class || classOf == Long.class) {
+			String raw = object.toString().replace("_", "");
 
-		else if (classOf == Long.class)
-			object = Long.decode(object.toString().replace("_", ""));
+			if (raw.contains("."))
+				raw = raw.substring(0, raw.indexOf('.'));
 
-		else if (classOf == Double.class)
+			if (classOf == Long.class)
+				object = Long.decode(raw);
+			else
+				object = Integer.decode(raw);
+
+		} else if (classOf == Double.class)
 			object = Double.parseDouble(object.toString().replace("_", ""));
 
 		else if (classOf == Float.class)
