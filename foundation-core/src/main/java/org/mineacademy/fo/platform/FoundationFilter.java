@@ -90,6 +90,10 @@ final class FoundationFilter {
 		if (message.equals("Warning: Nashorn engine is planned to be removed from a future JDK release"))
 			return true;
 
+		// Filter out placeholder api spam
+		if (message.contains("Successfully registered internal expansion"))
+			return true;
+
 		// One less spammy message for server owners
 		if (message.endsWith("which is not a depend, softdepend or loadbefore of this plugin."))
 			return true;
