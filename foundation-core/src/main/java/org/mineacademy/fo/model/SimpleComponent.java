@@ -859,6 +859,35 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		return component;
 	}
 
+	/**
+	 * Join multiple components into one by appending them and adding new lines.
+	 *
+	 * @param components
+	 * @return
+	 */
+	public static SimpleComponent join(Collection<SimpleComponent> components) {
+		return join(components.toArray(new SimpleComponent[components.size()]));
+	}
+
+	/**
+	 * Join multiple components into one by appending them and adding new lines.
+	 *
+	 * @param components
+	 * @return
+	 */
+	public static SimpleComponent join(SimpleComponent... components) {
+		SimpleComponent main = empty();
+
+		for (int i = 0; i < components.length; i++) {
+			main = main.append(components[i]);
+
+			if (i < components.length - 1)
+				main = main.appendNewLine();
+		}
+
+		return main;
+	}
+
 	// --------------------------------------------------------------------
 	// Classes
 	// --------------------------------------------------------------------
