@@ -980,14 +980,14 @@ public abstract class SimpleCommandCore {
 	 * @see #setTellPrefix(String)
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
 	 *
-	 * @param component
+	 * @param components
 	 */
-	protected final void tellNoPrefix(final SimpleComponent component) {
+	protected final void tellNoPrefix(final SimpleComponent... components) {
 		final SimpleComponent oldLocalPrefix = this.tellPrefix;
 
 		this.tellPrefix = null;
 
-		this.tell(component);
+		this.tell(components);
 
 		this.tellPrefix = oldLocalPrefix;
 	}
@@ -1009,12 +1009,14 @@ public abstract class SimpleCommandCore {
 	 * Sends a message to the player.
 	 *
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
-	 * @param component
+	 * @param components
 	 */
-	public final void tell(SimpleComponent component) {
-		component = this.replacePlaceholders(component);
+	public final void tell(SimpleComponent... components) {
+		for (SimpleComponent component : components) {
+			component = this.replacePlaceholders(component);
 
-		this.audience.sendMessage(this.tellPrefix != null ? this.tellPrefix.append(component) : component);
+			this.audience.sendMessage(this.tellPrefix != null ? this.tellPrefix.append(component) : component);
+		}
 	}
 
 	/**
