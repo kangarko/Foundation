@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.database.SimpleDatabase.TableCreator;
@@ -80,9 +81,10 @@ public interface Table {
 	 */
 	default <T extends Row> T createRow(SimpleResultSet resultSet) throws SQLException {
 		Constructor<?> constructor;
+		final Class<? extends Row> clazz = this.getRowClass();
 
 		try {
-			constructor = ReflectionUtil.getConstructor(this.getRowClass(), SimpleResultSet.class);
+			constructor = ReflectionUtil.getConstructor(clazz, SimpleResultSet.class);
 
 		} catch (final ReflectionException ex) {
 			constructor = null;
@@ -90,6 +92,13 @@ public interface Table {
 
 		ValidCore.checkNotNull(constructor, "Row class " + this.getRowClass() + " must have a constructor with SimpleResultSet parameter");
 
-		return (T) ReflectionUtil.instantiate(constructor, resultSet);
+		try {
+			return (T) ReflectionUtil.instantiate(constructor, resultSet);
+
+		} catch (final Throwable t) {
+			CommonCore.throwError(t, "Failed to create a " + clazz.getSimpleName() + " object from result set!");
+
+			return null;
+		}
 	}
 }
