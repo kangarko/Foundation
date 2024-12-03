@@ -23,6 +23,15 @@ public abstract class RowDate extends Row {
 	}
 
 	/**
+	 * Create a new row from the given date
+	 *
+	 * @param date
+	 */
+	protected RowDate(long date) {
+		this.date = System.currentTimeMillis();
+	}
+
+	/**
 	 * Create a new row
 	 *
 	 * @param resultSet
