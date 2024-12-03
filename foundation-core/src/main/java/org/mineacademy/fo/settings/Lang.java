@@ -15,7 +15,6 @@ import java.util.TreeMap;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CaseNumberFormat;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Variables;
@@ -50,11 +49,8 @@ public final class Lang {
 	 * keys with MiniMessage and & colors translated to §.
 	 */
 	private Map<String, String> plainCache;
-	private Map<String, String[]> plainArrayCache;
 	private Map<String, String> legacyCache;
-	private Map<String, String[]> legacyArrayCache;
 	private Map<String, SimpleComponent> componentCache;
-	private Map<String, SimpleComponent[]> componentArrayCache;
 	private final Map<String, CaseNumberFormat> numberFormatCache = new HashMap<>();
 
 	/*
@@ -75,40 +71,6 @@ public final class Lang {
 		ValidCore.checkBoolean(this.legacyCache.containsKey(path), "Missing localization key '" + path + "'");
 
 		return this.legacyCache.get(path);
-	}
-
-	/*
-	 * Return a clone of the array to prevent modification of the cache.
-	 */
-	private String[] getLegacyArray(String path) {
-		ValidCore.checkNotNull(this.legacyArrayCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
-
-		if (!this.legacyArrayCache.containsKey(path)) {
-			if (this.legacyCache.containsKey(path))
-				throw new FoException("Localization key '" + path + "' is not an array!");
-			else
-				throw new FoException("Missing localization array key '" + path + "'");
-		}
-
-		final String[] stored = this.legacyArrayCache.get(path);
-		return Arrays.copyOf(stored, stored.length);
-	}
-
-	/*
-	 * Return a plain String array from the language file, throwing an error if the key is missing.
-	 */
-	private String[] getPlainArray(String path) {
-		ValidCore.checkNotNull(this.plainArrayCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
-
-		if (!this.plainArrayCache.containsKey(path)) {
-			if (this.plainCache.containsKey(path))
-				throw new FoException("Localization key '" + path + "' is not an array!");
-			else
-				throw new FoException("Missing localization array key '" + path + "'");
-		}
-
-		final String[] stored = this.plainArrayCache.get(path);
-		return Arrays.copyOf(stored, stored.length);
 	}
 
 	/*
@@ -135,23 +97,6 @@ public final class Lang {
 		ValidCore.checkBoolean(this.componentCache.containsKey(path), "Missing localization key '" + path + "'");
 
 		return this.componentCache.get(path);
-	}
-
-	/*
-	 * Returns a clone of the array to prevent modification of the cache.
-	 */
-	private SimpleComponent[] getComponentArray(String path) {
-		ValidCore.checkNotNull(this.componentArrayCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
-
-		if (!this.componentArrayCache.containsKey(path)) {
-			if (this.componentCache.containsKey(path))
-				throw new FoException("Localization key '" + path + "' is not an array!");
-			else
-				throw new FoException("Missing localization array key '" + path + "'");
-		}
-
-		final SimpleComponent[] stored = this.componentArrayCache.get(path);
-		return Arrays.copyOf(stored, stored.length);
 	}
 
 	/*
@@ -199,18 +144,6 @@ public final class Lang {
 	}
 
 	/**
-	 * Return a plain String array from the language file, throwing an error if the key is missing.
-	 *
-	 * No modifications are done to the key.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static String[] plainArray(String path) {
-		return instance.getPlainArray(path);
-	}
-
-	/**
 	 * Return a legacy key from the given path in the language file.
 	 *
 	 * Throws an error if the key is missing.
@@ -248,50 +181,6 @@ public final class Lang {
 	}
 
 	/**
-	 * Return a legacy array from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * Example: legacyArrayVars("my-locale-path", "arena", arena.getName()) translates {arena}
-	 * key from the locale path.
-	 *
-	 * MiniMessage tags and & legacy colors are translated to §.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static String[] legacyArray(String path) {
-		return instance.getLegacyArray(path);
-	}
-
-	/**
-	 * Return a legacy array from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * Variables are supported, where key must be a string and value either a string or
-	 * SimpleComponent, or a list of either.
-	 *
-	 * Example: legacyArrayVars("my-locale-path", "arena", arena.getName()) translates {arena}
-	 * key from the locale path.
-	 *
-	 * MiniMessage tags and & legacy colors are translated to §.
-	 *
-	 * @param path
-	 * @param placeholders
-	 * @return
-	 */
-	public static String[] legacyArrayVars(String path, Object... placeholders) {
-		final String[] lines = instance.getLegacyArray(path);
-		final Variables variables = Variables.builder().placeholderArray(placeholders);
-
-		for (int i = 0; i < lines.length; i++)
-			lines[i] = variables.replace(lines[i]);
-
-		return lines;
-	}
-
-	/**
 	 * Return a component from the given path in the language file.
 	 *
 	 * Throws an error if the key is missing.
@@ -322,74 +211,6 @@ public final class Lang {
 		final SimpleComponent component = component(path);
 
 		return Variables.builder().placeholderArray(placeholders).replace(component);
-	}
-
-	/**
-	 * Return component list from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static List<SimpleComponent> componentList(String path) {
-		return Arrays.asList(componentArray(path));
-	}
-
-	/**
-	 * Return component list from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * Variables are supported, where key must be a string and value either a string or
-	 * SimpleComponent, or a list of either.
-	 *
-	 * Example: componentArrayVars("my-locale-path", "arena", arena.getName()) translates {arena}
-	 * key from the locale path.
-	 *
-	 * @param path
-	 * @param placeholders
-	 * @return
-	 */
-	public static List<SimpleComponent> componentListVars(String path, Object... placeholders) {
-		return Arrays.asList(componentArrayVars(path, placeholders));
-	}
-
-	/**
-	 * Return component array from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static SimpleComponent[] componentArray(String path) {
-		return instance.getComponentArray(path);
-	}
-
-	/**
-	 * Return component array from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * Variables are supported, where key must be a string and value either a string or
-	 * SimpleComponent, or a list of either.
-	 *
-	 * Example: componentArrayVars("my-locale-path", "arena", arena.getName()) translates {arena}
-	 * key from the locale path.
-	 *
-	 * @param path
-	 * @param placeholders
-	 * @return
-	 */
-	public static SimpleComponent[] componentArrayVars(String path, Object... placeholders) {
-		final SimpleComponent[] components = instance.getComponentArray(path);
-		final Variables variables = Variables.builder().placeholderArray(placeholders);
-
-		for (int i = 0; i < components.length; i++)
-			components[i] = variables.replace(components[i]);
-
-		return components;
 	}
 
 	/**
@@ -651,11 +472,8 @@ public final class Lang {
 
 			// Cache all the keys for maximum performance
 			final Map<String, String> plainCache = new HashMap<>();
-			final Map<String, String[]> plainArrayCache = new HashMap<>();
 			final Map<String, String> legacyCache = new HashMap<>();
-			final Map<String, String[]> legacyArrayCache = new HashMap<>();
 			final Map<String, SimpleComponent> componentCache = new HashMap<>();
-			final Map<String, SimpleComponent[]> componentArrayCache = new HashMap<>();
 
 			for (final Map.Entry<String, JsonElement> entry : dictionary.entrySet()) {
 				final String key = entry.getKey();
@@ -693,9 +511,9 @@ public final class Lang {
 							CommonCore.warning("Invalid element in array for lang key " + key + ": " + element + ", only Strings and primitives are supported");
 						}
 
-					plainArrayCache.put(key, plainList.toArray(new String[plainList.size()]));
-					componentArrayCache.put(key, componentList.toArray(new SimpleComponent[componentList.size()]));
-					legacyArrayCache.put(key, legacyList.toArray(new String[legacyList.size()]));
+					plainCache.put(key, String.join("\n", plainList));
+					componentCache.put(key, SimpleComponent.join(componentList));
+					legacyCache.put(key, String.join("\n", legacyList));
 
 				} else {
 					ValidCore.checkBoolean(value != null && !value.isJsonNull(), "Missing element for lang key " + key + ", check for trailing commas");
@@ -705,11 +523,8 @@ public final class Lang {
 			}
 
 			instance.plainCache = plainCache;
-			instance.plainArrayCache = plainArrayCache;
 			instance.legacyCache = legacyCache;
-			instance.legacyArrayCache = legacyArrayCache;
 			instance.componentCache = componentCache;
-			instance.componentArrayCache = componentArrayCache;
 		}
 
 		/*

@@ -171,7 +171,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 						.fromMini("  " + (has ? "&a" : "&7") + node + (def ? " " + Lang.legacy("command-perms-true-by-default") : ""))
 						.onClickOpenUrl("")
 						.onClickSuggestCmd(node)
-						.onHover(Lang.componentArrayVars("command-perms-info",
+						.onHover(Lang.componentVars("command-perms-info",
 								"info", info,
 								"default", def ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"),
 								"state", has ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"))));

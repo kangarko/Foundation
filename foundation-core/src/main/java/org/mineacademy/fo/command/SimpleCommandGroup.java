@@ -388,7 +388,7 @@ public abstract class SimpleCommandGroup {
 					hover.add(Lang.componentVars("command-help-tooltip-permission", "permission", subcommand.getPermission()));
 
 				final String[] legacyUsage = subcommand.getMultilineUsageMessage();
-				final SimpleComponent[] newUsage = subcommand.getMultilineUsage();
+				final SimpleComponent newUsage = subcommand.getMultilineUsage();
 
 				if (legacyUsage != null || newUsage != null || subcommand.getUsage() != null)
 					hover.add(Lang.componentVars("command-help-tooltip-usage", "usage", legacyUsage != null || newUsage != null ? SimpleComponent.empty() : CommonCore.getOrDefault(this.colorizeUsage(subcommand.getUsage()), SimpleComponent.empty())));
@@ -398,8 +398,7 @@ public abstract class SimpleCommandGroup {
 						hover.add(subcommand.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMini(line))));
 
 				else if (newUsage != null)
-					for (final SimpleComponent component : newUsage)
-						hover.add(subcommand.replacePlaceholders(this.colorizeUsage(component)));
+					hover.add(subcommand.replacePlaceholders(this.colorizeUsage(newUsage)));
 
 				SimpleComponent component = SimpleComponent
 						.fromPlain("  /" + this.getLabel())

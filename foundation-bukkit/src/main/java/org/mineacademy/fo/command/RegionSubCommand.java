@@ -93,7 +93,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 * @see org.mineacademy.fo.command.SimpleCommandCore#getMultilineUsageMessage()
 	 */
 	@Override
-	protected SimpleComponent[] getMultilineUsage() {
+	protected SimpleComponent getMultilineUsage() {
 		return Param.generateUsages(this);
 	}
 
@@ -387,9 +387,9 @@ public class RegionSubCommand extends SimpleSubCommand {
 		 * @param command
 		 * @return
 		 */
-		public static SimpleComponent[] generateUsages(RegionSubCommand command) {
+		public static SimpleComponent generateUsages(RegionSubCommand command) {
 			final Param[] params = Param.values();
-			final List<SimpleComponent> components = new ArrayList<>();
+			final List<SimpleComponent> usages = new ArrayList<>();
 
 			for (int i = 0; i < params.length; i++) {
 				final Param param = params[i];
@@ -398,13 +398,13 @@ public class RegionSubCommand extends SimpleSubCommand {
 				final String usage = param.usage;
 				final String suggestable = "/" + command.getLabel() + " " + command.getSublabel() + " " + param.label;
 
-				components.add(SimpleComponent
+				usages.add(SimpleComponent
 						.fromMini(" " + suggestable + (!usage.isEmpty() ? " " + usage : "") + " - " + param.description)
 						.onHoverLegacy("Click to copy.")
 						.onClickSuggestCmd(suggestable));
 			}
 
-			return components.toArray(new SimpleComponent[components.size()]);
+			return SimpleComponent.join(usages);
 		}
 
 		/**
