@@ -990,8 +990,10 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @return
 	 */
 	public static SerializedMap fromObject(Language language, @NonNull final Object object) {
-
 		if (language == Language.JSON) {
+			if (object instanceof Map)
+				return fromInternal(language, object);
+
 			ValidCore.checkBoolean(object instanceof String, "Can only create SerializedMap from JSON String, got " + object.getClass().getSimpleName() + " instead: " + object);
 			final String json = (String) object;
 
