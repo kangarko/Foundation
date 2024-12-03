@@ -350,11 +350,15 @@ public final class Variables {
 		else
 			cache.put(variable, SimpleComponent.fromPlain(variable));
 
-		if (frontSpace)
-			replacedValue = SimpleComponent.fromPlain(" ").append(replacedValue);
+		final String replacedPlainValue = replacedValue == null ? "" : replacedValue.toPlain();
 
-		if (backSpace)
-			replacedValue = replacedValue.appendPlain(" ");
+		if ((frontSpace || backSpace) && !replacedPlainValue.isEmpty()) {
+			if (frontSpace && !replacedPlainValue.startsWith(" "))
+				replacedValue = SimpleComponent.fromPlain(" ").append(replacedValue);
+
+			if (backSpace && !replacedPlainValue.endsWith(" "))
+				replacedValue = replacedValue.appendPlain(" ");
+		}
 
 		return replacedValue;
 	}
