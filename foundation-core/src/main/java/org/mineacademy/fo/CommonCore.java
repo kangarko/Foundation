@@ -340,8 +340,8 @@ public abstract class CommonCore {
 		if (messages != null && !ValidCore.isNullOrEmpty(messages)) {
 			log("&7" + configLine());
 
-			for (final String msg : messages)
-				log(" &c" + msg);
+			for (final String message : messages)
+				log(" &c" + message);
 
 			if (disablePlugin)
 				log(" &cPlugin is now disabled.");
