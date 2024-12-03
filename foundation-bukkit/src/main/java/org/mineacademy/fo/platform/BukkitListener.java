@@ -158,20 +158,20 @@ final class BukkitListener implements Listener {
 				else
 					component = component
 							.appendMini(" &6« ")
-							.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page)))
+							.onHover(Lang.componentVars("page-go-to-page", "page", String.valueOf(page)))
 							.onClickRunCmd("/#flp " + page);
 
 				component = component
-						.appendMini("&f" + (page + 1)).onHover(Lang.componentArray("page-go-to-first-page")).onClickRunCmd("/#flp 1")
-						.appendMini("&7/").onHover(Lang.componentArray("page-tooltip"))
-						.appendMini("&f" + pages.size() + "").onHover(Lang.componentArray("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
+						.appendMini("&f" + (page + 1)).onHover(Lang.component("page-go-to-first-page")).onClickRunCmd("/#flp 1")
+						.appendMini("&7/").onHover(Lang.component("page-tooltip"))
+						.appendMini("&f" + pages.size() + "").onHover(Lang.component("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
 
 				if (page + 1 >= pages.size())
 					component = component.appendMini(" &7» ");
 				else
 					component = component
 							.appendMini(" &6» ")
-							.onHover(Lang.componentArrayVars("page-go-to-page", "page", String.valueOf(page + 2)))
+							.onHover(Lang.componentVars("page-go-to-page", "page", String.valueOf(page + 2)))
 							.onClickRunCmd("/#flp " + (page + 2));
 
 				audience.sendMessage(component

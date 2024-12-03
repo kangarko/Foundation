@@ -338,7 +338,7 @@ public abstract class SimpleCommandCore {
 
 			if (args.length < this.getMinArguments() || this.autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 				final String[] legacyUsage = this.getMultilineUsageMessage();
-				final SimpleComponent[] newUsage = this.getMultilineUsage();
+				final SimpleComponent newUsage = this.getMultilineUsage();
 
 				if (legacyUsage != null || newUsage != null)
 					this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
@@ -357,8 +357,7 @@ public abstract class SimpleCommandCore {
 								audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMini(legacyLine))));
 
 						else if (newUsage != null)
-							for (final SimpleComponent newLine : newUsage)
-								audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(newLine)));
+							audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(newUsage)));
 
 						this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
 					}
@@ -1580,7 +1579,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return the multiline custom usage message, or null
 	 */
-	protected SimpleComponent[] getMultilineUsage() {
+	protected SimpleComponent getMultilineUsage() {
 		return null;
 	}
 
