@@ -1,10 +1,8 @@
 package org.mineacademy.fo.remain;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -1867,9 +1865,7 @@ public enum CompSound {
 	 */
 	@Override
 	public String toString() {
-		return Arrays.stream(this.name().split("_"))
-				.map(t -> t.charAt(0) + t.substring(1).toLowerCase())
-				.collect(Collectors.joining(" "));
+		return this.name().toLowerCase();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
