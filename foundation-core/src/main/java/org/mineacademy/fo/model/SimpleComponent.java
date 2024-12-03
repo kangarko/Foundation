@@ -149,9 +149,10 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 
 		for (int i = 0; i < messages.length; i++) {
 			String legacy = messages[i];
+			ValidCore.checkBoolean(!legacy.contains("\n"), "onHoverLegacy cannot contain new lines in the array");
 
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini(legacy).toLegacy() /* remove unsupported mini tags such as hover */, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
 			joined = joined.append(SimpleComponent.fromMini("<gray>" + legacy));
 
