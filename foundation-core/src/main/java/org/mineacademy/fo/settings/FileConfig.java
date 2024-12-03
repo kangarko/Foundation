@@ -283,14 +283,9 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param toAbs to absolute path, path prefix is not added
 	 */
 	public final void move(String fromRel, String toAbs) {
-
-		// Get the old value
 		final Object oldValue = this.getObject(fromRel);
 
-		// Set the new key
-		this.set(toAbs, oldValue);
-
-		// Remove old key
+		this.setAbsolute(toAbs, oldValue);
 		this.set(fromRel, null);
 
 		CommonCore.log("&7Updating " + this.getFile().getName() + ". Moving &b'&f" + this.buildPathPrefix(fromRel) + "&b' &7to " + "&b'&f" + toAbs + "&b'" + "&r");
