@@ -296,6 +296,16 @@ public abstract class DiscordListener implements Listener {
 	}
 
 	/**
+	 * Convenience method for sending a message to a Discord channel
+	 *
+	 * @param channelId
+	 * @param message
+	 */
+	public final void sendMessage(long channelId, String message) {
+		HookManager.sendDiscordMessage(channelId, message);
+	}
+
+	/**
 	 * Sends a webhook message from the given sender in case he's a valid Player
 	 *
 	 * @param sender

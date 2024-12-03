@@ -32,6 +32,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
@@ -73,6 +74,7 @@ import com.palmergames.bukkit.towny.object.WorldCoord;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.dependencies.jda.api.JDA;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import io.lumine.mythic.api.MythicProvider;
@@ -81,9 +83,7 @@ import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
-import me.clip.placeholderapi.PlaceholderHook;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import net.citizensnpcs.api.CitizensAPI;
@@ -1508,24 +1508,24 @@ public final class HookManager {
 	 * @param message the message to parse the placeholders in.
 	 * @return
 	 */
-	/*public static String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
+	public static String replaceRelationPlaceholders(final Player one, final Player two, final String message) {
 		if (message == null || "".equals(message.trim()))
 			return message;
-	
+
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, message) : message;
-	}*/
+	}
 
 	/**
 	 * Uses PlaceholderAPI to replace relational placeholders in a message.
 	 *
-	 * @param firstAudience
-	 * @param secondAudience
+	 * @param one
+	 * @param two
 	 * @param component
 	 * @return
 	 */
-	/*public static SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer firstAudience, @Nullable final FoundationPlayer secondAudience, final SimpleComponent component) {
-		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(firstAudience, secondAudience, component) : component;
-	}*/
+	public static SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer one, @Nullable final FoundationPlayer two, final SimpleComponent component) {
+		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, component) : component;
+	}
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Factions
@@ -1806,6 +1806,17 @@ public final class HookManager {
 	public static void sendDiscordMessage(final String channel, @NonNull final String message) {
 		if (isDiscordSRVLoaded())
 			discordSRVHook.sendMessage(channel, message);
+	}
+
+	/**
+	 * Send a message to a Discord channel by ID if DiscordSRV is installed.
+	 *
+	 * @param channelId the channel id to send the message in.
+	 * @param message the message to send.
+	 */
+	public static void sendDiscordMessage(final long channelId, @NonNull final String message) {
+		if (isDiscordSRVLoaded())
+			discordSRVHook.sendMessage(channelId, message);
 	}
 }
 
@@ -2620,10 +2631,34 @@ final class PlaceholderAPIHook {
 
 	String replaceRelationPlaceholders(final Player one, final Player two, String message) {
 		try {
-			final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
+			final Map<String, Object> hooks = getHooks();
 
-			if (!hooks.isEmpty())
-				message = this.setRelationalPlaceholders0(one, two, message, hooks, Variables.BRACKET_REL_VARIABLE_PATTERN.matcher(message));
+			if (!hooks.isEmpty()) {
+				final Matcher matcher = Variables.BRACKET_REL_VARIABLE_PATTERN.matcher(message);
+
+				while (matcher.find()) {
+					final String format = matcher.group(2);
+					final int index = format.indexOf("_");
+
+					if (index <= 0 || index >= format.length())
+						continue;
+
+					final String identifier = format.substring(0, index);
+					final String params = format.substring(index + 1);
+
+					if (hooks.containsKey(identifier)) {
+						final Object hook = hooks.get(identifier);
+
+						if (hook instanceof Relational) {
+							final Relational relational = (Relational) hook;
+							final String value = one != null && two != null ? relational.onPlaceholderRequest(one, two, params) : "";
+
+							if (value != null)
+								message = message.replaceAll(Pattern.quote(matcher.group()), Matcher.quoteReplacement(CompChatColor.translateColorCodes(value)));
+						}
+					}
+				}
+			}
 
 			return message;
 
@@ -2640,7 +2675,7 @@ final class PlaceholderAPIHook {
 	}
 
 	SimpleComponent replaceRelationPlaceholders(@Nullable FoundationPlayer firstAudience, @Nullable FoundationPlayer secondAudience, SimpleComponent component) {
-		final Map<String, PlaceholderHook> hooks = PlaceholderAPI.getPlaceholders();
+		final Map<String, Object> hooks = getHooks();
 		final boolean canReplace = firstAudience.isPlayer() && secondAudience.isPlayer();
 
 		return component.replaceMatch(Variables.BRACKET_REL_VARIABLE_PATTERN, (matcher, input) -> {
@@ -2657,55 +2692,28 @@ final class PlaceholderAPIHook {
 				final String params = format.substring(index + 1);
 
 				if (hooks.containsKey(identifier)) {
-					final PlaceholderHook hook = hooks.get(identifier);
+					final Object hook = hooks.get(identifier);
 
 					if (hook instanceof Relational) {
 						final Relational relational = (Relational) hook;
-						final String value = canReplace ? relational.onPlaceholderRequest((Player) firstAudience, (Player) secondAudience, params) : null;
+						final String value = canReplace ? relational.onPlaceholderRequest(firstAudience.getPlayer(), secondAudience.getPlayer(), params) : null;
 
 						text = text.replaceAll(Pattern.quote(matcher.group()), value != null ? Matcher.quoteReplacement(CompChatColor.translateColorCodes(value)) : "");
 					}
 				}
 
-			} catch (final Throwable t) {
-				CommonCore.error(t,
+			} catch (final Throwable throwable) {
+				CommonCore.error(throwable,
 						"PlaceholderAPI failed to replace relation variables!",
 						"Player one: " + firstAudience,
 						"Player two: " + secondAudience,
 						"Variable: " + matcher.group(),
 						"Component: " + component.toLegacy(),
 						"Error: {error}");
-
 			}
-			return input.content(text);
+
+			return SimpleComponent.fromMini(text + "color");
 		});
-	}
-
-	private String setRelationalPlaceholders0(final Player one, final Player two, String text, Map<String, PlaceholderHook> hooks, Matcher matcher) {
-		while (matcher.find()) {
-			final String format = matcher.group(2);
-			final int index = format.indexOf("_");
-
-			if (index <= 0 || index >= format.length())
-				continue;
-
-			final String identifier = format.substring(0, index);
-			final String params = format.substring(index + 1);
-
-			if (hooks.containsKey(identifier)) {
-				final PlaceholderHook hook = hooks.get(identifier);
-
-				if (hook instanceof Relational) {
-					final Relational relational = (Relational) hook;
-					final String value = one != null && two != null ? relational.onPlaceholderRequest(one, two, params) : "";
-
-					if (value != null)
-						text = text.replaceAll(Pattern.quote(matcher.group()), Matcher.quoteReplacement(CompChatColor.translateColorCodes(value)));
-				}
-			}
-		}
-
-		return text;
 	}
 
 	class FoundationPlaceholderAPIInjector extends PlaceholderExpansion {
@@ -2768,7 +2776,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getVersion() {
-			return "foundation-internal";
+			return BukkitPlugin.getInstance().getVersion();
 		}
 
 		/**
@@ -3577,11 +3585,6 @@ class DiscordSRVHook {
 	}
 
 	boolean sendMessage(@Nullable CommandSender sender, final String channel, String message) {
-		message = CompChatColor.stripColorCodes(message);
-
-		if (message.replace(" ", "").isEmpty())
-			return false;
-
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// The channel is not configured in the config.yml of Discord,
@@ -3592,8 +3595,44 @@ class DiscordSRVHook {
 			return false;
 		}
 
+		return this.sendMessage0(sender, textChannel, message);
+	}
+
+	boolean sendMessage(long channelId, String message) {
+		final JDA jda = DiscordSRV.getPlugin().getJda();
+
+		if (jda == null) {
+			Debugger.debug("discord", "Unable to locate JDA. Not sending message to channel ID " + channelId + ": " + message);
+
+			return false;
+		}
+
+		final TextChannel textChannel = jda.getTextChannelById(channelId);
+
+		if (textChannel == null) {
+			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel id '" + channelId + "'. Available: " + Common.join(jda.getTextChannels(), TextChannel::getName) + ". Not sending: " + message);
+
+			return false;
+		}
+
+		message = CompChatColor.stripColorCodes(message);
+
+		if (message.replace(" ", "").isEmpty())
+			return false;
+
+		textChannel.sendMessage(message).complete();
+
+		return true;
+	}
+
+	private boolean sendMessage0(@Nullable CommandSender sender, @NonNull TextChannel textChannel, String message) {
+		message = CompChatColor.stripColorCodes(message);
+
+		if (message.replace(" ", "").isEmpty())
+			return false;
+
 		if (sender instanceof Player) {
-			Debugger.debug("discord", "[MC->Discord] " + sender.getName() + " send message to '" + channel + "' channel. Message: '" + message + "'");
+			Debugger.debug("discord", "[MC->Discord] " + sender.getName() + " send message to '" + textChannel.getName() + "' channel. Message: '" + message + "'");
 
 			final DiscordSRV instance = JavaPlugin.getPlugin(DiscordSRV.class);
 
@@ -3606,7 +3645,7 @@ class DiscordSRVHook {
 			runtimeValues.put(key, true);
 
 			try {
-				instance.processChatMessage((Player) sender, message, channel, false);
+				instance.processChatMessage((Player) sender, message, textChannel.getName(), false);
 
 			} finally {
 				if (oldValue == null)
@@ -3616,7 +3655,7 @@ class DiscordSRVHook {
 			}
 
 		} else {
-			Debugger.debug("discord", "[MC->Discord] " + (sender == null ? "No sender " : sender.getName() + " (generic)") + "sent message to '" + channel + "' channel. Message: '" + message + "'");
+			Debugger.debug("discord", "[MC->Discord] " + (sender == null ? "No sender " : sender.getName() + " (generic)") + "sent message to '" + textChannel.getName() + "' channel. Message: '" + message + "'");
 
 			DiscordUtil.sendMessage(textChannel, message);
 		}
