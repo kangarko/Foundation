@@ -99,34 +99,38 @@ public final class SimpleResultSet {
 		if (value == null || "".equals(value))
 			return null;
 
+		final List<Object> stringList;
+
 		try {
-			final List<String> stringList = CommonCore.GSON.fromJson(value, new TypeToken<List<String>>() {
+			stringList = CommonCore.GSON.fromJson(value, new TypeToken<List<Object>>() {
 			}.getType());
 
-			final List<T> list = new ArrayList<>();
-
-			for (final String element : stringList)
-				try {
-					list.add(SerializeUtilCore.deserialize(Language.JSON, typeOf, element));
-
-				} catch (final Throwable ex) {
-					Throwable t = ex;
-
-					while (t.getCause() != null)
-						t = t.getCause();
-
-					// Get to the root cause and then ignore if the world is not loaded anymore.
-					if (t instanceof InvalidWorldException)
-						continue;
-				}
-
-			return list;
-
 		} catch (final Throwable ex) {
-			CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+			CommonCore.warning(this.tableName + " table has invalid " + columnLabel + " row with value '" + value + "', ignoring. The error was: " + ex.toString());
 
 			throw new InvalidRowException();
 		}
+
+		final List<T> list = new ArrayList<>();
+
+		for (final Object element : stringList)
+			try {
+				list.add(SerializeUtilCore.deserialize(Language.JSON, typeOf, element));
+
+			} catch (final Throwable ex) {
+				Throwable t = ex;
+
+				while (t.getCause() != null)
+					t = t.getCause();
+
+				// Get to the root cause and then ignore if the world is not loaded anymore.
+				if (t instanceof InvalidWorldException)
+					continue;
+				else
+					CommonCore.error(ex, "Failed to deserialize list element in table " + this.tableName + "! Raw: " + element);
+			}
+
+		return list;
 	}
 
 	/**
