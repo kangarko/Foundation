@@ -28,6 +28,8 @@ import org.mineacademy.fo.exception.InvalidRowException;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.Platform;
 
+import com.google.gson.JsonArray;
+
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -429,64 +431,66 @@ public class SimpleDatabase {
 	 * @param columnsAndValues
 	 */
 	protected final void upsert(final Table table, @NonNull Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
-		final String tableName = this.replaceVariables(table.getName());
+		synchronized (this.connection) {
+			final String tableName = this.replaceVariables(table.getName());
 
-		// Building column names and placeholders for values (?)
-		final String columns = String.join(",", columnsAndValues.keySet());
-		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
+			// Building column names and placeholders for values (?)
+			final String columns = String.join(",", columnsAndValues.keySet());
+			final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
 
-		final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
+			final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
 
-		if (!this.isSQLite) {
+			if (!this.isSQLite) {
 
-			// Prepare the duplicate update clause for MySQL
-			final String duplicateUpdate = columnsAndValues.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
+				// Prepare the duplicate update clause for MySQL
+				final String duplicateUpdate = columnsAndValues.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
 
-			sql.append(" ON DUPLICATE KEY UPDATE ").append(duplicateUpdate);
+				sql.append(" ON DUPLICATE KEY UPDATE ").append(duplicateUpdate);
 
-		} else {
-			// Reason for this extra ugly connection is that Minecraft 1.8.8 ships with outdated SQLite
-			// And we can't use Libby to download a new one due to a conflict.
-			final String removeSql = "DELETE FROM " + tableName + " WHERE " + uniqueColumn.getKey() + " = ?;";
+			} else {
+				// Reason for this extra ugly connection is that Minecraft 1.8.8 ships with outdated SQLite
+				// And we can't use Libby to download a new one due to a conflict.
+				final String removeSql = "DELETE FROM " + tableName + " WHERE " + uniqueColumn.getKey() + " = ?;";
 
-			try (PreparedStatement preparedStatement = this.prepareStatement(removeSql)) {
-				preparedStatement.setObject(1, uniqueColumn.getValue());
+				try (PreparedStatement preparedStatement = this.prepareStatement(removeSql)) {
+					preparedStatement.setObject(1, uniqueColumn.getValue());
 
-				Debugger.debug("mysql", "[sqlite/remove] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+					Debugger.debug("mysql", "[sqlite/remove] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+					preparedStatement.executeUpdate();
+
+				} catch (final SQLException ex) {
+					CommonCore.error(ex,
+							"Error removing old SQLite column",
+							"Table: " + tableName,
+							"Query: " + removeSql);
+				}
+			}
+
+			// Execute the query using PreparedStatement
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+				int index = 1;
+
+				for (final Object value : columnsAndValues.values()) {
+					if (value == null || value.equals("NULL"))
+						preparedStatement.setNull(index++, java.sql.Types.NULL);
+
+					else if (value instanceof String)
+						preparedStatement.setString(index++, (String) value);
+
+					else
+						preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
+				}
+
+				Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
 				preparedStatement.executeUpdate();
 
 			} catch (final SQLException ex) {
 				CommonCore.error(ex,
-						"Error removing old SQLite column",
+						"Error inserting into database",
 						"Table: " + tableName,
-						"Query: " + removeSql);
+						"Query: " + sql);
 			}
-		}
-
-		// Execute the query using PreparedStatement
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
-			int index = 1;
-
-			for (final Object value : columnsAndValues.values()) {
-				if (value == null || value.equals("NULL"))
-					preparedStatement.setNull(index++, java.sql.Types.NULL);
-
-				else if (value instanceof String)
-					preparedStatement.setString(index++, (String) value);
-
-				else
-					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
-			}
-
-			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-
-			preparedStatement.executeUpdate();
-
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error inserting into database",
-					"Table: " + tableName,
-					"Query: " + sql);
 		}
 	}
 
@@ -497,38 +501,40 @@ public class SimpleDatabase {
 	 * @param columnsAndValues
 	 */
 	protected final void insert(final Table table, @NonNull final SerializedMap columnsAndValues) {
-		final String tableName = this.replaceVariables(table.getName());
+		synchronized (this.connection) {
+			final String tableName = this.replaceVariables(table.getName());
 
-		// Building column names and placeholders for values (?)
-		final String columns = String.join(",", columnsAndValues.keySet());
-		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
+			// Building column names and placeholders for values (?)
+			final String columns = String.join(",", columnsAndValues.keySet());
+			final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
 
-		final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
+			final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
 
-		// Execute the query using PreparedStatement
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
-			int index = 1;
+			// Execute the query using PreparedStatement
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+				int index = 1;
 
-			for (final Object value : columnsAndValues.values()) {
-				if (value == null || value.equals("NULL"))
-					preparedStatement.setNull(index++, java.sql.Types.NULL);
+				for (final Object value : columnsAndValues.values()) {
+					if (value == null || value.equals("NULL"))
+						preparedStatement.setNull(index++, java.sql.Types.NULL);
 
-				else if (value instanceof String)
-					preparedStatement.setString(index++, (String) value);
+					else if (value instanceof String)
+						preparedStatement.setString(index++, (String) value);
 
-				else
-					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
+					else
+						preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
+				}
+
+				Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+				preparedStatement.executeUpdate();
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error inserting into database",
+						"Table: " + tableName,
+						"Query: " + sql);
 			}
-
-			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-
-			preparedStatement.executeUpdate();
-
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error inserting into database",
-					"Table: " + tableName,
-					"Query: " + sql);
 		}
 	}
 
@@ -539,50 +545,74 @@ public class SimpleDatabase {
 	 * @param maps
 	 */
 	protected final void insertBatch(final Table table, @NonNull final List<SerializedMap> maps) {
+		this.ensureConnected();
+
+		if (maps.isEmpty())
+			return;
+
 		synchronized (this.connection) {
-			final List<String> sqls = new ArrayList<>();
+			final String columns = String.join(", ", maps.get(0).keySet());
+			final String placeholders = String.join(", ", Collections.nCopies(maps.get(0).size(), "?"));
+			final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + placeholders + ");";
 
-			for (final SerializedMap map : maps) {
-				final String columns = String.join(", ", map.keySet());
-				final String values = joinSQLValues(map.values());
+			Debugger.debug("mysql", "Batch Insert SQL Template: " + sql);
 
-				final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + values + ");";
-				Debugger.debug("mysql", "Inserting batch SQL: " + sql);
+			try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
 
-				sqls.add(sql);
+				// Disable auto-commit for batch operations
+				this.connection.setAutoCommit(false);
+
+				for (final SerializedMap map : maps)
+					try {
+						int index = 1;
+
+						for (Object value : map.values()) {
+							value = SerializeUtilCore.serialize(Language.JSON, value);
+
+							if (value instanceof JsonArray)
+								value = ((JsonArray) value).toString();
+
+							preparedStatement.setObject(index++, value == null || "NULL".equals(value) ? null : value instanceof Boolean ? ((boolean) value) ? 1 : 0 : value);
+						}
+
+						preparedStatement.addBatch();
+
+					} catch (final Throwable t) {
+						CommonCore.error(t,
+								"Error processing database batch entry!",
+								"Batch entry: " + map);
+					}
+
+				Debugger.debug("mysql", "Executing batch...");
+				preparedStatement.executeBatch();
+
+				// Commit the transaction
+				this.connection.commit();
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error executing a batch insert",
+						"SQL Query: " + sql);
+
+			} finally {
+				try {
+					this.connection.setAutoCommit(true);
+
+				} catch (final SQLException ex) {
+					CommonCore.error(ex, "Error resetting auto-commit.");
+				}
 			}
-
-			this.batchUpdate(sqls);
 		}
-	}
-
-	/*
-	 * Joins SQL values
-	 */
-	private static <T> String joinSQLValues(final Collection<T> list) {
-		final StringBuilder builder = new StringBuilder();
-		boolean first = true;
-
-		for (final T element : list) {
-			if (!first)
-				builder.append(", ");
-			else
-				first = false;
-
-			if (element != null && !(element instanceof Number) && !(element instanceof Boolean) && !(element instanceof String))
-				throw new FoException("Unsupported type " + element.getClass() + " for SQL value: " + element);
-
-			builder.append(element == null || "NULL".equals(element) ? "NULL" : element instanceof Number ? String.valueOf(element) : element instanceof Boolean ? ((boolean) element) ? "1" : "0" : "'" + element.toString() + "'");
-		}
-		return builder.toString();
 	}
 
 	/**
 	 * Executes a massive batch update.
 	 *
+	 * @deprecated SQLs are not sanitized
 	 * @param sqls
 	 */
-	protected final void batchUpdate(@NonNull final List<String> sqls) {
+	@Deprecated
+	protected final void batchUpdateUnsafe(@NonNull final List<String> sqls) {
 		this.ensureConnected();
 
 		if (sqls.isEmpty())
@@ -641,38 +671,40 @@ public class SimpleDatabase {
 	 * @param consumer
 	 */
 	protected final void select(final Table table, final Where where, final ResultReader consumer) {
-		final StringBuilder sql = new StringBuilder("SELECT * FROM ").append(table.getName());
+		synchronized (this.connection) {
+			final StringBuilder sql = new StringBuilder("SELECT * FROM ").append(table.getName());
 
-		if (where != null && !where.getConditions().isEmpty())
-			sql.append(" WHERE ").append(where.buildSql());
+			if (where != null && !where.getConditions().isEmpty())
+				sql.append(" WHERE ").append(where.buildSql());
 
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
-			if (where != null && !where.getValues().isEmpty()) {
-				int index = 1;
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+				if (where != null && !where.getValues().isEmpty()) {
+					int index = 1;
 
-				for (final Object value : where.getValues())
-					preparedStatement.setObject(index++, value);
+					for (final Object value : where.getValues())
+						preparedStatement.setObject(index++, value);
+				}
+
+				Debugger.debug("mysql", "[select] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					while (resultSet.next())
+						try {
+							consumer.accept(SimpleResultSet.wrap(table, resultSet));
+
+						} catch (final InvalidRowException ex) {
+							// Pardoned
+
+						} catch (final Throwable throwable) {
+							CommonCore.error(throwable, "Error selecting a row from table " + table.getName() + " where " + sql);
+						}
+				}
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error selecting database rows",
+						"Table: " + table.getName(),
+						"Query: " + sql);
 			}
-
-			Debugger.debug("mysql", "[select] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				while (resultSet.next())
-					try {
-						consumer.accept(SimpleResultSet.wrap(table, resultSet));
-
-					} catch (final InvalidRowException ex) {
-						// Pardoned
-
-					} catch (final Throwable throwable) {
-						CommonCore.error(throwable, "Error selecting a row from table " + table.getName() + " where " + sql);
-					}
-			}
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error selecting database rows",
-					"Table: " + table.getName(),
-					"Query: " + sql);
 		}
 	}
 
@@ -696,34 +728,36 @@ public class SimpleDatabase {
 	 * @param consumer
 	 */
 	protected final void selectColumns(final Table table, final List<String> columns, final Where where, final ResultReader consumer) {
-		final String tableName = table.getName();
-		final StringBuilder sql = new StringBuilder("SELECT ");
+		synchronized (this.connection) {
+			final String tableName = table.getName();
+			final StringBuilder sql = new StringBuilder("SELECT ");
 
-		sql.append(String.join(", ", columns)).append(" FROM ").append(tableName);
+			sql.append(String.join(", ", columns)).append(" FROM ").append(tableName);
 
-		if (where != null && !where.getConditions().isEmpty())
-			sql.append(" WHERE ").append(where.buildSql());
+			if (where != null && !where.getConditions().isEmpty())
+				sql.append(" WHERE ").append(where.buildSql());
 
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
-			if (where != null && !where.getValues().isEmpty()) {
-				int index = 1;
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
+				if (where != null && !where.getValues().isEmpty()) {
+					int index = 1;
 
-				for (final Object value : where.getValues())
-					preparedStatement.setObject(index++, value);
+					for (final Object value : where.getValues())
+						preparedStatement.setObject(index++, value);
+				}
+
+				Debugger.debug("mysql", "[select columns] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					while (resultSet.next())
+						consumer.accept(SimpleResultSet.wrap(table, resultSet));
+				}
+
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error selecting database columns",
+						"Table: " + tableName,
+						"Query: " + sql);
 			}
-
-			Debugger.debug("mysql", "[select columns] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				while (resultSet.next())
-					consumer.accept(SimpleResultSet.wrap(table, resultSet));
-			}
-
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error selecting database columns",
-					"Table: " + tableName,
-					"Query: " + sql);
 		}
 	}
 
@@ -738,38 +772,40 @@ public class SimpleDatabase {
 	 * @return
 	 */
 	protected final int count(final Table table, final SerializedMap conditions) {
-		final String tableName = this.replaceVariables(table.getName());
+		synchronized (this.connection) {
+			final String tableName = this.replaceVariables(table.getName());
 
-		final StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(*) FROM ").append(tableName);
+			final StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(*) FROM ").append(tableName);
 
-		if (!conditions.isEmpty()) {
-			queryBuilder.append(" WHERE ");
-			queryBuilder.append(String.join(" AND ", conditions.entrySet().stream().map(entry -> entry.getKey() + " = ?").collect(Collectors.toList())));
-		}
-
-		final String sql = queryBuilder.toString();
-
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
-			int index = 1;
-
-			for (final Map.Entry<String, Object> entry : conditions.entrySet())
-				preparedStatement.setObject(index++, entry.getValue());
-
-			Debugger.debug("mysql", "[count] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				if (resultSet.next())
-					return resultSet.getInt(1);
+			if (!conditions.isEmpty()) {
+				queryBuilder.append(" WHERE ");
+				queryBuilder.append(String.join(" AND ", conditions.entrySet().stream().map(entry -> entry.getKey() + " = ?").collect(Collectors.toList())));
 			}
 
-		} catch (final SQLException ex) {
-			CommonCore.throwError(ex,
-					"Error counting database rows",
-					"Table: " + tableName,
-					"Query: " + sql);
-		}
+			final String sql = queryBuilder.toString();
 
-		return 0;
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+				int index = 1;
+
+				for (final Map.Entry<String, Object> entry : conditions.entrySet())
+					preparedStatement.setObject(index++, entry.getValue());
+
+				Debugger.debug("mysql", "[count] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next())
+						return resultSet.getInt(1);
+				}
+
+			} catch (final SQLException ex) {
+				CommonCore.throwError(ex,
+						"Error counting database rows",
+						"Table: " + tableName,
+						"Query: " + sql);
+			}
+
+			return 0;
+		}
 	}
 
 	/**
@@ -779,24 +815,26 @@ public class SimpleDatabase {
 	 * @param where The where conditions.
 	 */
 	protected final void delete(final Table table, final Where where) {
-		ValidCore.checkBoolean(where != null && !where.getConditions().isEmpty(), "The where conditions cannot be empty for a delete operation!");
-		final String sql = "DELETE FROM " + table.getName() + " WHERE " + where.buildSql();
+		synchronized (this.connection) {
+			ValidCore.checkBoolean(where != null && !where.getConditions().isEmpty(), "The where conditions cannot be empty for a delete operation!");
+			final String sql = "DELETE FROM " + table.getName() + " WHERE " + where.buildSql();
 
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
-			int index = 1;
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+				int index = 1;
 
-			for (final Object value : where.getValues())
-				preparedStatement.setObject(index++, value);
+				for (final Object value : where.getValues())
+					preparedStatement.setObject(index++, value);
 
-			Debugger.debug("mysql", "[delete] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+				Debugger.debug("mysql", "[delete] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
-			preparedStatement.executeUpdate();
+				preparedStatement.executeUpdate();
 
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error deleting database rows",
-					"Table: " + table.getName(),
-					"Query: " + sql);
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error deleting database rows",
+						"Table: " + table.getName(),
+						"Query: " + sql);
+			}
 		}
 	}
 
@@ -807,20 +845,22 @@ public class SimpleDatabase {
 	 * @param timestamp The timestamp limit. Rows with 'Date' earlier than this will be deleted.
 	 */
 	protected final void deleteOlderThan(final Table table, @NonNull final Timestamp timestamp) {
-		final String sql = "DELETE FROM " + table.getName() + " WHERE Date < ?";
+		synchronized (this.connection) {
+			final String sql = "DELETE FROM " + table.getName() + " WHERE Date < ?";
 
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
-			preparedStatement.setTimestamp(1, timestamp);
+			try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+				preparedStatement.setTimestamp(1, timestamp);
 
-			Debugger.debug("mysql", "[delete older than] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+				Debugger.debug("mysql", "[delete older than] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
-			preparedStatement.executeUpdate();
+				preparedStatement.executeUpdate();
 
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error deleting database rows",
-					"Table: " + table.getName(),
-					"Query: " + sql);
+			} catch (final SQLException ex) {
+				CommonCore.error(ex,
+						"Error deleting database rows",
+						"Table: " + table.getName(),
+						"Query: " + sql);
+			}
 		}
 	}
 
@@ -855,57 +895,59 @@ public class SimpleDatabase {
 	 * @throws SQLException
 	 */
 	protected final boolean doesColumnExist(final Table table, final String column) throws SQLException {
-		final String tableName = table.getName();
+		synchronized (this.connection) {
+			final String tableName = table.getName();
 
-		if (this.isSQLite) {
-			final String sql = "PRAGMA table_info(" + tableName + ");";
+			if (this.isSQLite) {
+				final String sql = "PRAGMA table_info(" + tableName + ");";
 
-			Debugger.debug("mysql", "[does column exist/sqlite] Running SQL: " + sql);
+				Debugger.debug("mysql", "[does column exist/sqlite] Running SQL: " + sql);
 
-			try (PreparedStatement statement = this.prepareStatement(sql);
-					ResultSet resultSet = statement.executeQuery()) {
+				try (PreparedStatement statement = this.prepareStatement(sql);
+						ResultSet resultSet = statement.executeQuery()) {
 
-				while (resultSet.next()) {
-					final String columnName = resultSet.getString("name");
+					while (resultSet.next()) {
+						final String columnName = resultSet.getString("name");
 
-					// Compare with the expected column name
-					if (columnName.equalsIgnoreCase(column))
-						return true;
+						// Compare with the expected column name
+						if (columnName.equalsIgnoreCase(column))
+							return true;
+					}
+
+				} catch (final SQLException ex) {
+					CommonCore.error(ex,
+							"Error checking if SQLite database column exists",
+							"Table: " + tableName,
+							"Column: " + column,
+							"Query: " + sql);
 				}
 
-			} catch (final SQLException ex) {
-				CommonCore.error(ex,
-						"Error checking if SQLite database column exists",
-						"Table: " + tableName,
-						"Column: " + column,
-						"Query: " + sql);
-			}
+			} else {
+				final String sql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?";
 
-		} else {
-			final String sql = "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?";
+				try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
+					preparedStatement.setString(1, this.lastCredentials.getDatabaseName());
+					preparedStatement.setString(2, tableName);
+					preparedStatement.setString(3, column);
 
-			try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
-				preparedStatement.setString(1, this.lastCredentials.getDatabaseName());
-				preparedStatement.setString(2, tableName);
-				preparedStatement.setString(3, column);
+					Debugger.debug("mysql", "[does column exist/mysql] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
-				Debugger.debug("mysql", "[does column exist/mysql] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+					try (ResultSet resultSet = preparedStatement.executeQuery()) {
+						if (resultSet.next())
+							return resultSet.getInt(1) > 0;
+					}
 
-				try (ResultSet resultSet = preparedStatement.executeQuery()) {
-					if (resultSet.next())
-						return resultSet.getInt(1) > 0;
+				} catch (final SQLException ex) {
+					CommonCore.error(ex,
+							"Error checking if MySQL database column exists",
+							"Table: " + tableName,
+							"Column: " + column,
+							"Query: " + sql);
 				}
-
-			} catch (final SQLException ex) {
-				CommonCore.error(ex,
-						"Error checking if MySQL database column exists",
-						"Table: " + tableName,
-						"Column: " + column,
-						"Query: " + sql);
 			}
+
+			return false;
 		}
-
-		return false;
 	}
 
 	/**
@@ -1125,7 +1167,9 @@ public class SimpleDatabase {
 		 */
 		public Where like(final String column, final String pattern) {
 			this.conditions.add(column + " LIKE ?");
-			this.values.add(pattern);
+
+			ValidCore.checkBoolean(!pattern.startsWith("%") && !pattern.endsWith("%"), "Pattern must not start or end with %, got " + pattern);
+			this.values.add("%" + pattern + "%");
 
 			return this;
 		}
