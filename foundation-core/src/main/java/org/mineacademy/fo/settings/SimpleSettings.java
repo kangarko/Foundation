@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -79,6 +80,22 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * automatically?
 	 */
 	public static Boolean REGISTER_TOOLS = true;
+
+	/**
+	 * Should we enable the region system? Loads DiskRegion.loadRegions() on Bukkit
+	 *
+	 * You still need to register the subcommand RegionSubCommand manually
+	 * by calling {@link Platform#registerDefaultPlatformSubcommands(SimpleCommandGroup)}
+	 */
+	public static Boolean REGISTER_REGIONS = true;
+
+	/**
+	 * Should we listen for our GUI player inventory click event?
+	 *
+	 * True by default. Returning false here will break the entire Foundation menu
+	 * system, useful if you want to use your own.
+	 */
+	public static Boolean REGISTER_MENUS = true;
 
 	/**
 	 * The lag threshold used for {@link LagCatcher} in milliseconds. Set to -1 to disable.
@@ -159,6 +176,9 @@ public class SimpleSettings extends YamlStaticConfig {
 
 		if (isSetDefault("Register_Tools"))
 			REGISTER_TOOLS = getBoolean("Register_Tools");
+
+		if (isSetDefault("Register_Regions"))
+			REGISTER_REGIONS = getBoolean("Register_Regions");
 
 		if (isSetDefault("Log_Lag_Over_Milis")) {
 			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");

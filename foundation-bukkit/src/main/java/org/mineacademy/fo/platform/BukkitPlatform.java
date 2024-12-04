@@ -66,6 +66,7 @@ import org.mineacademy.fo.remain.CompPotionEffectType;
 import org.mineacademy.fo.remain.CompSound;
 import org.mineacademy.fo.remain.JsonItemStack;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 
 import com.google.gson.JsonArray;
@@ -625,7 +626,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
 		group.registerSubcommand(new ConversationSubCommand());
 
-		if (BukkitPlugin.getInstance().areRegionsEnabled())
+		if (SimpleSettings.REGISTER_REGIONS)
 			group.registerSubcommand(new RegionSubCommand());
 	}
 

@@ -22,9 +22,9 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.exception.InvalidWorldException;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.ConfigItems;
+import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.mineacademy.fo.visual.VisualizedRegion;
 
@@ -35,7 +35,7 @@ import lombok.Setter;
 /**
  * Represents a region in a yml file in regions/ folder in your plugin's folder.
  *
- * To use this, enable regions in {@link BukkitPlugin#areRegionsEnabled()}.
+ * To use this, enable regions in {@link SimpleSettings#REGISTER_REGIONS}.
  */
 @Getter
 public final class DiskRegion extends YamlConfig {

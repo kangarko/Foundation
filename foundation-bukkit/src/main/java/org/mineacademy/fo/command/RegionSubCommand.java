@@ -16,7 +16,6 @@ import org.mineacademy.fo.menu.SelectRegionMenu;
 import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.settings.Lang;
@@ -28,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * The command to manage plugin's region system.
  *
- * To use this, enable regions in {@link BukkitPlugin#areRegionsEnabled()}
+ * To use this, enable regions in {@link SimpleSettings#REGISTER_REGIONS}
  * and register this subcommand manually in your class extending {@link SimpleCommandGroup}
  * or by calling {@link SimpleCommandGroup#registerDefaultSubcommands()}.
  */
@@ -86,7 +85,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 
 	@Override
 	protected boolean showInHelp() {
-		return BukkitPlugin.getInstance().areRegionsEnabled();
+		return SimpleSettings.REGISTER_REGIONS;
 	}
 
 	/**
