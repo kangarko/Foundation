@@ -42,7 +42,7 @@ final class BukkitPlayer extends FoundationPlayer {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
-		this.audience = BukkitPlatform.getAdventure().sender(sender);
+		this.audience = BukkitPlatform.hasAdventure() ? BukkitPlatform.getAdventure().sender(sender) : null;
 	}
 
 	@Override
