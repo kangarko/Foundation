@@ -163,7 +163,7 @@ public class YamlConfig extends FileConfig {
 		try {
 			rawNode = this.composer.composeString(contents).orElse(null);
 
-		} catch (final ParserException ex) {
+		} catch (IndexOutOfBoundsException | ParserException ex) {
 			throw new YamlSyntaxError(ex, this.getFile());
 		}
 
