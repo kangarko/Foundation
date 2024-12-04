@@ -1,6 +1,9 @@
 package org.mineacademy.fo.remain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Chunk;
@@ -226,7 +229,7 @@ public enum CompBiome {
 			return -89;
 		}
 	},
-	MODIFIED_GRAVELLY_MOUNTAINS(WINDSWEPT_GRAVELLY_HILLS, "MUTATED_EXTREME_HILLS_WITH_TREES", "EXTREME_HILLS_MOUNTAINS") {
+	MODIFIED_GRAVELLY_MOUNTAINS(WINDSWEPT_GRAVELLY_HILLS, "MUTATED_EXTREME_HILLS_WITH_TREES", "EXTREME_HILLS_MOUNTAINS", "SMALL_MOUNTAINS") {
 		@Override
 		public int getId() {
 			return -94;
@@ -576,6 +579,23 @@ public enum CompBiome {
 					if (Remain.getBiome(block) != this.biome)
 						block.setBiome(this.biome);
 				}
+	}
+
+	/**
+	 * Return all available biomes
+	 *
+	 * @return
+	 */
+	public static List<CompBiome> getAvailable() {
+		final List<CompBiome> availableBiomes = new ArrayList<>();
+
+		for (final CompBiome biome : values())
+			if (biome.isAvailable())
+				availableBiomes.add(biome);
+
+		Collections.sort(availableBiomes, (first, second) -> first.name().compareTo(second.name()));
+
+		return Collections.unmodifiableList(availableBiomes);
 	}
 
 	/**
