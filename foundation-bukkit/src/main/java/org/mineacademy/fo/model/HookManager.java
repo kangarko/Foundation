@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -3917,6 +3918,8 @@ class LiteBansHook {
 			this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
 			this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
 
+			this.downloadData(null);
+
 			// LiteBans throws an artificial exception when run on main thread on Bukkit, so we store all data in memory
 			// for maximum performance, cached every 5 seconds, see
 			// https://gitlab.com/ruany/LiteBansAPI/-/blob/master/src/main/java/litebans/api/Database.java
@@ -3924,39 +3927,50 @@ class LiteBansHook {
 
 				@Override
 				public void run() {
-					if (LiteBansHook.this.methodPrepareStatement == null)
-						return;
-
-					LiteBansHook.this.mutedPlayerUids.clear();
-
-					try (PreparedStatement statement = ReflectionUtil.invoke(LiteBansHook.this.methodPrepareStatement, LiteBansHook.this.instance, "SELECT * FROM {mutes}")) {
-						statement.execute();
-
-						final ResultSet resultSet = statement.getResultSet();
-
-						while (resultSet.next()) {
-							final String uuid = resultSet.getString("UUID");
-							final boolean active = resultSet.getBoolean("ACTIVE");
-							final long until = resultSet.getLong("UNTIL");
-
-							if (active) {
-								if (until != 0 && until < System.currentTimeMillis())
-									continue;
-
-								LiteBansHook.this.mutedPlayerUids.add(uuid);
-							}
-						}
-
-					} catch (final Throwable t) {
-						CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
-
+					if (LiteBansHook.this.methodPrepareStatement == null) {
 						this.cancel();
+
+						return;
 					}
+
+					downloadData(this);
 				}
 			});
 		}
 
 		return this.mutedPlayerUids.contains(player.getUniqueId().toString());
+	}
+
+	private void downloadData(BukkitRunnable task) {
+		LiteBansHook.this.mutedPlayerUids.clear();
+
+		try (PreparedStatement statement = ReflectionUtil.invoke(LiteBansHook.this.methodPrepareStatement, LiteBansHook.this.instance, "SELECT * FROM {mutes}")) {
+			statement.execute();
+
+			final ResultSet resultSet = statement.getResultSet();
+
+			while (resultSet.next()) {
+				final String uuid = resultSet.getString("UUID");
+				final boolean active = resultSet.getBoolean("ACTIVE");
+				final long until = resultSet.getLong("UNTIL");
+
+				if (active) {
+					if (until != 0 && until < System.currentTimeMillis())
+						continue;
+
+					LiteBansHook.this.mutedPlayerUids.add(uuid);
+				}
+			}
+
+		} catch (final SQLException ex) {
+			// Ignore
+
+		} catch (final Throwable t) {
+			CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
+
+			if (task != null)
+				task.cancel();
+		}
 	}
 }
 
