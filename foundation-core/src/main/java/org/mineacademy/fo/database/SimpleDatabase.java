@@ -257,7 +257,12 @@ public class SimpleDatabase {
 	public final <T extends Row> T getRow(final Table table, final int id) {
 		final List<T> list = new ArrayList<>();
 
-		this.select(table, Where.builder().equals("Id", id), resultSet -> list.add(table.createRow(resultSet)));
+		this.select(table, Where.builder().equals("Id", id), resultSet -> {
+			final T row = table.createRowOrNull(resultSet);
+
+			if (row != null)
+				list.add(row);
+		});
 
 		if (!list.isEmpty()) {
 			ValidCore.checkBoolean(list.size() == 1, "Found more than one row with id " + id + " in table " + table.getName() + ": " + list);
@@ -278,7 +283,12 @@ public class SimpleDatabase {
 	public final <T extends Row> List<T> getRows(final Table table) {
 		final List<T> entries = new ArrayList<>();
 
-		this.selectAll(table, resultSet -> entries.add(table.createRow(resultSet)));
+		this.selectAll(table, resultSet -> {
+			final T row = table.createRowOrNull(resultSet);
+
+			if (row != null)
+				entries.add(row);
+		});
 
 		Collections.reverse(entries);
 
@@ -311,7 +321,12 @@ public class SimpleDatabase {
 	public <T extends Row> List<T> getRowsWhere(final Table table, final Where where) {
 		final List<T> entries = new ArrayList<>();
 
-		this.select(table, where, resultSet -> entries.add((T) table.createRow(resultSet)));
+		this.select(table, where, resultSet -> {
+			final T row = table.createRowOrNull(resultSet);
+
+			if (row != null)
+				entries.add(row);
+		});
 
 		Collections.reverse(entries);
 

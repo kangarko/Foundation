@@ -622,7 +622,7 @@ public final class SimpleResultSet {
 		final String rawTimestamp = this.delegate.getString(columnLabel);
 
 		if (rawTimestamp == null) {
-			CommonCore.warning(Platform.getPlugin().getName() + " found invalid row with null/empty column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+			CommonCore.warning(this.tableName + " table has invalid timestamp row with null/empty column '" + columnLabel + "'. Ignoring.");
 
 			throw new InvalidRowException();
 		}
@@ -631,7 +631,7 @@ public final class SimpleResultSet {
 			return Timestamp.valueOf(rawTimestamp).getTime();
 
 		} catch (final IllegalArgumentException ex) {
-			CommonCore.warning("Failed to parse timestamp '" + rawTimestamp + "' in column '" + columnLabel + "' in table " + this.tableName + ", ignoring.");
+			CommonCore.warning(this.tableName + " table has timestamp column '" + columnLabel + "' with invalid value '" + rawTimestamp + "'. Ignoring.");
 
 			throw new InvalidRowException();
 		}
