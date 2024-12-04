@@ -49,6 +49,7 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.SerializeUtilCore.Serializer;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.BukkitCommandImpl;
@@ -72,7 +73,6 @@ import org.mineacademy.fo.settings.YamlConfig;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
-import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -83,8 +83,17 @@ import net.kyori.adventure.text.event.HoverEventSource;
  */
 final class BukkitPlatform extends FoundationPlatform {
 
-	@Getter
 	private static BukkitAudiences adventure;
+
+	public static BukkitAudiences getAdventure() {
+		Valid.checkNotNull(hasAdventure(), "Adventure not initialized or not available!");
+
+		return adventure;
+	}
+
+	public static boolean hasAdventure() {
+		return adventure != null;
+	}
 
 	public static void closeAudiences() {
 		if (adventure != null) {
