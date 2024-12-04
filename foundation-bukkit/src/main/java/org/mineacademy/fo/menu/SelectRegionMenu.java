@@ -10,10 +10,10 @@ import org.mineacademy.fo.menu.button.StartPosition;
 import org.mineacademy.fo.menu.button.annotation.Position;
 import org.mineacademy.fo.menu.model.InventoryDrawer;
 import org.mineacademy.fo.menu.model.ItemCreator;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.region.DiskRegion;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 /**
  * The menu where players can select a region or create one.
@@ -46,7 +46,7 @@ public class SelectRegionMenu extends MenuPaged<String> {
 				"",
 				"Click to create",
 				"a new region."), player -> {
-					if (BukkitPlugin.getInstance().areToolsEnabled())
+					if (SimpleSettings.REGISTER_TOOLS)
 						CreateRegionPrompt.showToOrHint(player);
 					else {
 						player.closeInventory();

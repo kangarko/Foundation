@@ -17,7 +17,6 @@ import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
-import org.mineacademy.fo.command.RegionSubCommand;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
@@ -276,7 +275,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 						return true;
 					}
 
-					if (clazz == RegionTool.class && (!BukkitPlugin.this.areRegionsEnabled() || !BukkitPlugin.this.areToolsEnabled()))
+					if (clazz == RegionTool.class && (!SimpleSettings.REGISTER_REGIONS || !SimpleSettings.REGISTER_TOOLS))
 						return true;
 
 					return false;
@@ -369,7 +368,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			// Scan for @AutoRegister annotations
 			AutoRegisterScanner.scanAndRegister();
 
-			if (this.areRegionsEnabled())
+			if (SimpleSettings.REGISTER_REGIONS)
 				DiskRegion.loadRegions();
 
 			this.onPluginStart();
@@ -386,10 +385,10 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			this.registerEvents(this);
 			this.registerEvents(new BukkitListener());
 
-			if (this.areMenusEnabled())
+			if (SimpleSettings.REGISTER_MENUS)
 				this.registerEvents(new MenuListener());
 
-			if (this.areToolsEnabled())
+			if (SimpleSettings.REGISTER_TOOLS)
 				this.registerEvents(new ToolsListener());
 
 			if (CompMetadata.isLegacy())
@@ -657,7 +656,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			}
 		}
 
-		if (this.areRegionsEnabled())
+		if (SimpleSettings.REGISTER_REGIONS)
 			for (final DiskRegion region : DiskRegion.getRegions())
 				try {
 					region.save();
@@ -729,7 +728,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 			this.onPluginReload();
 
-			if (this.areRegionsEnabled())
+			if (SimpleSettings.REGISTER_REGIONS)
 				DiskRegion.loadRegions();
 
 			this.internalPostEnable();
@@ -836,39 +835,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	@Override
 	public boolean isInitializing() {
 		return this.initializing;
-	}
-
-	/**
-	 * Should we listen for {@link Menu} class clicking?
-	 *
-	 * True by default. Returning false here will break the entire Foundation menu
-	 * system, useful if you want to use your own.
-	 *
-	 * @return
-	 */
-	public boolean areMenusEnabled() {
-		return true;
-	}
-
-	/**
-	 * Should we listen for {@link Tool} in this plugin and
-	 * handle clicking events automatically? Disable to increase performance
-	 * if you do not want to use our tool system. Enabled by default.
-	 *
-	 * @return
-	 */
-	public boolean areToolsEnabled() {
-		return SimpleSettings.REGISTER_TOOLS;
-	}
-
-	/**
-	 * Should we enable the region system? Loads {@link DiskRegion#loadRegions()}
-	 * You still need to register the subcommand {@link RegionSubCommand} manually.
-	 *
-	 * @return
-	 */
-	public boolean areRegionsEnabled() {
-		return false;
 	}
 
 	// ----------------------------------------------------------------------------------------
