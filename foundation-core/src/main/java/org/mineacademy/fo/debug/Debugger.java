@@ -101,7 +101,7 @@ public final class Debugger {
 				return;
 			}
 
-		if (plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
+		if (plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;
 
 			// Prevent duplicated reporting
