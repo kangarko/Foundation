@@ -2,8 +2,6 @@ package org.mineacademy.fo.exception;
 
 import java.io.File;
 
-import org.snakeyaml.engine.v2.exceptions.ParserException;
-
 /**
  * Thrown when we load data from yaml and the syntax is invalid.
  */
@@ -16,7 +14,7 @@ public final class YamlSyntaxError extends RuntimeException {
 	 */
 	private final File file;
 
-	public YamlSyntaxError(ParserException parent, File file) {
+	public YamlSyntaxError(Throwable parent, File file) {
 		super(parent);
 
 		this.file = file;

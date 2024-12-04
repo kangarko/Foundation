@@ -48,6 +48,19 @@ public class FoException extends RuntimeException {
 	 * Create a new exception and logs it
 	 *
 	 * @param message
+	 * @param report
+	 */
+	public FoException(String message, boolean report) {
+		super(message);
+
+		if (errorSavedAutomatically && report)
+			Debugger.saveError(this, message);
+	}
+
+	/**
+	 * Create a new exception and logs it
+	 *
+	 * @param message
 	 * @param t
 	 */
 	public FoException(String message, Throwable t) {
