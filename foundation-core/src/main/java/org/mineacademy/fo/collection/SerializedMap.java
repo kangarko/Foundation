@@ -442,9 +442,13 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @return
 	 */
 	public SimpleComponent getComponent(final String path, final SimpleComponent def) {
-		final String string = this.getString(path);
+		if (this.containsKey(path)) {
+			final String string = this.getString(path);
 
-		return string != null ? SimpleComponent.fromMini(string) : def;
+			return string != null ? SimpleComponent.fromMini(string) : def;
+		}
+
+		return def;
 	}
 
 	/**
@@ -465,9 +469,13 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @return
 	 */
 	public List<String> getStringList(final String key, final List<String> def) {
-		final List<String> list = this.getList(key, String.class);
+		if (this.containsKey(key)) {
+			final List<String> list = this.getList(key, String.class);
 
-		return list == null ? def : list;
+			return list == null ? def : list;
+		}
+
+		return def;
 	}
 
 	/**
