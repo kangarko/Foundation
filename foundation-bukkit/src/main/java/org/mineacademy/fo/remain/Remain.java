@@ -424,8 +424,7 @@ public final class Remain {
 			hasPlayerOpenSignMethod = false;
 		}
 
-		if (MinecraftVersion.olderThan(V.v1_16))
-			chatSerializer = Remain.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
+		chatSerializer = Remain.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
 
 		if (MinecraftVersion.olderThan(V.v1_13))
 			try {
@@ -800,6 +799,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Object convertJsonToIChatBase(String json) {
+		Valid.checkNotNull(chatSerializer, "Cannot convert JSON to IChatBaseComponent, missing chatSerializer class. Json: " + json); // TODO fixme asap
 		final Method fromJson = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
 		return ReflectionUtil.invoke(fromJson, null, json);
@@ -1590,8 +1590,19 @@ public final class Remain {
 			final Object nmsItemstack = asNMSCopy(book);
 
 			Platform.runTask(() -> {
-				final Method openInventory = ReflectionUtil.getMethod(craftPlayer.getClass(), "openBook", nmsItemstack.getClass());
-				ReflectionUtil.invoke(openInventory, craftPlayer, nmsItemstack);
+				Method openBook = ReflectionUtil.getMethod(craftPlayer.getClass(), "openBook", nmsItemstack.getClass());
+
+				if (openBook == null) {
+					final Class<?> enumHand = Remain.getNMSClass("EnumHand");
+					final Object mainHand = ReflectionUtil.getStaticFieldContent(enumHand, "MAIN_HAND");
+
+					openBook = ReflectionUtil.getMethod(craftPlayer.getClass(), "a", nmsItemstack.getClass(), enumHand);
+					Valid.checkNotNull(openBook, "Unable to find openBook method for " + craftPlayer);
+
+					ReflectionUtil.invoke(openBook, craftPlayer, nmsItemstack, mainHand);
+
+				} else
+					ReflectionUtil.invoke(openBook, craftPlayer, nmsItemstack);
 
 				// Reset hands
 				player.setItemInHand(oldItem);
