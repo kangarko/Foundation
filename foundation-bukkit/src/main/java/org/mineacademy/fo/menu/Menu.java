@@ -668,6 +668,7 @@ public abstract class Menu {
 		final Map<Integer, ItemStack> items = new LinkedHashMap<>();
 
 		final boolean hasReturnButton = this.addReturnButton() && !(this.returnButton instanceof DummyButton);
+		final boolean hasInfoButton = this.addInfoButton() && this.getInfo() != null;
 
 		// Begin with basic items
 		for (int slot = 0; slot < this.size; slot++) {
@@ -696,8 +697,11 @@ public abstract class Menu {
 				else if (startPosition == StartPosition.BOTTOM_CENTER)
 					slot += this.getSize() - 5;
 
-				else if (startPosition == StartPosition.BOTTOM_LEFT)
+				else if (startPosition == StartPosition.BOTTOM_RIGHT)
 					slot += this.getSize() - (hasReturnButton ? 2 : 1);
+
+				else if (startPosition == StartPosition.BOTTOM_LEFT)
+					slot += this.getSize() - (hasInfoButton ? 8 : 9);
 
 				else if (startPosition == StartPosition.TOP_LEFT)
 					slot += 0;
