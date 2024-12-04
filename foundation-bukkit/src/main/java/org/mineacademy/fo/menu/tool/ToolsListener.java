@@ -25,6 +25,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.RocketExplosionEvent;
+import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompEntityType;
@@ -67,6 +68,11 @@ public final class ToolsListener implements Listener {
 			return;
 
 		final Player player = event.getPlayer();
+
+		// Fix bug in older Spigot versions where the event is called while browsing GUI
+		if (player.hasMetadata(Menu.TAG_MENU_CURRENT))
+			return;
+
 		final Tool tool = Tool.getTool(player.getItemInHand());
 
 		if (tool != null)
