@@ -9,7 +9,6 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.Platform;
 
 /**
@@ -61,7 +60,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * <p>
 	 * Prefix: "&8[&3ChatControl&8]&7 "
 	 */
-	public static SimpleComponent PREFIX = SimpleComponent.fromMini("&7" + Platform.getPlugin().getName() + " //");
+	public static String PREFIX = "&7" + Platform.getPlugin().getName() + " //";
 
 	/**
 	 * The localization language tag.
@@ -145,7 +144,7 @@ public class SimpleSettings extends YamlStaticConfig {
 			MAIN_COMMAND_ALIASES = getCommandList("Command_Aliases");
 
 		if (isSetDefault("Prefix"))
-			PREFIX = getComponent("Prefix");
+			PREFIX = getString("Prefix");
 
 		if (isSetDefault("Locale")) {
 			LOCALE = getString("Locale");

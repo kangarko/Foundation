@@ -79,7 +79,7 @@ final class FoundationPlaceholders extends SimpleExpansion {
 		}
 
 		else if ("prefix_plugin".equals(identifier))
-			return SimpleSettings.PREFIX;
+			return SimpleComponent.fromMini(SimpleSettings.PREFIX);
 
 		else if ("prefix_info".equals(identifier))
 			return Messenger.getInfoPrefix();
