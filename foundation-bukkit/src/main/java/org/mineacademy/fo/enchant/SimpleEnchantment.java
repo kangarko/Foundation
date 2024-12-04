@@ -39,6 +39,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.remain.CompEquipmentSlot;
@@ -791,6 +792,10 @@ public abstract class SimpleEnchantment implements Listener {
 		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
 		public void onInteract(PlayerInteractEvent event) {
 			if (!Remain.isInteractEventPrimaryHand(event))
+				return;
+
+			// Fix bug in older Spigot versions where the event is called while browsing GUI
+			if (event.getPlayer().hasMetadata(Menu.TAG_MENU_CURRENT))
 				return;
 
 			this.execute(event.getPlayer(), (enchant, level) -> enchant.onInteract(level, event));
