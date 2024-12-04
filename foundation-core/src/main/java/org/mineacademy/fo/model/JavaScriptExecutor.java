@@ -64,12 +64,13 @@ public final class JavaScriptExecutor {
 						"We are waiting for nashorn-core to update - please do not report it to us.",
 						"See: https://github.com/PaperMC/Velocity/issues/1462 for more information",
 						"",
-						"Solutions:",
-						"1. Run your server with the following system property:",
+						"Temporary solutions:",
+						"1. If you're on Velocit, run your server with the following system property:",
 						"   -Dlog4j2.julLoggerAdapter=org.apache.logging.log4j.jul.CoreLoggerAdapter",
+						"",
 						"   See https://docs.papermc.io/paper/reference/system-properties for how to do so.",
 						"",
-						"2. If you are on Velocity, downgrade to Velocity build 446 temporarily to fix this:",
+						"2. Or, if you can't do the above, downgrade to Velocity build 446 temporarily:",
 						"   https://api.papermc.io/v2/projects/velocity/versions/3.4.0-SNAPSHOT/builds/446/downloads/velocity-3.4.0-SNAPSHOT-446.jar");
 
 				knownBug = true;
