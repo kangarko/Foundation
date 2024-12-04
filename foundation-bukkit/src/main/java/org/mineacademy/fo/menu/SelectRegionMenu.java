@@ -23,7 +23,7 @@ public class SelectRegionMenu extends MenuPaged<String> {
 	/**
 	 * The button to create a new region.
 	 */
-	@Position(start = StartPosition.BOTTOM_LEFT)
+	@Position(start = StartPosition.BOTTOM_RIGHT)
 	private final Button createButton;
 
 	/**
