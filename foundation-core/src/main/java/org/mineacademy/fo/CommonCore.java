@@ -502,8 +502,14 @@ public abstract class CommonCore {
 	 * @param json
 	 * @return
 	 */
-	public static List<String> convertJsonToList(String json) {
-		return GSON.fromJson(json, List.class);
+	public static List<String> convertJsonToList(@NonNull String json) {
+		if (json.isEmpty() || json.equals("[]"))
+			return new ArrayList<>();
+
+		final List<String> list = GSON.fromJson(json, List.class);
+		ValidCore.checkNotNull(list, "Failed to convert JSON to list: " + json);
+
+		return list;
 	}
 
 	/**
@@ -512,7 +518,7 @@ public abstract class CommonCore {
 	 * @param list
 	 * @return
 	 */
-	public static String convertListToJson(final Collection<String> list) {
+	public static String convertListToJson(@NonNull Collection<String> list) {
 		return GSON.toJson(list);
 	}
 
