@@ -132,6 +132,8 @@ public final class TestAudienceCommand extends SimpleCommandCore {
 
 		else if (param == Param.TOAST)
 			this.audience.sendToast("<red>This is an alert\n&7Toasts are cool");
+
+		CommonCore.log("Tested " + param + " for " + this.audience.getName() + " - something should have happened in-game, if not, this is a bug!");
 	}
 
 	@Override
