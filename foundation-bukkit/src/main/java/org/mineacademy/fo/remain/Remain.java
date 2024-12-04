@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -799,7 +800,7 @@ public final class Remain {
 	 * @return
 	 */
 	public static Object convertJsonToIChatBase(String json) {
-		Valid.checkNotNull(chatSerializer, "Cannot convert JSON to IChatBaseComponent, missing chatSerializer class. Json: " + json); // TODO fixme asap
+		Valid.checkNotNull(chatSerializer, "Cannot convert JSON to IChatBaseComponent, missing chatSerializer class. Json: " + json);
 		final Method fromJson = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
 		return ReflectionUtil.invoke(fromJson, null, json);
@@ -1156,10 +1157,14 @@ public final class Remain {
 
 		} catch (final Throwable t) {
 			final List<Entity> found = new ArrayList<>();
+			final List<Entity> all = location.getWorld().getEntities();
 
-			for (final Entity nearby : location.getWorld().getEntities())
-				if (nearby.getLocation().distance(location) <= radius)
+			for (final Iterator<Entity> it = all.iterator(); it.hasNext();) {
+				final Entity nearby = it.next();
+
+				if (nearby.isValid() && nearby.getLocation().distance(location) <= radius)
 					found.add(nearby);
+			}
 
 			return found;
 		}
