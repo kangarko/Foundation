@@ -165,16 +165,22 @@ public abstract class FoundationPlayer implements Audience {
 
 		if (command.startsWith("@announce "))
 			Messenger.announce(this, command.replace("@announce ", ""));
+
 		else if (command.startsWith("@warn "))
 			Messenger.warn(this, command.replace("@warn ", ""));
+
 		else if (command.startsWith("@error "))
 			Messenger.error(this, command.replace("@error ", ""));
+
 		else if (command.startsWith("@info "))
 			Messenger.info(this, command.replace("@info ", ""));
+
 		else if (command.startsWith("@question "))
 			Messenger.question(this, command.replace("@question ", ""));
+
 		else if (command.startsWith("@success "))
 			Messenger.success(this, command.replace("@success ", ""));
+
 		else {
 			command = Variables.builder(this).replace(command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command);
 
@@ -758,7 +764,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param subtitle the subtitle, will be colorized
 	 */
 	public final void showTitle(final int fadeIn, final int stay, final int fadeOut, final SimpleComponent title, final SimpleComponent subtitle) {
-		this.showTitle(Title.title(title.toAdventure(), subtitle.toAdventure(), Times.times(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
+		this.showTitle(Title.title(title.toAdventure(), subtitle.toAdventure(), Times.of(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
 	}
 
 	/**

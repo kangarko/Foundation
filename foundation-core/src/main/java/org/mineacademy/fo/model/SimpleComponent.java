@@ -665,7 +665,11 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 				children.add(builtPart);
 		}
 
-		return Component.textOfChildren(children.toArray(new Component[children.size()]));
+		// Cannot use TextComponent#testOfChildren as 1.16 does not support this
+		TextComponent text = Component.empty();
+		text = text.children(children);
+
+		return text;
 	}
 
 	/*
