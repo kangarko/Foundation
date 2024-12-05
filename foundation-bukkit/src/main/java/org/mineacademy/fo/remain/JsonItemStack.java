@@ -566,7 +566,7 @@ public class JsonItemStack {
 					}
 				else {
 					final JsonObject basePotion = extraJson.has("base-effect") ? extraJson.get("base-effect").getAsJsonObject() : null;
-					final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnum(PotionType.class, basePotion.get("type").getAsString()) : null;
+					final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnumSilent(PotionType.class, basePotion.get("type").getAsString()) : null;
 					final boolean isExtended = basePotion.has("isExtended") ? basePotion.get("isExtended").getAsBoolean() : false;
 					final boolean isUpgraded = basePotion.has("isUpgraded") ? basePotion.get("isUpgraded").getAsBoolean() : false;
 
@@ -595,7 +595,7 @@ public class JsonItemStack {
 
 				if (effectTypeName != null) {
 					final FireworkEffectMeta femeta = (FireworkEffectMeta) meta;
-					final FireworkEffect.Type effectType = ReflectionUtil.lookupEnum(FireworkEffect.Type.class, effectTypeName);
+					final FireworkEffect.Type effectType = ReflectionUtil.lookupEnumSilent(FireworkEffect.Type.class, effectTypeName);
 
 					if (effectType != null) {
 						final List<Color> colors = new ArrayList<>();
@@ -647,8 +647,7 @@ public class JsonItemStack {
 						final JsonArray fadeColorsElement = jsonObject.has("fade-colors") ? jsonObject.get("fade-colors").getAsJsonArray() : null;
 
 						if (effectTypeElement != null) {
-
-							final FireworkEffect.Type effectType = ReflectionUtil.lookupEnum(FireworkEffect.Type.class, effectTypeElement);
+							final FireworkEffect.Type effectType = ReflectionUtil.lookupEnumSilent(FireworkEffect.Type.class, effectTypeElement);
 
 							if (effectType != null) {
 								final List<Color> colors = new ArrayList<>();
