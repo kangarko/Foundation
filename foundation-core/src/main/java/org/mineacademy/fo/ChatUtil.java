@@ -181,21 +181,52 @@ public final class ChatUtil {
 			return "";
 
 		final String[] sentences = message.split("(?<=[!?\\.])\\s");
-		String tempMessage = "";
+		final StringBuilder tempMessage = new StringBuilder();
 
-		for (String sentence : sentences)
+		for (final String sentence : sentences) {
 			try {
-				final String word = message.split("\\s")[0];
+				final StringBuilder result = new StringBuilder();
+				boolean foundFirstLetter = false;
+
+				for (int i = 0; i < sentence.length(); i++) {
+					final char letter = sentence.charAt(i);
+
+					// Skip MiniMessage tags (<...>) or legacy codes (&x, §x, etc.)
+					if (!foundFirstLetter && (letter == '<' || letter == '&' || letter == '§')) {
+						result.append(letter);
+
+						if (letter == '<')
+							while (i < sentence.length() && sentence.charAt(i) != '>')
+								result.append(sentence.charAt(++i));
+
+						else if (letter == '&' || letter == '§') {
+							if (i + 1 < sentence.length())
+								result.append(sentence.charAt(++i));
+						}
+
+					} else if (!foundFirstLetter && Character.isLetter(letter)) {
+						result.append(Character.toUpperCase(letter));
+
+						foundFirstLetter = true;
+
+					} else
+						result.append(letter);
+				}
+
+				final String word = sentence.split("\\s")[0];
 
 				if (!isDomain(word))
-					sentence = sentence.substring(0, 1).toUpperCase() + sentence.substring(1);
+					tempMessage.append(result.toString()).append(" ");
 
-				tempMessage = tempMessage + sentence + " ";
+				else
+					tempMessage.append(sentence).append(" ");
+
 			} catch (final ArrayIndexOutOfBoundsException ex) {
 				// Probably an exotic language, silence
 			}
+		}
 
-		return tempMessage.trim();
+		return tempMessage.toString().trim();
 	}
 
 	/**
