@@ -19,7 +19,6 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.snakeyaml.engine.v2.api.Dump;
@@ -156,7 +155,6 @@ public class YamlConfig extends FileConfig {
 
 	@Override
 	public final void loadFromString(@NonNull String contents) {
-
 		MappingNode node;
 		Node rawNode;
 
@@ -337,10 +335,15 @@ public class YamlConfig extends FileConfig {
 						break;
 					}
 
-				if (hasDiskValue)
-					ValidCore.checkBoolean(diskValue instanceof ConfigSection, "Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got " + diskValue.getClass().getSimpleName());
+				if (hasDiskValue && diskValue instanceof ConfigSection)
+					value = this.toNodeTreeWithDefaults0((ConfigSection) (hasDiskValue ? diskValue : entry.getValue()), defaults != null ? defaults.retrieveMemorySection(entry.getKey()) : null, !isUncommentedSection);
 
-				value = this.toNodeTreeWithDefaults0((ConfigSection) (hasDiskValue ? diskValue : entry.getValue()), defaults != null ? defaults.retrieveMemorySection(entry.getKey()) : null, !isUncommentedSection);
+				else {
+					if (hasDiskValue)
+						CommonCore.warning("Unable to move comments from default " + this.getFileName() + " due to default path " + deepPath + " being a map in the default file, but " + diskValue.getClass().getSimpleName() + " on the disk.");
+
+					value = this.representer.represent(SerializeUtilCore.serialize(Language.YAML, hasDiskValue ? diskValue : entry.getValue()));
+				}
 
 			} else
 				value = this.representer.represent(SerializeUtilCore.serialize(Language.YAML, hasDiskValue ? diskValue : entry.getValue()));
