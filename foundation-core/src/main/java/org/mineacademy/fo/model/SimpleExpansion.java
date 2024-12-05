@@ -17,7 +17,7 @@ public abstract class SimpleExpansion {
 	 * Indicates there is no replacement and the placeholder should be
 	 * printed out explicitly as-is to the console/game chat.
 	 */
-	protected static final SimpleComponent NO_REPLACE = null;
+	protected static final String NO_REPLACE = null;
 
 	/**
 	 * The current arguments changed each time the expansion is called,
@@ -35,7 +35,7 @@ public abstract class SimpleExpansion {
 	 *
 	 * @return the value or null if not valid
 	 */
-	public final SimpleComponent replacePlaceholders(FoundationPlayer audience, String identifier) {
+	public final String replacePlaceholders(FoundationPlayer audience, String identifier) {
 		this.args = identifier.split("\\_");
 
 		return this.onReplace(audience, identifier);
@@ -50,7 +50,7 @@ public abstract class SimpleExpansion {
 	 * 		  we return only "player_health". You can also use {@link #args} here.
 	 * @return
 	 */
-	protected abstract SimpleComponent onReplace(FoundationPlayer audience, String identifier);
+	protected abstract String onReplace(FoundationPlayer audience, String identifier);
 
 	/**
 	 * Automatically joins the {@link #args} from the given index
