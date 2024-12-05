@@ -17,6 +17,7 @@ import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.platform.Platform.Type;
 
 import lombok.NonNull;
 import net.kyori.adventure.text.event.HoverEventSource;
@@ -113,6 +114,9 @@ public abstract class FoundationPlatform {
 	protected abstract void dispatchConsoleCommand0(String command);
 
 	public final String getCustomServerName() {
+		if (Platform.getType() != Type.BUKKIT)
+			throw new IllegalArgumentException("Custom server name is only supported in Bukkit, for other platforms use Platform#toPlayer() and get the server per player");
+
 		if (!this.hasCustomServerName())
 			throw new IllegalArgumentException("Please instruct developer of " + Platform.getPlugin().getName() + " to call Platform#setCustomServerName");
 
