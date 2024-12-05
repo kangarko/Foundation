@@ -1041,11 +1041,8 @@ public final class HookManager {
 	private static String getNick(final CommandSender sender, boolean stripColors) {
 		final Player player = sender instanceof Player ? (Player) sender : null;
 
-		if (player != null && isNPC(player)) {
-			Debugger.printStackTrace("Called getNick for NPC " + player.getName() + "! Notify the developers to ignore NPCs using HookManager#isNPC!");
-
+		if (player != null && isNPC(player))
 			return player.getName();
-		}
 
 		if (player == null)
 			return sender.getName();
