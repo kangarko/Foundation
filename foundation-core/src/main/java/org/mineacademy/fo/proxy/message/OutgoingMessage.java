@@ -339,7 +339,7 @@ public final class OutgoingMessage extends Message {
 			final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, fromServer);
 
 			if (server.isEmpty()) {
-				Debugger.debug("bungee", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
+				Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
 
 				return;
 			}
@@ -351,7 +351,7 @@ public final class OutgoingMessage extends Message {
 			}
 
 			server.sendData(DEFAULT_CHANNEL, byteArray);
-			Debugger.debug("bungee", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
+			Debugger.debug("proxy", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
 		}
 	}
 
@@ -373,7 +373,7 @@ public final class OutgoingMessage extends Message {
 
 			for (final FoundationServer otherServer : Platform.getServers()) {
 				if (otherServer.isEmpty()) {
-					Debugger.debug("bungee", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
+					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
 
 					continue;
 				}
