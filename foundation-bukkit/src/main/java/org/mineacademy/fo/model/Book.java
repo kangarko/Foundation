@@ -139,7 +139,7 @@ public final class Book implements ConfigSerializable {
 				pages.add(Lang.componentVars("command-book-page", "page", pageNumber++));
 
 				for (final String line : page.split("\n"))
-					pages.add(SimpleComponent.fromMini(" &7- &r" + variables.replace(this.replaceVariablesBack(line))));
+					pages.add(SimpleComponent.fromMini(" &7- &r" + variables.replaceLegacy(this.replaceVariablesBack(line))));
 
 				pages.add(SimpleComponent.empty());
 			}
@@ -230,7 +230,7 @@ public final class Book implements ConfigSerializable {
 		final List<SimpleComponent> pagesClone = new ArrayList<>();
 
 		for (final String page : this.pages)
-			pagesClone.add(variables.replace(SimpleComponent.fromMini(this.replaceVariablesBack(page))));
+			pagesClone.add(variables.replaceComponent(SimpleComponent.fromMini(this.replaceVariablesBack(page))));
 
 		Remain.setPages(bookMeta, pagesClone);
 		bookMeta.setTitle(this.title == null ? "Blank" : this.title);

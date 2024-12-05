@@ -225,7 +225,7 @@ public final class Variable extends YamlConfig {
 		try {
 			Variables.setReplaceScript(false);
 
-			script = Variables.builder(audience).placeholders(placeholders).replace(this.value);
+			script = Variables.builder(audience).placeholders(placeholders).replaceLegacy(this.value);
 
 		} catch (final Throwable t) {
 			final String errorHeadline = "Error replacing placeholders in variable!";
@@ -288,7 +288,7 @@ public final class Variable extends YamlConfig {
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty())
 				try {
-					final Object result = JavaScriptExecutor.run(variables.replace(this.senderCondition), audience);
+					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), audience);
 
 					if (result != null) {
 						ValidCore.checkBoolean(result instanceof Boolean, "Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
@@ -323,11 +323,11 @@ public final class Variable extends YamlConfig {
 					.viewCondition(this.receiverCondition);
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
-				component.onHoverLegacy(variables.replaceArray(CommonCore.toArray(this.hoverText)));
+				component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
 
 			if (this.hoverItem != null && !this.hoverItem.isEmpty())
 				try {
-					final Object result = JavaScriptExecutor.run(variables.replace(this.hoverItem), audience);
+					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.hoverItem), audience);
 
 					if (result != null) {
 						ValidCore.checkBoolean(result.getClass().getSimpleName().contains("ItemStack"), "Variable '" + this.getFile() + "' option Hover_Item must return ItemStack not " + result.getClass());
@@ -352,15 +352,69 @@ public final class Variable extends YamlConfig {
 				}
 
 			if (this.openUrl != null && !this.openUrl.isEmpty())
-				component.onClickOpenUrl(variables.replace(this.openUrl));
+				component.onClickOpenUrl(variables.replaceLegacy(this.openUrl));
 
 			if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
-				component.onClickSuggestCmd(variables.replace(this.suggestCommand));
+				component.onClickSuggestCmd(variables.replaceLegacy(this.suggestCommand));
 
 			if (this.runCommand != null && !this.runCommand.isEmpty())
-				component.onClickRunCmd(variables.replace(this.runCommand));
+				component.onClickRunCmd(variables.replaceLegacy(this.runCommand));
 
 			return component;
+
+		} finally {
+			Variables.setReplaceScript(replacingScript);
+		}
+	}
+
+	/**
+	 * Create the variable as legacy, no interactive nor receiver conditional components
+	 * are supported.
+	 *
+	 * @param audience
+	 * @param placeholders
+	 * @return
+	 */
+	public String buildLegacy(FoundationPlayer audience, Map<String, Object> placeholders) {
+		final boolean replacingScript = Variables.isReplaceScript();
+		final Variables variables = Variables.builder(audience).placeholders(placeholders);
+
+		try {
+			Variables.setReplaceScript(false);
+
+			if (this.senderPermission != null && !this.senderPermission.isEmpty() && !audience.hasPermission(this.senderPermission))
+				return "";
+
+			if (this.senderCondition != null && !this.senderCondition.isEmpty())
+				try {
+					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), audience);
+
+					if (result != null) {
+						ValidCore.checkBoolean(result instanceof Boolean, "Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+
+						if (!((boolean) result))
+							return "";
+					}
+
+				} catch (final FoScriptException ex) {
+					CommonCore.logFramed(
+							"Error executing Sender_Condition in a variable!",
+							"Variable: " + this.getFile(),
+							"Sender condition: " + this.senderCondition,
+							"Sender: " + audience,
+							"Error: " + ex.getMessage(),
+							"",
+							"This is likely NOT a plugin bug,",
+							"check your JavaScript code in",
+							this.getFile() + " in the 'Sender_Condition' key",
+							"before reporting it to us.");
+
+					throw ex;
+				}
+
+			final String value = this.getValue(audience, placeholders);
+
+			return value == null || value.isEmpty() || "null".equals(value) ? "" : value;
 
 		} finally {
 			Variables.setReplaceScript(replacingScript);
