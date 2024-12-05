@@ -262,7 +262,7 @@ public final class Variables {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent replace(@NonNull SimpleComponent component) {
+	public SimpleComponent replace_(@NonNull SimpleComponent component) {
 		return component.replaceMatch(BRACKET_VARIABLE_PATTERN, (result, input) -> {
 			final String variable = result.group(1);
 			final SimpleComponent value = this.replaceVariable(variable);
@@ -336,10 +336,10 @@ public final class Variables {
 
 		if (replacedValue == null)
 			for (final SimpleExpansion expansion : expansions) {
-				final SimpleComponent value = expansion.replacePlaceholders(this.audience, variable);
+				final String value = expansion.replacePlaceholders(this.audience, variable);
 
 				if (value != null) {
-					replacedValue = value;
+					replacedValue = SimpleComponent.fromMini(value);
 
 					break;
 				}

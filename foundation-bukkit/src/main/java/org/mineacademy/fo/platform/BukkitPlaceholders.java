@@ -5,7 +5,6 @@ import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.remain.Remain;
@@ -25,71 +24,65 @@ final class BukkitPlaceholders extends SimpleExpansion {
 	private final static BukkitPlaceholders instance = new BukkitPlaceholders();
 
 	@Override
-	protected SimpleComponent onReplace(FoundationPlayer audience, String identifier) {
+	protected String onReplace(FoundationPlayer audience, String identifier) {
 		final Player player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
 
 		if ("player_tab_name".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getPlayerListName());
+			return player == null ? audience.getName() : player.getPlayerListName();
 
 		else if ("player_display_name".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getDisplayName());
+			return player == null ? audience.getName() : player.getDisplayName();
 
 		else if ("player_nick".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? audience.getName() : HookManager.getNickColored(player));
+			return player == null ? audience.getName() : HookManager.getNickColored(player);
 
 		else if ("player_prefix".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerPrefix(player));
+			return player == null ? "" : HookManager.getPlayerPrefix(player);
 
 		else if ("player_suffix".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerSuffix(player));
+			return player == null ? "" : HookManager.getPlayerSuffix(player);
 
 		else if ("player_group".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerPermissionGroup(player));
+			return player == null ? "" : HookManager.getPlayerPermissionGroup(player);
 
 		else if ("player_primary_group".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getPlayerPrimaryGroup(player));
+			return player == null ? "" : HookManager.getPlayerPrimaryGroup(player);
 
 		else if ("player_vanished".equals(identifier))
-			return SimpleComponent.fromPlain(player == null ? "false" : String.valueOf(PlayerUtil.isVanished(player)));
+			return player == null ? "false" : String.valueOf(PlayerUtil.isVanished(player));
 
 		else if ("player_town".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getTownName(player));
+			return player == null ? "" : HookManager.getTownName(player);
 
 		else if ("player_nation".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getNation(player));
+			return player == null ? "" : HookManager.getNation(player);
 
 		else if ("player_faction".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getFaction(player));
+			return player == null ? "" : HookManager.getFaction(player);
 
 		else if ("player_world".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : HookManager.getWorldAlias(player.getWorld()));
+			return player == null ? "" : HookManager.getWorldAlias(player.getWorld());
 
 		else if ("player_health".equals(identifier))
-			return SimpleComponent.fromSection(player == null ? "" : formatHealth(player));
+			return player == null ? "" : formatHealth(player);
 
 		else if ("player_location".equals(identifier))
-			return SimpleComponent.fromPlain(player == null ? "" : SerializeUtil.serializeLocation(player.getLocation()));
+			return player == null ? "" : SerializeUtil.serializeLocation(player.getLocation());
 
 		else if ("player_x".equals(identifier))
-			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockX()));
+			return player == null ? "" : String.valueOf(player.getLocation().getBlockX());
 
 		else if ("player_y".equals(identifier))
-			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockY()));
+			return player == null ? "" : String.valueOf(player.getLocation().getBlockY());
 
 		else if ("player_z".equals(identifier))
-			return SimpleComponent.fromPlain(player == null ? "" : String.valueOf(player.getLocation().getBlockZ()));
+			return player == null ? "" : String.valueOf(player.getLocation().getBlockZ());
 
 		else if ("nms_version".equals(identifier) || "server_nms_version".equals(identifier))
-			return SimpleComponent.fromPlain(Remain.getNmsVersion());
+			return Remain.getNmsVersion();
 
-		else {
-			final String placeholderAPIValue = HookManager.getPlaceholderAPIValue(player, identifier);
-
-			if (placeholderAPIValue != null)
-				return SimpleComponent.fromSection(placeholderAPIValue);
-		}
-
-		return null;
+		else
+			return HookManager.getPlaceholderAPIValue(player, identifier);
 	}
 
 	/*

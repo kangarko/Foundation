@@ -2799,11 +2799,10 @@ final class PlaceholderAPIHook {
 
 			try {
 				for (final SimpleExpansion expansion : Variables.getExpansions()) {
-					final SimpleComponent valueComponent = expansion.replacePlaceholders(Platform.toPlayer(player), identifier);
+					final String value = expansion.replacePlaceholders(Platform.toPlayer(player), identifier);
 
-					if (valueComponent != null) {
-						final boolean emptyColorless = valueComponent.toPlain().isEmpty();
-						final String value = valueComponent.toLegacy();
+					if (value != null) {
+						final boolean emptyColorless = SimpleComponent.fromMini(value).toPlain().isEmpty();
 
 						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? " " : "");
 					}
