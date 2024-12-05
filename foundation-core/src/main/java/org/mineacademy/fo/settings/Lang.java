@@ -177,7 +177,7 @@ public final class Lang {
 	public static String legacyVars(String path, Object... placeholders) {
 		final String value = legacy(path);
 
-		return Variables.builder().placeholderArray(placeholders).replace(value);
+		return Variables.builder().placeholderArray(placeholders).replaceLegacy(value);
 	}
 
 	/**
@@ -210,7 +210,7 @@ public final class Lang {
 	public static SimpleComponent componentVars(String path, Object... placeholders) {
 		final SimpleComponent component = component(path);
 
-		return Variables.builder().placeholderArray(placeholders).replace(component);
+		return Variables.builder().placeholderArray(placeholders).replaceComponent(component);
 	}
 
 	/**

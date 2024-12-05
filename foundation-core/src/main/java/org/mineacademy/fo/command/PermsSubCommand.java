@@ -152,7 +152,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 				ValidCore.checkNotNull(defaultGroup, "Found {label} in @Permission under " + field + " while no default command group is set!");
 			}
 
-			info = variables.replace(info);
+			info = variables.replaceLegacy(info);
 
 			final boolean def = annotation.def();
 

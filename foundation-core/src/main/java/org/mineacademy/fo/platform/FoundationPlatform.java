@@ -99,7 +99,7 @@ public abstract class FoundationPlatform {
 			command = command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command;
 
 			if (playerReplacement != null)
-				command = Variables.builder(playerReplacement).replace(command);
+				command = Variables.builder(playerReplacement).replaceLegacy(command);
 			else
 				command = command.replace("{player}", "");
 

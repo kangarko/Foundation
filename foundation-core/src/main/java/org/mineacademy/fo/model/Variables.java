@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 /**
  * A class that replaces variables in a message. In Foundation, we use
@@ -57,6 +58,7 @@ public final class Variables {
 	 * The cache for variables that expire after 5 seconds.
 	 */
 	private static final Map<String, SimpleComponent> cache = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
+	private static final Map<String, String> legacyCache = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
 
 	/**
 	 * Variables added to Foundation by you or other plugins
@@ -87,11 +89,6 @@ public final class Variables {
 	 * The custom placeholders map we apply on top of other placeholders.
 	 */
 	private Map<String, Object> placeholders = new HashMap<>();
-
-	/**
-	 * The mode for the legacy replace() methods.
-	 */
-	private LegacyMode legacyMode = LegacyMode.TO_SECTION;
 
 	/**
 	 * Set the audience for whom we are replacing variables.
@@ -158,41 +155,27 @@ public final class Variables {
 	}
 
 	/**
-	 * Set the mode for the legacy replace() methods. Because each replace()
-	 * method works with components, we need to know how to turn them back
-	 * into legacy. By default, it's {@link LegacyMode#TO_SECTION}.
-	 *
-	 * @param legacyMode
-	 * @return
-	 */
-	public Variables legacyMode(@NonNull LegacyMode legacyMode) {
-		this.legacyMode = legacyMode;
-
-		return this;
-	}
-
-	/**
 	 * Replace variables in the given list.
 	 *
-	 * @see #replace(String)
+	 * @see #replaceLegacy(String)
 	 *
 	 * @param list
 	 * @return
 	 */
-	public List<String> replaceList(@NonNull List<String> list) {
-		return Arrays.asList(this.replace(String.join(MAGIC_STRING_CONCATENATION, list)).split(MAGIC_STRING_CONCATENATION)); // less overhead than replacing each element
+	public List<String> replaceLegacyList(@NonNull List<String> list) {
+		return Arrays.asList(this.replaceLegacy(String.join(MAGIC_STRING_CONCATENATION, list)).split(MAGIC_STRING_CONCATENATION)); // less overhead than replacing each element
 	}
 
 	/**
 	 * Replace variables in the given list array.
 	 *
-	 * @see #replace(String)
+	 * @see #replaceLegacy(String)
 	 *
 	 * @param list
 	 * @return
 	 */
-	public String[] replaceArray(@NonNull String[] list) {
-		return this.replace(String.join(MAGIC_STRING_CONCATENATION, list.clone())).split(MAGIC_STRING_CONCATENATION); // less overhead than replacing each element
+	public String[] replaceLegacyArray(@NonNull String[] list) {
+		return this.replaceLegacy(String.join(MAGIC_STRING_CONCATENATION, list.clone())).split(MAGIC_STRING_CONCATENATION); // less overhead than replacing each element
 	}
 
 	/**
@@ -211,7 +194,7 @@ public final class Variables {
 	 * @param message
 	 * @return
 	 */
-	public String replace(@NonNull String message) {
+	public String replaceLegacy(@NonNull String message) {
 		final Matcher matcher = BRACKET_VARIABLE_PATTERN.matcher(message);
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
@@ -221,20 +204,10 @@ public final class Variables {
 
 			result.append(message, lastMatchEnd, matcher.start());
 
-			final SimpleComponent value = this.replaceVariable(variable);
+			final String value = this.replaceVariableLegacy(variable);
 
 			if (value != null)
-				switch (this.legacyMode) {
-					case TO_PLAIN:
-						result.append(value.toPlain());
-						break;
-					case TO_SECTION:
-						result.append(value.toLegacy());
-						break;
-					case TO_MINI:
-						result.append(value.toMini());
-						break;
-				}
+				result.append(value);
 
 			else
 				result.append(matcher.group());
@@ -262,7 +235,7 @@ public final class Variables {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent replace_(@NonNull SimpleComponent component) {
+	public SimpleComponent replaceComponent(@NonNull SimpleComponent component) {
 		return component.replaceMatch(BRACKET_VARIABLE_PATTERN, (result, input) -> {
 			final String variable = result.group(1);
 			final SimpleComponent value = this.replaceVariable(variable);
@@ -363,6 +336,94 @@ public final class Variables {
 		return replacedValue;
 	}
 
+	/*
+	 * Replace a given variable with its corresponding value.
+	 */
+	private String replaceVariableLegacy(String variable) {
+		String replacedValue = null;
+
+		boolean frontSpace = false;
+		boolean backSpace = false;
+
+		if (variable.startsWith("+")) {
+			variable = variable.substring(1);
+
+			frontSpace = true;
+		}
+
+		if (variable.endsWith("+")) {
+			variable = variable.substring(0, variable.length() - 1);
+
+			backSpace = true;
+		}
+
+		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
+			final String key = entry.getKey();
+
+			if (key.equals(variable)) {
+				final Object rawValue = entry.getValue();
+
+				if (rawValue == null)
+					return "";
+
+				if (rawValue instanceof SimpleComponent)
+					replacedValue = ((SimpleComponent) rawValue).toMini();
+
+				else if (rawValue instanceof Component)
+					replacedValue = MiniMessage.miniMessage().serialize((Component) rawValue);
+
+				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
+					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+
+				else
+					replacedValue = rawValue.toString();
+
+				break;
+			}
+		}
+
+		if (replacedValue == null)
+			replacedValue = legacyCache.get(variable);
+
+		if (replacedValue == null && this.audience != null && replaceScript) {
+			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
+
+			if (javascriptKey != null) {
+				final String value = javascriptKey.buildLegacy(this.audience, this.placeholders);
+
+				if (value != null)
+					replacedValue = value;
+			}
+		}
+
+		if (replacedValue == null)
+			for (final SimpleExpansion expansion : expansions) {
+				final String value = expansion.replacePlaceholders(this.audience, variable);
+
+				if (value != null) {
+					replacedValue = value;
+
+					break;
+				}
+			}
+
+		if (replacedValue != null)
+			legacyCache.put(variable, replacedValue);
+		else
+			legacyCache.put(variable, variable);
+
+		if (replacedValue != null)
+			if ((frontSpace || backSpace) && !replacedValue.isEmpty()) {
+				if (frontSpace && !replacedValue.startsWith(" "))
+					replacedValue = " " + replacedValue;
+
+				if (backSpace && !replacedValue.endsWith(" "))
+					replacedValue = replacedValue + " ";
+			}
+
+		return replacedValue;
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Static
 	// ------------------------------------------------------------------------------------------------------------
@@ -404,32 +465,5 @@ public final class Variables {
 	 */
 	public static Variables builder(@Nullable FoundationPlayer audience) {
 		return new Variables().audience(audience);
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Classes
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Represents how we should turn the component in replace() methods back to a legacy String.
-	 *
-	 * @see Variables#replace(String)
-	 */
-	public enum LegacyMode {
-
-		/**
-		 * Convert the components to plain text. No colors or formatting.
-		 */
-		TO_PLAIN,
-
-		/**
-		 * Convert the components to legacy text. § colors and formatting.
-		 */
-		TO_SECTION,
-
-		/**
-		 * Convert the components to mini text such as \<green\>Hello
-		 */
-		TO_MINI;
 	}
 }

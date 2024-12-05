@@ -267,7 +267,7 @@ public abstract class Button {
 				final ItemStack item = creator.glow(has).make();
 				final ItemMeta meta = item.getItemMeta();
 
-				meta.setLore(Variables.builder().placeholder("status", has ? "&aEnabled" : "&cDisabled").replaceList(meta.getLore()));
+				meta.setLore(Variables.builder().placeholder("status", has ? "&aEnabled" : "&cDisabled").replaceLegacyList(meta.getLore()));
 				item.setItemMeta(meta);
 
 				return item;
@@ -424,7 +424,7 @@ public abstract class Button {
 				final ItemStack itemstack = item.make();
 				final ItemMeta meta = itemstack.getItemMeta();
 
-				meta.setLore(Variables.builder().placeholder("current", getter != null ? getter.get().toString() : "").replaceList(meta.getLore()));
+				meta.setLore(Variables.builder().placeholder("current", getter != null ? getter.get().toString() : "").replaceLegacyList(meta.getLore()));
 				itemstack.setItemMeta(meta);
 
 				return itemstack;

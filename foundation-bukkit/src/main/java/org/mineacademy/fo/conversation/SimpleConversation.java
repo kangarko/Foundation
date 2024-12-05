@@ -281,7 +281,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	protected static final void tell(final Conversable conversable, SimpleComponent message) {
 		final FoundationPlayer player = Platform.toPlayer(conversable);
 
-		player.sendMessage(Variables.builder(player).replace(message));
+		player.sendMessage(Variables.builder(player).replaceComponent(message));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

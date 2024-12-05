@@ -77,7 +77,7 @@ public class ButtonRemove extends Button {
 
 				.lore(Variables.builder().placeholderArray(
 						"name", this.toRemoveName,
-						"type", this.toRemoveType).replaceList(lore))
+						"type", this.toRemoveType).replaceLegacyList(lore))
 
 				.flags(CompItemFlag.HIDE_ATTRIBUTES)
 				.make();
