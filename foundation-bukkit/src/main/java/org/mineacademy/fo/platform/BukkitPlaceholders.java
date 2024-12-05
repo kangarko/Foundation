@@ -34,7 +34,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 		else if ("player_display_name".equals(identifier))
 			return SimpleComponent.fromSection(player == null ? audience.getName() : player.getDisplayName());
 
-		else if ("player_nick".equals(identifier) || "nick".equals(identifier))
+		else if ("player_nick".equals(identifier))
 			return SimpleComponent.fromSection(player == null ? audience.getName() : HookManager.getNickColored(player));
 
 		else if ("player_prefix".equals(identifier))
