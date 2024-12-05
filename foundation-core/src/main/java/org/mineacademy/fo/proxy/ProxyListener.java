@@ -81,8 +81,7 @@ public abstract class ProxyListener {
 	}
 
 	/**
-	 * Called automatically when you receive a plugin message from proxy,
-	 * see https://spigotmc.org/wiki/bukkit-bungee-plugin-messaging-channel
+	 * Called automatically when you receive a plugin message from proxy
 	 *
 	 * @param message
 	 */
