@@ -43,6 +43,7 @@
   "command-invalid-time-token": "Wrong time! Expected syntax such as '3h50m' or '30s', got: '{input}'.",
   "command-invalid-type": "No such {type} '{value}'. Available: {available}",
   "command-invalid-uuid": "Invalid UUID '{uuid}'",
+  "command-invalid-usage": "Invalid usage. Usage: '{usage}'",
   "command-invalid-world": "Invalid world '{world}'. Available: {available}",
   "command-label-authors": "Made by",
   "command-label-description": "<red>Description: {description}",
