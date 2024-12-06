@@ -15,6 +15,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.InvalidWorldException;
 
 import lombok.NonNull;
 
@@ -263,6 +264,7 @@ public final class ConfigItems<T extends YamlConfig> {
 
 		// Create a new instance of our item
 		T item = null;
+		boolean knownError = false;
 
 		try {
 
@@ -300,8 +302,18 @@ public final class ConfigItems<T extends YamlConfig> {
 					else
 						item = constructor.newInstance();
 
-				} catch (final InstantiationException ex) {
-					CommonCore.throwError(ex, "Failed to create new" + (this.type == null ? prototypeClass.getSimpleName() : " " + this.type) + " " + name + " from " + constructor);
+				} catch (final Throwable t) {
+					Throwable root = t;
+
+					while (root.getCause() != null)
+						root = root.getCause();
+
+					if (root instanceof InvalidWorldException) {
+						CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
+						knownError = true;
+
+					} else
+						CommonCore.throwError(t, "Failed to create new " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor);
 				}
 			}
 
@@ -320,7 +332,9 @@ public final class ConfigItems<T extends YamlConfig> {
 			CommonCore.throwError(t, "Failed to load" + name + (this.singleFile ? "" : " from " + this.folder));
 		}
 
-		ValidCore.checkNotNull(item, "Failed to initiliaze " + name + " from " + this.folder);
+		if (!knownError)
+			ValidCore.checkNotNull(item, "Failed to initialiaze " + name + " from " + this.folder);
+
 		return item;
 	}
 
