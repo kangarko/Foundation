@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
@@ -41,6 +42,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -55,6 +57,20 @@ import net.md_5.bungee.api.chat.BaseComponent;
  * new text to it, the new text won't have the color.
  */
 public final class SimpleComponent implements ConfigSerializable, ComponentLike {
+
+	/**
+	 * Our instance of MiniMessage parser without compactor (i.e.
+	 * prevents removing the second tag from \<red\>hello {player}\<red\>
+	 * which makes colored placeholders revert back properly.
+	 */
+	public static final MiniMessage MINIMESSAGE_PARSER = MiniMessage
+			.builder()
+			.tags(TagResolver.standard())
+			.strict(false)
+			.preProcessor(UnaryOperator.identity())
+			.postProcessor(UnaryOperator.identity())
+			.debug(null)
+			.build();
 
 	/**
 	 * The limit of characters per line for hover events in legacy versions
@@ -134,8 +150,24 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @param messages
 	 * @return
 	 */
-	public SimpleComponent onHoverLegacy(Collection<String> messages) {
-		return this.onHoverLegacy(CommonCore.toArray(messages));
+	public SimpleComponent onHoverLegacy(List<String> messages) {
+		Component joined = Component.empty();
+
+		for (int i = 0; i < messages.size(); i++) {
+			String legacy = messages.get(i);
+
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini(legacy).toLegacy(), LEGACY_HOVER_LINE_LENGTH_LIMIT));
+
+			joined = joined.append(Component.text(HoverEventConverter.convertMiniToLegacy("<gray>" + legacy)));
+
+			if (i < messages.size() - 1)
+				joined = joined.append(Component.newline());
+		}
+
+		final Component finalComponent = joined.asComponent();
+
+		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
 	}
 
 	/**
@@ -529,20 +561,23 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public String toLegacy(FoundationPlayer receiver) {
-
-		// Append tail from the last style
-		String suffix = "";
+		final StringBuilder result = new StringBuilder(LegacyComponentSerializer.legacySection().serialize(this.toAdventure(receiver)));
 
 		if (this.lastStyle != null) {
-			if (this.lastStyle.color() != null)
-				suffix = CompChatColor.fromTextColor(this.lastStyle.color()).toString();
+			if (this.lastStyle.color() != null) {
+				final CompChatColor comp = CompChatColor.fromTextColor(this.lastStyle.color());
+
+				result.append(comp.isHex() ? comp.toClosestLegacy() : comp.toString());
+			}
 
 			for (final Map.Entry<TextDecoration, State> entry : this.lastStyle.decorations().entrySet())
 				if (entry.getValue() == State.TRUE)
-					suffix += CompChatColor.fromTextDecoration(entry.getKey());
+					result.append(CompChatColor.fromTextDecoration(entry.getKey()));
+
 		}
 
-		return LegacyComponentSerializer.legacySection().serialize(this.toAdventure(receiver)) + suffix;
+		return result.toString();
+
 	}
 
 	/**
@@ -567,7 +602,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	@Deprecated
 	public String toMini(FoundationPlayer receiver) {
-		return MiniMessage.miniMessage().serialize(this.toAdventure(receiver));
+		return SimpleComponent.MINIMESSAGE_PARSER.serialize(this.toAdventure(receiver));
 	}
 
 	/**
@@ -766,7 +801,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		Component mini;
 
 		try {
-			mini = MiniMessage.miniMessage().deserialize(message.replace("\\n", "\n"));
+			mini = MINIMESSAGE_PARSER.deserialize(message.replace("\\n", "\n"));
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
@@ -927,7 +962,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		public SerializedMap serialize() {
 			final SerializedMap map = new SerializedMap();
 
-			map.put("Component", MiniMessage.miniMessage().serialize(this.component));
+			map.put("Component", SimpleComponent.MINIMESSAGE_PARSER.serialize(this.component));
 			map.putIfExists("Permission", this.viewPermission);
 			map.putIfExists("Condition", this.viewCondition);
 
@@ -941,7 +976,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		 * @return
 		 */
 		public static ConditionalComponent deserialize(SerializedMap map) {
-			final Component component = MiniMessage.miniMessage().deserialize(map.getString("Component"));
+			final Component component = SimpleComponent.MINIMESSAGE_PARSER.deserialize(map.getString("Component"));
 			final ConditionalComponent part = new ConditionalComponent(component);
 
 			part.viewPermission = map.getString("Permission");
@@ -1104,6 +1139,176 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			parser.parseMessage(message);
 
 			return Style.style(parser.getLastColor(), parser.getLastDecorations());
+		}
+	}
+
+	/**
+	 * A helper class to convert hover events from MiniMessage to legacy.
+	 *
+	 * Albeit using section is unsupported, it provides the peak performance for now.
+	 */
+	private static class HoverEventConverter {
+
+		public static String convertMiniToLegacy(String legacy) {
+			final StringBuilder filteredMessage = new StringBuilder();
+
+			final int length = legacy.length();
+			for (int i = 0; i < length; i++) {
+				final char currentChar = legacy.charAt(i);
+
+				// Check for escaped tags prefixed with \
+				if (currentChar == '\\' && i + 1 < length && legacy.charAt(i + 1) == '<') {
+					// Append the backslash and the tag as is
+					filteredMessage.append('\\').append('<');
+					i++; // Skip the next character ('<')
+					continue;
+				}
+
+				// Check for opening of a MiniMessage tag, e.g., <color>
+				if (currentChar == '<') {
+					final int closeIndex = legacy.indexOf('>', i);
+
+					// If next '<' is not part of a valid tag, treat it as normal text
+					if (closeIndex == -1 || legacy.substring(i + 1, closeIndex).contains("<")) {
+						filteredMessage.append(currentChar);
+						continue;
+					}
+
+					final String tagContent = legacy.substring(i + 1, closeIndex).toLowerCase();
+
+					// Check for end tag, e.g., </red>
+					if (tagContent.startsWith("/")) {
+						final String endTag = tagContent.substring(1);
+
+						if (!isValidTag(endTag)) {
+							// Skip this end tag
+							i = closeIndex;
+							continue;
+						}
+
+					} else if (tagContent.startsWith("color:")) {
+						final String colorName = tagContent.substring(6);
+
+						if (!isValidTag(colorName)) {
+							// Skip this tag
+							i = closeIndex;
+							continue;
+						}
+
+					} else if (tagContent.startsWith("colour:")) {
+						final String colorName = tagContent.substring(7);
+
+						if (!isValidTag(colorName)) {
+							// Skip this tag
+							i = closeIndex;
+							continue;
+						}
+
+					} else if (tagContent.startsWith("c:")) {
+						final String colorName = tagContent.substring(2);
+
+						if (!isValidTag(colorName)) {
+							// Skip this tag
+							i = closeIndex;
+							continue;
+						}
+
+					} else {
+						// Handle simple colors like <red>, <blue>, etc.
+						if (!isValidTag(tagContent)) {
+							// Skip this tag
+							i = closeIndex;
+							continue;
+						}
+					}
+
+					// If tag is permitted, add it to the result
+					filteredMessage.append(legacy, i, closeIndex + 1);
+					i = closeIndex;
+
+				} else {
+					// Normal character
+					filteredMessage.append(currentChar);
+				}
+			}
+
+			final char[] chars = filteredMessage.toString().toCharArray();
+
+			for (int i = 0; i < chars.length - 1; i++)
+				if (chars[i] == '&' && CompChatColor.ALL_CODES.indexOf(chars[i + 1]) > -1) {
+					chars[i] = CompChatColor.COLOR_CHAR;
+
+					chars[i + 1] = Character.toLowerCase(chars[i + 1]);
+				}
+
+			final StringBuilder result = new StringBuilder();
+			final String output = new String(chars);
+
+			int startIdx = 0, tagStart;
+
+			while ((tagStart = output.indexOf('<', startIdx)) != -1) {
+
+				// Check if the '<' is escaped
+				if (tagStart > 0 && output.charAt(tagStart - 1) == '\\') {
+
+					// Append text up to the escaped '<', and skip the backslash
+					result.append(output, startIdx, tagStart - 1);
+					result.append('<');
+					startIdx = tagStart + 1; // Move past the '<'
+
+					continue;
+				}
+
+				final int tagEnd = output.indexOf('>', tagStart);
+				if (tagEnd == -1)
+					break; // Malformed or no closing tag
+
+				final String tag = output.substring(tagStart, tagEnd + 1);
+				final String replacement = CompChatColor.MINI_TO_LEGACY.getOrDefault(tag, tag);
+
+				result.append(output, startIdx, tagStart);
+				result.append(replacement);
+
+				startIdx = tagEnd + 1; // Move past the tag
+			}
+
+			result.append(output, startIdx, output.length());
+
+			return result.toString();
+		}
+
+		/*
+		 * Check if the sender has permission for the given color name.
+		 */
+		private static boolean isValidTag(String tag) {
+			if (tag.charAt(0) == '#') {
+				if (tag.length() == 7)
+					return true;
+
+				return false; // Disallow invalid tags to prevent exploits
+			}
+
+			tag = tag.toLowerCase();
+
+			switch (tag) {
+				case "grey":
+					tag = "gray";
+					break;
+				case "dark_grey":
+					tag = "dark_gray";
+					break;
+				case "insert":
+					tag = "insertion";
+					break;
+				default:
+					if (tag.contains(":"))
+						tag = tag.split(":", 2)[0];
+
+					break;
+			}
+
+			return "reset".equals(tag) || "b".equals(tag) || "bold".equals(tag) || "i".equals(tag) || "italic".equals(tag) || "u".equals(tag) || "underlined".equals(tag) || "st".equals(tag)
+					|| "strikethrough".equals(tag) || "obf".equals(tag) || "obfuscated".equals(tag) || NamedTextColor.NAMES.value(tag) != null;
 		}
 	}
 }
