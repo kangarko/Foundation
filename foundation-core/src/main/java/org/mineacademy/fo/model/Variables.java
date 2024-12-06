@@ -6,14 +6,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.collection.ExpiringMap;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 
@@ -23,7 +22,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 
 /**
  * A class that replaces variables in a message. In Foundation, we use
@@ -53,12 +51,6 @@ public final class Variables {
 	 * We use this string to join and split lists of strings when replacing variables to increase performance.
 	 */
 	private static final String MAGIC_STRING_CONCATENATION = "%FLPV%";
-
-	/**
-	 * The cache for variables that expire after 5 seconds.
-	 */
-	private static final Map<String, SimpleComponent> cache = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
-	private static final Map<String, String> legacyCache = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
 
 	/**
 	 * Variables added to Foundation by you or other plugins
@@ -138,6 +130,16 @@ public final class Variables {
 	public Variables placeholderArray(@NonNull Object... placeholders) {
 		this.placeholders = CommonCore.newHashMap(placeholders);
 
+		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
+			final String key = entry.getKey();
+
+			if (key.startsWith("{"))
+				throw new FoException("Placeholders must not start with '{'. Found: " + key);
+
+			if (key.endsWith("}"))
+				throw new FoException("Placeholders must not end with '}'. Found: " + key);
+		}
+
 		return this;
 	}
 
@@ -163,7 +165,10 @@ public final class Variables {
 	 * @return
 	 */
 	public List<String> replaceLegacyList(@NonNull List<String> list) {
-		return Arrays.asList(this.replaceLegacy(String.join(MAGIC_STRING_CONCATENATION, list)).split(MAGIC_STRING_CONCATENATION)); // less overhead than replacing each element
+		for (int i = 0; i < list.size(); i++)
+			list.set(i, this.replaceLegacy(list.get(i)));
+
+		return list;
 	}
 
 	/**
@@ -171,11 +176,14 @@ public final class Variables {
 	 *
 	 * @see #replaceLegacy(String)
 	 *
-	 * @param list
+	 * @param array
 	 * @return
 	 */
-	public String[] replaceLegacyArray(@NonNull String[] list) {
-		return this.replaceLegacy(String.join(MAGIC_STRING_CONCATENATION, list.clone())).split(MAGIC_STRING_CONCATENATION); // less overhead than replacing each element
+	public String[] replaceLegacyArray(@NonNull String[] array) {
+		for (int i = 0; i < array.length; i++)
+			array[i] = this.replaceLegacy(array[i]);
+
+		return array;
 	}
 
 	/**
@@ -293,9 +301,6 @@ public final class Variables {
 			}
 		}
 
-		if (replacedValue == null)
-			replacedValue = cache.get(variable);
-
 		if (replacedValue == null && this.audience != null && replaceScript) {
 			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
 
@@ -317,11 +322,6 @@ public final class Variables {
 					break;
 				}
 			}
-
-		if (replacedValue != null)
-			cache.put(variable, replacedValue);
-		else
-			cache.put(variable, SimpleComponent.fromPlain(variable));
 
 		final String replacedPlainValue = replacedValue == null ? "" : replacedValue.toPlain();
 
@@ -370,7 +370,7 @@ public final class Variables {
 					replacedValue = ((SimpleComponent) rawValue).toMini();
 
 				else if (rawValue instanceof Component)
-					replacedValue = MiniMessage.miniMessage().serialize((Component) rawValue);
+					replacedValue = SimpleComponent.MINIMESSAGE_PARSER.serialize((Component) rawValue);
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
@@ -381,9 +381,6 @@ public final class Variables {
 				break;
 			}
 		}
-
-		if (replacedValue == null)
-			replacedValue = legacyCache.get(variable);
 
 		if (replacedValue == null && this.audience != null && replaceScript) {
 			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
@@ -406,11 +403,6 @@ public final class Variables {
 					break;
 				}
 			}
-
-		if (replacedValue != null)
-			legacyCache.put(variable, replacedValue);
-		else
-			legacyCache.put(variable, variable);
 
 		if (replacedValue != null)
 			if ((frontSpace || backSpace) && !replacedValue.isEmpty()) {
