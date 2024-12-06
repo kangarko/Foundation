@@ -104,6 +104,8 @@ final class AutoRegisterScanner {
 						for (final Method method : clazz.getMethods())
 							if (method.isAnnotationPresent(eventHandlerClass))
 								ValidCore.checkBoolean(listenerClass.isAssignableFrom(clazz), "Detected @EventHandler in " + clazz + ", make this class 'implements Listener' before using events there");
+					} catch (final IllegalStateException ex) {
+						// Ignore
 
 					} catch (final Error err) {
 						// Ignore, such as Citizens api will throw that when not present
