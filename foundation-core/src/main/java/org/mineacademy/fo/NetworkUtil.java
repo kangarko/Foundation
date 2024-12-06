@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -199,7 +200,7 @@ public final class NetworkUtil {
 				return responseBuilder.toString();
 			}
 
-		} catch (final UnknownHostException ex) {
+		} catch (final SocketException | UnknownHostException ex) {
 			throw new IllegalStateException("Error issuing a 'get' request to '" + rawEndpoint + "', network is unreachable", ex);
 
 		} catch (final Exception ex) {
