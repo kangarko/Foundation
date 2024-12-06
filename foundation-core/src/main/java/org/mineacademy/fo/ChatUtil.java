@@ -195,17 +195,30 @@ public final class ChatUtil {
 		for (int i = 0; i < message.length(); i++) {
 			final char letter = message.charAt(i);
 
-			if (!foundFirstLetter && (letter == '<' || letter == '&' || letter == '§')) {
+			// Handle potential tags like <red>
+			if (!foundFirstLetter && letter == '<') {
 				result.append(letter);
 
-				if (letter == '<') {
-					while (i < message.length() && message.charAt(i) != '>')
-						result.append(message.charAt(++i));
+				final int closeIndex = message.indexOf('>', i);
 
-				} else if (letter == '&' || letter == '§') {
-					if (i + 1 < message.length())
-						result.append(message.charAt(++i));
+				// Verify if there's a closing '>'
+				if (closeIndex != -1) {
+					result.append(message, i + 1, closeIndex + 1);
+
+					i = closeIndex; // Skip the tag entirely
 				}
+
+				// If no closing '>', treat '<' as normal text
+				else
+					continue; // Skip invalid '<' completely
+			}
+
+			// Handle other color codes like &x or §x
+			else if (!foundFirstLetter && (letter == '&' || letter == '§')) {
+				result.append(letter);
+
+				if (i + 1 < message.length())
+					result.append(message.charAt(++i)); // Append the next character (color code)
 			}
 
 			// Capitalize the first valid letter
@@ -215,13 +228,15 @@ public final class ChatUtil {
 				foundFirstLetter = true;
 			}
 
+			// Append the rest of the characters as is
 			else
 				result.append(letter);
-
 		}
 
+		// Check if the first part of the message is a domain to decide formatting
 		if (!isDomain(message.trim().split("\\s", 2)[0]))
 			resultMessage.append(result).append(" ");
+
 		else
 			resultMessage.append(message).append(" ");
 
