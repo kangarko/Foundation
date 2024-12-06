@@ -20,6 +20,7 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;
@@ -185,6 +186,9 @@ public class YamlConfig extends FileConfig {
 
 		try {
 			this.onLoad();
+
+		} catch (final InvalidWorldException ex) {
+			throw ex;
 
 		} catch (final Throwable t) {
 			CommonCore.error(t, "Failed to call onLoad in configuration " + this.getFile());

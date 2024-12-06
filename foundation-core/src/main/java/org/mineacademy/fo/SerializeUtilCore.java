@@ -239,7 +239,6 @@ public abstract class SerializeUtilCore {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static <T> T deserialize(@NonNull final Language language, @NonNull final Class<T> classOf, @NonNull Object object, final Object... parameters) {
-
 		for (final Serializer serializer : serializers) {
 			final Object result = serializer.deserialize(language, classOf, object, parameters);
 

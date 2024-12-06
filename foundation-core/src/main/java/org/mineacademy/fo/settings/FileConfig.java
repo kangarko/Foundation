@@ -26,6 +26,7 @@ import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.mineacademy.fo.model.CaseNumberFormat;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -122,6 +123,9 @@ public abstract class FileConfig extends ConfigSection {
 			final FileInputStream stream = new FileInputStream(file);
 
 			this.loadFromReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+
+		} catch (final InvalidWorldException ex) {
+			throw ex;
 
 		} catch (final YamlSyntaxError err) {
 			throw err;
