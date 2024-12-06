@@ -210,8 +210,6 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void sendActionBar(SimpleComponent message) {
-
-		// Native is fastest
 		if (Remain.isCommandSenderAudience()) {
 			this.sender.sendActionBar(message);
 
@@ -232,7 +230,10 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
-		if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
+		if (Remain.isCommandSenderAudience())
+			this.audience.sendPlayerListHeaderAndFooter(header, footer);
+
+		else if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
 			try {
 				this.player.setPlayerListHeaderFooter(header.toLegacy(), footer.toLegacy());
 
