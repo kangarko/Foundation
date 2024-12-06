@@ -891,7 +891,6 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isMuted(final Player player) {
-
 		if (isEssentialsLoaded() && essentialsHook.isMuted(player.getName()))
 			return true;
 
