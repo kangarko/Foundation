@@ -28,12 +28,14 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
+import org.mineacademy.fo.model.Book;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompEnchantment;
@@ -53,6 +55,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 /**
  * ItemCreator allows you to create highly customized {@link ItemStack}
@@ -1060,5 +1063,41 @@ public final class ItemCreator {
 		} catch (final IllegalArgumentException e) {
 			return fromItemStack(new ItemStack(ReflectionUtil.lookupEnum(Material.class, "SKULL_ITEM"), 1, (byte) 3));
 		}
+	}
+
+	/**
+	 * Creates a book
+	 *
+	 * @param book
+	 * @param editable
+	 * @return
+	 */
+	public static ItemCreator fromBookAdventure(net.kyori.adventure.inventory.Book book, boolean editable) {
+		final String title = Common.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.title()), "Blank");
+
+		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
+				.bookTitle(title)
+				.bookAuthor(Common.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.author()), "Blank"))
+				.bookPages(Common.convertList(book.pages(), page -> LegacyComponentSerializer.legacySection().serialize(page)))
+				.name(title)
+				.tag(Book.TAG, "true")
+				.hideTags(true);
+	}
+
+	/**
+	 * Creates a book
+	 *
+	 * @param book
+	 * @param editable
+	 * @return
+	 */
+	public static ItemCreator fromBook(Book book, boolean editable) {
+		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
+				.bookTitle(Common.getOrDefault(book.getTitle(), "Blank"))
+				.bookAuthor(Common.getOrDefault(book.getAuthor(), "Blank"))
+				.bookPages(book.getPages())
+				.name(book.getTitle())
+				.tag(Book.TAG, "true")
+				.hideTags(true);
 	}
 }
