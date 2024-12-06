@@ -437,10 +437,14 @@ public class JsonItemStack {
 
 		if (extraJson != null)
 			if (meta instanceof SkullMeta) {
-				final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
+				try {
+					final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
 
-				if (owner != null)
-					((SkullMeta) meta).setOwner(owner);
+					if (owner != null)
+						((SkullMeta) meta).setOwner(owner);
+				} catch (final UnsupportedOperationException ex) {
+					// Silence
+				}
 
 			} else if (meta instanceof BannerMeta) {
 				final BannerMeta bmeta = (BannerMeta) meta;
@@ -554,7 +558,7 @@ public class JsonItemStack {
 
 						try {
 							final String[] splitPotions = effect.split(":");
-							final PotionEffectType potionType = PotionEffectType.getByName(splitPotions[0]);
+							final PotionEffectType potionType = CompPotionEffectType.getByName(splitPotions[0]);
 							final int amplifier = Integer.parseInt(splitPotions[1]);
 							final int duration = Integer.parseInt(splitPotions[2]) * 20;
 
