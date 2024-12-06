@@ -37,7 +37,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/**
 	 * All legacy color codes
 	 */
-	private static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
+	public static final String ALL_CODES = "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx";
 
 	/**
 	 * MiniMessages to legacy color codes
@@ -305,7 +305,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @return
 	 */
 	public String toChatString() {
-		return this.isHex() ? "\\\\" + this.getName() : ChatUtil.capitalizeFully(this.getName());
+		return this.isHex() ? this.getName() : ChatUtil.capitalizeFully(this.getName());
 	}
 
 	/**
@@ -413,6 +413,15 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	}
 
 	/**
+	 * Get the closest legacy color to this color.
+	 *
+	 * @return
+	 */
+	public String toClosestLegacy() {
+		return getClosestLegacy(this.color).toString();
+	}
+
+	/**
 	 * This will translate the color into the actual color, use getName to get the saveable color!
 	 */
 	@Override
@@ -459,7 +468,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
 				final Color color = getColorFromHex(string);
 
-				return getClosestLegacyColor(color);
+				return getClosestLegacy(color);
 			}
 
 			int rgb;
@@ -471,13 +480,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				throw new IllegalArgumentException("Illegal hex string " + string);
 			}
 
-			// Maybe get rid of this entire class in favor of Adventure
-			final StringBuilder magic = new StringBuilder(COLOR_CHAR + "x");
-
-			for (final char c : string.substring(1).toCharArray())
-				magic.append(COLOR_CHAR).append(c);
-
-			return new CompChatColor(string, magic.toString(), rgb);
+			return new CompChatColor(string, "<" + string + ">", rgb);
 		}
 
 		if (string.length() == 2) {
@@ -548,31 +551,27 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param color
 	 * @return
 	 */
-	public static CompChatColor getClosestLegacyColor(Color color) {
-		if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
-			if (color.getAlpha() < 128)
-				return null;
+	public static CompChatColor getClosestLegacy(Color color) {
+		if (color.getAlpha() < 128)
+			return null;
 
-			int index = 0;
-			double best = -1;
+		int index = 0;
+		double best = -1;
 
-			for (int i = 0; i < LEGACY_COLORS.length; i++)
-				if (areSimilar(LEGACY_COLORS[i], color))
-					return CompChatColor.getColors().get(i);
+		for (int i = 0; i < LEGACY_COLORS.length; i++)
+			if (areSimilar(LEGACY_COLORS[i], color))
+				return CompChatColor.getColors().get(i);
 
-			for (int i = 0; i < LEGACY_COLORS.length; i++) {
-				final double distance = getDistance(color, LEGACY_COLORS[i]);
+		for (int i = 0; i < LEGACY_COLORS.length; i++) {
+			final double distance = getDistance(color, LEGACY_COLORS[i]);
 
-				if (distance < best || best == -1) {
-					best = distance;
-					index = i;
-				}
+			if (distance < best || best == -1) {
+				best = distance;
+				index = i;
 			}
-
-			return CompChatColor.getColors().get(index);
 		}
 
-		return CompChatColor.fromColor(color);
+		return CompChatColor.getColors().get(index);
 	}
 
 	/*
@@ -666,7 +665,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 */
 	private static void appendHex(StringBuilder result, String code) {
 		if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16))
-			result.append(getClosestLegacyColor(getColorFromHex(code)));
+			result.append(getClosestLegacy(getColorFromHex(code)));
 
 		else
 			result.append(COLOR_CHAR).append("x")
