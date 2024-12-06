@@ -2,16 +2,17 @@ package org.mineacademy.fo;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Utility class for generating random numbers.
@@ -211,19 +212,20 @@ public final class RandomUtil {
 	 * @param condition the condition applying when selecting or null if no condition
 	 * @return
 	 */
-	public static <T> T nextItem(final Collection<T> items, final Predicate<T> condition) {
-		final List<T> list = new ArrayList<>(items);
+	public static <T> T nextItem(@NonNull final Collection<T> items, final Predicate<T> condition) {
+		if (items.isEmpty())
+			throw new FoException("Collection is empty or null");
 
-		// Remove values failing the condition
-		if (condition != null)
-			for (final Iterator<T> it = list.iterator(); it.hasNext();) {
-				final T item = it.next();
+		final List<T> filtered = new ArrayList<>();
 
-				if (!condition.test(item))
-					it.remove();
-			}
+		for (final T item : items)
+			if (condition == null || condition.test(item))
+				filtered.add(item);
 
-		return list.get(nextInt(list.size()));
+		if (filtered.isEmpty())
+			return null;
+
+		return filtered.get(nextInt(filtered.size()));
 	}
 
 }

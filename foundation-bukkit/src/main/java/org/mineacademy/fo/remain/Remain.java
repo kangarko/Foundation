@@ -1566,7 +1566,7 @@ public final class Remain {
 	public static void openBook(Player player, ItemStack book) {
 		ValidCore.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
 		ValidCore.checkBoolean(book.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta, "openBook method called for not a book item: " + book);
-		ValidCore.checkBoolean(CompMaterial.fromMaterial(book.getType()) == CompMaterial.WRITTEN_BOOK, "Can only call openBook for WRITTEN_BOOK! Got: " + book);
+		ValidCore.checkBoolean(book.getType().toString().equals("WRITTEN_BOOK"), "Can only call openBook for WRITTEN_BOOK! Got: " + book);
 
 		// Fix "Invalid book tag" error when author/title is empty
 		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) book.getItemMeta();

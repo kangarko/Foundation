@@ -159,74 +159,73 @@ public final class ChatUtil {
 		if (message.isEmpty())
 			return "";
 
-		final String lastChar = message.substring(message.length() - 1);
-		final String[] words = message.split("\\s");
-		final String lastWord = words[words.length - 1];
+		final char lastChar = message.charAt(message.length() - 1);
 
-		if (!isDomain(lastWord) && lastChar.matches("(?i)[a-z\u0400-\u04FF]"))
-			message = message + ".";
+		if (Character.isLetter(lastChar) && !isDomain(getLastWord(message)))
+			message += ".";
 
 		return message;
 	}
 
 	/**
-	 * Make first letters of sentences big. Ignore domains and detect multiple
-	 * sentences.
+	 * Return the last word of the given text.
 	 *
-	 * @param message the message to check
-	 * @return capitalized message
+	 * @param text
+	 * @return
+	 */
+	public static String getLastWord(String text) {
+		final int lastSpace = text.lastIndexOf(' ');
+
+		return lastSpace == -1 ? text : text.substring(lastSpace + 1);
+	}
+
+	/**
+	 * Make first letters of sentences big. Ignore domains, minimessage tags,
+	 * color codes and even detects multiple sentences for God's sake.
+	 *
+	 * @param message
+	 * @return
 	 */
 	public static String capitalizeFirst(final String message) {
-		if (message.isEmpty())
-			return "";
+		final StringBuilder resultMessage = new StringBuilder();
 
-		final String[] sentences = message.split("(?<=[!?\\.])\\s");
-		final StringBuilder tempMessage = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
+		boolean foundFirstLetter = false;
 
-		for (final String sentence : sentences) {
-			try {
-				final StringBuilder result = new StringBuilder();
-				boolean foundFirstLetter = false;
+		for (int i = 0; i < message.length(); i++) {
+			final char letter = message.charAt(i);
 
-				for (int i = 0; i < sentence.length(); i++) {
-					final char letter = sentence.charAt(i);
+			if (!foundFirstLetter && (letter == '<' || letter == '&' || letter == '§')) {
+				result.append(letter);
 
-					// Skip MiniMessage tags (<...>) or legacy codes (&x, §x, etc.)
-					if (!foundFirstLetter && (letter == '<' || letter == '&' || letter == '§')) {
-						result.append(letter);
+				if (letter == '<') {
+					while (i < message.length() && message.charAt(i) != '>')
+						result.append(message.charAt(++i));
 
-						if (letter == '<')
-							while (i < sentence.length() && sentence.charAt(i) != '>')
-								result.append(sentence.charAt(++i));
-
-						else if (letter == '&' || letter == '§') {
-							if (i + 1 < sentence.length())
-								result.append(sentence.charAt(++i));
-						}
-
-					} else if (!foundFirstLetter && Character.isLetter(letter)) {
-						result.append(Character.toUpperCase(letter));
-
-						foundFirstLetter = true;
-
-					} else
-						result.append(letter);
+				} else if (letter == '&' || letter == '§') {
+					if (i + 1 < message.length())
+						result.append(message.charAt(++i));
 				}
-
-				final String word = sentence.split("\\s")[0];
-
-				if (!isDomain(word))
-					tempMessage.append(result.toString()).append(" ");
-
-				else
-					tempMessage.append(sentence).append(" ");
-
-			} catch (final ArrayIndexOutOfBoundsException ex) {
-				// Probably an exotic language, silence
 			}
+
+			// Capitalize the first valid letter
+			else if (!foundFirstLetter && Character.isLetter(letter)) {
+				result.append(Character.toUpperCase(letter));
+
+				foundFirstLetter = true;
+			}
+
+			else
+				result.append(letter);
+
 		}
 
-		return tempMessage.toString().trim();
+		if (!isDomain(message.trim().split("\\s", 2)[0]))
+			resultMessage.append(result).append(" ");
+		else
+			resultMessage.append(message).append(" ");
+
+		return resultMessage.toString().trim();
 	}
 
 	/**
