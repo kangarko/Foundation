@@ -1,6 +1,8 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -9,21 +11,27 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.menu.model.ItemCreator;
+import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleLocation;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.BossBarTask.TimedBar;
 import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.settings.Lang;
 
 import lombok.Getter;
 import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
 
@@ -142,7 +150,35 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public void openBook(Book book) {
-		org.mineacademy.fo.model.Book.fromAdventure(book).open(this);
+
+		// Render as text, replacing variables
+		if (MinecraftVersion.olderThan(V.v1_8) || !this.isPlayer) {
+			final List<SimpleComponent> pages = new ArrayList<>();
+			int pageNumber = 1;
+			final Variables variables = Variables.builder(this);
+
+			for (final Component component : book.pages()) {
+				final String legacyPage = LegacyComponentSerializer.legacySection().serialize(component);
+
+				pages.add(Lang.componentVars("command-book-page", "page", pageNumber++));
+
+				for (final String line : legacyPage.split("\n"))
+					pages.add(SimpleComponent.fromMini(" &7- &r" + variables.replaceLegacy(line)));
+
+				pages.add(SimpleComponent.empty());
+			}
+
+			new ChatPaginator()
+					.setFoundationHeader(Lang.legacyVars("command-book-page-header",
+							"title", CommonCore.getOrDefault(book.title(), Lang.component("command-book-unnamed")),
+							"author", CommonCore.getOrDefault(book.author(), Lang.component("command-book-unsigned"))))
+					.setPages(pages)
+					.send(this);
+
+			return;
+		}
+
+		Remain.openBook(this, ItemCreator.fromBookAdventure(book, false).make());
 	}
 
 	@Override
