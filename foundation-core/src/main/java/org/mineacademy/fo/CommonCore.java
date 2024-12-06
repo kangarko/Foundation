@@ -576,15 +576,15 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static final String duplicate(String text, int nTimes) {
-		if (nTimes == 0)
+		if (nTimes <= 0)
 			return "";
 
-		final String toDuplicate = new String(text);
+		final StringBuilder builder = new StringBuilder(text.length() * nTimes);
 
-		for (int i = 1; i < nTimes; i++)
-			text += toDuplicate;
+		for (int i = 0; i < nTimes; i++)
+			builder.append(text);
 
-		return text;
+		return builder.toString();
 	}
 
 	/**
