@@ -40,7 +40,8 @@ enum MinecraftVersion {
 	MC1_20_R3(1203, true),
 	MC1_20_R4(1204, true),
 	MC1_21_R1(1211, true),
-	MC1_21_R2(1212, true);
+	MC1_21_R2(1212, true),
+	MC1_21_R3(1213, true);
 
 	private static MinecraftVersion version;
 	private static Boolean isForgePresent;
@@ -63,6 +64,7 @@ enum MinecraftVersion {
 			this.put("1.21.1", MC1_21_R1);
 			this.put("1.21.2", MC1_21_R2);
 			this.put("1.21.3", MC1_21_R2);
+			this.put("1.21.4", MC1_21_R3);
 		}
 	};
 
