@@ -1023,10 +1023,10 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @see Messenger#success(FoundationPlayer, String)
 	 *
-	 * @param component
+	 * @param message
 	 */
-	protected final void tellSuccess(String component) {
-		this.tellSuccess(SimpleComponent.fromMini(component));
+	protected final void tellSuccess(String message) {
+		this.tellSuccess(SimpleComponent.fromMini(message));
 	}
 
 	/**
@@ -1520,8 +1520,13 @@ public abstract class SimpleCommandCore {
 	 * @param permission
 	 */
 	protected final void setPermission(final String permission) {
-		if (permission != null && permission.contains("{") && permission.contains("}"))
-			throw new FoException("Permission cannot contain variables: " + permission);
+		if (permission != null) {
+			if (permission.contains("{") && permission.contains("}"))
+				throw new FoException("Permission cannot contain variables: " + permission);
+
+			if (permission.endsWith("."))
+				throw new FoException("Permission cannot end with a period: " + permission);
+		}
 
 		this.permission = permission;
 	}
