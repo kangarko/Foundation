@@ -48,11 +48,6 @@ public final class Variables {
 	public static final Pattern BRACKET_REL_VARIABLE_PATTERN = Pattern.compile("[({)](rel_)([^}]+)[(})]");
 
 	/**
-	 * We use this string to join and split lists of strings when replacing variables to increase performance.
-	 */
-	private static final String MAGIC_STRING_CONCATENATION = "%FLPV%";
-
-	/**
 	 * Variables added to Foundation by you or other plugins
 	 *
 	 * This is used to dynamically replace the variable based on its content, like
