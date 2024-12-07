@@ -1,6 +1,5 @@
 package org.mineacademy.fo.command;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -26,25 +25,6 @@ import org.mineacademy.fo.settings.Lang;
  * classes.
  */
 public interface SharedBukkitCommandCore {
-
-	/**
-	 * Convenience method for completing all player names. Exclude vanished players
-	 * if the sender is a player.
-	 *
-	 * @return
-	 */
-	default List<String> completeLastWordPlayerNames() {
-		return this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames();
-	}
-
-	/**
-	 * Convenience method for completing all world names.
-	 *
-	 * @return
-	 */
-	default List<String> completeLastWordWorldNames() {
-		return CommonCore.tabComplete(this.getArgs().length > 0 ? this.getArgs()[this.getArgs().length - 1] : "", Common.getWorldNames());
-	}
 
 	/**
 	 * Attempts to parse the given name into a CompMaterial, will work for both modern
@@ -183,28 +163,6 @@ public interface SharedBukkitCommandCore {
 	}
 
 	/**
-	 * Return the player by the given args index, and, when the args are shorter, return the sender if sender is player.
-	 *
-	 * @param argsIndex
-	 *
-	 * @return
-	 * @throws CommandException
-	 */
-	default Player findPlayerOrSelf(final int argsIndex) throws CommandException {
-		if (argsIndex >= this.getArgs().length) {
-			this.checkBoolean(this.isPlayer(), Lang.component("command-console-missing-player-name"));
-
-			return this.getPlayer();
-		}
-
-		final String name = this.getArgs()[argsIndex];
-		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline(), Lang.componentVars("player-not-online", "player", name));
-
-		return player;
-	}
-
-	/**
 	 * Return the player by the given name, and, when the name is null, return the sender if sender is player.
 	 *
 	 * @param name
@@ -285,13 +243,6 @@ public interface SharedBukkitCommandCore {
 	 * @param falseMessage
 	 */
 	void checkBoolean(boolean flag, SimpleComponent falseMessage);
-
-	/**
-	 * @see SimpleCommandCore#getArgs()
-	 *
-	 * @return
-	 */
-	String[] getArgs();
 
 	/**
 	 * @see SimpleCommandCore#getAudience()
