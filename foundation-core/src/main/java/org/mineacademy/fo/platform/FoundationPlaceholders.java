@@ -51,7 +51,7 @@ final class FoundationPlaceholders extends SimpleExpansion {
 			return audience != null && audience.isConsole() ? "true" : "false";
 
 		else if ("player_is_player".equals(identifier) || "sender_is_player".equals(identifier))
-			return audience.isPlayer() ? "true" : "false";
+			return audience != null && audience.isPlayer() ? "true" : "false";
 
 		else if ("player_country_code".equals(identifier) || "player_country_name".equals(identifier) || "player_region_name".equals(identifier) || "player_isp".equals(identifier)) {
 			final InetSocketAddress ip = audience == null ? null : audience.getAddress();
@@ -128,6 +128,6 @@ final class FoundationPlaceholders extends SimpleExpansion {
 
 	@Override
 	public int getPriority() {
-		return 10;
+		return 0;
 	}
 }

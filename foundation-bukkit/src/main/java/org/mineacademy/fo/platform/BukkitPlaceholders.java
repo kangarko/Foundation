@@ -96,6 +96,6 @@ final class BukkitPlaceholders extends SimpleExpansion {
 
 	@Override
 	public int getPriority() {
-		return 9;
+		return 1;
 	}
 }
