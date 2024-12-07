@@ -1,8 +1,10 @@
 package org.mineacademy.fo.model;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -129,12 +131,16 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		Component joined = Component.empty();
 
 		for (int i = 0; i < components.length; i++) {
-			String legacy = components[i].toLegacy();
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13)) {
+				String legacy = components[i].toLegacy();
 
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+				if (legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+					legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
-			joined = joined.append(SimpleComponent.fromSection(legacy));
+				joined = joined.append(SimpleComponent.fromSection(legacy));
+
+			} else
+				joined = joined.append(components[i].toAdventure());
 
 			if (i < components.length - 1)
 				joined = joined.append(Component.newline());
@@ -159,7 +165,9 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini(legacy).toLegacy(), LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
+			// Our own parser is up to 1.5-2x faster
 			joined = joined.append(Component.text(HoverEventConverter.convertMiniToLegacy("<gray>" + legacy)));
+			//joined = joined.append(MINIMESSAGE_PARSER.deserialize(CompChatColor.convertLegacyToMini("<gray>" + legacy, true)));
 
 			if (i < messages.size() - 1)
 				joined = joined.append(Component.newline());
@@ -796,7 +804,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			message = ChatUtil.center(message.replace("<center>", "").trim());
 
 		// Replace legacy & color codes
-		message = CompChatColor.legacyToMini(message, true);
+		message = CompChatColor.convertLegacyToMini(message, true);
 
 		Component mini;
 
@@ -836,7 +844,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	public static SimpleComponent fromSection(@NonNull String legacyText) {
 		final Component mini = LegacyComponentSerializer.legacySection().deserialize(legacyText);
-		final String withMiniTags = CompChatColor.legacyToMini(legacyText, false);
+		final String withMiniTags = CompChatColor.convertLegacyToMini(legacyText, false);
 
 		return new SimpleComponent(ConditionalComponent.fromAdventure(mini), LastMessageStyleParser.parseStyle(withMiniTags));
 	}
@@ -1152,15 +1160,20 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		public static String convertMiniToLegacy(String legacy) {
 			final StringBuilder filteredMessage = new StringBuilder();
 
+			// Stack to store open tags
+			final Deque<String> tagStack = new ArrayDeque<>();
+
 			final int length = legacy.length();
 			for (int i = 0; i < length; i++) {
 				final char currentChar = legacy.charAt(i);
 
 				// Check for escaped tags prefixed with \
 				if (currentChar == '\\' && i + 1 < length && legacy.charAt(i + 1) == '<') {
-					// Append the backslash and the tag as is
+
+					// Append the backslash and the '<' as is
 					filteredMessage.append('\\').append('<');
 					i++; // Skip the next character ('<')
+
 					continue;
 				}
 
@@ -1168,9 +1181,10 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 				if (currentChar == '<') {
 					final int closeIndex = legacy.indexOf('>', i);
 
-					// If next '<' is not part of a valid tag, treat it as normal text
+					// If next '>' is not found or tag is malformed, treat it as normal text
 					if (closeIndex == -1 || legacy.substring(i + 1, closeIndex).contains("<")) {
 						filteredMessage.append(currentChar);
+
 						continue;
 					}
 
@@ -1181,106 +1195,91 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 						final String endTag = tagContent.substring(1);
 
 						if (!isValidTag(endTag)) {
-							// Skip this end tag
 							i = closeIndex;
+
 							continue;
 						}
 
-					} else if (tagContent.startsWith("color:")) {
-						final String colorName = tagContent.substring(6);
+						// Upon detecting an end tag, remove the tag from the stack
+						if (!tagStack.isEmpty() && tagStack.peek().equals(endTag)) {
+							tagStack.pop(); // Remove the matching start tag
 
-						if (!isValidTag(colorName)) {
-							// Skip this tag
-							i = closeIndex;
-							continue;
+							// Output the color code for the new top of the stack (if any), else reset color
+							String colorCode;
+
+							if (!tagStack.isEmpty()) {
+								final String currentTag = tagStack.peek();
+								colorCode = CompChatColor.MINI_TO_LEGACY.get("<" + currentTag + ">");
+
+								if (colorCode != null)
+									filteredMessage.append(colorCode);
+
+							} else
+
+								// Reset formatting if no tags are left
+								filteredMessage.append(CompChatColor.RESET.toString());
+
 						}
 
-					} else if (tagContent.startsWith("colour:")) {
-						final String colorName = tagContent.substring(7);
-
-						if (!isValidTag(colorName)) {
-							// Skip this tag
-							i = closeIndex;
-							continue;
-						}
-
-					} else if (tagContent.startsWith("c:")) {
-						final String colorName = tagContent.substring(2);
-
-						if (!isValidTag(colorName)) {
-							// Skip this tag
-							i = closeIndex;
-							continue;
-						}
+						// Move past the end tag
+						i = closeIndex;
+						continue;
 
 					} else {
-						// Handle simple colors like <red>, <blue>, etc.
-						if (!isValidTag(tagContent)) {
-							// Skip this tag
+						String tagName;
+
+						if (tagContent.startsWith("color:"))
+							tagName = tagContent.substring(6);
+						else if (tagContent.startsWith("colour:"))
+							tagName = tagContent.substring(7);
+						else if (tagContent.startsWith("c:"))
+							tagName = tagContent.substring(2);
+						else
+							tagName = tagContent;
+
+						if (!isValidTag(tagName)) {
 							i = closeIndex;
+
 							continue;
 						}
+
+						// If tag is permitted, push it onto the stack and output its color code
+						tagStack.push(tagName);
+
+						final String colorCode = CompChatColor.MINI_TO_LEGACY.get("<" + tagName + ">");
+
+						if (colorCode != null)
+							filteredMessage.append(colorCode);
+
+						// Move past the tag
+						i = closeIndex;
+						continue;
 					}
 
-					// If tag is permitted, add it to the result
-					filteredMessage.append(legacy, i, closeIndex + 1);
-					i = closeIndex;
+				} else
 
-				} else {
 					// Normal character
 					filteredMessage.append(currentChar);
-				}
+
 			}
 
-			final char[] chars = filteredMessage.toString().toCharArray();
+			// Ensure all tags have been closed
+			while (!tagStack.isEmpty()) {
+				tagStack.pop();
 
-			for (int i = 0; i < chars.length - 1; i++)
-				if (chars[i] == '&' && CompChatColor.ALL_CODES.indexOf(chars[i + 1]) > -1) {
-					chars[i] = CompChatColor.COLOR_CHAR;
-
-					chars[i + 1] = Character.toLowerCase(chars[i + 1]);
-				}
-
-			final StringBuilder result = new StringBuilder();
-			final String output = new String(chars);
-
-			int startIdx = 0, tagStart;
-
-			while ((tagStart = output.indexOf('<', startIdx)) != -1) {
-
-				// Check if the '<' is escaped
-				if (tagStart > 0 && output.charAt(tagStart - 1) == '\\') {
-
-					// Append text up to the escaped '<', and skip the backslash
-					result.append(output, startIdx, tagStart - 1);
-					result.append('<');
-					startIdx = tagStart + 1; // Move past the '<'
-
-					continue;
-				}
-
-				final int tagEnd = output.indexOf('>', tagStart);
-				if (tagEnd == -1)
-					break; // Malformed or no closing tag
-
-				final String tag = output.substring(tagStart, tagEnd + 1);
-				final String replacement = CompChatColor.MINI_TO_LEGACY.getOrDefault(tag, tag);
-
-				result.append(output, startIdx, tagStart);
-				result.append(replacement);
-
-				startIdx = tagEnd + 1; // Move past the tag
+				filteredMessage.append(CompChatColor.RESET.toString());
 			}
 
-			result.append(output, startIdx, output.length());
-
-			return result.toString();
+			return filteredMessage.toString();
 		}
 
 		/*
 		 * Check if the sender has permission for the given color name.
 		 */
 		private static boolean isValidTag(String tag) {
+			if (tag.isEmpty())
+				return true;
+
 			if (tag.charAt(0) == '#') {
 				if (tag.length() == 7)
 					return true;
