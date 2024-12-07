@@ -179,6 +179,9 @@ public class SimpleSettings extends YamlStaticConfig {
 		if (isSetDefault("Register_Regions"))
 			REGISTER_REGIONS = getBoolean("Register_Regions");
 
+		if (isSetDefault("Register_Menus"))
+			REGISTER_MENUS = getBoolean("Register_Menus");
+
 		if (isSetDefault("Log_Lag_Over_Milis")) {
 			LAG_THRESHOLD_MILLIS = getInteger("Log_Lag_Over_Milis");
 			ValidCore.checkBoolean(LAG_THRESHOLD_MILLIS == -1 || LAG_THRESHOLD_MILLIS >= 0, "Log_Lag_Over_Milis must be either -1 to disable, 0 to log all or greater!");
