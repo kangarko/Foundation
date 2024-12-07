@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
@@ -213,42 +212,6 @@ public final class Common extends CommonCore {
 				continue;
 
 			found.add(online.getName());
-		}
-
-		return found;
-	}
-
-	/**
-	 * Get a list of player nicknames (without color codes) currently online.
-	 *
-	 * @see #getPlayerNicknames(boolean, Player)
-	 *
-	 * @param includeVanished
-	 * @return
-	 */
-	public static List<String> getPlayerNicknames(final boolean includeVanished) {
-		return getPlayerNicknames(includeVanished, null);
-	}
-
-	/**
-	 * Get a list of player nicknames (without color codes) currently online, with an option to include or exclude vanished players.
-	 *
-	 * Supports CMI, EssentialsX and Nicky, or if it's a console, their name.
-	 *
-	 * Vanished players can be included or excluded based on the `includeVanished` parameter.
-	 *
-	 * @param includeVanished whether to include vanished players in the result
-	 * @param otherPlayer the player doing the query, used for checking if a player is vanished for them
-	 * @return a list of online player nicknames without color codes, optionally including vanished players
-	 */
-	public static List<String> getPlayerNicknames(final boolean includeVanished, Player otherPlayer) {
-		final List<String> found = new ArrayList<>();
-
-		for (final Player online : Remain.getOnlinePlayers()) {
-			if (PlayerUtil.isVanished(online, otherPlayer) && !includeVanished)
-				continue;
-
-			found.add(HookManager.getNickColorless(online));
 		}
 
 		return found;
