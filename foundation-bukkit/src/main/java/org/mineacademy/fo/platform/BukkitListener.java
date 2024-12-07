@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -46,19 +45,6 @@ final class BukkitListener implements Listener {
 	}
 
 	/**
-	 * Listen to console command sending to reload PlaceholderAPI cache.
-	 *
-	 * @param event
-	 */
-	@EventHandler
-	public void onServerCommand(ServerCommandEvent event) {
-		final String command = event.getCommand();
-
-		if (command.equals("papi reload") || command.equals("placeholderapi reload"))
-			Platform.runTask(10, () -> HookManager.reloadPlaceholderAPIHooks());
-	}
-
-	/**
 	 * Handler for {@link ChatPaginator}
 	 *
 	 * @param event
@@ -70,10 +56,7 @@ final class BukkitListener implements Listener {
 		final FoundationPlayer audience = Platform.toPlayer(player);
 		final String message = event.getMessage();
 
-		if (message.equals("/papi reload") || message.equals("/placeholderapi reload")) {
-			Platform.runTask(10, () -> HookManager.reloadPlaceholderAPIHooks());
-
-		} else if (message.startsWith("/#flp")) {
+		if (message.startsWith("/#flp")) {
 			final String[] args = message.split(" ");
 
 			if (args.length != 2) {

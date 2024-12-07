@@ -30,7 +30,7 @@ public abstract class SimpleExpansion {
 	 * Return the value of the placeholder such as corearena_arena_name
 	 * The corearena_ is removed automatically.
 	 *
-	 * @param audience
+	 * @param audience the player or null if not given
 	 * @param identifier
 	 *
 	 * @return the value or null if not valid
