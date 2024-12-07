@@ -1,12 +1,8 @@
 package org.mineacademy.fo.command;
 
-import java.util.List;
-
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
@@ -20,16 +16,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
  * classes.
  */
 public interface SharedBungeeCommandCore {
-
-	/**
-	 * Convenience method for completing all player names. Exclude vanished players
-	 * if the sender is a player.
-	 *
-	 * @return
-	 */
-	default List<String> completeLastWordPlayerNames() {
-		return this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames(true);
-	}
 
 	/**
 	 * Attempts to find a non-vanished online player, failing with the message
@@ -69,28 +55,6 @@ public interface SharedBungeeCommandCore {
 	 */
 	default ProxiedPlayer findPlayerInternal(final String name) {
 		return Remain.getPlayer(name, false);
-	}
-
-	/**
-	 * Return the player by the given args index, and, when the args are shorter, return the sender if sender is player.
-	 *
-	 * @param argsIndex
-	 *
-	 * @return
-	 * @throws CommandException
-	 */
-	default ProxiedPlayer findPlayerOrSelf(final int argsIndex) throws CommandException {
-		if (argsIndex >= this.getArgs().length) {
-			this.checkBoolean(this.isPlayer(), Lang.component("command-console-missing-player-name"));
-
-			return this.getPlayer();
-		}
-
-		final String name = this.getArgs()[argsIndex];
-		final ProxiedPlayer player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isConnected(), Lang.componentVars("player-not-online", "player", name));
-
-		return player;
 	}
 
 	/**
@@ -154,39 +118,9 @@ public interface SharedBungeeCommandCore {
 	void checkBoolean(boolean flag, SimpleComponent falseMessage);
 
 	/**
-	 * @see SimpleCommandCore#getArgs()
-	 *
-	 * @return
-	 */
-	String[] getArgs();
-
-	/**
 	 * @see SimpleCommandCore#getAudience()
 	 *
 	 * @return
 	 */
 	FoundationPlayer getAudience();
-
-	/**
-	 * @see SimpleCommandCore#returnTell(SimpleComponent)
-	 *
-	 * @param message
-	 */
-	void returnTell(SimpleComponent message);
-
-	/**
-	 * @see SimpleCommandCore#runTask(Runnable)
-	 *
-	 * @param task
-	 * @return
-	 */
-	Task runTask(Runnable task);
-
-	/**
-	 * @see SimpleCommandCore#runTaskAsync(Runnable)
-	 *
-	 * @param task
-	 * @return
-	 */
-	Task runTaskAsync(Runnable task);
 }

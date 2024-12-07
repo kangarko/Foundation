@@ -310,8 +310,6 @@ public abstract class SimpleCommandCore {
 	 * checks permission and returns if the sender lacks it,
 	 * checks minimum arguments and finally passes the command to the child class.
 	 *
-	 * @deprecated internal use only
-	 *
 	 * @param audience
 	 * @param label
 	 * @param args
@@ -319,7 +317,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	@Deprecated
-	public final boolean delegateExecute(final FoundationPlayer audience, final String label, final String[] args) {
+	final boolean delegateExecute(final FoundationPlayer audience, final String label, final String[] args) {
 		if (!Platform.getPlugin().isEnabled()) {
 			audience.sendMessage(Lang.component("command-cannot-use-while-plugin-disabled"));
 
@@ -512,7 +510,7 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @throws CommandException
 	 */
-	public final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
+	protected final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
 		this.checkBoolean(value, SimpleComponent.fromMini(falseMessage));
 	}
 
@@ -523,6 +521,7 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @throws CommandException
 	 */
+	// PSA: Needs to be public because of shared interface
 	public final void checkBoolean(final boolean value, final SimpleComponent falseMessage) throws CommandException {
 		if (!value)
 			this.returnTell(falseMessage);
@@ -558,7 +557,7 @@ public abstract class SimpleCommandCore {
 	 * @param messageIfNull
 	 * @throws CommandException
 	 */
-	public final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
+	protected final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
 		this.checkNotNull(value, SimpleComponent.fromMini(messageIfNull));
 	}
 
@@ -569,7 +568,7 @@ public abstract class SimpleCommandCore {
 	 * @param messageIfNull
 	 * @throws CommandException
 	 */
-	public final void checkNotNull(final Object value, final SimpleComponent messageIfNull) throws CommandException {
+	protected final void checkNotNull(final Object value, final SimpleComponent messageIfNull) throws CommandException {
 		if (value == null)
 			this.returnTell(messageIfNull);
 	}
@@ -737,7 +736,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @throws CommandException
 	 */
-	public final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Collection<?> available) throws CommandException {
+	protected final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Collection<?> available) throws CommandException {
 		this.checkNoSuchType(nonNullValue, type, value, available.toArray());
 	}
 
@@ -756,7 +755,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @throws CommandException
 	 */
-	public final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Object[] available) throws CommandException {
+	protected final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Object[] available) throws CommandException {
 		this.checkNotNull(nonNullValue, Lang.componentVars("command-invalid-type",
 				"type", type,
 				"value", value,
@@ -1010,7 +1009,7 @@ public abstract class SimpleCommandCore {
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
 	 * @param components
 	 */
-	public final void tell(SimpleComponent... components) {
+	protected final void tell(SimpleComponent... components) {
 		for (SimpleComponent component : components) {
 			component = this.replacePlaceholders(component);
 
@@ -1047,6 +1046,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param message
 	 */
+	// PSA: Needs to be public because of shared interface
 	public final void tellInfo(String message) {
 		this.tellInfo(SimpleComponent.fromMini(message));
 	}
@@ -1058,6 +1058,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param component
 	 */
+	// PSA: Needs to be public because of shared interface
 	public final void tellInfo(SimpleComponent component) {
 		Messenger.info(this.audience, this.replacePlaceholders(component));
 	}
@@ -1146,7 +1147,7 @@ public abstract class SimpleCommandCore {
 	 * @param messages
 	 * @throws CommandException
 	 */
-	public final void returnTell(final String... messages) throws CommandException {
+	protected final void returnTell(final String... messages) throws CommandException {
 		final List<SimpleComponent> components = new ArrayList<>();
 
 		for (final String message : messages)
@@ -1163,6 +1164,7 @@ public abstract class SimpleCommandCore {
 	 * @param component
 	 * @throws CommandException
 	 */
+	// PSA: Needs to be public because of shared interface
 	public final void returnTell(final SimpleComponent component) throws CommandException {
 		throw new CommandException(this.replacePlaceholders(component));
 	}
@@ -1260,11 +1262,9 @@ public abstract class SimpleCommandCore {
 	 * @param label
 	 * @param args
 	 *
-	 * @deprecated internal use only
 	 * @return
 	 */
-	@Deprecated
-	public final List<String> delegateTabComplete(final FoundationPlayer audience, final String label, final String[] args) {
+	final List<String> delegateTabComplete(final FoundationPlayer audience, final String label, final String[] args) {
 		this.audience = audience;
 		this.args = args.length == 0 ? new String[] { "" } : args;
 
@@ -1313,7 +1313,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return
 	 */
-	public List<String> completeLastWordPlayerNames() {
+	protected List<String> completeLastWordPlayerNames() {
 		return CommonCore.tabComplete(this.getLastArg(), CommonCore.convertList(Platform.getOnlinePlayers(), FoundationPlayer::getName));
 	}
 
@@ -1327,7 +1327,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	@SafeVarargs
-	public final <T> List<String> completeLastWord(final T... suggestions) {
+	protected final <T> List<String> completeLastWord(final T... suggestions) {
 		return CommonCore.tabComplete(this.getLastArg(), suggestions);
 	}
 
@@ -1340,7 +1340,7 @@ public abstract class SimpleCommandCore {
 	 * @param suggestions
 	 * @return
 	 */
-	public final <T> List<String> completeLastWord(final Iterable<T> suggestions) {
+	protected final <T> List<String> completeLastWord(final Iterable<T> suggestions) {
 		final List<T> list = new ArrayList<>();
 
 		for (final T suggestion : suggestions)
@@ -1373,7 +1373,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return
 	 */
-	public final String getLastArg() {
+	protected final String getLastArg() {
 		return this.args.length > 0 ? this.args[this.args.length - 1] : "";
 	}
 
@@ -1534,8 +1534,11 @@ public abstract class SimpleCommandCore {
 	/**
 	 * Get the last sender of this command, might be null if the command was never executed.
 	 *
+	 * @deprecated confusing naming, this is the last command sender or null if command was never run
+	 *
 	 * @return
 	 */
+	@Deprecated
 	public final FoundationPlayer getAudience() {
 		ValidCore.checkNotNull(this.audience, "Sender cannot be null");
 
@@ -1671,15 +1674,6 @@ public abstract class SimpleCommandCore {
 	// ----------------------------------------------------------------------
 
 	/**
-	 * Get the command arguments.
-	 *
-	 * @return
-	 */
-	public final String[] getArgs() {
-		return this.args;
-	}
-
-	/**
 	 * Parse the arguments from the given input.
 	 * Example: /announce chat server:survival Hello this is a test!
 	 *
@@ -1748,6 +1742,7 @@ public abstract class SimpleCommandCore {
 	 * @param runnable
 	 * @return
 	 */
+	// PSA: Needs to be public because of shared interface
 	public final Task runTask(final Runnable runnable) {
 		return this.runTask(0, runnable);
 	}
@@ -1771,6 +1766,7 @@ public abstract class SimpleCommandCore {
 	 * @param runnable
 	 * @return
 	 */
+	// PSA: Needs to be public because of shared interface
 	public final Task runTaskAsync(final Runnable runnable) {
 		return this.runTaskAsync(0, runnable);
 	}
