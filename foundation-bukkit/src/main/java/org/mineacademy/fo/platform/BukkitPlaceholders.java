@@ -1,6 +1,7 @@
 package org.mineacademy.fo.platform;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.model.CompChatColor;
@@ -34,7 +35,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 			return player == null ? audience.getName() : player.getDisplayName();
 
 		else if ("player_nick".equals(identifier))
-			return player == null ? audience.getName() : HookManager.getNickColored(player);
+			return player == null ? audience.getName() : CommonCore.getOrDefault(HookManager.getNickOrNullColored(player), audience.getName());
 
 		else if ("player_prefix".equals(identifier))
 			return player == null ? "" : HookManager.getPlayerPrefix(player);
