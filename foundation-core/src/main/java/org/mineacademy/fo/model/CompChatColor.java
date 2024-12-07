@@ -802,7 +802,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param supportAmpersand
 	 * @return
 	 */
-	public static String legacyToMini(String message, boolean supportAmpersand) {
+	public static String convertLegacyToMini(String message, boolean supportAmpersand) {
 		final StringBuilder result = new StringBuilder();
 
 		for (int i = 0; i < message.length(); i++) {
