@@ -970,7 +970,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		public SerializedMap serialize() {
 			final SerializedMap map = new SerializedMap();
 
-			map.put("Component", SimpleComponent.MINIMESSAGE_PARSER.serialize(this.component));
+			map.put("Component", SimpleComponent.fromAdventure(this.component).toMini());
 			map.putIfExists("Permission", this.viewPermission);
 			map.putIfExists("Condition", this.viewCondition);
 
@@ -984,7 +984,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		 * @return
 		 */
 		public static ConditionalComponent deserialize(SerializedMap map) {
-			final Component component = SimpleComponent.MINIMESSAGE_PARSER.deserialize(map.getString("Component"));
+			final Component component = SimpleComponent.fromMini(map.getString("Component")).toAdventure();
 			final ConditionalComponent part = new ConditionalComponent(component);
 
 			part.viewPermission = map.getString("Permission");
