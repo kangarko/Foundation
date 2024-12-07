@@ -1010,49 +1010,39 @@ public final class HookManager {
 	 * Returns the colored nickname of the given recipient from CMI,
 	 * EssentialsX or Nicky, or if it's a console, their name.
 	 *
-	 * @param sender the player who's nickname you want to get.6
-	 * @return
+	 * @param player the player who's nickname you want to get.
+	 * @return the nickname or null if the player is an NPC or does not have a nick
 	 */
-	public static String getNickColored(final CommandSender sender) {
-		return getNick(sender, false);
+	public static String getNickOrNullColored(Player player) {
+		return getNickOrNull(player, false);
 	}
 
 	/**
 	 * Returns the nickname, stripped of colors, for the given recipient from
 	 * CMI, EssentialsX or Nicky, or if it's a console, their name.
 	 *
-	 * @param sender the player whose nickname you want to get.
-	 * @return
+	 * @param player the player whose nickname you want to get.
+	 * @return the nickname or null if the player is an NPC or does not have an ick
 	 */
-	public static String getNickColorless(final CommandSender sender) {
-		return getNick(sender, true);
+	public static String getNickOrNullColorless(Player player) {
+		return getNickOrNull(player, true);
 	}
 
-	/**
+	/*
 	 * Returns the nickname for the given recipient from CMI, EssentialsX or
 	 * Nicky, or if it's a console, their name.
-	 *
-	 * @param sender      the player whose nickname you want to get.
-	 * @param stripColors should we strip colors from the nickname?
-	 *
-	 * @return
 	 */
-	private static String getNick(final CommandSender sender, boolean stripColors) {
-		final Player player = sender instanceof Player ? (Player) sender : null;
-
-		if (player != null && isNPC(player))
-			return player.getName();
-
-		if (player == null)
-			return sender.getName();
+	private static String getNickOrNull(@NonNull Player player, boolean stripColors) {
+		if (isNPC(player))
+			return null;
 
 		final String nickyNick = isNickyLoaded() ? nickyHook.getNick(player) : null;
 		final String essNick = isEssentialsLoaded() ? essentialsHook.getNick(player.getName()) : null;
 		final String cmiNick = isCMILoaded() ? CMIHook.getNick(player) : null;
 
-		final String nick = nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : sender.getName();
+		final String nick = nickyNick != null ? nickyNick : cmiNick != null ? cmiNick : essNick != null ? essNick : null;
 
-		return stripColors ? CompChatColor.stripColorCodes(nick) : nick;
+		return nick == null ? null : stripColors ? CompChatColor.stripColorCodes(nick) : nick;
 	}
 
 	/**
@@ -1982,9 +1972,8 @@ class EssentialsHook {
 		if (user == null)
 			return player;
 
-		final String essNick = CommonCore.getOrEmpty(user.getNickname());
-
-		return "".equals(essNick) ? null : essNick;
+		final String nick = user.getNickname();
+		return nick == null || !nick.isEmpty() ? null : nick;
 	}
 
 	void setNick(final UUID uniqueId, String nick) {
@@ -2007,7 +1996,7 @@ class EssentialsHook {
 			for (final UUID userId : users.getAllUniqueUsers()) {
 				final User user = users.getUser(userId);
 
-				if (user != null && user.getNickname() != null && SimpleComponent.fromMini(user.getNickname()).toPlain().toLowerCase().equals(maybeNick))
+				if (user != null && user.getNickname() != null && CompChatColor.stripColorCodes(user.getNickname()).toLowerCase().equals(maybeNick))
 					return CommonCore.getOrDefault(user.getName(), maybeNick);
 			}
 

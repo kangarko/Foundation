@@ -86,26 +86,6 @@ public final class PlayerUtil {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Kicks the player on the main thread with a colorized message.
-	 *
-	 * Legacy and MiniMessage tags in the messages will be replaced.
-	 *
-	 * This method can safely be called from an async thread.
-	 *
-	 * @param player
-	 * @param message
-	 */
-	/*public static void kick(final Player player, final String... message) {
-		final String reason = CompChatColor.translateColorCodes(String.join("\n", message));
-	
-		if (Bukkit.isPrimaryThread())
-			player.kickPlayer(reason);
-	
-		else
-			Platform.runTask(() -> player.kickPlayer(reason));
-	}*/
-
-	/**
 	 * Converts where the player is looking into a block face.
 	 * Source: https://bukkit.org/threads/400099/
 	 *
@@ -747,7 +727,10 @@ public final class PlayerUtil {
 			if (player.getName().equalsIgnoreCase(name))
 				return player;
 
-			final String nick = HookManager.getNickColorless(player);
+			String nick = HookManager.getNickOrNullColorless(player);
+
+			if (nick == null)
+				nick = player.getName();
 
 			if (nick.toLowerCase().startsWith(name.toLowerCase())) {
 				final int curDelta = Math.abs(nick.length() - name.length());
