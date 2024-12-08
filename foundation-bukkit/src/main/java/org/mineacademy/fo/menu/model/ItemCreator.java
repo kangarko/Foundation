@@ -35,7 +35,7 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
-import org.mineacademy.fo.model.Book;
+import org.mineacademy.fo.model.SimpleBook;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompEnchantment;
@@ -1080,7 +1080,7 @@ public final class ItemCreator {
 				.bookAuthor(Common.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.author()), "Blank"))
 				.bookPages(Common.convertList(book.pages(), page -> LegacyComponentSerializer.legacySection().serialize(page)))
 				.name(title)
-				.tag(Book.TAG, "true")
+				.tag(SimpleBook.TAG, "true")
 				.hideTags(true);
 	}
 
@@ -1091,13 +1091,13 @@ public final class ItemCreator {
 	 * @param editable
 	 * @return
 	 */
-	public static ItemCreator fromBook(Book book, boolean editable) {
+	public static ItemCreator fromBook(SimpleBook book, boolean editable) {
 		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
 				.bookTitle(Common.getOrDefault(book.getTitle(), "Blank"))
 				.bookAuthor(Common.getOrDefault(book.getAuthor(), "Blank"))
 				.bookPages(book.getPages())
 				.name(book.getTitle())
-				.tag(Book.TAG, "true")
+				.tag(SimpleBook.TAG, "true")
 				.hideTags(true);
 	}
 }
