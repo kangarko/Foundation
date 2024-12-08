@@ -24,7 +24,7 @@ import net.kyori.adventure.text.Component;
  * is support for file saving, signing and unique id.
  */
 @Getter
-public final class Book implements ConfigSerializable {
+public final class SimpleBook implements ConfigSerializable {
 
 	/**
 	 * The editable book nbt tag
@@ -71,7 +71,7 @@ public final class Book implements ConfigSerializable {
 	/*
 	 * Create a new empty book
 	 */
-	public Book(String title, String author, List<String> pages, boolean signed, long lastModified, String fileName, UUID uniqueId) {
+	public SimpleBook(String title, String author, List<String> pages, boolean signed, long lastModified, String fileName, UUID uniqueId) {
 		this.title = title;
 		this.author = author;
 		this.pages = pages;
@@ -139,7 +139,7 @@ public final class Book implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static Book deserialize(SerializedMap map) {
+	public static SimpleBook deserialize(SerializedMap map) {
 		ValidCore.checkBoolean(!map.isEmpty(), "Cannot deserialize empty map to book!");
 
 		final String title = map.getString("Title");
@@ -149,7 +149,7 @@ public final class Book implements ConfigSerializable {
 		final long lastModified = map.getLong("Last_Modified", 0L);
 		final UUID uniqueId = map.get("Unique_Id", UUID.class);
 
-		return new Book(title, author, pages, signed, lastModified, null, uniqueId);
+		return new SimpleBook(title, author, pages, signed, lastModified, null, uniqueId);
 	}
 
 	/**
@@ -180,8 +180,8 @@ public final class Book implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	public static Book newEmptyBook() {
-		return new Book(null, null, CommonCore.toList(""), false, System.currentTimeMillis(), null, UUID.randomUUID());
+	public static SimpleBook newEmptyBook() {
+		return new SimpleBook(null, null, CommonCore.toList(""), false, System.currentTimeMillis(), null, UUID.randomUUID());
 	}
 
 	/**
@@ -191,8 +191,8 @@ public final class Book implements ConfigSerializable {
 	 * @param newAuthor
 	 * @return
 	 */
-	public static Book clone(Book book, String newAuthor) {
-		return new Book(book.getTitle(), newAuthor, book.getPages(), book.isSigned(), book.getLastModified(), book.getFileName(), book.getUniqueId());
+	public static SimpleBook clone(SimpleBook book, String newAuthor) {
+		return new SimpleBook(book.getTitle(), newAuthor, book.getPages(), book.isSigned(), book.getLastModified(), book.getFileName(), book.getUniqueId());
 	}
 
 	/**
@@ -201,7 +201,7 @@ public final class Book implements ConfigSerializable {
 	 * @param book
 	 * @return
 	 */
-	public static Book fromAdventure(net.kyori.adventure.inventory.Book book) {
+	public static SimpleBook fromAdventure(net.kyori.adventure.inventory.Book book) {
 		final String title = SimpleComponent.fromAdventure(book.title()).toLegacy();
 		final String author = SimpleComponent.fromAdventure(book.author()).toLegacy();
 		final List<String> pages = new ArrayList<>();
@@ -209,7 +209,7 @@ public final class Book implements ConfigSerializable {
 		for (final Component page : book.pages())
 			pages.add(SimpleComponent.fromAdventure(page).toLegacy());
 
-		return new Book(title, author, pages, false, System.currentTimeMillis(), null, UUID.randomUUID());
+		return new SimpleBook(title, author, pages, false, System.currentTimeMillis(), null, UUID.randomUUID());
 	}
 
 	/**
@@ -218,18 +218,18 @@ public final class Book implements ConfigSerializable {
 	 * @param fileName
 	 * @return
 	 */
-	public static Book fromFile(String fileName) {
+	public static SimpleBook fromFile(String fileName) {
 		final File file = FileUtil.getFile("books/" + fileName + (fileName.endsWith(".yml") ? "" : ".yml"));
 
 		if (!file.exists())
-			throw new IllegalArgumentException("No such book: '" + fileName + "'. Available: " + CommonCore.join(Book.getBookNames()));
+			throw new IllegalArgumentException("No such book: '" + fileName + "'. Available: " + CommonCore.join(SimpleBook.getBookNames()));
 
 		final YamlConfig config = YamlConfig.fromFile(file);
 
 		if (!config.isSet("Data"))
 			throw new IllegalArgumentException("Book '" + fileName + "' has corrupted data.");
 
-		final Book book = deserialize(config.getMap("Data"));
+		final SimpleBook book = deserialize(config.getMap("Data"));
 
 		book.fileName = fileName;
 
@@ -260,7 +260,7 @@ public final class Book implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	public static List<Book> getBooks() {
-		return CommonCore.convertArrayToList(FileUtil.getFiles("books", ".yml"), file -> Book.fromFile(file.getName()));
+	public static List<SimpleBook> getBooks() {
+		return CommonCore.convertArrayToList(FileUtil.getFiles("books", ".yml"), file -> SimpleBook.fromFile(file.getName()));
 	}
 }
