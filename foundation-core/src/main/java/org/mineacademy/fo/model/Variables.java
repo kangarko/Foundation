@@ -6,12 +6,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
@@ -22,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 /**
  * A class that replaces variables in a message. In Foundation, we use
@@ -57,6 +60,11 @@ public final class Variables {
 	 * all variables when called from there.
 	 */
 	private static final List<SimpleExpansion> expansions = new ArrayList<>();
+
+	/**
+	 * Stores cache for legacy variables by audience's name.
+	 */
+	private static final Map<String, Map<String, String>> legacyCache = ExpiringMap.builder().expiration(100, TimeUnit.MILLISECONDS).build();
 
 	/**
 	 * Whether we should replace JavaScript variables in replace() methods.
@@ -160,10 +168,12 @@ public final class Variables {
 	 * @return
 	 */
 	public List<String> replaceLegacyList(@NonNull List<String> list) {
-		for (int i = 0; i < list.size(); i++)
-			list.set(i, this.replaceLegacy(list.get(i)));
+		final List<String> replaced = new ArrayList<>(list.size());
 
-		return list;
+		for (int i = 0; i < list.size(); i++)
+			replaced.add(this.replaceLegacy(list.get(i)));
+
+		return replaced;
 	}
 
 	/**
@@ -175,8 +185,10 @@ public final class Variables {
 	 * @return
 	 */
 	public String[] replaceLegacyArray(@NonNull String[] array) {
+		final String[] replaced = new String[array.length];
+
 		for (int i = 0; i < array.length; i++)
-			array[i] = this.replaceLegacy(array[i]);
+			replaced[i] = this.replaceLegacy(array[i]);
 
 		return array;
 	}
@@ -202,21 +214,34 @@ public final class Variables {
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
 
+		final Map<String, String> cache = this.audience != null ? legacyCache.getOrDefault(this.audience.getName(), new HashMap<>()) : null;
+
 		while (matcher.find()) {
 			final String variable = matcher.group(1);
-
 			result.append(message, lastMatchEnd, matcher.start());
 
-			final String value = this.replaceVariableLegacy(variable);
+			final String cached = cache != null ? cache.get(variable) : null;
 
-			if (value != null)
+			if (cached != null)
+				result.append(cached);
+
+			else {
+				String value = this.replaceVariableLegacy(variable);
+
+				if (value == null)
+					value = matcher.group();
+
 				result.append(value);
 
-			else
-				result.append(matcher.group());
+				if (cache != null)
+					cache.put(variable, value);
+			}
 
 			lastMatchEnd = matcher.end();
 		}
+
+		if (cache != null)
+			legacyCache.put(this.audience.getName(), cache);
 
 		result.append(message.substring(lastMatchEnd));
 		return result.toString();
@@ -243,7 +268,7 @@ public final class Variables {
 			final String variable = result.group(1);
 			final SimpleComponent value = this.replaceVariable(variable);
 
-			return value == null ? SimpleComponent.fromPlain(result.group()) : value;
+			return value == null ? PlainTextComponentSerializer.plainText().deserialize(result.group()) : value.toAdventure(this.audience);
 		});
 	}
 
@@ -297,10 +322,10 @@ public final class Variables {
 		}
 
 		if (replacedValue == null && this.audience != null && replaceScript) {
-			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
+			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
-			if (javascriptKey != null) {
-				final SimpleComponent value = javascriptKey.build(this.audience, this.placeholders);
+			if (javascriptVariable != null) {
+				final SimpleComponent value = javascriptVariable.build(this.audience, this.placeholders);
 
 				if (value != null)
 					replacedValue = value;
@@ -318,7 +343,7 @@ public final class Variables {
 				}
 			}
 
-		final String replacedPlainValue = replacedValue == null ? "" : replacedValue.toPlain();
+		final String replacedPlainValue = replacedValue == null ? "" : replacedValue.toPlain(this.audience);
 
 		if ((frontSpace || backSpace) && !replacedPlainValue.isEmpty()) {
 			if (frontSpace && !replacedPlainValue.startsWith(" "))
@@ -362,7 +387,7 @@ public final class Variables {
 					return "";
 
 				if (rawValue instanceof SimpleComponent)
-					replacedValue = ((SimpleComponent) rawValue).toMini();
+					replacedValue = ((SimpleComponent) rawValue).toMini(this.audience);
 
 				else if (rawValue instanceof Component)
 					replacedValue = SimpleComponent.MINIMESSAGE_PARSER.serialize((Component) rawValue);
@@ -378,10 +403,10 @@ public final class Variables {
 		}
 
 		if (replacedValue == null && this.audience != null && replaceScript) {
-			final Variable javascriptKey = Variable.findVariable(variable, Variable.Type.FORMAT);
+			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
-			if (javascriptKey != null) {
-				final String value = javascriptKey.buildLegacy(this.audience, this.placeholders);
+			if (javascriptVariable != null) {
+				final String value = javascriptVariable.buildLegacy(this.audience, this.placeholders);
 
 				if (value != null)
 					replacedValue = value;
