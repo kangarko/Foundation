@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.collection.SerializedMap;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -220,14 +219,6 @@ public class ConfigSection {
 
 	final void store(String fullPath, Object value) {
 		ValidCore.checkNotEmpty(fullPath, "Cannot set to an empty path");
-		boolean convertToSection = false;
-
-		if (value != null && (value instanceof Map || value instanceof SerializedMap)) {
-			if (value instanceof SerializedMap)
-				value = ((SerializedMap) value).asMap();
-
-			convertToSection = true;
-		}
 
 		final ConfigSection root = this.root;
 		if (root == null)
@@ -254,21 +245,14 @@ public class ConfigSection {
 		}
 
 		final String key = fullPath.substring(i2);
-
 		if (section == this) {
 			if (value == null)
 				this.map.remove(key);
 
 			else {
 				final SectionPathData entry = this.map.get(key);
-
-				// Convert map to section
-				if (convertToSection)
-					value = this.createSection(fullPath, (Map<?, ?>) value);
-
 				if (entry == null)
 					this.map.put(key, new SectionPathData(value));
-
 				else
 					entry.setData(value);
 			}
