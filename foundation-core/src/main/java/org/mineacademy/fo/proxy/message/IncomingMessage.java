@@ -135,16 +135,9 @@ public final class IncomingMessage extends Message {
 	 * @return
 	 */
 	public <T extends Enum<T>> T readEnum(Class<T> typeOf) {
-		this.moveHead(typeOf);
+		this.moveHead(String.class); // Read enums as Strings
 
-		try {
-			return ReflectionUtil.lookupEnum(typeOf, this.input.readUTF());
-
-		} catch (final IOException ex) {
-			CommonCore.sneaky(ex);
-
-			return null;
-		}
+		return ReflectionUtil.lookupEnum(typeOf, this.readCompressedString());
 	}
 
 	/**
