@@ -233,20 +233,38 @@ final class BukkitPlatform extends FoundationPlatform {
 				}
 
 				else if (classOf == World.class) {
-					final World world = Bukkit.getWorld((String) object);
+					if (object instanceof World)
+						return (T) object;
+
+					final World world = Bukkit.getWorld(object.toString());
 					ValidCore.checkNotNull(world, "World " + object + " not found. Available: " + Bukkit.getWorlds());
 
 					return (T) world;
 				}
 
 				else if (classOf == PotionEffectType.class) {
-					final PotionEffectType type = CompPotionEffectType.getByName((String) object);
-					ValidCore.checkNotNull(type, "Potion effect type " + object + " not found. Available: " + CompPotionEffectType.getPotionNames());
+					if (object instanceof PotionEffectType)
+						return (T) object;
+
+					String toString = object.toString();
+
+					// Solve wrong save by accident
+					if (toString.startsWith("PotionEffectType[") && !toString.contains(":"))
+						toString = toString.split("\\, ")[1].replace("]", "");
+
+					else if (toString.startsWith("CraftPotionEffectType[minecraft:"))
+						toString = toString.split("\\:")[1].replace("]", "");
+
+					final PotionEffectType type = CompPotionEffectType.getByName(toString);
+					ValidCore.checkNotNull(type, "Potion effect type " + toString + " not found. Available: " + CompPotionEffectType.getPotionNames());
 
 					return (T) type;
 				}
 
 				else if (classOf == PotionEffect.class) {
+					if (object instanceof PotionEffect)
+						return (T) object;
+
 					final String[] parts = object.toString().split(" ");
 					ValidCore.checkBoolean(parts.length == 3, "Expected PotionEffect (String) but got " + object.getClass().getSimpleName() + ": " + object);
 
@@ -260,6 +278,9 @@ final class BukkitPlatform extends FoundationPlatform {
 				}
 
 				else if (classOf == Enchantment.class) {
+					if (object instanceof Enchantment)
+						return (T) object;
+
 					final Enchantment enchant = CompEnchantment.getByName((String) object);
 					ValidCore.checkNotNull(enchant, "Enchantment " + object + " not found. Available: " + CompEnchantment.getEnchantmentNames());
 
