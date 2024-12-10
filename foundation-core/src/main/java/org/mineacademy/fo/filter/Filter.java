@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jetbrains.annotations.Nullable;
 import org.mineacademy.fo.database.Row;
 import org.mineacademy.fo.database.Table;
 import org.mineacademy.fo.platform.FoundationPlayer;
@@ -81,7 +80,6 @@ public abstract class Filter {
 	 * @param audience
 	 * @return
 	 */
-	@Nullable
 	public Collection<String> tabComplete(FoundationPlayer audience) {
 		return null;
 	}
@@ -92,7 +90,6 @@ public abstract class Filter {
 	 * @param name
 	 * @return
 	 */
-	@Nullable
 	public static Filter getByName(String name) {
 		return registeredFilters.get(name);
 	}

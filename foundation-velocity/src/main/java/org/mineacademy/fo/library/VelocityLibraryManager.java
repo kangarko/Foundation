@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-import org.jetbrains.annotations.NotNull;
-
 import com.velocitypowered.api.plugin.PluginManager;
 
 /**
@@ -16,14 +14,12 @@ public class VelocityLibraryManager extends LibraryManager {
 	/**
 	 * Velocity plugin manager used for adding files to the plugin's classpath
 	 */
-	@NotNull
 	private final PluginManager pluginManager;
 
 	/**
 	 * The plugin instance required by the plugin manager to add files to the
 	 * plugin's classpath
 	 */
-	@NotNull
 	private final Object plugin;
 
 	/**
@@ -46,12 +42,12 @@ public class VelocityLibraryManager extends LibraryManager {
 	 * @param file the file to add
 	 */
 	@Override
-	protected void addToClasspath(@NotNull Path file) {
+	protected void addToClasspath(Path file) {
 		this.pluginManager.addToClasspath(this.plugin, file);
 	}
 
 	@Override
-	protected InputStream getResourceAsStream(@NotNull String path) {
+	protected InputStream getResourceAsStream(String path) {
 		return this.getClass().getClassLoader().getResourceAsStream(path);
 	}
 }
