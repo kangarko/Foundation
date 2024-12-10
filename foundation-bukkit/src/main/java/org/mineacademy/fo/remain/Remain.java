@@ -2013,7 +2013,7 @@ public final class Remain {
 
 			if (name != null)
 				try {
-					entity.customName(SimpleComponent.fromMini(name).toAdventure());
+					entity.customName(SimpleComponent.fromMini(name).toAdventure(null));
 
 				} catch (final NoSuchMethodError err) {
 					entity.setCustomName(CompChatColor.translateColorCodes(name));
@@ -2125,7 +2125,7 @@ public final class Remain {
 
 		if (MinecraftVersion.olderThan(V.v1_8)) {
 			for (final SimpleComponent component : pages)
-				meta.addPage(component.toLegacy());
+				meta.addPage(component.toLegacy(null));
 
 			return;
 		}
@@ -2135,7 +2135,7 @@ public final class Remain {
 
 			for (final SimpleComponent component : pages)
 				try {
-					spigotPages.add(component.toBungee(MinecraftVersion.atLeast(V.v1_16)));
+					spigotPages.add(component.toBungee(null, MinecraftVersion.atLeast(V.v1_16)));
 
 				} catch (final Throwable t) {
 					CommonCore.error(t, "Failed to turn simple component into bungee component: " + component);
@@ -2148,7 +2148,7 @@ public final class Remain {
 				final List<Object> chatComponentPages = (List<Object>) ReflectionUtil.getFieldContent(meta, "pages");
 
 				for (final SimpleComponent component : pages)
-					chatComponentPages.add(convertLegacyToIChatBase(component.toLegacy()));
+					chatComponentPages.add(convertLegacyToIChatBase(component.toLegacy(null)));
 
 			} catch (final Exception e) {
 				e.printStackTrace();
@@ -2236,12 +2236,12 @@ public final class Remain {
 	 * Used for legacy MC versions.
 	 *
 	 * @param player
-	 * @param message
+	 * @param legacy
 	 */
-	public static void sendActionBarLegacyPacket(Player player, SimpleComponent message) {
+	public static void sendActionBarLegacyPacket(Player player, String legacy) {
 		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
-		sendLegacyChat(player, convertLegacyToIChatBase(message.toLegacy()), (byte) 2);
+		sendLegacyChat(player, convertLegacyToIChatBase(legacy), (byte) 2);
 	}
 
 	/**
@@ -2273,7 +2273,7 @@ public final class Remain {
 		}
 	}
 
-	public static void sendTitleLegacyPacket(Player player, int fadeIn, int stay, int fadeOut, SimpleComponent title, SimpleComponent subtitle) {
+	public static void sendTitleLegacyPacket(Player player, int fadeIn, int stay, int fadeOut, String title, String subtitle) {
 		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
@@ -2289,14 +2289,14 @@ public final class Remain {
 			}
 
 			if (title != null) {
-				final Object chatTitle = convertLegacyToIChatBase(title.toLegacy());
+				final Object chatTitle = convertLegacyToIChatBase(title);
 				final Object packet = titleConstructor.newInstance(enumTitle, chatTitle);
 
 				Remain.sendPacket(player, packet);
 			}
 
 			if (subtitle != null) {
-				final Object chatSubtitle = convertLegacyToIChatBase(subtitle.toLegacy());
+				final Object chatSubtitle = convertLegacyToIChatBase(subtitle);
 				final Object packet = subtitleConstructor.newInstance(enumSubtitle, chatSubtitle);
 
 				Remain.sendPacket(player, packet);
@@ -2335,14 +2335,14 @@ public final class Remain {
 	 * @param header
 	 * @param footer
 	 */
-	public static void sendTablistLegacyPacket(final Player player, final SimpleComponent header, final SimpleComponent footer) {
+	public static void sendTablistLegacyPacket(final Player player, final String header, final String footer) {
 		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
 			if (tabConstructor == null)
 				return;
 
-			final Object headerIChatBase = convertLegacyToIChatBase(header.toLegacy());
+			final Object headerIChatBase = convertLegacyToIChatBase(header);
 			final Object packet;
 
 			if (MinecraftVersion.equals(V.v1_12)) {
@@ -2356,7 +2356,7 @@ public final class Remain {
 				packet = tabConstructor.newInstance(headerIChatBase);
 
 			if (footer != null) {
-				final Object footerIChatBase = convertLegacyToIChatBase(footer.toLegacy());
+				final Object footerIChatBase = convertLegacyToIChatBase(footer);
 
 				final Field fieldFooter = packet.getClass().getDeclaredField("b"); // footer
 				fieldFooter.setAccessible(true);

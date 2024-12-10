@@ -35,7 +35,7 @@ public final class FilterLocation extends Filter {
 	@Override
 	public Collection<String> tabComplete(FoundationPlayer audience) {
 		if (audience.isPlayer()) {
-			final SimpleLocation location = audience.getBukkitLocation();
+			final SimpleLocation location = audience.getLocation();
 
 			if (location != null)
 				return Arrays.asList(location.getWorldName() + "," + location.getX() + "," + location.getY() + "," + location.getZ() + ",10", "here,10");
@@ -67,7 +67,7 @@ public final class FilterLocation extends Filter {
 				return false;
 			}
 
-			this.location = audience.getBukkitLocation();
+			this.location = audience.getLocation();
 
 			try {
 				this.radius = Integer.parseInt(split[1]);
@@ -104,7 +104,7 @@ public final class FilterLocation extends Filter {
 				return false;
 			}
 
-			worldName = audience.getBukkitLocation().getWorldName();
+			worldName = audience.getLocation().getWorldName();
 			offset = 1;
 		}
 

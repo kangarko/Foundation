@@ -32,10 +32,10 @@ public final class BukkitCommandImpl extends Command {
 			this.setAliases(delegate.getAliases());
 
 		if (delegate.getUsage() != null)
-			this.setUsage(delegate.getUsage().toLegacy());
+			this.setUsage(delegate.getUsage().toLegacy(null));
 
 		if (delegate.getDescription() != null)
-			this.setDescription(delegate.getDescription().toLegacy());
+			this.setDescription(delegate.getDescription().toLegacy(null));
 
 		this.delegate = delegate;
 	}

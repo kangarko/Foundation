@@ -2,11 +2,8 @@ package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,12 +30,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Emitter;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.event.HoverEvent.Action;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.format.TextDecoration.State;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.title.TitlePart;
@@ -124,7 +116,7 @@ public abstract class FoundationPlayer implements Audience {
 			if (this.isPlayer())
 				this.performPlayerCommand0(command.replace("§", "&"));
 			else
-				Platform.getPlatform().dispatchConsoleCommand(this, command);
+				Platform.dispatchConsoleCommand(this, command);
 		}
 	}
 
@@ -153,16 +145,16 @@ public abstract class FoundationPlayer implements Audience {
 	public abstract InetSocketAddress getAddress();
 
 	/**
-	 * Returns the player's location if called on Bukkit and the player is not a console
-	 * or returns null if not applicable.
+	 * Returns the player's location or throws error if console or not running on Bukkit.
 	 *
-	 * Throws exception if called on Bukkit and the sender is console:
 	 * @see #isPlayer()
+	 * @deprecated platform-specific
 	 *
 	 * @return
 	 */
-	public SimpleLocation getBukkitLocation() {
-		return null;
+	@Deprecated
+	public SimpleLocation getLocation() {
+		throw new UnsupportedOperationException("getBukkitLocation not implemented for " + Platform.getType());
 	}
 
 	/**
@@ -328,7 +320,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param pages
 	 */
 	public final void openBook(SimpleComponent title, SimpleComponent author, Collection<SimpleComponent> pages) {
-		this.openBook(Book.book(title.toAdventure(), author.toAdventure(), pages.stream().map(SimpleComponent::toAdventure).collect(Collectors.toList())));
+		this.openBook(Book.book(title.toAdventure(this), author.toAdventure(this), pages.stream().map(page -> page.toAdventure(this)).collect(Collectors.toList())));
 	}
 
 	/**
@@ -416,12 +408,12 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	/**
-	 * @deprecated use {@link #sendRawMessage(Component)}
+	 * @deprecated use {@link #sendMessage(Component)}
 	 */
 	@Deprecated
 	@Override
 	public final void sendMessage(Identity source, Component message, MessageType type) {
-		this.sendRawMessage(message);
+		this.sendMessage(message);
 	}
 
 	/**
@@ -435,16 +427,37 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param component
 	 */
 	public final void sendMessage(SimpleComponent component) {
+		this.sendMessageWithPrefix(null, component);
+	}
+
+	/**
+	 * Sends a message to the player.
+	 *
+	 * If message start with {@literal <actionbar>, <toast>, <title>, <bossbar>} or {@literal <center>},
+	 * it are sent interactively or centered.
+	 *
+	 * This method also sends the message to the player if he is having a modal conversation in Bukkit.
+	 *
+	 * @param prefix
+	 * @param component
+	 */
+	public final void sendMessageWithPrefix(SimpleComponent prefix, SimpleComponent component) {
 		final String plainMessage = component.toPlain(this);
 
+		if (plainMessage.equals("none"))
+			return;
+
+		if (prefix != null)
+			component = prefix.appendPlain(" ").append(component);
+
 		if (plainMessage.startsWith("<actionbar>"))
-			this.sendActionBar(component.replaceLiteral("<actionbar>", ""));
+			this.sendActionBar(component.replaceLiteral(this, "<actionbar>", ""));
 
 		else if (plainMessage.startsWith("<toast>"))
-			this.sendToast(component.replaceLiteral("<toast>", ""));
+			this.sendToast(component.replaceLiteral(this, "<toast>", ""));
 
 		else if (plainMessage.startsWith("<title>")) {
-			final String stripped = component.toLegacy().replace("<title>", "").trim();
+			final String stripped = component.toLegacy(this).replace("<title>", "").trim();
 
 			if (!stripped.isEmpty()) {
 				final String[] split = stripped.split("\\|");
@@ -455,22 +468,34 @@ public abstract class FoundationPlayer implements Audience {
 			}
 
 		} else if (plainMessage.startsWith("<bossbar>"))
-			this.showBossbarTimed(component.replaceLiteral("<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
+			this.showBossbarTimed(component.replaceLiteral(this, "<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
 
 		else if (plainMessage.startsWith("<center>")) {
 			final String centeredLegacyMessage = ChatUtil.center(component.toLegacy(this).replaceAll("\\<center\\>(\\s|)", ""));
 
-			this.sendRawMessage(SimpleComponent.fromSection(centeredLegacyMessage).toAdventure());
+			this.sendMessage(SimpleComponent.fromSection(centeredLegacyMessage));
 
-		} else if (!plainMessage.equals("none")) {
-			Component adventure = component.toAdventure(this);
-
-			if (!this.hasHexColorSupport())
-				adventure = fixHoverLosingStyleInLegacyMultiline(adventure);
-
-			this.sendRawMessage(adventure);
-		}
+		} else if (!plainMessage.equals("none"))
+			this.sendMessage(component.toAdventure(this));
 	}
+
+	/**
+	 * Sends a message to the player.
+	 *
+	 * @param component
+	 */
+	@Override
+	public final void sendMessage(ComponentLike component) {
+		this.sendMessage(component.asComponent());
+	}
+
+	/**
+	 * Sends a message to the player.
+	 *
+	 * @param component
+	 */
+	@Override
+	public abstract void sendMessage(@NonNull Component component);
 
 	/**
 	 * Sends a MiniMessage message to the player. Legacy and mini tags are both supported.
@@ -508,7 +533,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param header the header
 	 * @param footer the footer
 	 */
-	public abstract void sendPlayerListHeaderAndFooter(final SimpleComponent header, final SimpleComponent footer);
+	public abstract void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer);
 
 	/**
 	 * Sets tab-list header and/or footer. Header or footer can be null.
@@ -521,15 +546,6 @@ public abstract class FoundationPlayer implements Audience {
 	public final void sendPlayerListHeaderAndFooter(String header, String footer) {
 		this.sendPlayerListHeaderAndFooter(SimpleComponent.fromMini(header), SimpleComponent.fromMini(footer));
 	}
-
-	/**
-	 * Sends the Adventure component to the player.
-	 *
-	 * This method also sends the message to the player if he is having a modal conversation in Bukkit.
-	 *
-	 * @param component
-	 */
-	public abstract void sendRawMessage(Component component);
 
 	/**
 	 * @deprecated use {@link #showTitle(Title)}i
@@ -604,15 +620,15 @@ public abstract class FoundationPlayer implements Audience {
 	/**
 	 * Sends a bossbar to the player.
 	 *
-	 * @param message
+	 * @param component
 	 * @param progress
 	 * @param color
 	 * @param overlay
 	 *
 	 * @return the bossbar
 	 */
-	public final BossBar showBossBar(SimpleComponent message, float progress, BossBar.Color color, BossBar.Overlay overlay) {
-		final BossBar bar = BossBar.bossBar(message, progress, color, overlay);
+	public final BossBar showBossBar(SimpleComponent component, float progress, BossBar.Color color, BossBar.Overlay overlay) {
+		final BossBar bar = BossBar.bossBar(component.toAdventure(this), progress, color, overlay);
 		this.showBossBar(bar);
 
 		return bar;
@@ -664,7 +680,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @return the bossbar
 	 */
 	public final BossBar showBossbarTimed(SimpleComponent message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay) {
-		final BossBar bar = BossBar.bossBar(message, progress, color, overlay);
+		final BossBar bar = BossBar.bossBar(message.toAdventure(this), progress, color, overlay);
 		this.showBossbarTimed(seconds, bar);
 
 		return bar;
@@ -697,7 +713,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param subtitle the subtitle, will be colorized
 	 */
 	public final void showTitle(final int fadeIn, final int stay, final int fadeOut, final SimpleComponent title, final SimpleComponent subtitle) {
-		this.showTitle(Title.title(title.toAdventure(), subtitle.toAdventure(), Times.of(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
+		this.showTitle(Title.title(title.toAdventure(this), subtitle.toAdventure(this), Times.of(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
 	}
 
 	/**

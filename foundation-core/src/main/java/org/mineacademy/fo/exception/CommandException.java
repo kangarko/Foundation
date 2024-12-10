@@ -71,7 +71,7 @@ public class CommandException extends RuntimeException {
 
 		if (this.components != null)
 			for (final SimpleComponent component : this.components)
-				builder.append(component.toLegacy());
+				builder.append(component.toLegacy(null));
 
 		return builder.toString();
 	}

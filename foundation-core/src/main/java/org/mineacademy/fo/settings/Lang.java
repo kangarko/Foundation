@@ -480,12 +480,16 @@ public final class Lang {
 				final JsonElement value = dictionary.get(key);
 
 				if (value.isJsonPrimitive()) {
-					final String string = value.getAsString();
+					String string = value.getAsString();
+
+					if (string.isEmpty())
+						string = "none";
+
 					final SimpleComponent component = SimpleComponent.fromMini(string);
 
 					plainCache.put(key, string);
 					componentCache.put(key, component);
-					legacyCache.put(key, component.toLegacy());
+					legacyCache.put(key, component.toLegacy(null));
 				}
 
 				// else if it it is array, join with \n
@@ -503,7 +507,7 @@ public final class Lang {
 
 							plainList.add(string);
 							componentList.add(component);
-							legacyList.add(component.toLegacy());
+							legacyList.add(component.toLegacy(null));
 
 						} else {
 							ValidCore.checkBoolean(element != null && !element.isJsonNull(), "Missing element in array for lang key " + key + "! Make sure to remove ',' at the end of the list");

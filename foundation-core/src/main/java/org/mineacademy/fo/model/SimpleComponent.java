@@ -1,10 +1,8 @@
 package org.mineacademy.fo.model;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +56,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
  * It also fixes the issue where if you place a color at the end of one component and append
  * new text to it, the new text won't have the color.
  */
-public final class SimpleComponent implements ConfigSerializable, ComponentLike {
+public final class SimpleComponent implements ConfigSerializable {
 
 	/**
 	 * Our instance of MiniMessage parser without compactor (i.e.
@@ -75,10 +73,15 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			.build();
 
 	/**
+	 * The empty component
+	 */
+	public static final SimpleComponent EMPTY = new SimpleComponent(ConditionalComponent.fromAdventure(Component.empty()), Style.empty());
+
+	/**
 	 * The limit of characters per line for hover events in legacy versions
 	 * of Minecraft where there is no automatic line wrapping.
 	 */
-	private static final int LEGACY_HOVER_LINE_LENGTH_LIMIT = 55;
+	public static final int LEGACY_HOVER_LINE_LENGTH_LIMIT = 55;
 
 	/**
 	 * The components we are creating
@@ -114,11 +117,11 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	/**
 	 * Add a hover event.
 	 *
-	 * @param lines
+	 * @param components
 	 * @return
 	 */
-	public SimpleComponent onHover(Collection<SimpleComponent> lines) {
-		return this.onHover(lines.toArray(new SimpleComponent[lines.size()]));
+	public SimpleComponent onHover(List<SimpleComponent> components) {
+		return this.onHover(components.toArray(new SimpleComponent[components.size()]));
 	}
 
 	/**
@@ -128,25 +131,26 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onHover(SimpleComponent... components) {
+		final FoundationPlayer receiver = null; // possibly fix in the future
 		Component joined = Component.empty();
 
 		for (int i = 0; i < components.length; i++) {
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13)) {
-				String legacy = components[i].toLegacy();
+				String legacy = components[i].toLegacy(receiver);
 
 				if (legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 					legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
-				joined = joined.append(SimpleComponent.fromSection(legacy));
+				joined = joined.append(SimpleComponent.fromSection(legacy).toAdventure(receiver));
 
 			} else
-				joined = joined.append(components[i].toAdventure());
+				joined = joined.append(components[i].toAdventure(receiver));
 
 			if (i < components.length - 1)
 				joined = joined.append(Component.newline());
 		}
 
-		final Component finalComponent = joined.asComponent();
+		final Component finalComponent = joined;
 		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
 	}
 
@@ -157,25 +161,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent onHoverLegacy(List<String> messages) {
-		Component joined = Component.empty();
-
-		for (int i = 0; i < messages.size(); i++) {
-			String legacy = messages.get(i);
-
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini(legacy).toLegacy(), LEGACY_HOVER_LINE_LENGTH_LIMIT));
-
-			// Our own parser is up to 1.5-2x faster
-			joined = joined.append(Component.text(HoverEventConverter.convertMiniToLegacy("<gray>" + legacy)));
-			//joined = joined.append(MINIMESSAGE_PARSER.deserialize(CompChatColor.convertLegacyToMini("<gray>" + legacy, true)));
-
-			if (i < messages.size() - 1)
-				joined = joined.append(Component.newline());
-		}
-
-		final Component finalComponent = joined.asComponent();
-
-		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
+		return this.onHoverLegacy(messages.toArray(new String[messages.size()]));
 	}
 
 	/**
@@ -191,16 +177,21 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			String legacy = messages[i];
 			ValidCore.checkBoolean(!legacy.contains("\n"), "onHoverLegacy cannot contain new lines in the array");
 
+			// Receiver conditions will be lost
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini(legacy).toLegacy() /* remove unsupported mini tags such as hover */, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini("<gray>" + legacy).toLegacy(null) /* remove unsupported mini tags such as hover */, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+			else
+				legacy = CompChatColor.convertMiniToLegacy("<gray>" + legacy);
 
-			joined = joined.append(SimpleComponent.fromMini("<gray>" + legacy));
+			// This is up to 1.5-2x faster
+			joined = joined.append(Component.text(legacy));
+			//joined = joined.append(MINIMESSAGE_PARSER.deserialize(CompChatColor.convertLegacyToMini("<gray>" + legacy, true)));
 
 			if (i < messages.length - 1)
 				joined = joined.append(Component.newline());
 		}
 
-		final Component finalComponent = joined.asComponent();
+		final Component finalComponent = joined;
 
 		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
 	}
@@ -290,6 +281,18 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	}
 
 	/**
+	 * Set the view permission for this component.
+	 *
+	 * @param requiredVariable
+	 * @return
+	 */
+	public SimpleComponent viewRequireVariable(RequireVariable requiredVariable) {
+		this.subcomponents.get(this.subcomponents.size() - 1).setViewVariable(requiredVariable);
+
+		return this;
+	}
+
+	/**
 	 * Set the text color for this component.
 	 *
 	 * @param color
@@ -324,7 +327,20 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent replaceBracket(String variable, String value) {
-		return this.replaceBracket(variable, fromPlain(value));
+		return this.replaceBracket(null, variable, fromPlain(value));
+	}
+
+	/**
+	 * Quickly replaces an object in all parts of this component, adding
+	 * {} around it.
+	 *
+	 * @param receiver
+	 * @param variable the bracket variable
+	 * @param value
+	 * @return
+	 */
+	public SimpleComponent replaceBracket(FoundationPlayer receiver, String variable, String value) {
+		return this.replaceBracket(receiver, variable, fromPlain(value));
 	}
 
 	/**
@@ -336,7 +352,20 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent replaceBracket(String variable, SimpleComponent value) {
-		return this.replaceLiteral("{" + variable + "}", value);
+		return this.replaceLiteral(null, "{" + variable + "}", value);
+	}
+
+	/**
+	 * Quickly replaces an object in all parts of this component, adding
+	 * {} around it.
+	 *
+	 * @param receiver
+	 * @param variable the bracket variable
+	 * @param value
+	 * @return
+	 */
+	public SimpleComponent replaceBracket(FoundationPlayer receiver, String variable, SimpleComponent value) {
+		return this.replaceLiteral(receiver, "{" + variable + "}", value);
 	}
 
 	/**
@@ -347,7 +376,19 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent replaceLiteral(String variable, String value) {
-		return this.replaceLiteral(variable, fromPlain(value));
+		return this.replaceLiteral(null, variable, fromPlain(value));
+	}
+
+	/**
+	 * Quickly replaces the literal in all parts of this component.
+	 *
+	 * @param receiver
+	 * @param variable the bracket variable
+	 * @param value
+	 * @return
+	 */
+	public SimpleComponent replaceLiteral(FoundationPlayer receiver, String variable, String value) {
+		return this.replaceLiteral(receiver, variable, fromPlain(value));
 	}
 
 	/**
@@ -358,12 +399,24 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public SimpleComponent replaceLiteral(String variable, SimpleComponent value) {
+		return this.replaceLiteral(null, variable, value);
+	}
+
+	/**
+	 * Quickly replaces the literal in all parts of this component.
+	 *
+	 * @param receiver
+	 * @param variable the bracket variable
+	 * @param value
+	 * @return
+	 */
+	public SimpleComponent replaceLiteral(FoundationPlayer receiver, String variable, SimpleComponent value) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.matchLiteral(variable).replacement(value));
+			final Component innerComponent = component.getComponent().replaceText(b -> b.matchLiteral(variable).replacement(value.toAdventure(receiver)));
 
-			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition()));
+			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
 
 		return new SimpleComponent(copy, this.lastStyle);
@@ -383,7 +436,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		for (final ConditionalComponent component : this.subcomponents) {
 			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement));
 
-			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition()));
+			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
 
 		return new SimpleComponent(copy, this.lastStyle);
@@ -403,7 +456,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		for (final ConditionalComponent component : this.subcomponents) {
 			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement));
 
-			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition()));
+			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
 
 		return new SimpleComponent(copy, this.lastStyle);
@@ -413,17 +466,18 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * Quickly replaces a pattern in all parts of this component
 	 * with the given replacement function.
 	 *
+	 * @param receiver
 	 * @param pattern
 	 * @param replacement
 	 * @return
 	 */
-	public SimpleComponent replaceMatch(Pattern pattern, SimpleComponent replacement) {
+	public SimpleComponent replaceMatch(FoundationPlayer receiver, Pattern pattern, SimpleComponent replacement) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement));
+			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement.toAdventure(receiver)));
 
-			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition()));
+			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
 
 		return new SimpleComponent(copy, this.lastStyle);
@@ -526,7 +580,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 						adventure = adventure.decoration(entry.getKey(), State.TRUE);
 			}
 
-			copy.add(new ConditionalComponent(adventure, subcomponent.getViewPermission(), subcomponent.getViewCondition()));
+			copy.add(new ConditionalComponent(adventure, subcomponent.getViewPermission(), subcomponent.getViewCondition(), subcomponent.getViewVariable()));
 		}
 
 		return new SimpleComponent(copy, updatedLastStyle);
@@ -538,7 +592,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return this.isEmpty(null);
+		return this == EMPTY || this.isEmpty(null);
 	}
 
 	/**
@@ -661,25 +715,24 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	}
 
 	/**
-	 * @see #toAdventure()
-	 *
-	 * @deprecated use {@link #toAdventure()} instead
-	 * @return
-	 */
-	@Deprecated
-	@Override
-	public Component asComponent() {
-		return this.toAdventure();
-	}
-
-	/**
 	 * Convert into BungeeCord component.
 	 *
 	 * @param legacy
 	 * @return
 	 */
 	public BaseComponent[] toBungee(boolean legacy) {
-		return (legacy ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(this.toAdventure());
+		return this.toBungee(null, legacy);
+	}
+
+	/**
+	 * Convert into BungeeCord component.
+	 *
+	 * @param receiver
+	 * @param legacy
+	 * @return
+	 */
+	public BaseComponent[] toBungee(FoundationPlayer receiver, boolean legacy) {
+		return (legacy ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(this.toAdventure(receiver));
 	}
 
 	/**
@@ -725,7 +778,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			ConditionalComponent component = this.subcomponents.get(i);
 
 			if (i == this.subcomponents.size() - 1)
-				component = ConditionalComponent.fromAdventure(editor.apply(component.getComponent()));
+				component = new ConditionalComponent(editor.apply(component.getComponent()), component.getViewPermission(), component.getViewCondition(), component.getViewVariable());
 
 			copy.add(component);
 		}
@@ -752,13 +805,16 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 */
 	@Override
 	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+
 		if (obj instanceof String)
-			return this.toPlain().equals(obj);
+			return this.toPlain(null).equals(obj);
 
 		if (obj instanceof SimpleComponent) {
 			final SimpleComponent other = (SimpleComponent) obj;
 
-			return this.toMini().equals(other.toMini());
+			return this.toMini(null).equals(other.toMini(null));
 		}
 
 		return false;
@@ -782,7 +838,7 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 	 * @return
 	 */
 	public static SimpleComponent empty() {
-		return new SimpleComponent(ConditionalComponent.fromAdventure(Component.empty()), Style.empty());
+		return EMPTY;
 	}
 
 	/**
@@ -964,15 +1020,23 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		private String viewCondition;
 
 		/**
+		 * The view condition executed for receivers.
+		 */
+		private RequireVariable viewVariable;
+
+		/**
 		 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
 		 */
 		@Override
 		public SerializedMap serialize() {
 			final SerializedMap map = new SerializedMap();
 
-			map.put("Component", SimpleComponent.fromAdventure(this.component).toMini());
+			map.put("Component", SimpleComponent.MINIMESSAGE_PARSER.serialize(this.component));
 			map.putIfExists("Permission", this.viewPermission);
 			map.putIfExists("Condition", this.viewCondition);
+
+			if (this.viewVariable != null)
+				map.putIfExists("Variable", this.viewVariable.getVariable() + " " + this.viewVariable.getRequiredValue());
 
 			return map;
 		}
@@ -984,11 +1048,12 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 		 * @return
 		 */
 		public static ConditionalComponent deserialize(SerializedMap map) {
-			final Component component = SimpleComponent.fromMini(map.getString("Component")).toAdventure();
+			final Component component = SimpleComponent.MINIMESSAGE_PARSER.deserialize(map.getString("Component"));
 			final ConditionalComponent part = new ConditionalComponent(component);
 
 			part.viewPermission = map.getString("Permission");
 			part.viewCondition = map.getString("Condition");
+			part.viewVariable = map.containsKey("Variable") ? RequireVariable.parse(map.getString("Variable")) : null;
 
 			return part;
 		}
@@ -1026,6 +1091,10 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 					throw ex;
 				}
 			}
+
+			if (this.viewVariable != null && receiver != null)
+				if (!this.viewVariable.matches(value -> Variables.builder(receiver).replaceLegacy(value)))
+					return null;
 
 			return this.component;
 		}
@@ -1147,167 +1216,6 @@ public final class SimpleComponent implements ConfigSerializable, ComponentLike 
 			parser.parseMessage(message);
 
 			return Style.style(parser.getLastColor(), parser.getLastDecorations());
-		}
-	}
-
-	/**
-	 * A helper class to convert hover events from MiniMessage to legacy.
-	 *
-	 * Albeit using section is unsupported, it provides the peak performance for now.
-	 */
-	private static class HoverEventConverter {
-
-		public static String convertMiniToLegacy(String legacy) {
-			final StringBuilder filteredMessage = new StringBuilder();
-
-			// Stack to store open tags
-			final Deque<String> tagStack = new ArrayDeque<>();
-
-			final int length = legacy.length();
-			for (int i = 0; i < length; i++) {
-				final char currentChar = legacy.charAt(i);
-
-				// Check for escaped tags prefixed with \
-				if (currentChar == '\\' && i + 1 < length && legacy.charAt(i + 1) == '<') {
-
-					// Append the backslash and the '<' as is
-					filteredMessage.append('\\').append('<');
-					i++; // Skip the next character ('<')
-
-					continue;
-				}
-
-				// Check for opening of a MiniMessage tag, e.g., <color>
-				if (currentChar == '<') {
-					final int closeIndex = legacy.indexOf('>', i);
-
-					// If next '>' is not found or tag is malformed, treat it as normal text
-					if (closeIndex == -1 || legacy.substring(i + 1, closeIndex).contains("<")) {
-						filteredMessage.append(currentChar);
-
-						continue;
-					}
-
-					final String tagContent = legacy.substring(i + 1, closeIndex).toLowerCase();
-
-					// Check for end tag, e.g., </red>
-					if (tagContent.startsWith("/")) {
-						final String endTag = tagContent.substring(1);
-
-						if (!isValidTag(endTag)) {
-							i = closeIndex;
-
-							continue;
-						}
-
-						// Upon detecting an end tag, remove the tag from the stack
-						if (!tagStack.isEmpty() && tagStack.peek().equals(endTag)) {
-							tagStack.pop(); // Remove the matching start tag
-
-							// Output the color code for the new top of the stack (if any), else reset color
-							String colorCode;
-
-							if (!tagStack.isEmpty()) {
-								final String currentTag = tagStack.peek();
-								colorCode = CompChatColor.MINI_TO_LEGACY.get("<" + currentTag + ">");
-
-								if (colorCode != null)
-									filteredMessage.append(colorCode);
-
-							} else
-
-								// Reset formatting if no tags are left
-								filteredMessage.append(CompChatColor.RESET.toString());
-
-						}
-
-						// Move past the end tag
-						i = closeIndex;
-						continue;
-
-					} else {
-						String tagName;
-
-						if (tagContent.startsWith("color:"))
-							tagName = tagContent.substring(6);
-						else if (tagContent.startsWith("colour:"))
-							tagName = tagContent.substring(7);
-						else if (tagContent.startsWith("c:"))
-							tagName = tagContent.substring(2);
-						else
-							tagName = tagContent;
-
-						if (!isValidTag(tagName)) {
-							i = closeIndex;
-
-							continue;
-						}
-
-						// If tag is permitted, push it onto the stack and output its color code
-						tagStack.push(tagName);
-
-						final String colorCode = CompChatColor.MINI_TO_LEGACY.get("<" + tagName + ">");
-
-						if (colorCode != null)
-							filteredMessage.append(colorCode);
-
-						// Move past the tag
-						i = closeIndex;
-						continue;
-					}
-
-				} else
-
-					// Normal character
-					filteredMessage.append(currentChar);
-
-			}
-
-			// Ensure all tags have been closed
-			while (!tagStack.isEmpty()) {
-				tagStack.pop();
-
-				filteredMessage.append(CompChatColor.RESET.toString());
-			}
-
-			return filteredMessage.toString();
-		}
-
-		/*
-		 * Check if the sender has permission for the given color name.
-		 */
-		private static boolean isValidTag(String tag) {
-			if (tag.isEmpty())
-				return true;
-
-			if (tag.charAt(0) == '#') {
-				if (tag.length() == 7)
-					return true;
-
-				return false; // Disallow invalid tags to prevent exploits
-			}
-
-			tag = tag.toLowerCase();
-
-			switch (tag) {
-				case "grey":
-					tag = "gray";
-					break;
-				case "dark_grey":
-					tag = "dark_gray";
-					break;
-				case "insert":
-					tag = "insertion";
-					break;
-				default:
-					if (tag.contains(":"))
-						tag = tag.split(":", 2)[0];
-
-					break;
-			}
-
-			return "reset".equals(tag) || "b".equals(tag) || "bold".equals(tag) || "i".equals(tag) || "italic".equals(tag) || "u".equals(tag) || "underlined".equals(tag) || "st".equals(tag)
-					|| "strikethrough".equals(tag) || "obf".equals(tag) || "obfuscated".equals(tag) || NamedTextColor.NAMES.value(tag) != null;
 		}
 	}
 }

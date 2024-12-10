@@ -206,7 +206,7 @@ final class BukkitPacketListener extends PacketListener {
 
 						for (int line = 0; line < lines.length; line++) {
 							final WrappedChatComponent component = lines[line];
-							final String signText = SimpleComponent.fromAdventureJson(component.getJson().replace("§f", ""), MinecraftVersion.olderThan(V.v1_16)).toLegacy();
+							final String signText = SimpleComponent.fromAdventureJson(component.getJson().replace("§f", ""), MinecraftVersion.olderThan(V.v1_16)).toLegacy(null);
 
 							sign.setLine(line, signText);
 						}

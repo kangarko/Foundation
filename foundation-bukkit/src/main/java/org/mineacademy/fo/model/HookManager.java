@@ -1981,14 +1981,14 @@ class EssentialsHook {
 
 		if (user != null) {
 			final SimpleComponent nickComponent = SimpleComponent.fromMini(nick);
-			final boolean isEmpty = nick == null || nickComponent.toPlain().replace(" ", "").isEmpty();
+			final boolean isEmpty = nick == null || nickComponent.toPlain(null).replace(" ", "").isEmpty();
 
-			user.setNickname(isEmpty ? null : nickComponent.toLegacy());
+			user.setNickname(isEmpty ? null : nickComponent.toLegacy(null));
 		}
 	}
 
 	String getNameFromNick(String maybeNick) {
-		maybeNick = SimpleComponent.fromMini(maybeNick).toPlain().toLowerCase();
+		maybeNick = SimpleComponent.fromMini(maybeNick).toPlain(null).toLowerCase();
 
 		final UserMap users = this.ess.getUserMap();
 
@@ -2694,11 +2694,11 @@ final class PlaceholderAPIHook {
 						"Player one: " + firstAudience,
 						"Player two: " + secondAudience,
 						"Variable: " + matcher.group(),
-						"Component: " + component.toLegacy(),
+						"Component: " + component.toLegacy(null),
 						"Error: {error}");
 			}
 
-			return SimpleComponent.fromMini(text + "color");
+			return SimpleComponent.fromSection(text + "color").toAdventure(null);
 		});
 	}
 
@@ -2790,7 +2790,7 @@ final class PlaceholderAPIHook {
 					final String value = expansion.replacePlaceholders(Platform.toPlayer(player), identifier);
 
 					if (value != null) {
-						final boolean emptyColorless = SimpleComponent.fromMini(value).toPlain().isEmpty();
+						final boolean emptyColorless = CompChatColor.stripColorCodes(value).isEmpty();
 
 						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? " " : "");
 					}
@@ -4008,7 +4008,7 @@ class ItemsAdderHook {
 
 		if (player == null) {
 			if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventureNoPlayer != null) {
-				final Component component = ((SimpleComponent) messageOrComponent).toAdventure();
+				final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
 				final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component);
 
 				return (T) SimpleComponent.fromAdventure(result);
@@ -4022,7 +4022,7 @@ class ItemsAdderHook {
 
 		} else {
 			if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventure != null) {
-				final Component component = ((SimpleComponent) messageOrComponent).toAdventure();
+				final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
 				final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component);
 
 				return (T) SimpleComponent.fromAdventure(result);

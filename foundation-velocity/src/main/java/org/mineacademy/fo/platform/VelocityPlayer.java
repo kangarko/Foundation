@@ -49,7 +49,7 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public SimpleLocation getBukkitLocation() {
+	public SimpleLocation getLocation() {
 		throw new UnsupportedOperationException("Cannot get Bukkit location from a Velocity player");
 	}
 
@@ -121,7 +121,7 @@ final class VelocityPlayer extends FoundationPlayer {
 	public void kick(SimpleComponent reason) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
-		this.player.disconnect(reason.toAdventure());
+		this.player.disconnect(reason.toAdventure(this));
 	}
 
 	@Override
@@ -141,16 +141,16 @@ final class VelocityPlayer extends FoundationPlayer {
 
 	@Override
 	public void sendActionBar(SimpleComponent message) {
-		this.sender.sendActionBar(message);
+		this.sender.sendActionBar(message.toAdventure(this));
 	}
 
 	@Override
 	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
-		this.sender.sendPlayerListHeaderAndFooter(header, footer);
+		this.sender.sendPlayerListHeaderAndFooter(header.toAdventure(this), footer.toAdventure(this));
 	}
 
 	@Override
-	public void sendRawMessage(Component component) {
+	public void sendMessage(Component component) {
 		this.sender.sendMessage(component);
 	}
 
