@@ -1,8 +1,10 @@
 package org.mineacademy.fo.model;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -38,6 +40,11 @@ public final class Variable extends YamlConfig {
 	 * A list of all loaded variables
 	 */
 	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variables", Variable.class);
+
+	/**
+	 * A map of all variables by their key
+	 */
+	private static final Map<String, Variable> variablesByKeys = new HashMap<>();
 
 	/**
 	 * The kind of this variable
@@ -431,48 +438,16 @@ public final class Variable extends YamlConfig {
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
 
 	/**
-	 * Creates a new variable and loads
-	 *
-	 * @param name
-	 */
-	public static void createVariable(String name) {
-		loadedVariables.loadOrCreateItem(name);
-	}
-
-	/**
 	 * Load all variables from variables/ folder
 	 */
 	public static void loadVariables() {
 		loadedVariables.loadItems();
-	}
 
-	/**
-	 * Remove the given variable in case it exists
-	 *
-	 * @param variable
-	 */
-	public static void removeVariable(final Variable variable) {
-		loadedVariables.removeItem(variable);
-	}
+		// Cache by the actual key not file name
+		variablesByKeys.clear();
 
-	/**
-	 * Return true if the given variable by key is loaded
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static boolean isVariableLoaded(final String name) {
-		return loadedVariables.isItemLoaded(name);
-	}
-
-	/**
-	 * Return a variable, or null if not loaded
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static Variable findVariable(@NonNull final String name) {
-		return findVariable(name, null);
+		for (final Variable variable : loadedVariables.getItems())
+			variablesByKeys.put(variable.getKey(), variable);
 	}
 
 	/**
@@ -483,8 +458,22 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static Variable findVariable(@NonNull final String name, final Type type) {
+	public static Variable findVariableByFileName(@NonNull final String name, final Type type) {
 		final Variable variable = loadedVariables.findItem(name);
+
+		return variable != null && variable.getType() == type ? variable : null;
+	}
+
+	/**
+	 * Return a variable, or null if not loaded
+	 *
+	 * @param key the placeholder name without {}
+	 * @param type
+	 *
+	 * @return
+	 */
+	public static Variable findVariableByKey(@NonNull final String key, final Type type) {
+		final Variable variable = variablesByKeys.get(key);
 
 		return variable != null && variable.getType() == type ? variable : null;
 	}
@@ -503,8 +492,17 @@ public final class Variable extends YamlConfig {
 	 *
 	 * @return
 	 */
-	public static List<String> getVariableNames() {
+	public static List<String> getVariableFileNames() {
 		return loadedVariables.getItemNames();
+	}
+
+	/**
+	 * Return a list of all variable names
+	 *
+	 * @return
+	 */
+	public static Set<String> getVariableKeyNames() {
+		return variablesByKeys.keySet();
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
