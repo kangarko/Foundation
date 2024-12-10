@@ -395,7 +395,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 					SimpleComponent component = SimpleComponent.empty();
 
 					// Add question prefix if not contained already
-					if (!CompChatColor.stripColorCodes(question).contains(Lang.component("prefix-question").toPlain())) {
+					if (!CompChatColor.stripColorCodes(question).contains(Lang.plain("prefix-question"))) {
 						final String prefix = this.prefix.getPrefix(this.context);
 
 						if (!prefix.isEmpty())
@@ -405,7 +405,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 					}
 
 					// Add space if not ending with it
-					if (!component.toPlain().endsWith(" "))
+					if (!component.toPlain(null).endsWith(" "))
 						component = component.appendPlain(" ");
 
 					// Add question itself

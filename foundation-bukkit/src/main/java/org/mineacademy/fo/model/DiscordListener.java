@@ -342,7 +342,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param message
 	 */
 	public final void flashMessage(TextChannel channel, SimpleComponent message) {
-		final String finalMessage = message.toPlain();
+		final String finalMessage = message.toPlain(null);
 
 		Platform.runTaskAsync(() -> {
 			final Message sentMessage = channel.sendMessage(finalMessage).complete();

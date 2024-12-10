@@ -4,11 +4,9 @@ import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jetbrains.annotations.NotNull;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
-import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.platform.BossBarTask.TimedBar;
 
 import lombok.Getter;
@@ -45,7 +43,7 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public void chat(String message) {
-		final String json = SimpleComponent.fromPlain(message).toAdventureJson(!this.hasHexColorSupport());
+		final String json = SimpleComponent.fromPlain(message).toAdventureJson(this, !this.hasHexColorSupport());
 
 		if (this.isPlayer) {
 			if (this.player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_19)
@@ -78,7 +76,7 @@ final class BungeePlayer extends FoundationPlayer {
 	private byte createBossBarFlag(final Set<net.kyori.adventure.bossbar.BossBar.Flag> flags) {
 		byte bit = 0;
 
-		for (final net.kyori.adventure.bossbar.BossBar.@NotNull Flag flag : flags) {
+		for (final net.kyori.adventure.bossbar.BossBar.Flag flag : flags) {
 			if (flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN)
 				bit |= 1;
 			else if (flag == net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC)
@@ -108,11 +106,6 @@ final class BungeePlayer extends FoundationPlayer {
 	@Override
 	public InetSocketAddress getAddress() {
 		return this.isPlayer ? this.player.getAddress() : null;
-	}
-
-	@Override
-	public SimpleLocation getBukkitLocation() {
-		throw new UnsupportedOperationException("Cannot get Bukkit location from a Velocity player");
 	}
 
 	@Override
@@ -177,7 +170,7 @@ final class BungeePlayer extends FoundationPlayer {
 	public void kick(SimpleComponent reason) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
-		this.player.disconnect(reason.toLegacy());
+		this.player.disconnect(reason.toLegacy(this));
 	}
 
 	@Override
@@ -202,19 +195,19 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public void sendActionBar(SimpleComponent message) {
-		this.audience.sendActionBar(message.toAdventure());
+		this.audience.sendActionBar(message.toAdventure(this));
 	}
 
 	@Override
 	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
-		this.audience.sendPlayerListHeaderAndFooter(header.toAdventure(), footer.toAdventure());
+		this.audience.sendPlayerListHeaderAndFooter(header.toAdventure(this), footer.toAdventure(this));
 	}
 
 	@Override
-	public void sendRawMessage(Component component) {
-		// Due to adventure bug (another one), players on modern MC are getting kicked out due to invalid
+	public void sendMessage(Component component) {
+		// Due to adventure bug, players on modern MC are getting kicked out due to invalid
 		// packet -- unless we serialize using md_5's method
-		final String json = SimpleComponent.fromAdventure(component).toAdventureJson(!this.hasHexColorSupport());
+		final String json = SimpleComponent.fromAdventure(component).toAdventureJson(this, !this.hasHexColorSupport());
 
 		this.sender.sendMessage(ComponentSerializer.parse(json));
 	}
@@ -241,7 +234,7 @@ final class BungeePlayer extends FoundationPlayer {
 
 			final net.md_5.bungee.protocol.packet.BossBar barPacket = new net.md_5.bungee.protocol.packet.BossBar(bar.getUniqueId(), 0 /* remove action */);
 
-			barPacket.setTitle(new TextComponent(SimpleComponent.fromAdventure(bar.getBar().name()).toBungee(!this.hasHexColorSupport())));
+			barPacket.setTitle(new TextComponent(SimpleComponent.fromAdventure(bar.getBar().name()).toBungee(this, !this.hasHexColorSupport())));
 			barPacket.setHealth(bar.getBar().progress());
 			barPacket.setColor(this.createBossBarColor(bar.getBar().color()));
 			barPacket.setDivision(this.createBossBarOverlay(bar.getBar().overlay()));

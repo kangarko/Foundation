@@ -198,7 +198,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param falseMessage
 	 */
 	protected final void checkPerm(String permission, SimpleComponent falseMessage) {
-		this.checkBoolean(this.findPlayer().hasPermission(permission), falseMessage.replaceBracket("permission", SimpleComponent.fromPlain(permission)));
+		this.checkBoolean(this.findPlayer().hasPermission(permission), falseMessage.replaceBracket(null, "permission", SimpleComponent.fromPlain(permission)));
 	}
 
 	/**

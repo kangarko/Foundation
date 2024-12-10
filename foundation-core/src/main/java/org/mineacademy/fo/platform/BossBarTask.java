@@ -10,12 +10,12 @@ import java.util.UUID;
 
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.Platform.Type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 @RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 final class BossBarTask implements Runnable {
@@ -131,7 +131,7 @@ final class BossBarTask implements Runnable {
 
 		@Override
 		public String toString() {
-			return SimpleComponent.fromAdventure(bar.name()).toLegacy();
+			return LegacyComponentSerializer.legacySection().serialize(bar.name());
 		}
 
 		boolean isTimed() {

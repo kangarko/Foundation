@@ -31,6 +31,7 @@ import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
@@ -41,10 +42,10 @@ import net.md_5.bungee.api.ChatMessageType;
 @Getter
 final class BukkitPlayer extends FoundationPlayer {
 
+	private final Audience audience;
 	private final boolean isPlayer;
 	private final Player player;
 	private final CommandSender sender;
-	private final Audience audience;
 
 	public BukkitPlayer(@NonNull CommandSender sender) {
 		this.sender = sender;
@@ -67,8 +68,8 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public SimpleLocation getBukkitLocation() {
-		ValidCore.checkBoolean(this.isPlayer, "Cannot get Bukkit location for a non-player" + this.getName());
+	public SimpleLocation getLocation() {
+		ValidCore.checkBoolean(this.isPlayer, "Cannot get location for a non-player: " + this.sender);
 		final Location location = this.player.getLocation();
 
 		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
@@ -142,10 +143,17 @@ final class BukkitPlayer extends FoundationPlayer {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
 		if (Bukkit.isPrimaryThread())
-			this.player.kickPlayer(reason.toLegacy());
+			kick0(reason);
 
 		else
-			Platform.runTask(() -> this.player.kickPlayer(reason.toLegacy()));
+			Platform.runTask(() -> kick0(reason));
+	}
+
+	private void kick0(SimpleComponent reason) {
+		if (Remain.isCommandSenderAudience())
+			this.player.kick(reason.toAdventure(this));
+		else
+			this.player.kickPlayer(reason.toLegacy(this));
 	}
 
 	@Override
@@ -209,41 +217,41 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendActionBar(SimpleComponent message) {
+	public void sendActionBar(SimpleComponent component) {
 		if (Remain.isCommandSenderAudience()) {
-			this.sender.sendActionBar(message);
+			this.sender.sendActionBar(component.toAdventure(this));
 
 			return;
 		}
 
 		if (!this.isPlayer || MinecraftVersion.olderThan(V.v1_8))
-			this.sender.sendMessage(message.toLegacy());
+			this.sender.sendMessage(component.toLegacy(this));
 
 		else
 			try {
-				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, message.toBungee(!this.hasHexColorSupport()));
+				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component.toBungee(this, !this.hasHexColorSupport()));
 
 			} catch (final NoSuchMethodError err) {
-				Remain.sendActionBarLegacyPacket(this.player, message);
+				Remain.sendActionBarLegacyPacket(this.player, component.toLegacy(this));
 			}
 	}
 
 	@Override
 	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
 		if (Remain.isCommandSenderAudience())
-			this.audience.sendPlayerListHeaderAndFooter(header, footer);
+			this.audience.sendPlayerListHeaderAndFooter(header.toAdventure(this), footer.toAdventure(this));
 
 		else if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
 			try {
-				this.player.setPlayerListHeaderFooter(header.toLegacy(), footer.toLegacy());
+				this.player.setPlayerListHeaderFooter(header.toLegacy(this), footer.toLegacy(this));
 
 			} catch (final NoSuchMethodError ex) {
-				Remain.sendTablistLegacyPacket(this.player, header, footer);
+				Remain.sendTablistLegacyPacket(this.player, header.toLegacy(this), footer.toLegacy(this));
 			}
 	}
 
 	@Override
-	public void sendRawMessage(Component component) {
+	public void sendMessage(Component component) {
 
 		// Paper is fastest: ~0.1ms vs ~0.3ms below
 		if (Remain.isCommandSenderAudience()) {
@@ -254,21 +262,21 @@ final class BukkitPlayer extends FoundationPlayer {
 
 		// Console does not send empty messages so we add a space
 		if (!this.isPlayer) {
-			final String legacy = SimpleComponent.fromAdventure(component).toLegacy();
+			final String legacy = LegacyComponentSerializer.legacySection().serialize(component);
 
 			this.sender.sendMessage(legacy.isEmpty() ? " " : legacy);
 			return;
 		}
 
-		this.player.spigot().sendMessage(SimpleComponent.fromAdventure(component).toBungee(!this.hasHexColorSupport()));
+		this.player.spigot().sendMessage((!this.hasHexColorSupport() ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(component));
 	}
 
 	@Override
-	public void sendToast(SimpleComponent message, CompToastStyle style) {
+	public void sendToast(SimpleComponent component, CompToastStyle style) {
 		if (this.isPlayer)
-			Remain.sendToast(this.player, message.toLegacy(), style);
+			Remain.sendToast(this.player, component.toLegacy(this), style);
 		else
-			this.sendMessage(message);
+			this.sendMessage(component);
 	}
 
 	@Override
@@ -287,7 +295,7 @@ final class BukkitPlayer extends FoundationPlayer {
 				this.audience.showBossBar(bar.getBar());
 
 		} else
-			this.sendRawMessage(bar.getBar().name());
+			this.sendMessage(bar.getBar().name());
 	}
 
 	@Override

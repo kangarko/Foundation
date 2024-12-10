@@ -199,7 +199,7 @@ public abstract class CommonCore {
 				audience.sendMessage(SimpleComponent.empty());
 
 			for (final SimpleComponent message : messages)
-				audience.sendMessage(message.replaceBracket("player", audience.getName()));
+				audience.sendMessage(message.replaceBracket(audience, "player", audience.getName()));
 
 			for (int i = 0; i < (length == 1 || length == 2 ? 2 : length == 3 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
@@ -367,16 +367,6 @@ public abstract class CommonCore {
 	/**
 	 * Log the messages to the console, prepending "[Plugin Name] " as their prefix.
 	 *
-	 * @param components
-	 */
-	public static final void log(final SimpleComponent... components) {
-		for (final SimpleComponent component : components)
-			log(component.toLegacy());
-	}
-
-	/**
-	 * Log the messages to the console, prepending "[Plugin Name] " as their prefix.
-	 *
 	 * If the message starts with [JSON], we will parse the message as JSON and log it as legacy text.
 	 *
 	 * The message array is further splity by \n and each part is logged separately.
@@ -400,7 +390,7 @@ public abstract class CommonCore {
 				final String stripped = message.replaceFirst("\\[JSON\\]", "").trim();
 
 				if (!stripped.isEmpty())
-					log(SimpleComponent.fromAdventureJson(stripped, false).toLegacy());
+					log(SimpleComponent.fromAdventureJson(stripped, false).toLegacy(null));
 
 			} else
 				for (final String part : message.split("\n"))

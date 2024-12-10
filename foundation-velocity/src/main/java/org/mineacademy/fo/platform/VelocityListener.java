@@ -198,7 +198,7 @@ public final class VelocityListener {
 				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
 					final String kickReason = in.readUTF();
 
-					player.disconnect(SimpleComponent.fromSection(kickReason).toAdventure());
+					player.disconnect(SimpleComponent.fromSection(kickReason).toAdventure(null));
 				});
 
 			else

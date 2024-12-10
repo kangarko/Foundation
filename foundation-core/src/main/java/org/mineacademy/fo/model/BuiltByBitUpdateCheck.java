@@ -69,7 +69,8 @@ public final class BuiltByBitUpdateCheck implements Runnable {
 						BuiltByBitUpdateCheck.newVersionString = versionString;
 						BuiltByBitUpdateCheck.newVersionReleaseDate = releaseDate * 1000;
 
-						CommonCore.log(getUpdateMessage());
+						for (final SimpleComponent component : getUpdateMessage())
+							CommonCore.log(component.toLegacy(null));
 					}
 
 				} else

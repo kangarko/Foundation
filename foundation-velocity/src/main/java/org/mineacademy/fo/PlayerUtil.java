@@ -29,7 +29,7 @@ public final class PlayerUtil {
 	 * @param reason
 	 */
 	public static void kick(Player player, String reason) {
-		player.disconnect(SimpleComponent.fromMini(reason).toAdventure());
+		player.disconnect(SimpleComponent.fromMini(reason).toAdventure(null));
 	}
 
 	/**

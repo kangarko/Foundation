@@ -202,12 +202,12 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @return
 	 */
 	public static SimpleBook fromAdventure(net.kyori.adventure.inventory.Book book) {
-		final String title = SimpleComponent.fromAdventure(book.title()).toLegacy();
-		final String author = SimpleComponent.fromAdventure(book.author()).toLegacy();
+		final String title = SimpleComponent.fromAdventure(book.title()).toLegacy(null);
+		final String author = SimpleComponent.fromAdventure(book.author()).toLegacy(null);
 		final List<String> pages = new ArrayList<>();
 
 		for (final Component page : book.pages())
-			pages.add(SimpleComponent.fromAdventure(page).toLegacy());
+			pages.add(SimpleComponent.fromAdventure(page).toLegacy(null));
 
 		return new SimpleBook(title, author, pages, false, System.currentTimeMillis(), null, UUID.randomUUID());
 	}

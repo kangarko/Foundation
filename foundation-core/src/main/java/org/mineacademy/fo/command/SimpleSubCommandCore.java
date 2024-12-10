@@ -80,7 +80,7 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 	 */
 	@Override
 	protected SimpleComponent replacePlaceholders(SimpleComponent component) {
-		component = component.replaceBracket("sublabel", this.getSublabel());
+		component = component.replaceBracket(null, "sublabel", this.getSublabel());
 
 		return super.replacePlaceholders(component);
 	}

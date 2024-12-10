@@ -413,7 +413,7 @@ public abstract class SimpleCommandCore {
 
 		// Check if the command was run earlier within the wait threshold
 		if (lastRun != 0)
-			this.checkBoolean(difference > this.cooldownSeconds, CommonCore.getOrDefault(this.cooldownMessage, Lang.component("command-cooldown-wait")).replaceBracket("duration", String.valueOf(this.cooldownSeconds - difference + 1)));
+			this.checkBoolean(difference > this.cooldownSeconds, CommonCore.getOrDefault(this.cooldownMessage, Lang.component("command-cooldown-wait")).replaceBracket(null, "duration", String.valueOf(this.cooldownSeconds - difference + 1)));
 
 		// Update the last try with the current time
 		this.lastExecutedTimes.put(this.audience.getName(), System.currentTimeMillis());
@@ -465,7 +465,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void checkPerm(@NonNull final String permission) throws CommandException {
 		if (!this.hasPerm(permission))
-			throw new CommandException(this.getPermissionMessage().replaceBracket("permission", permission));
+			throw new CommandException(this.getPermissionMessage().replaceBracket(null, "permission", permission));
 	}
 
 	/**
@@ -477,7 +477,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void checkPerm(@NonNull final FoundationPlayer audience, @NonNull final String permission) throws CommandException {
 		if (!audience.hasPermission(permission))
-			throw new CommandException(this.getPermissionMessage().replaceBracket("permission", permission));
+			throw new CommandException(this.getPermissionMessage().replaceBracket(null, "permission", permission));
 	}
 
 	/**
@@ -710,9 +710,9 @@ public abstract class SimpleCommandCore {
 		}
 
 		this.checkNotNull(found, falseMessage
-				.replaceBracket("type", enumType.getSimpleName().replaceAll("([a-z])([A-Z]+)", "$1 $2").toLowerCase())
-				.replaceBracket("value", enumValue)
-				.replaceBracket("available", CommonCore.join(Arrays.asList(ReflectionUtil.getEnumValues(enumType))
+				.replaceBracket(null, "type", enumType.getSimpleName().replaceAll("([a-z])([A-Z]+)", "$1 $2").toLowerCase())
+				.replaceBracket(null, "value", enumValue)
+				.replaceBracket(null, "available", CommonCore.join(Arrays.asList(ReflectionUtil.getEnumValues(enumType))
 						.stream()
 						.filter(listConst -> condition == null || condition.apply(listConst))
 						.collect(Collectors.toList()),
@@ -818,7 +818,7 @@ public abstract class SimpleCommandCore {
 	 * You can use {min} and {max} in the message to be automatically replaced
 	 */
 	private final <T extends Number & Comparable<T>> T findNumber(final Class<T> numberType, final int index, final T min, final T max, SimpleComponent falseMessage) {
-		falseMessage = falseMessage.replaceBracket("min", String.valueOf(min)).replaceBracket("max", String.valueOf(max));
+		falseMessage = falseMessage.replaceBracket(null, "min", String.valueOf(min)).replaceBracket(null, "max", String.valueOf(max));
 
 		final T number = this.findNumber(numberType, index, falseMessage);
 		this.checkBoolean(number.compareTo(min) >= 0 && number.compareTo(max) <= 0, falseMessage);
@@ -848,7 +848,7 @@ public abstract class SimpleCommandCore {
 				ex.printStackTrace();
 		}
 
-		throw new CommandException(this.replacePlaceholders(falseMessage.replaceBracket("value", this.args[index])));
+		throw new CommandException(this.replacePlaceholders(falseMessage.replaceBracket(null, "value", this.args[index])));
 	}
 
 	/**
@@ -921,7 +921,7 @@ public abstract class SimpleCommandCore {
 			uuid = UUID.fromString(this.args[index]);
 
 		} catch (final IllegalArgumentException ex) {
-			this.returnTell(invalidMessage.replaceBracket("uuid", this.args[index]));
+			this.returnTell(invalidMessage.replaceBracket(null, "uuid", this.args[index]));
 		}
 
 		return uuid;
@@ -1183,13 +1183,13 @@ public abstract class SimpleCommandCore {
 	 */
 	protected SimpleComponent replacePlaceholders(SimpleComponent component) {
 		component = component
-				.replaceBracket("plugin_name", Platform.getPlugin().getName())
-				.replaceBracket("plugin_version", Platform.getPlugin().getVersion())
-				.replaceBracket("label", this.label)
-				.replaceBracket("player", this.audience.getName());
+				.replaceBracket(null, "plugin_name", Platform.getPlugin().getName())
+				.replaceBracket(null, "plugin_version", Platform.getPlugin().getVersion())
+				.replaceBracket(null, "label", this.label)
+				.replaceBracket(null, "player", this.audience.getName());
 
 		for (int i = 0; i < this.args.length; i++)
-			component = component.replaceBracket(String.valueOf(i), this.args[i]);
+			component = component.replaceBracket(null, String.valueOf(i), this.args[i]);
 
 		return component;
 	}

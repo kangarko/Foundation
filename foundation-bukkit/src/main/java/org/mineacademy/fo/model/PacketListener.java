@@ -226,8 +226,9 @@ public abstract class PacketListener {
 					return;
 
 			} else if (this.actionBarMode == 2) {
-				if (packet.getBytes().read(0) == (byte) 0)
-					return;
+				// Apparently 1.8.8 is reporting this as it wants
+				//if (packet.getBytes().read(0) == (byte) 1)
+				//	return;
 
 			} else if (this.actionBarMode == 3)
 				if (packet.getChatTypes().read(0) == ChatType.GAME_INFO)
@@ -255,14 +256,14 @@ public abstract class PacketListener {
 					final Component component = modifierAdventure.read(0);
 
 					if (component != null)
-						json = SimpleComponent.fromAdventure(component).toAdventureJson(legacy);
+						json = SimpleComponent.fromAdventure(component).toAdventureJson(null, legacy);
 				}
 
 				if (json == null && !"".equals(json) && !"{}".equals(json) && this.hasBungee) {
 					final BaseComponent[] components = modifierBaseComponent.read(0);
 
 					if (components != null)
-						json = SimpleComponent.fromBungee(components, legacy).toAdventureJson(legacy);
+						json = SimpleComponent.fromBungee(components, legacy).toAdventureJson(null, legacy);
 				}
 
 				if (json == null && !"".equals(json) && !"{}".equals(json) && this.hasIChatBase) {
@@ -276,7 +277,7 @@ public abstract class PacketListener {
 
 					// This flag effectivelly doubles processing time from ~0.3ms to ~0.6ms that is why it needs to be explicitly enabled
 					final boolean editJson = this.editJson();
-					final Component oldJson = editJson ? SimpleComponent.fromAdventureJson(json, legacy).toAdventure() : null;
+					final Component oldJson = editJson ? SimpleComponent.fromAdventureJson(json, legacy).toAdventure(null) : null;
 
 					try {
 						json = this.onJsonMessage(player, json);
