@@ -188,8 +188,11 @@ public final class MinecraftVersion {
 	 */
 	@Deprecated
 	public static void setVersion(V current, int subversion) {
-		ValidCore.checkBoolean(MinecraftVersion.current == null, "Version already set to " + MinecraftVersion.current);
-		ValidCore.checkBoolean(MinecraftVersion.subversion == -1, "Subversion already set to " + MinecraftVersion.subversion);
+		if (MinecraftVersion.current != null)
+			throw new FoException("Version already set to " + MinecraftVersion.current + " (avoid using plugin managers to reload this plugin as they are known to cause issues)", false);
+
+		if (MinecraftVersion.subversion != -1)
+			throw new FoException("Subversion already set to " + MinecraftVersion.subversion + " (avoid using plugin managers to reload this plugin as they are known to cause issues)", false);
 
 		MinecraftVersion.current = current;
 		MinecraftVersion.subversion = subversion;
