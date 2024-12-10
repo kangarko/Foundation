@@ -497,9 +497,9 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
-	}
-	
-	private void scanModernEnumsForUpdates() {
+	}*/
+
+	/*private void scanModernEnumsForUpdates() {
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
