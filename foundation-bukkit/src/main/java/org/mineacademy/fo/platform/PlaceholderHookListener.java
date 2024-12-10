@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.model.HookManager;
 
-import me.clip.placeholderapi.events.ExpansionRegisterEvent;
+import me.clip.placeholderapi.events.ExpansionsLoadedEvent;
 
 /**
  * A helper listener to reload PlaceholderAPI hooks when a new expansion is registered.
@@ -12,7 +12,7 @@ import me.clip.placeholderapi.events.ExpansionRegisterEvent;
 final class PlaceholderHookListener implements Listener {
 
 	@EventHandler
-	public void onExpansionRegister(ExpansionRegisterEvent event) {
+	public void onExpansionRegister(ExpansionsLoadedEvent event) {
 		HookManager.reloadPlaceholderAPIHooks();
 	}
 }
