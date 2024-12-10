@@ -169,6 +169,15 @@ public final class OutgoingMessage extends Message {
 	}
 
 	/**
+	 * Write an uuid into the message
+	 *
+	 * @param enumInstance
+	 */
+	public void writeEnum(Enum<?> enumInstance) {
+		this.writeString(enumInstance.toString()); // Write enums as strings
+	}
+
+	/**
 	 * Write an object of the given type into the message
 	 *
 	 * @param object
@@ -231,7 +240,7 @@ public final class OutgoingMessage extends Message {
 				else if (data instanceof UUID)
 					out.writeUTF(((UUID) data).toString());
 				else if (data instanceof Enum)
-					out.writeUTF(((Enum<?>) data).toString());
+					this.writeCompressedString(out, ((Enum<?>) data).toString());
 				else if (data instanceof byte[])
 					out.write((byte[]) data);
 				else
@@ -337,9 +346,11 @@ public final class OutgoingMessage extends Message {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
 			final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, fromServer);
+			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
 
 			if (server.isEmpty()) {
-				Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
+				if (!isSpammyPacket)
+					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
 
 				return;
 			}
@@ -351,7 +362,10 @@ public final class OutgoingMessage extends Message {
 			}
 
 			server.sendData(DEFAULT_CHANNEL, byteArray);
-			Debugger.debug("proxy", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
+
+			
+			if (!isSpammyPacket)
+				Debugger.debug("proxy", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
 		}
 	}
 
@@ -370,16 +384,19 @@ public final class OutgoingMessage extends Message {
 	public void broadcastExcept(@Nullable String ignoredServerName) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
+			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
 
 			for (final FoundationServer otherServer : Platform.getServers()) {
 				if (otherServer.isEmpty()) {
-					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
+					if (!isSpammyPacket)
+						Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
 
 					continue;
 				}
 
 				if (ignoredServerName != null && otherServer.getName().equalsIgnoreCase(ignoredServerName)) {
-					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is ignored.");
+					if (!isSpammyPacket)
+						Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is ignored.");
 
 					continue;
 				}
@@ -393,7 +410,9 @@ public final class OutgoingMessage extends Message {
 				}
 
 				otherServer.sendData(DEFAULT_CHANNEL, byteArray);
-				Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
+
+				if (!isSpammyPacket)
+					Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
 			}
 		}
 	}
