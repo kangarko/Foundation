@@ -233,7 +233,12 @@ public final class ConfigItems<T extends YamlConfig> {
 				else {
 					final String name = FileUtil.getFileName(file);
 
-					this.loadOrCreateItem(name);
+					try {
+						this.loadOrCreateItem(name);
+
+					} catch (final Throwable t) {
+						CommonCore.error(t, "Error loading " + file);
+					}
 				}
 		}
 	}
@@ -310,10 +315,11 @@ public final class ConfigItems<T extends YamlConfig> {
 
 					if (root instanceof InvalidWorldException) {
 						CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
+
 						knownError = true;
 
 					} else
-						CommonCore.throwError(t, "Failed to create new " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor);
+						CommonCore.throwError(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor);
 				}
 			}
 
