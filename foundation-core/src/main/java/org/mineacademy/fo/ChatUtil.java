@@ -97,7 +97,7 @@ public final class ChatUtil {
 	 */
 	@Deprecated
 	public static String center(final String message, final char space, final int centerPx) {
-		if (message == null || message.equals(""))
+		if (message == null || message.isEmpty())
 			return "";
 
 		int messagePxSize = 0;
@@ -105,12 +105,22 @@ public final class ChatUtil {
 		boolean previousCode = false;
 		boolean isBold = false;
 
-		for (final char c : message.toCharArray())
+		for (int i = 0; i < message.length(); i++) {
+			final char c = message.charAt(i);
 
 			if (c == '&' || c == CompChatColor.COLOR_CHAR) {
 				previousCode = true;
-
 				continue;
+
+			} else if (c == '<') { // Handle MiniMessage tags
+				final int endTag = message.indexOf('>', i);
+				if (endTag != -1) {
+					final String potentialTag = message.substring(i + 1, endTag).toLowerCase();
+					isBold = potentialTag.equals("bold");
+
+					i = endTag; // Skip past the tag
+					continue;
+				}
 
 			} else if (previousCode) {
 				previousCode = false;
@@ -119,34 +129,31 @@ public final class ChatUtil {
 					isBold = true;
 
 					continue;
-
 				}
 
 				isBold = false;
 
 			} else {
 				final DefaultFontInfo defaultFont = DefaultFontInfo.getDefaultFontInfo(c);
-
 				messagePxSize += isBold ? defaultFont.getBoldLength() : defaultFont.getLength();
 				messagePxSize++;
 			}
+		}
 
 		final StringBuilder builder = new StringBuilder();
-
 		final int halvedMessageSize = messagePxSize / 2;
 		final int toCompensate = centerPx - halvedMessageSize;
+
 		final DefaultFontInfo font = DefaultFontInfo.getDefaultFontInfo(space);
 		final double spaceLength = isBold ? font.getBoldLength() : font.getLength();
-
 		double compensated = 0;
 
 		while (compensated < toCompensate) {
 			builder.append(space);
-
 			compensated += spaceLength;
 		}
 
-		return builder.toString() + " " + message + " " + builder.toString();
+		return builder.toString() + message + builder.toString();
 	}
 
 	/**
