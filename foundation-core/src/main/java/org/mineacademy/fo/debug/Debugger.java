@@ -13,6 +13,7 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
+import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -101,7 +102,8 @@ public final class Debugger {
 				return;
 			}
 
-		if (plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
+		// Do not report errors from outdated plugin versions
+		if (plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY && !BuiltByBitUpdateCheck.isNewVersionAvailable()) {
 			final Throwable finalThrowable = throwable;
 
 			// Prevent duplicated reporting
