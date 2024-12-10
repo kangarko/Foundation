@@ -1,7 +1,9 @@
 package org.mineacademy.fo.model;
 
 import java.awt.Color;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -821,6 +823,170 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		}
 
 		return result.toString();
+	}
+
+	/**
+	 * Converts the mini tags in the legacy message to section.
+	 *
+	 * @param minimessage
+	 * @return
+	 */
+	public static String convertMiniToLegacy(String minimessage) {
+		final StringBuilder filteredMessage = new StringBuilder();
+
+		// Stack to store open tags
+		final Deque<String> tagStack = new ArrayDeque<>();
+
+		final int length = minimessage.length();
+		for (int i = 0; i < length; i++) {
+			final char currentChar = minimessage.charAt(i);
+
+			// Check for escaped tags prefixed with \
+			if (currentChar == '\\' && i + 1 < length && minimessage.charAt(i + 1) == '<') {
+
+				// Append the backslash and the '<' as is
+				filteredMessage.append('\\').append('<');
+				i++; // Skip the next character ('<')
+
+				continue;
+			}
+
+			// Check for opening of a MiniMessage tag, e.g., <color>
+			if (currentChar == '<') {
+				final int closeIndex = minimessage.indexOf('>', i);
+
+				// If next '>' is not found or tag is malformed, treat it as normal text
+				if (closeIndex == -1 || minimessage.substring(i + 1, closeIndex).contains("<")) {
+					filteredMessage.append(currentChar);
+
+					continue;
+				}
+
+				final String tagContent = minimessage.substring(i + 1, closeIndex).toLowerCase();
+
+				// Check for end tag, e.g., </red>
+				if (tagContent.startsWith("/")) {
+					final String endTag = tagContent.substring(1);
+
+					if (!isValidTag(endTag)) {
+						i = closeIndex;
+
+						continue;
+					}
+
+					// Upon detecting an end tag, remove the tag from the stack
+					if (!tagStack.isEmpty() && tagStack.peek().equals(endTag)) {
+						tagStack.pop(); // Remove the matching start tag
+
+						// Output the color code for the new top of the stack (if any), else reset color
+						String colorCode;
+
+						if (!tagStack.isEmpty()) {
+							final String currentTag = tagStack.peek();
+							colorCode = CompChatColor.MINI_TO_LEGACY.get("<" + currentTag + ">");
+
+							if (currentTag.charAt(0) == '#' && currentTag.length() == 7)
+								colorCode = CompChatColor.getClosestLegacy(getColorFromHex(currentTag)).toString();
+
+							if (colorCode != null)
+								filteredMessage.append(colorCode);
+
+						} else
+
+							// Reset formatting if no tags are left
+							filteredMessage.append(CompChatColor.RESET.toString());
+					}
+
+					// Move past the end tag
+					i = closeIndex;
+					continue;
+
+				} else {
+					String tagName;
+
+					if (tagContent.startsWith("color:"))
+						tagName = tagContent.substring(6);
+					else if (tagContent.startsWith("colour:"))
+						tagName = tagContent.substring(7);
+					else if (tagContent.startsWith("c:"))
+						tagName = tagContent.substring(2);
+					else
+						tagName = tagContent;
+
+					if (!isValidTag(tagName)) {
+						i = closeIndex;
+
+						continue;
+					}
+
+					// If tag is permitted, push it onto the stack and output its color code
+					tagStack.push(tagName);
+
+					String colorCode = CompChatColor.MINI_TO_LEGACY.get("<" + tagName + ">");
+
+					if (tagName.charAt(0) == '#' && tagName.length() == 7)
+						colorCode = CompChatColor.getClosestLegacy(getColorFromHex(tagName)).toString();
+
+					if (colorCode != null)
+						filteredMessage.append(colorCode);
+
+					// Move past the tag
+					i = closeIndex;
+					continue;
+				}
+
+			} else
+
+				// Normal character
+				filteredMessage.append(currentChar);
+
+		}
+
+		// Ensure all tags have been closed
+		while (!tagStack.isEmpty()) {
+			tagStack.pop();
+
+			filteredMessage.append(CompChatColor.RESET.toString());
+		}
+
+		return filteredMessage.toString();
+	}
+
+	/*
+	 * Check if the sender has permission for the given color name.
+	 */
+	private static boolean isValidTag(String tag) {
+		if (tag.isEmpty())
+			return true;
+
+		if (tag.charAt(0) == '#') {
+			if (tag.length() == 7)
+				return true;
+
+			return false; // Disallow invalid tags to prevent exploits
+		}
+
+		tag = tag.toLowerCase();
+
+		switch (tag) {
+			case "grey":
+				tag = "gray";
+				break;
+			case "dark_grey":
+				tag = "dark_gray";
+				break;
+			case "insert":
+				tag = "insertion";
+				break;
+			default:
+				if (tag.contains(":"))
+					tag = tag.split(":", 2)[0];
+
+				break;
+		}
+
+		return "reset".equals(tag) || "b".equals(tag) || "bold".equals(tag) || "i".equals(tag) || "italic".equals(tag) || "u".equals(tag) || "underlined".equals(tag) || "st".equals(tag)
+				|| "strikethrough".equals(tag) || "obf".equals(tag) || "obfuscated".equals(tag) || NamedTextColor.NAMES.value(tag) != null;
 	}
 
 	/**
