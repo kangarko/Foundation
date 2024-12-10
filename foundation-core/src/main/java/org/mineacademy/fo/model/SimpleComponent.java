@@ -63,14 +63,29 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * prevents removing the second tag from \<red\>hello {player}\<red\>
 	 * which makes colored placeholders revert back properly.
 	 */
-	public static final MiniMessage MINIMESSAGE_PARSER = MiniMessage
-			.builder()
-			.tags(TagResolver.standard())
-			.strict(false)
-			.preProcessor(UnaryOperator.identity())
-			.postProcessor(UnaryOperator.identity())
-			.debug(null)
-			.build();
+	public static final MiniMessage MINIMESSAGE_PARSER;
+
+	static {
+		try {
+			TextDecoration.class.getMethod("withState", boolean.class);
+
+		} catch (final ReflectiveOperationException err) {
+			CommonCore.logFramed(
+					"Fatal error initializing MiniMessage. If you see",
+					"plugin name below, report this to its developer",
+					"because this is a bug in their plugin by shading",
+					"MiniMessage inside their jar without relocating it");
+		}
+
+		MINIMESSAGE_PARSER = MiniMessage
+				.builder()
+				.tags(TagResolver.standard())
+				.strict(false)
+				.preProcessor(UnaryOperator.identity())
+				.postProcessor(UnaryOperator.identity())
+				.debug(null)
+				.build();
+	}
 
 	/**
 	 * The empty component
