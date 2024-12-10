@@ -53,7 +53,13 @@ public enum CompItemFlag {
 	/**
 	 * Setting to show/hide potion effects, book and firework information, map tooltips, patterns of banners
 	 */
-	HIDE_ADDITIONAL_TOOLTIP;
+	HIDE_ADDITIONAL_TOOLTIP,
+
+	/**
+	 * Setting to show/hide stored enchants on an item, such as enchantments
+	 * on an enchanted book.
+	 */
+	HIDE_STORED_ENCHANTS;
 
 	/**
 	 * Tries to apply this item flag to the given item, fails silently
