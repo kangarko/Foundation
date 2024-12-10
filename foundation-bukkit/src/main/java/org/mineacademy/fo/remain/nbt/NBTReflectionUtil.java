@@ -17,6 +17,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.Common;
 
 import com.google.gson.Gson;
 
@@ -34,6 +35,8 @@ public class NBTReflectionUtil {
 	private static Field field_handle = null;
 	private static Object type_custom_data = null;
 	private static Object registry_access = null;
+
+	private static boolean knownFailure = false;
 
 	static {
 		try {
@@ -53,6 +56,16 @@ public class NBTReflectionUtil {
 				final Field typeField = ClassWrapper.NMS_DATACOMPONENTS.getClazz().getDeclaredField(
 						MojangToMapping.getMapping().get("net.minecraft.core.component.DataComponents#CUSTOM_DATA"));
 				type_custom_data = typeField.get(null);
+
+			} catch (final NullPointerException ex) {
+				Common.logTimed(60 * 60, "Error initializing NBT-API. The plugin will still work but some features won't be available. This can be due to an outdated version or incompatible server.");
+
+				if (!knownFailure) {
+					ex.printStackTrace();
+
+					knownFailure = true;
+				}
+
 			} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
 
 			}
