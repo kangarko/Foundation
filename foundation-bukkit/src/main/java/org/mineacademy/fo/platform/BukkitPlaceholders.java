@@ -1,6 +1,7 @@
 package org.mineacademy.fo.platform;
 
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
@@ -63,6 +64,12 @@ final class BukkitPlaceholders extends SimpleExpansion {
 
 		else if ("player_world".equals(identifier))
 			return player == null ? "" : HookManager.getWorldAlias(player.getWorld());
+
+		else if ("player_gamemode".equals(identifier))
+			return player == null ? "" : ChatUtil.capitalize(player.getGameMode().name().toLowerCase());
+
+		else if ("player_ping".equals(identifier))
+			return player == null ? "" : String.valueOf(Remain.getPing(player));
 
 		else if ("player_health".equals(identifier))
 			return player == null ? "" : formatHealth(player);
