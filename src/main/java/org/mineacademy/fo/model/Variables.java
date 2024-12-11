@@ -247,10 +247,6 @@ public final class Variables {
 				return cachedVar;
 		}
 
-		// Replace custom variables first
-		if (replacements != null && !replacements.isEmpty())
-			message = Replacer.replaceArray(message, replacements);
-
 		// PlaceholderAPI and MVdWPlaceholderAPI
 		if (senderIsPlayer)
 			message = HookManager.replacePlaceholders((Player) sender, message);
@@ -266,6 +262,10 @@ public final class Variables {
 		// Custom placeholders
 		if (replaceScript)
 			message = replaceJavascriptVariables0(message, sender, replacements);
+
+		// Replace custom variables last to avoid replacing variables in them for security
+		if (replacements != null && !replacements.isEmpty())
+			message = Replacer.replaceArray(message, replacements);
 
 		if (!message.startsWith("[JSON]") && colorize)
 			message = Common.colorize(message);
