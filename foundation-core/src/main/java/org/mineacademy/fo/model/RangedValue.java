@@ -160,12 +160,11 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @return
 	 */
 	public static RangedValue fromString(String line) {
-
 		line = line.replace(" ", "").trim();
 
 		boolean firstNegative = false;
 
-		if (line.startsWith("-")) {
+		if (line.charAt(0) == '-') {
 			firstNegative = true;
 
 			line = line.substring(1);

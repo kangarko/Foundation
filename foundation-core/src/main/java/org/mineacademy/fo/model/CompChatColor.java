@@ -466,7 +466,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @return
 	 */
 	public static CompChatColor fromString(@NonNull String string) {
-		if (string.startsWith("#") && string.length() == 7) {
+		if (string.charAt(0) == '#' && string.length() == 7) {
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
 				final Color color = getColorFromHex(string);
 
@@ -865,7 +865,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				final String tagContent = minimessage.substring(i + 1, closeIndex).toLowerCase();
 
 				// Check for end tag, e.g., </red>
-				if (tagContent.startsWith("/")) {
+				if (tagContent.charAt(0) == '/') {
 					final String endTag = tagContent.substring(1);
 
 					if (!isValidTag(endTag)) {

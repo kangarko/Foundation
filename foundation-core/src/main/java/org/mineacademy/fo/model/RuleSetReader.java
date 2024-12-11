@@ -63,7 +63,7 @@ public abstract class RuleSetReader<T extends Rule> {
 				found = true;
 
 			// Found something else
-			else if (line.startsWith("#") || line.isEmpty() || line.startsWith("match ")) {
+			else if (line.charAt(0) == '#' || line.isEmpty() || line.startsWith("match ")) {
 				if (found && i > 0 && disabled) {
 					lines.add(i, "disabled");
 
@@ -126,7 +126,8 @@ public abstract class RuleSetReader<T extends Rule> {
 		for (int i = 0; i < lines.size(); i++) {
 			final String line = lines.get(i).trim();
 
-			if (!line.isEmpty() && !line.startsWith("#"))
+			if (!line.isEmpty() && line.charAt(0) != '#')
+
 				// If a line starts with matcher then assume a new rule is found and start creating it. This makes a new instance of the object.
 				if (line.startsWith(this.newKeyword + " ")) {
 

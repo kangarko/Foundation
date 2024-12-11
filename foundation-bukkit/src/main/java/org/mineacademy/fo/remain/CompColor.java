@@ -13,6 +13,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * A utility class enabling you to convert between {@link DyeColor} and {@link CompChatColor} with ease
@@ -238,10 +239,10 @@ public final class CompColor {
 	 * @param name
 	 * @return
 	 */
-	public static CompColor fromName(String name) {
+	public static CompColor fromName(@NonNull String name) {
 
 		// Support HEX colors
-		if (name.startsWith("#") && name.length() == 7)
+		if (name.charAt(0) == '#' && name.length() == 7)
 			return new CompColor(Color.fromRGB(
 					Integer.parseInt(name.substring(1, 3), 16),
 					Integer.parseInt(name.substring(3, 5), 16),

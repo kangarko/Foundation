@@ -1183,7 +1183,7 @@ public class SimpleDatabase {
 		public Where like(final String column, final String pattern) {
 			this.conditions.add(column + " LIKE ?");
 
-			ValidCore.checkBoolean(!pattern.startsWith("%") && !pattern.endsWith("%"), "Pattern must not start or end with %, got " + pattern);
+			ValidCore.checkBoolean(pattern.charAt(0) != '%' && pattern.charAt(pattern.length() - 1) != '%', "Pattern must not start or end with %, got " + pattern);
 			this.values.add("%" + pattern + "%");
 
 			return this;

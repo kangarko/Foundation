@@ -249,11 +249,13 @@ public final class JavaScriptExecutor {
 
 				if (result instanceof String) {
 					String string = ((String) result).trim().toLowerCase();
+					final char startChar = string.charAt(0);
+					final char endChar = string.charAt(string.length() - 1);
 
-					if (string.startsWith("\"") || string.startsWith("'"))
+					if (startChar == '"' || startChar == '\'')
 						string = string.substring(1);
 
-					if (string.endsWith("\"") || string.endsWith("'"))
+					if (endChar == '"' || endChar == '\'')
 						string = string.substring(0, string.length() - 1);
 
 					if (string.equals("true"))
