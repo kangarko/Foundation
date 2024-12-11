@@ -28,6 +28,11 @@ public final class RequireVariable {
 	private final String requiredValue;
 
 	/**
+	 * If the required value is negated (starts with !)
+	 */
+	private final boolean negated;
+
+	/**
 	 * Check if the variable matches the required value
 	 *
 	 * @param replacer the function to replace the variable with its actual value, parse variables here
@@ -42,10 +47,10 @@ public final class RequireVariable {
 		else if ("no".equals(result) || "0".equals(result) || "".equals(result))
 			result = "false";
 
-		if (!this.requiredValue.startsWith("!") && !result.equalsIgnoreCase(this.requiredValue))
+		if (!this.negated && !result.equalsIgnoreCase(this.requiredValue))
 			return false;
 
-		if (this.requiredValue.startsWith("!") && result.equalsIgnoreCase(this.requiredValue.substring(1)))
+		if (this.negated && result.equalsIgnoreCase(this.requiredValue))
 			return false;
 
 		return true;
@@ -85,6 +90,8 @@ public final class RequireVariable {
 		else if ("no".equals(requiredValue) || "0".equals(requiredValue))
 			requiredValue = "false";
 
-		return new RequireVariable(variable, requiredValue);
+		final boolean negated = requiredValue.charAt(0) == '!';
+
+		return new RequireVariable(variable, negated ? requiredValue.substring(1) : requiredValue, negated);
 	}
 }

@@ -170,13 +170,16 @@ public final class Variable extends YamlConfig {
 		if (this.value == null)
 			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + this.getFile() + " (this can be a JavaScript code)");
 
-		if (this.key.startsWith("{") || this.key.startsWith("[")) {
+		final char startChar = this.key.charAt(0);
+		final char endChar = this.key.charAt(this.key.length() - 1);
+
+		if (startChar == '{' || startChar == '[') {
 			this.key = this.key.substring(1);
 
 			this.save();
 		}
 
-		if (this.key.endsWith("}") || this.key.endsWith("]")) {
+		if (endChar == '}' || endChar == ']') {
 			this.key = this.key.substring(0, this.key.length() - 1);
 
 			this.save();

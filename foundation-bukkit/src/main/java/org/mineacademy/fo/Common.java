@@ -233,7 +233,7 @@ public final class Common extends CommonCore {
 		if (args.length > 0) {
 			String label = args[0].toLowerCase();
 
-			if (label.startsWith("/"))
+			if (label.charAt(0) == '/')
 				label = label.substring(1);
 
 			for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins()) {

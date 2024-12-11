@@ -567,6 +567,6 @@ public abstract class ValidCore {
 	 * Prepare the message for isInList comparation - lowercases it and removes the initial slash /
 	 */
 	private static String removeSlash(final String message) {
-		return message.startsWith("/") ? message.substring(1) : message;
+		return message.charAt(0) == '/' ? message.substring(1) : message;
 	}
 }

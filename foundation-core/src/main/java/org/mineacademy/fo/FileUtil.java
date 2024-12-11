@@ -136,7 +136,7 @@ public final class FileUtil {
 	public static File[] getFiles(@NonNull String directory, @NonNull String extension) {
 
 		// Remove initial dot, if any
-		if (extension.startsWith("."))
+		if (extension.charAt(0) == '.')
 			extension = extension.substring(1);
 
 		final File dataFolder = new File(Platform.getPlugin().getDataFolder(), directory);
@@ -517,8 +517,8 @@ public final class FileUtil {
 	 * @param destination the destination folder name in your plugin folder
 	 */
 	public static void extractFolderFromJar(String folder, final String destination) {
-		ValidCore.checkBoolean(folder.endsWith("/"), "Folder must end with '/'! Given: " + folder);
-		ValidCore.checkBoolean(!folder.startsWith("/"), "Folder must not start with '/'! Given: " + folder);
+		ValidCore.checkBoolean(folder.charAt(0) != '/', "Folder must not start with '/'! Given: " + folder);
+		ValidCore.checkBoolean(folder.charAt(folder.length() - 1) == '/', "Folder must end with '/'! Given: " + folder);
 
 		if (getFile(folder).exists())
 			return;

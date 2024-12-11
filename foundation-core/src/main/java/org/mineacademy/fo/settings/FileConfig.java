@@ -873,7 +873,7 @@ public abstract class FileConfig extends ConfigSection {
 		for (int i = 0; i < list.size(); i++) {
 			String command = list.get(i);
 
-			command = command.startsWith("/") ? command.substring(1) : command;
+			command = command.charAt(0) == '/' ? command.substring(1) : command;
 			list.set(i, command);
 		}
 

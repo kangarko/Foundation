@@ -107,7 +107,7 @@ public abstract class FoundationPlayer implements Audience {
 			Messenger.success(this, command.replace("@success ", ""));
 
 		else {
-			command = Variables.builder(this).replaceLegacy(command.startsWith("/") && !command.startsWith("//") ? command.substring(1) : command);
+			command = Variables.builder(this).replaceLegacy(command.charAt(0) == '/' && command.charAt(1) != '/' ? command.substring(1) : command);
 
 			// Workaround for JSON in tellraw getting HEX colors replaced
 			if (!command.startsWith("tellraw"))

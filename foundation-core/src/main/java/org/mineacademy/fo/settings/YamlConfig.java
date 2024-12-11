@@ -364,7 +364,7 @@ public class YamlConfig extends FileConfig {
 				else {
 					String line = comment.getValue();
 
-					line = line.startsWith(" ") ? line.substring(1) : line;
+					line = line.length() > 0 && line.charAt(0) == ' ' ? line.substring(1) : line;
 					lines.add(line);
 				}
 

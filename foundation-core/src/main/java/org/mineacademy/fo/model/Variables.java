@@ -136,11 +136,8 @@ public final class Variables {
 		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
 			final String key = entry.getKey();
 
-			if (key.startsWith("{"))
-				throw new FoException("Placeholders must not start with '{'. Found: " + key);
-
-			if (key.endsWith("}"))
-				throw new FoException("Placeholders must not end with '}'. Found: " + key);
+			if (key.charAt(0) == '{' || key.charAt(key.length() - 1) == '}')
+				throw new FoException("Placeholders must not start or end with {}. Found: " + key);
 		}
 
 		return this;
@@ -281,13 +278,13 @@ public final class Variables {
 		boolean frontSpace = false;
 		boolean backSpace = false;
 
-		if (variable.startsWith("+")) {
+		if (variable.charAt(0) == '+') {
 			variable = variable.substring(1);
 
 			frontSpace = true;
 		}
 
-		if (variable.endsWith("+")) {
+		if (variable.charAt(variable.length() - 1) == '+') {
 			variable = variable.substring(0, variable.length() - 1);
 
 			backSpace = true;
@@ -346,10 +343,10 @@ public final class Variables {
 		final String replacedPlainValue = replacedValue == null ? "" : replacedValue.toPlain(this.audience);
 
 		if ((frontSpace || backSpace) && !replacedPlainValue.isEmpty()) {
-			if (frontSpace && !replacedPlainValue.startsWith(" "))
+			if (frontSpace && replacedPlainValue.charAt(0) != ' ')
 				replacedValue = SimpleComponent.fromPlain(" ").append(replacedValue);
 
-			if (backSpace && !replacedPlainValue.endsWith(" "))
+			if (backSpace && replacedPlainValue.charAt(replacedPlainValue.length() - 1) != ' ')
 				replacedValue = replacedValue.appendPlain(" ");
 		}
 
@@ -365,13 +362,15 @@ public final class Variables {
 		boolean frontSpace = false;
 		boolean backSpace = false;
 
-		if (variable.startsWith("+")) {
+		if (variable.charAt(0) == '+') {
 			variable = variable.substring(1);
 
 			frontSpace = true;
 		}
 
-		if (variable.endsWith("+")) {
+		final int length = variable.length();
+
+		if (variable.charAt(length - 1) == '+') {
 			variable = variable.substring(0, variable.length() - 1);
 
 			backSpace = true;
