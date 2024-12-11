@@ -17,6 +17,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.Common;
 
 import com.google.gson.Gson;
 
@@ -34,6 +35,8 @@ public class NBTReflectionUtil {
 	private static Field field_handle = null;
 	private static Object type_custom_data = null;
 	private static Object registry_access = null;
+
+	private static boolean knownFailure = false;
 
 	static {
 		try {
@@ -53,6 +56,16 @@ public class NBTReflectionUtil {
 				final Field typeField = ClassWrapper.NMS_DATACOMPONENTS.getClazz().getDeclaredField(
 						MojangToMapping.getMapping().get("net.minecraft.core.component.DataComponents#CUSTOM_DATA"));
 				type_custom_data = typeField.get(null);
+
+			} catch (final NullPointerException ex) {
+				Common.logTimed(60 * 60, "Error initializing NBT-API. The plugin will still work but some features won't be available. This can be due to an outdated version or incompatible server.");
+
+				if (!knownFailure) {
+					ex.printStackTrace();
+
+					knownFailure = true;
+				}
+
 			} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
 
 			}
@@ -244,7 +257,7 @@ public class NBTReflectionUtil {
 	 * @param meta ItemMeta from which tags should be retrieved
 	 * @return Map containing unhandled (custom) NBT tags
 	 */
-	
+
 	@Deprecated
 	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
 		try {
@@ -487,13 +500,13 @@ public class NBTReflectionUtil {
 	/**
 	 * Returns the List saved with a given key.
 	 *
+	 * @param <T>
 	 * @param comp
 	 * @param key
 	 * @param type
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalid type
 	 */
-	
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
@@ -576,6 +589,7 @@ public class NBTReflectionUtil {
 	/**
 	 * Uses Gson to load back a {@link Serializable} object from the Compound
 	 *
+	 * @param <T>
 	 * @param comp
 	 * @param key
 	 * @param type
@@ -595,6 +609,7 @@ public class NBTReflectionUtil {
 	/**
 	 * Creates an Object of the given type using the Json String
 	 *
+	 * @param <T>
 	 * @param json
 	 * @param type
 	 * @return Object that got created, or null if the json is null
@@ -634,7 +649,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
-	
+
 	public static Set<String> getKeys(NBTCompound comp) {
 		final Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)

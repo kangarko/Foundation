@@ -22,6 +22,7 @@ final class DataFixerUtil {
 	public static final int VERSION1_20_5 = 3837;
 	public static final int VERSION1_21 = 3953;
 	public static final int VERSION1_21_2 = 4080;
+	public static final int VERSION1_21_3 = 4189;
 
 	public static Object fixUpRawItemData(Object nbt, int fromVersion, int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
@@ -53,7 +54,9 @@ final class DataFixerUtil {
 	 * @return
 	 */
 	public static int getCurrentVersion() {
-		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R2))
+		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R3))
+			return VERSION1_21_3;
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R2))
 			return VERSION1_21_2;
 		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R1))
 			return VERSION1_21;

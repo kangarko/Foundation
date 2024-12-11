@@ -7,7 +7,7 @@ public interface NBTFileHandle extends ReadWriteNBT {
 
 	/**
 	 * Saves the data to the file
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	void save() throws IOException;
