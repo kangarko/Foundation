@@ -84,7 +84,7 @@ public final class Variables {
 	/**
 	 * The custom placeholders map we apply on top of other placeholders.
 	 */
-	private Map<String, Object> placeholders = new HashMap<>();
+	private final Map<String, Object> placeholders = new HashMap<>();
 
 	/**
 	 * Whether to convert the component to legacy text, plain text or mini message in replaceLegacy() methods.
@@ -137,14 +137,16 @@ public final class Variables {
 	 * @return
 	 */
 	public Variables placeholderArray(@NonNull Object... placeholders) {
-		this.placeholders = CommonCore.newHashMap(placeholders);
+		final Map<String, Object> map = CommonCore.newHashMap(placeholders);
 
-		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
+		for (final Map.Entry<String, Object> entry : map.entrySet()) {
 			final String key = entry.getKey();
 
 			if (key.charAt(0) == '{' || key.charAt(key.length() - 1) == '}')
 				throw new FoException("Placeholders must not start or end with {}. Found: " + key);
 		}
+
+		this.placeholders.putAll(map);
 
 		return this;
 	}
@@ -205,7 +207,7 @@ public final class Variables {
 		for (int i = 0; i < array.length; i++)
 			replaced[i] = this.replaceLegacy(array[i]);
 
-		return array;
+		return replaced;
 	}
 
 	/**
@@ -442,10 +444,22 @@ public final class Variables {
 			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
 			if (javascriptVariable != null) {
-				final String value = javascriptVariable.buildLegacy(this.audience, this.placeholders);
+				String value = javascriptVariable.buildLegacy(this.audience, this.placeholders);
 
-				if (value != null)
+				if (value != null) {
+					if (this.toLegacyMode == ToLegacyMode.MINI) {
+						// Keep as is, support all
+
+					} else {
+						if (this.toLegacyMode == ToLegacyMode.PLAIN)
+							value = SimpleComponent.fromMini(value).toPlain();
+
+						else
+							value = CompChatColor.convertMiniToLegacy(value); // No gradient support, they will simply be lost
+					}
+
 					replacedValue = value;
+				}
 			}
 		}
 
