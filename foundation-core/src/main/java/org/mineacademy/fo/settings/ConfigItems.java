@@ -324,15 +324,17 @@ public final class ConfigItems<T extends YamlConfig> {
 			}
 
 			// Register
-			this.loadedItemsMap.put(name, item);
-			this.items.add(item);
-			this.itemNames.add(name);
+			if (item != null) {
+				this.loadedItemsMap.put(name, item);
+				this.items.add(item);
+				this.itemNames.add(name);
 
-			// Custom reordering
-			if (this.listComparator != null)
-				this.items = this.listComparator.apply(this.items);
+				// Custom reordering
+				if (this.listComparator != null)
+					this.items = this.listComparator.apply(this.items);
 
-			Collections.sort(this.itemNames, String.CASE_INSENSITIVE_ORDER);
+				Collections.sort(this.itemNames, String.CASE_INSENSITIVE_ORDER);
+			}
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Failed to load" + name + (this.singleFile ? "" : " from " + this.folder));
