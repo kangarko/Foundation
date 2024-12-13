@@ -31,7 +31,6 @@ import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
@@ -268,7 +267,8 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		this.player.spigot().sendMessage((!this.hasHexColorSupport() ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(component));
+		this.audience.sendMessage(component);
+		//this.player.spigot().sendMessage((!this.hasHexColorSupport() ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(component));
 	}
 
 	@Override
