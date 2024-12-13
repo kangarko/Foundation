@@ -97,6 +97,7 @@ import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
+import org.mineacademy.fo.settings.Lang;
 
 import com.google.gson.JsonObject;
 
@@ -108,6 +109,7 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -2554,7 +2556,10 @@ public final class Remain {
 	 * @return
 	 */
 	public static HoverEvent<?> convertItemStackToHoverEvent(ItemStack item) {
-		ValidCore.checkBoolean(item != null && !CompMaterial.isAir(item), "Hover item must not be null or air");
+		ValidCore.checkBoolean(item != null, "Hover item must not be null");
+
+		if (CompMaterial.isAir(item))
+			return HoverEvent.showText(Component.text(Lang.plain("part-air")));
 
 		if (item instanceof HoverEventSource)
 			return ((HoverEventSource<?>) item).asHoverEvent();
