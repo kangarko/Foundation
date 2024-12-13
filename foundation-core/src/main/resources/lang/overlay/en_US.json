@@ -120,6 +120,7 @@
     "<gray>hidden '/#flp <page> command.'"
   ],
   "part-and": "and",
+  "part-air": "Air",
   "part-console": "Console",
   "part-none": "None",
   "player-full-inventory": "The inventory was full so some items were dropped on the floor.",
