@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 /**
@@ -64,7 +65,7 @@ public final class Variables {
 	/**
 	 * Stores cache for legacy variables by audience's name.
 	 */
-	private static final Map<String, Map<String, String>> legacyCache = ExpiringMap.builder().expiration(100, TimeUnit.MILLISECONDS).build();
+	private static final Map<ToLegacyMode, Map<String, Map<String, String>>> legacyCache = ExpiringMap.builder().expiration(100, TimeUnit.MILLISECONDS).build();
 
 	/**
 	 * Whether we should replace JavaScript variables in replace() methods.
@@ -84,6 +85,11 @@ public final class Variables {
 	 * The custom placeholders map we apply on top of other placeholders.
 	 */
 	private Map<String, Object> placeholders = new HashMap<>();
+
+	/**
+	 * Whether to convert the component to legacy text, plain text or mini message in replaceLegacy() methods.
+	 */
+	private ToLegacyMode toLegacyMode = ToLegacyMode.MINI;
 
 	/**
 	 * Set the audience for whom we are replacing variables.
@@ -157,6 +163,18 @@ public final class Variables {
 	}
 
 	/**
+	 * Set the mode for converting component to legacy text.
+	 *
+	 * @param toLegacyMode
+	 * @return
+	 */
+	public Variables toLegacyMode(@NonNull ToLegacyMode toLegacyMode) {
+		this.toLegacyMode = toLegacyMode;
+
+		return this;
+	}
+
+	/**
 	 * Replace variables in the given list.
 	 *
 	 * @see #replaceLegacy(String)
@@ -211,7 +229,7 @@ public final class Variables {
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
 
-		final Map<String, String> cache = this.audience != null ? legacyCache.getOrDefault(this.audience.getName(), new HashMap<>()) : null;
+		final Map<String, String> cache = this.audience != null ? legacyCache.getOrDefault(this.toLegacyMode, new HashMap<>()).getOrDefault(this.audience.getName(), new HashMap<>()) : null;
 
 		while (matcher.find()) {
 			final String variable = matcher.group(1);
@@ -238,7 +256,7 @@ public final class Variables {
 		}
 
 		if (cache != null)
-			legacyCache.put(this.audience.getName(), cache);
+			legacyCache.computeIfAbsent(this.toLegacyMode, key -> new HashMap<>()).put(this.audience.getName(), cache);
 
 		result.append(message.substring(lastMatchEnd));
 		return result.toString();
@@ -385,11 +403,30 @@ public final class Variables {
 				if (rawValue == null)
 					return "";
 
-				if (rawValue instanceof SimpleComponent)
-					replacedValue = ((SimpleComponent) rawValue).toMini(this.audience);
+				if (rawValue instanceof SimpleComponent) {
+					final SimpleComponent component = (SimpleComponent) rawValue;
 
-				else if (rawValue instanceof Component)
-					replacedValue = SimpleComponent.MINIMESSAGE_PARSER.serialize((Component) rawValue);
+					if (this.toLegacyMode == ToLegacyMode.MINI)
+						replacedValue = component.toMini(this.audience);
+
+					else if (this.toLegacyMode == ToLegacyMode.PLAIN)
+						replacedValue = component.toPlain(this.audience);
+
+					else
+						replacedValue = component.toLegacy(this.audience);
+
+				} else if (rawValue instanceof Component) {
+					final Component component = (Component) rawValue;
+
+					if (this.toLegacyMode == ToLegacyMode.MINI)
+						replacedValue = SimpleComponent.MINIMESSAGE_PARSER.serialize(component);
+
+					else if (this.toLegacyMode == ToLegacyMode.PLAIN)
+						replacedValue = PlainTextComponentSerializer.plainText().serialize(component);
+
+					else
+						replacedValue = LegacyComponentSerializer.legacySection().serialize(component);
+				}
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
@@ -435,6 +472,21 @@ public final class Variables {
 		return replacedValue;
 	}
 
+	/**
+	 * Replace the [item] style variables in the given component.
+	 *
+	 * @param component
+	 * @return
+	 */
+	public SimpleComponent replaceMessageVariables(SimpleComponent component) {
+		return component.replaceMatch(Variables.MESSAGE_VARIABLE_PATTERN, (match, input) -> {
+			final String key = match.group(1);
+			final Variable variable = Variable.findVariableByKey(key, Variable.Type.MESSAGE);
+
+			return variable != null ? variable.build(this.audience, this.placeholders).toAdventure(null) : input;
+		});
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Static
 	// ------------------------------------------------------------------------------------------------------------
@@ -476,5 +528,29 @@ public final class Variables {
 	 */
 	public static Variables builder(@Nullable FoundationPlayer audience) {
 		return new Variables().audience(audience);
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Classes
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * The mode for converting component to legacy text.
+	 */
+	public enum ToLegacyMode {
+		/**
+		 * Convert component to legacy text.
+		 */
+		LEGACY,
+
+		/**
+		 * Convert component to plain text.
+		 */
+		PLAIN,
+
+		/**
+		 * Convert component to mini message.
+		 */
+		MINI;
 	}
 }
