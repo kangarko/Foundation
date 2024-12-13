@@ -131,7 +131,7 @@ public abstract class FileConfig extends ConfigSection {
 			throw err;
 
 		} catch (final Exception ex) {
-			CommonCore.throwError(ex, "Cannot load config from file " + file);
+			throw new FoException(ex, "Cannot load config from file " + file, false);
 		}
 	}
 
