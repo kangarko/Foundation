@@ -71,22 +71,10 @@ public final class Variable extends YamlConfig {
 	private String senderCondition;
 
 	/**
-	 * The JavaScript condition that must return TRUE for this variable to be shown to a receiver
-	 */
-	@Getter
-	private String receiverCondition;
-
-	/**
 	 * The permission the sender must have to show the part
 	 */
 	@Getter
 	private String senderPermission;
-
-	/**
-	 * The permission receiver must have to see the part
-	 */
-	@Getter
-	private String receiverPermission;
 
 	/**
 	 * The hover text or null if not set
@@ -152,9 +140,7 @@ public final class Variable extends YamlConfig {
 		this.key = this.getString("Key");
 		this.value = this.getString("Value");
 		this.senderCondition = this.getString("Sender_Condition");
-		this.receiverCondition = this.getString("Receiver_Condition");
 		this.senderPermission = this.getString("Sender_Permission");
-		this.receiverPermission = this.getString("Receiver_Permission");
 
 		// Correct common mistakes
 		if (this.type == null) {
@@ -204,14 +190,12 @@ public final class Variable extends YamlConfig {
 		this.set("Key", this.key);
 		this.set("Value", this.value);
 		this.set("Sender_Condition", this.senderCondition);
-		this.set("Receiver_Condition", this.receiverCondition);
 		this.set("Hover", this.hoverText);
 		this.set("Hover_Item", this.hoverItem);
 		this.set("Open_Url", this.openUrl);
 		this.set("Suggest_Command", this.suggestCommand);
 		this.set("Run_Command", this.runCommand);
 		this.set("Sender_Permission", this.senderPermission);
-		this.set("Receiver_Permission", this.receiverPermission);
 	}
 
 	// ----------------------------------------------------------------------------------
@@ -328,12 +312,10 @@ public final class Variable extends YamlConfig {
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
 
-			final SimpleComponent component = SimpleComponent.fromMini(value)
-					.viewPermission(this.receiverPermission)
-					.viewCondition(this.receiverCondition);
+			SimpleComponent component = SimpleComponent.fromMini(value);
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
-				component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
+				component = component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
 
 			if (this.hoverItem != null && !this.hoverItem.isEmpty())
 				try {
@@ -342,7 +324,7 @@ public final class Variable extends YamlConfig {
 					if (result != null) {
 						ValidCore.checkBoolean(result.getClass().getSimpleName().contains("ItemStack"), "Variable '" + this.getFile() + "' option Hover_Item must return ItemStack not " + result.getClass());
 
-						component.onHover(Platform.convertItemStackToHoverEvent(result));
+						component = component.onHover(Platform.convertItemStackToHoverEvent(result));
 					}
 
 				} catch (final FoScriptException ex) {
@@ -362,13 +344,13 @@ public final class Variable extends YamlConfig {
 				}
 
 			if (this.openUrl != null && !this.openUrl.isEmpty())
-				component.onClickOpenUrl(variables.replaceLegacy(this.openUrl));
+				component = component.onClickOpenUrl(variables.replaceLegacy(this.openUrl));
 
 			if (this.suggestCommand != null && !this.suggestCommand.isEmpty())
-				component.onClickSuggestCmd(variables.replaceLegacy(this.suggestCommand));
+				component = component.onClickSuggestCmd(variables.replaceLegacy(this.suggestCommand));
 
 			if (this.runCommand != null && !this.runCommand.isEmpty())
-				component.onClickRunCmd(variables.replaceLegacy(this.runCommand));
+				component = component.onClickRunCmd(variables.replaceLegacy(this.runCommand));
 
 			return component;
 
