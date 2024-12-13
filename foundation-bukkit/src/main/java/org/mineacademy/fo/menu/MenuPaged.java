@@ -405,7 +405,9 @@ public abstract class MenuPaged<T> extends Menu {
 		this.setButtons();
 		this.restartMenu();
 
-		Menu.getSound().play(this.getViewer());
+		if (Menu.getSound() != null)
+			Menu.getSound().play(this.getViewer());
+
 		Remain.updateInventoryTitle(this.getViewer(), this.getTitleWithPageNumbers());
 	}
 
