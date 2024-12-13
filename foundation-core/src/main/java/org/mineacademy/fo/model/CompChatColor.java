@@ -687,6 +687,18 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @return A new string with valid color codes removed.
 	 */
 	public static String stripColorCodes(String message) {
+		return stripColorCodes(message, true);
+	}
+
+	/**
+	 * Removes valid Minecraft color codes from a message. Valid color codes are sequences of
+	 * '§' or '&' followed by a character in the ranges 0-9, a-f, A-F, k-o, K-O, or r/R.
+	 *
+	 * @param message The input message potentially containing Minecraft color codes.
+	 * @param ampersand True if '&' should be considered a color code as well.
+	 * @return A new string with valid color codes removed.
+	 */
+	public static String stripColorCodes(String message, boolean ampersand) {
 		final int messageLength = message.length();
 		final char[] strippedMessage = new char[messageLength];
 		int resultIndex = 0;
@@ -694,7 +706,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		for (int i = 0; i < messageLength; i++) {
 			final char currentChar = message.charAt(i);
 
-			if ((currentChar == '§' || currentChar == '&') && i + 1 < messageLength) {
+			if ((currentChar == '§' || (ampersand && currentChar == '&')) && i + 1 < messageLength) {
 				final char nextChar = message.charAt(i + 1);
 
 				if ((nextChar >= '0' && nextChar <= '9') ||
