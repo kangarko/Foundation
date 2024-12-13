@@ -149,6 +149,23 @@ public final class FileUtil {
 		return dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
 	}
 
+	/**
+	 * Return all files in the given directory, ending with the given extension.
+	 *
+	 * @param directory the directory to search in
+	 * @param extension where dot is placed automatically in case it is lacking
+	 * @return
+	 */
+	public static File[] getFiles(@NonNull File directory, @NonNull String extension) {
+
+		// Remove initial dot, if any
+		if (extension.charAt(0) == '.')
+			extension = extension.substring(1);
+
+		final String finalExtension = extension;
+		return directory.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Reading
 	// ----------------------------------------------------------------------------------------------------
