@@ -228,7 +228,7 @@ public final class CompColor {
 	 * @param color
 	 * @return
 	 */
-	public static CompColor fromColor(Color color) {
+	public static CompColor fromColor(final Color color) {
 		return fromName("#" + Integer.toHexString(color.asRGB()).substring(2));
 	}
 

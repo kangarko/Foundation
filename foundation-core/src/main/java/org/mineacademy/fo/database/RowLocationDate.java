@@ -20,7 +20,7 @@ public abstract class RowLocationDate extends RowDate {
 	 *
 	 * @param location
 	 */
-	protected RowLocationDate(SimpleLocation location) {
+	protected RowLocationDate(final SimpleLocation location) {
 		this.location = location;
 	}
 
@@ -30,7 +30,7 @@ public abstract class RowLocationDate extends RowDate {
 	 * @param resultSet
 	 * @throws SQLException
 	 */
-	protected RowLocationDate(SimpleResultSet resultSet) throws SQLException {
+	protected RowLocationDate(final SimpleResultSet resultSet) throws SQLException {
 		super(resultSet);
 
 		this.location = resultSet.getLocation("World", "Location");

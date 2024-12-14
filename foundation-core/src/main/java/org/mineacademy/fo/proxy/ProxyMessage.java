@@ -29,7 +29,7 @@ public interface ProxyMessage {
 	 *
 	 * @return
 	 */
-	static ProxyMessage getByName(ProxyListener listener, String name) {
+	static ProxyMessage getByName(final ProxyListener listener, final String name) {
 		for (final ProxyMessage message : listener.getActions())
 			if (message.name().equals(name))
 				return message;

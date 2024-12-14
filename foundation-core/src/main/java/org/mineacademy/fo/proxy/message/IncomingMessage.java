@@ -66,7 +66,7 @@ public final class IncomingMessage extends Message {
 	 * @param input
 	 * @param stream
 	 */
-	public IncomingMessage(@NonNull ProxyListener listener, @NonNull UUID senderUid, @NonNull String serverName, @NonNull ProxyMessage type, @NonNull byte[] data, @NonNull DataInput input, @NonNull ByteArrayInputStream stream) {
+	public IncomingMessage(@NonNull final ProxyListener listener, @NonNull final UUID senderUid, @NonNull final String serverName, @NonNull final ProxyMessage type, @NonNull final byte[] data, @NonNull final DataInput input, @NonNull final ByteArrayInputStream stream) {
 		super(listener, type);
 
 		this.data = data;
@@ -134,7 +134,7 @@ public final class IncomingMessage extends Message {
 	 * @param typeOf
 	 * @return
 	 */
-	public <T extends Enum<T>> T readEnum(Class<T> typeOf) {
+	public <T extends Enum<T>> T readEnum(final Class<T> typeOf) {
 		this.moveHead(String.class); // Read enums as Strings
 
 		return ReflectionUtil.lookupEnum(typeOf, this.readCompressedString());

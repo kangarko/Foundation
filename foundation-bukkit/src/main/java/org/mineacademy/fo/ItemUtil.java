@@ -39,7 +39,7 @@ public final class ItemUtil {
 	 *
 	 * @return true if items are similar (see above)
 	 */
-	public static boolean isSimilar(ItemStack first, ItemStack second) {
+	public static boolean isSimilar(final ItemStack first, final ItemStack second) {
 		return isSimilar(first, second, false);
 	}
 
@@ -55,7 +55,7 @@ public final class ItemUtil {
 	 *
 	 * @return true if items are similar (see above)
 	 */
-	public static boolean isSimilar(ItemStack first, ItemStack second, boolean nbtOnly) {
+	public static boolean isSimilar(final ItemStack first, final ItemStack second, final boolean nbtOnly) {
 		if (first == null || second == null)
 			return false;
 
@@ -125,7 +125,7 @@ public final class ItemUtil {
 	}
 
 	// Compares the NBT string tag of two items
-	private static boolean matchNbt(String key, ReadableNBT firstNbt, ReadableNBT secondNbt) {
+	private static boolean matchNbt(final String key, final ReadableNBT firstNbt, final ReadableNBT secondNbt) {
 		final boolean firstHas = firstNbt.hasTag(key);
 		final boolean secondHas = secondNbt.hasTag(key);
 

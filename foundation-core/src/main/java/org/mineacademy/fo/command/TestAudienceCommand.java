@@ -167,7 +167,7 @@ public final class TestAudienceCommand extends SimpleCommandCore {
 
 		private final List<Platform.Type> supportedPlatforms;
 
-		Param(Platform.Type... supportedPlatforms) {
+		Param(final Platform.Type... supportedPlatforms) {
 			this.supportedPlatforms = Arrays.asList(supportedPlatforms);
 		}
 

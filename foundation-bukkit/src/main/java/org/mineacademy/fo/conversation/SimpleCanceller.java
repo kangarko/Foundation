@@ -25,7 +25,7 @@ public final class SimpleCanceller implements ConversationCanceller {
 	 *
 	 * @param cancelPhrases
 	 */
-	public SimpleCanceller(String... cancelPhrases) {
+	public SimpleCanceller(final String... cancelPhrases) {
 		this(Arrays.asList(cancelPhrases));
 	}
 
@@ -35,21 +35,21 @@ public final class SimpleCanceller implements ConversationCanceller {
 	 *
 	 * @param cancelPhrases
 	 */
-	public SimpleCanceller(List<String> cancelPhrases) {
+	public SimpleCanceller(final List<String> cancelPhrases) {
 		ValidCore.checkBoolean(!cancelPhrases.isEmpty(), "Cancel phrases are empty for conversation cancel listener!");
 
 		this.cancelPhrases = cancelPhrases;
 	}
 
 	@Override
-	public void setConversation(Conversation conversation) {
+	public void setConversation(final Conversation conversation) {
 	}
 
 	/**
 	 * Listen to cancel phrases and exit if they equals
 	 */
 	@Override
-	public boolean cancelBasedOnInput(ConversationContext context, String input) {
+	public boolean cancelBasedOnInput(final ConversationContext context, final String input) {
 		for (final String phrase : this.cancelPhrases)
 			if (input.equalsIgnoreCase(phrase))
 				return true;

@@ -23,7 +23,7 @@ public final class Common extends CommonCore {
 	 * @param player
 	 * @param messages
 	 */
-	public static void tell(@NonNull Player player, String... messages) {
+	public static void tell(@NonNull final Player player, final String... messages) {
 		final FoundationPlayer audience = Platform.toPlayer(player);
 
 		for (final String message : messages)
@@ -38,7 +38,7 @@ public final class Common extends CommonCore {
 	 * @param player
 	 * @param message
 	 */
-	public static void tell(@NonNull final Player player, SimpleComponent message) {
+	public static void tell(@NonNull final Player player, final SimpleComponent message) {
 		Platform.toPlayer(player).sendMessage(message);
 	}
 
@@ -48,7 +48,7 @@ public final class Common extends CommonCore {
 	 * @param ignoreVanished
 	 * @return
 	 */
-	public static List<String> getPlayerNames(boolean ignoreVanished) {
+	public static List<String> getPlayerNames(final boolean ignoreVanished) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers(ignoreVanished))

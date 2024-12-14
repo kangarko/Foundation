@@ -22,7 +22,7 @@ public enum NBTType {
 	NBTTagIntArray(11),
 	NBTTagLongArray(12);
 
-	NBTType(int i) {
+	NBTType(final int i) {
 		this.id = i;
 	}
 
@@ -39,7 +39,7 @@ public enum NBTType {
 	 * @param id Internal Minecraft id
 	 * @return Enum representing the id, NBTTagEnd for invalide ids
 	 */
-	public static NBTType valueOf(int id) {
+	public static NBTType valueOf(final int id) {
 		for (final NBTType t : values())
 			if (t.getId() == id)
 				return t;

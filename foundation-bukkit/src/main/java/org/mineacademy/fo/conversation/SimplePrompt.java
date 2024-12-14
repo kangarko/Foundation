@@ -178,7 +178,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param conversable
 	 * @param message
 	 */
-	protected final void tell(final Conversable conversable, String message) {
+	protected final void tell(final Conversable conversable, final String message) {
 		Platform.toPlayer(conversable).sendMessage(SimpleComponent.fromMiniAmpersand(this.getCustomPrefix() != null ? this.getCustomPrefix() + message : message));
 	}
 
@@ -188,7 +188,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param conversable
 	 * @param message
 	 */
-	protected final void tell(final Conversable conversable, SimpleComponent message) {
+	protected final void tell(final Conversable conversable, final SimpleComponent message) {
 		Platform.toPlayer(conversable).sendMessage(SimpleComponent.fromMiniAmpersand(this.getCustomPrefix() != null ? this.getCustomPrefix() : "").append(message));
 	}
 
@@ -268,7 +268,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 			}
 
 			@Override
-			protected void onConversationEnd(ConversationAbandonedEvent event, boolean canceledFromInactivity) {
+			protected void onConversationEnd(final ConversationAbandonedEvent event, final boolean canceledFromInactivity) {
 				final Player player = SimplePrompt.this.getPlayer(event.getContext());
 
 				if (!event.gracefulExit())

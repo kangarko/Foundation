@@ -57,7 +57,7 @@ public interface MenuQuantitable {
 	 * @param clickType the click type
 	 * @return the next quantity (higher or lower depending on the click)
 	 */
-	default double getNextQuantityDouble(ClickType clickType) {
+	default double getNextQuantityDouble(final ClickType clickType) {
 		return clickType == ClickType.LEFT ? -this.getQuantity().getAmountDouble() : this.getQuantity().getAmountDouble();
 	}
 
@@ -67,7 +67,7 @@ public interface MenuQuantitable {
 	 * @param clickType the click type
 	 * @return the next quantity (higher or lower depending on the click)
 	 */
-	default double getNextQuantityPercent(ClickType clickType) {
+	default double getNextQuantityPercent(final ClickType clickType) {
 		return clickType == ClickType.LEFT ? -this.getQuantity().getAmountPercent() : this.getQuantity().getAmountPercent();
 	}
 
@@ -78,11 +78,11 @@ public interface MenuQuantitable {
 	 * @param menu the menu
 	 * @return the button that is responsible for setting the quantity edit
 	 */
-	default Button getQuantityButton(Menu menu) {
+	default Button getQuantityButton(final Menu menu) {
 		return new Button() {
 
 			@Override
-			public final void onClickedInMenu(Player player, Menu clickedMenu, ClickType clickType) {
+			public final void onClickedInMenu(final Player player, final Menu clickedMenu, final ClickType clickType) {
 				final MenuQuantity nextQuantity = clickType == ClickType.LEFT ? MenuQuantitable.this.getQuantity().previous(MenuQuantitable.this.allowDecimalQuantities()) : MenuQuantitable.this.getQuantity().next(MenuQuantitable.this.allowDecimalQuantities());
 				ValidCore.checkNotNull(nextQuantity, "Next quantity cannot be null. Current: " + MenuQuantitable.this.getQuantity() + " Click: " + clickType);
 
@@ -137,11 +137,11 @@ public interface MenuQuantitable {
 		return false;
 	}
 
-	default ItemStack addLevelToItem(ItemStack item, int level) {
+	default ItemStack addLevelToItem(final ItemStack item, final int level) {
 		return this.addLevelToItem(item, String.valueOf(level));
 	}
 
-	default ItemStack addLevelToItem(ItemStack item, String level) {
+	default ItemStack addLevelToItem(final ItemStack item, final String level) {
 		final String quantity = this.getCurrentQuantityPercent();
 
 		// Paint the item with the drop chance lore

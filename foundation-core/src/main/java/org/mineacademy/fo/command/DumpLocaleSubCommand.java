@@ -24,7 +24,7 @@ public final class DumpLocaleSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param label
 	 */
-	public DumpLocaleSubCommand(String label) {
+	public DumpLocaleSubCommand(final String label) {
 		super(label);
 
 		this.setProperties();
@@ -35,7 +35,7 @@ public final class DumpLocaleSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param group
 	 */
-	public DumpLocaleSubCommand(SimpleCommandGroup group) {
+	public DumpLocaleSubCommand(final SimpleCommandGroup group) {
 		this(group, "dumplocale|dumploc");
 	}
 
@@ -45,7 +45,7 @@ public final class DumpLocaleSubCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param label
 	 */
-	public DumpLocaleSubCommand(SimpleCommandGroup group, String label) {
+	public DumpLocaleSubCommand(final SimpleCommandGroup group, final String label) {
 		super(group, label);
 
 		this.setProperties();

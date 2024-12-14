@@ -37,7 +37,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param classToList
 	 */
-	public PermsSubCommand(Class<?> classToList) {
+	public PermsSubCommand(final Class<?> classToList) {
 		this("permissions|perms", classToList);
 	}
 
@@ -49,7 +49,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	 * @param label
 	 * @param classToList
 	 */
-	private PermsSubCommand(String label, @NonNull Class<?> classToList) {
+	private PermsSubCommand(final String label, @NonNull final Class<?> classToList) {
 		super(label);
 
 		this.classToList = classToList;
@@ -65,7 +65,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param classToList
 	 */
-	public PermsSubCommand(SimpleCommandGroup group, Class<?> classToList) {
+	public PermsSubCommand(final SimpleCommandGroup group, final Class<?> classToList) {
 		this(group, "permissions|perms", classToList);
 	}
 
@@ -79,7 +79,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	 * @param classToList
 	 * @param variableReplacer
 	 */
-	private PermsSubCommand(SimpleCommandGroup group, String label, @NonNull Class<?> classToList) {
+	private PermsSubCommand(final SimpleCommandGroup group, final String label, @NonNull final Class<?> classToList) {
 		super(group, label);
 
 		this.classToList = classToList;
@@ -109,7 +109,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	 * Iterate through all classes and superclasses in the given classes and fill their permissions
 	 * that match the given phrase
 	 */
-	private List<SimpleComponent> list(String phrase) {
+	private List<SimpleComponent> list(final String phrase) {
 		final List<SimpleComponent> messages = new ArrayList<>();
 		Class<?> iteratedClass = this.classToList;
 
@@ -129,7 +129,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	 * Find annotations and compile permissions list from the given class and given existing
 	 * permissions that match the given phrase
 	 */
-	private void listIn(Class<?> clazz, List<SimpleComponent> messages, String phrase) throws ReflectiveOperationException {
+	private void listIn(final Class<?> clazz, final List<SimpleComponent> messages, final String phrase) throws ReflectiveOperationException {
 		final PermissionGroup group = clazz.getAnnotation(PermissionGroup.class);
 
 		if (!messages.isEmpty() && !clazz.isAnnotationPresent(PermissionGroup.class))

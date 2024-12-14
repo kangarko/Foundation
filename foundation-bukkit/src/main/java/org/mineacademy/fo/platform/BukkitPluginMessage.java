@@ -29,7 +29,7 @@ final class BukkitPluginMessage implements PluginMessageListener {
 	private static final BukkitPluginMessage instance = new BukkitPluginMessage();
 
 	@Override
-	public void onPluginMessageReceived(String channel, Player player, byte[] data) {
+	public void onPluginMessageReceived(final String channel, final Player player, final byte[] data) {
 		synchronized (BukkitPlugin.getInstance()) {
 
 			// Check if the message is for a server (ignore client messages)

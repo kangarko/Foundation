@@ -39,7 +39,7 @@ public final class SimpleLocation {
 	 * @param y
 	 * @param z
 	 */
-	public SimpleLocation(@NonNull String worldName, int x, int y, int z) {
+	public SimpleLocation(@NonNull final String worldName, final int x, final int y, final int z) {
 		this.worldName = worldName;
 		this.x = x;
 		this.y = y;
@@ -52,7 +52,7 @@ public final class SimpleLocation {
 	 * @param other
 	 * @return
 	 */
-	public double distance(SimpleLocation other) {
+	public double distance(final SimpleLocation other) {
 		ValidCore.checkBoolean(other.getWorldName().equalsIgnoreCase(this.worldName), "Cannot calculate distance between two locations in different worlds: " + this + " and other world: " + other);
 
 		return Math.sqrt(Math.pow(other.getX() - this.x, 2) +

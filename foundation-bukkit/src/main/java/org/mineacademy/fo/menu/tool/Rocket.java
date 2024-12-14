@@ -46,7 +46,7 @@ public abstract class Rocket extends Tool {
 	 * @param projectile
 	 * @param flightSpeed
 	 */
-	protected Rocket(Class<? extends Projectile> projectile) {
+	protected Rocket(final Class<? extends Projectile> projectile) {
 		this(projectile, 1.5F);
 	}
 
@@ -56,7 +56,7 @@ public abstract class Rocket extends Tool {
 	 * @param projectile
 	 * @param flightSpeed
 	 */
-	protected Rocket(Class<? extends Projectile> projectile, float flightSpeed) {
+	protected Rocket(final Class<? extends Projectile> projectile, final float flightSpeed) {
 		this(projectile, flightSpeed, 5F);
 	}
 
@@ -67,7 +67,7 @@ public abstract class Rocket extends Tool {
 	 * @param flightSpeed
 	 * @param explosionPower
 	 */
-	protected Rocket(Class<? extends Projectile> projectile, float flightSpeed, float explosionPower) {
+	protected Rocket(final Class<? extends Projectile> projectile, final float flightSpeed, final float explosionPower) {
 		this(projectile, flightSpeed, explosionPower, true);
 	}
 
@@ -80,7 +80,7 @@ public abstract class Rocket extends Tool {
 	 * @param projectile
 	 * @param flightSpeed
 	 */
-	protected Rocket(Class<? extends Projectile> projectile, float flightSpeed, float explosionPower, boolean breakBlocks) {
+	protected Rocket(final Class<? extends Projectile> projectile, final float flightSpeed, final float explosionPower, final boolean breakBlocks) {
 		ValidCore.checkBoolean(flightSpeed <= 10F, "Rocket cannot have speed over 10");
 		ValidCore.checkBoolean(explosionPower <= 30F, "Rocket cannot have explosion power over 30");
 
@@ -94,7 +94,7 @@ public abstract class Rocket extends Tool {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void onBlockClick(PlayerInteractEvent e) {
+	protected void onBlockClick(final PlayerInteractEvent e) {
 	}
 
 	/**
@@ -105,7 +105,7 @@ public abstract class Rocket extends Tool {
 	 * @param location
 	 * @return
 	 */
-	protected boolean canLaunch(Player shooter, Location location) {
+	protected boolean canLaunch(final Player shooter, final Location location) {
 		return true;
 	}
 
@@ -115,7 +115,7 @@ public abstract class Rocket extends Tool {
 	 * @param projectile
 	 * @param shooter
 	 */
-	protected void onLaunch(Projectile projectile, Player shooter) {
+	protected void onLaunch(final Projectile projectile, final Player shooter) {
 	}
 
 	/**
@@ -127,7 +127,7 @@ public abstract class Rocket extends Tool {
 	 * @param projectile
 	 * @param shooter
 	 */
-	protected void onFlyTick(Projectile projectile, Player shooter) {
+	protected void onFlyTick(final Projectile projectile, final Player shooter) {
 	}
 
 	/**
@@ -137,7 +137,7 @@ public abstract class Rocket extends Tool {
 	 * @param shooter
 	 * @return
 	 */
-	protected boolean canExplode(Projectile projectile, Player shooter) {
+	protected boolean canExplode(final Projectile projectile, final Player shooter) {
 		return true;
 	}
 
@@ -150,7 +150,7 @@ public abstract class Rocket extends Tool {
 	 * @param shooter
 	 * @param location
 	 */
-	protected void onExplode(Projectile projectile, Player shooter) {
+	protected void onExplode(final Projectile projectile, final Player shooter) {
 	}
 
 	/**

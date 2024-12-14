@@ -28,7 +28,7 @@ public final class RuleTextReplacer {
 	 * @param replacement
 	 * @return
 	 */
-	public Component replaceWithProlong(String message, Pattern pattern, String replacement) {
+	public Component replaceWithProlong(final String message, final Pattern pattern, final String replacement) {
 		return LegacyComponentSerializer.legacySection().deserialize(message).replaceText(b -> b.match(pattern).replacement((matchResult, builder) -> {
 			this.changed = true;
 
@@ -48,7 +48,7 @@ public final class RuleTextReplacer {
 	 * @param replacement
 	 * @return
 	 */
-	public Component replace(String message, Pattern pattern, String replacement) {
+	public Component replace(final String message, final Pattern pattern, final String replacement) {
 		return LegacyComponentSerializer.legacySection().deserialize(message).replaceText(b -> b.match(pattern).replacement((matchResult, builder) -> {
 			this.changed = true;
 

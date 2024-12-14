@@ -26,7 +26,7 @@ public final class FilterDate extends Filter {
 	}
 
 	@Override
-	public boolean isApplicable(Table table) {
+	public boolean isApplicable(final Table table) {
 		return RowDate.class.isAssignableFrom(table.getRowClass());
 	}
 
@@ -39,12 +39,12 @@ public final class FilterDate extends Filter {
 	}
 
 	@Override
-	public Collection<String> tabComplete(FoundationPlayer audience) {
+	public Collection<String> tabComplete(final FoundationPlayer audience) {
 		return Arrays.asList("today", "yesterday", "thisweek", "lastweek", "thismonth", "lastmonth", "thisyear", "lastyear", "30m", "1h", "1d", "1w", "1mo", "1y");
 	}
 
 	@Override
-	public boolean validate(FoundationPlayer audience, String value) {
+	public boolean validate(final FoundationPlayer audience, String value) {
 		value = value.toLowerCase();
 
 		final long now = System.currentTimeMillis();
@@ -108,7 +108,7 @@ public final class FilterDate extends Filter {
 	}
 
 	@Override
-	public boolean canDisplay(Row row) {
+	public boolean canDisplay(final Row row) {
 		final long date = ((RowDate) row).getDate();
 
 		return date >= this.from && date <= this.to;

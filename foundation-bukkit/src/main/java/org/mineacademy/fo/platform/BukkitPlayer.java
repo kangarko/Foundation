@@ -46,7 +46,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	private final Player player;
 	private final CommandSender sender;
 
-	public BukkitPlayer(@NonNull CommandSender sender) {
+	public BukkitPlayer(@NonNull final CommandSender sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
@@ -54,7 +54,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void chat(String message) {
+	public void chat(final String message) {
 		if (this.isPlayer)
 			this.player.chat(message);
 		else
@@ -97,12 +97,12 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	protected boolean hasPermission0(String permission) {
+	protected boolean hasPermission0(final String permission) {
 		return this.sender.hasPermission(permission);
 	}
 
 	@Override
-	protected void hideBossBar0(TimedBar bar) {
+	protected void hideBossBar0(final TimedBar bar) {
 		if (this.isPlayer) {
 			if (Remain.isCommandSenderAudience())
 				this.sender.hideBossBar(bar.getBar());
@@ -138,17 +138,17 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void kick(SimpleComponent reason) {
+	public void kick(final SimpleComponent reason) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
 		if (Bukkit.isPrimaryThread())
-			kick0(reason);
+			this.kick0(reason);
 
 		else
-			Platform.runTask(() -> kick0(reason));
+			Platform.runTask(() -> this.kick0(reason));
 	}
 
-	private void kick0(SimpleComponent reason) {
+	private void kick0(final SimpleComponent reason) {
 		if (Remain.isCommandSenderAudience())
 			this.player.kick(reason.toAdventure(this));
 		else
@@ -156,7 +156,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void openBook(Book book) {
+	public void openBook(final Book book) {
 
 		// Render as text, replacing variables
 		if (MinecraftVersion.olderThan(V.v1_8) || !this.isPlayer) {
@@ -189,7 +189,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	protected void performPlayerCommand0(String replacedCommand) {
+	protected void performPlayerCommand0(final String replacedCommand) {
 		if (this.isPlayer) {
 			if (Bukkit.isPrimaryThread())
 				this.player.chat("/" + replacedCommand);
@@ -216,7 +216,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendActionBar(SimpleComponent component) {
+	public void sendActionBar(final SimpleComponent component) {
 		if (Remain.isCommandSenderAudience()) {
 			this.sender.sendActionBar(component.toAdventure(this));
 
@@ -236,7 +236,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
+	public void sendPlayerListHeaderAndFooter(final SimpleComponent header, final SimpleComponent footer) {
 		if (Remain.isCommandSenderAudience())
 			this.audience.sendPlayerListHeaderAndFooter(header.toAdventure(this), footer.toAdventure(this));
 
@@ -250,7 +250,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendMessage0(Component component) {
+	public void sendMessage0(final Component component) {
 
 		// Paper is fastest: ~0.1ms vs ~0.3ms below
 		if (Remain.isCommandSenderAudience()) {
@@ -272,7 +272,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendToast(SimpleComponent component, CompToastStyle style) {
+	public void sendToast(final SimpleComponent component, final CompToastStyle style) {
 		if (this.isPlayer)
 			Remain.sendToast(this.player, component.toLegacy(this), style);
 		else
@@ -280,14 +280,14 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void setTempMetadata(String key, Object value) {
+	public void setTempMetadata(final String key, final Object value) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot set temp metadata for non-players!");
 
 		this.player.setMetadata(key, new FixedMetadataValue(BukkitPlugin.getInstance(), value));
 	}
 
 	@Override
-	protected void showBossBar0(TimedBar bar) {
+	protected void showBossBar0(final TimedBar bar) {
 		if (this.isPlayer) {
 			if (Remain.isCommandSenderAudience())
 				this.sender.showBossBar(bar.getBar());
@@ -299,7 +299,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void showTitle(Title title) {
+	public void showTitle(final Title title) {
 		if (Remain.isCommandSenderAudience()) {
 			this.sender.showTitle(title);
 

@@ -88,7 +88,7 @@ public abstract class OfflineRegionScanner {
 	 *
 	 * @param world
 	 */
-	public final void scan(World world) {
+	public final void scan(final World world) {
 		final boolean hadAutoSave = world.isAutoSave();
 
 		try {
@@ -103,7 +103,7 @@ public abstract class OfflineRegionScanner {
 	/*
 	 * Invoke the main scan of all chunks within this world on the disk, both loaded and unloaded
 	 */
-	private void scan0(World world) {
+	private void scan0(final World world) {
 
 		CommonCore.log(
 				CommonCore.chatLine(),
@@ -151,7 +151,7 @@ public abstract class OfflineRegionScanner {
 	 * Self-repeating cycle of loading chunks from the disk until
 	 * we reach the end of the queue
 	 */
-	private void schedule0(Queue<File> queue) {
+	private void schedule0(final Queue<File> queue) {
 		new SimpleRunnable() {
 
 			@Override
@@ -184,7 +184,7 @@ public abstract class OfflineRegionScanner {
 	/*
 	 * Scans the given region file
 	 */
-	private void scanFile(File file, Queue<File> queue) {
+	private void scanFile(final File file, final Queue<File> queue) {
 		final Matcher matcher = FILE_PATTERN.matcher(file.getName());
 
 		if (!matcher.matches())
@@ -276,7 +276,7 @@ public abstract class OfflineRegionScanner {
 	 * @param chunkX
 	 * @param chunkZ
 	 */
-	protected void onChunkScanFast(int chunkX, int chunkZ) {
+	protected void onChunkScanFast(final int chunkX, final int chunkZ) {
 	}
 
 	/**
@@ -295,7 +295,7 @@ public abstract class OfflineRegionScanner {
 	 * @param world
 	 * @return
 	 */
-	public static File[] getRegionFiles(World world) {
+	public static File[] getRegionFiles(final World world) {
 		final File regionDir = getRegionDirectory(world);
 
 		return regionDir == null ? null : regionDir.listFiles((FilenameFilter) (dir, name) -> name.toLowerCase().endsWith(".mca"));
@@ -307,7 +307,7 @@ public abstract class OfflineRegionScanner {
 	 * @param world
 	 * @return
 	 */
-	private static final File getRegionDirectory(World world) {
+	private static final File getRegionDirectory(final World world) {
 		for (final String folder : FOLDERS) {
 			final File file = new File(world.getWorldFolder(), folder);
 
@@ -325,7 +325,7 @@ public abstract class OfflineRegionScanner {
 	 * @param world
 	 * @return
 	 */
-	public static int getEstimatedWaitTimeSec(World world) {
+	public static int getEstimatedWaitTimeSec(final World world) {
 		final File[] files = getRegionFiles(world);
 
 		return (int) (Math.round(WAIT_TIME_BETWEEN_SCAN_SECONDS * 1.5D) * files.length);
@@ -371,7 +371,7 @@ class RegionAccessor {
 		}
 	}
 
-	static Object getRegionFile(String worldName, File file) {
+	static Object getRegionFile(final String worldName, final File file) {
 		try {
 			final File container = new File(Bukkit.getWorldContainer(), worldName);
 
@@ -385,7 +385,7 @@ class RegionAccessor {
 		}
 	}
 
-	static boolean isChunkSaved(Object region, int x, int z) {
+	static boolean isChunkSaved(final Object region, final int x, final int z) {
 		try {
 			if (MinecraftVersion.newerThan(V.v1_13)) {
 				final Object chunkCoordinates = Remain.getNMSClass("ChunkCoordIntPair", "net.minecraft.world.level.ChunkCoordIntPair")
@@ -401,7 +401,7 @@ class RegionAccessor {
 		}
 	}
 
-	static void save(Object region) {
+	static void save(final Object region) {
 		try {
 			region.getClass().getDeclaredMethod(saveMethodName).invoke(region);
 

@@ -11,12 +11,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class NBTDoubleList extends NBTList<Double> {
 
-	protected NBTDoubleList(NBTCompound owner, String name, NBTType type, Object list) {
+	protected NBTDoubleList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	protected Object asTag(Double object) {
+	protected Object asTag(final Double object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGDOUBLE.getClazz().getDeclaredConstructor(double.class);
 			con.setAccessible(true);
@@ -28,7 +28,7 @@ public class NBTDoubleList extends NBTList<Double> {
 	}
 
 	@Override
-	public Double get(int index) {
+	public Double get(final int index) {
 		try {
 			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Double.valueOf(obj.toString());

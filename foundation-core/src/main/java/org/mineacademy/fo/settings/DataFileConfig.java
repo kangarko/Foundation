@@ -49,7 +49,7 @@ public final class DataFileConfig extends YamlConfig {
 	 * @param pathPrefix
 	 * @return
 	 */
-	public static DataFileConfig getSection(String pathPrefix) {
+	public static DataFileConfig getSection(final String pathPrefix) {
 		final DataFileConfig instance = getInstance();
 
 		instance.setPathPrefix(pathPrefix);

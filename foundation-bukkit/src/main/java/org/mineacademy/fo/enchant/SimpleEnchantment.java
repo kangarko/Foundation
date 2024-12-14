@@ -127,7 +127,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 *
 	 * @param name
 	 */
-	protected SimpleEnchantment(@NonNull String name, int maxLevel) {
+	protected SimpleEnchantment(@NonNull final String name, final int maxLevel) {
 		String namespacedName = new String(name);
 		namespacedName = namespacedName.toLowerCase().replace(" ", "_");
 		namespacedName = ChatUtil.replaceDiacritic(namespacedName);
@@ -174,7 +174,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param damager
 	 * @param event
 	 */
-	protected void onDamage(int level, LivingEntity damager, EntityDamageByEntityEvent event) {
+	protected void onDamage(final int level, final LivingEntity damager, final EntityDamageByEntityEvent event) {
 	}
 
 	/**
@@ -183,7 +183,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param level
 	 * @param event
 	 */
-	protected void onInteract(int level, PlayerInteractEvent event) {
+	protected void onInteract(final int level, final PlayerInteractEvent event) {
 	}
 
 	/**
@@ -192,7 +192,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param level
 	 * @param event
 	 */
-	protected void onBreakBlock(int level, BlockBreakEvent event) {
+	protected void onBreakBlock(final int level, final BlockBreakEvent event) {
 	}
 
 	/**
@@ -203,7 +203,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param shooter
 	 * @param event
 	 */
-	protected void onShoot(int level, LivingEntity shooter, ProjectileLaunchEvent event) {
+	protected void onShoot(final int level, final LivingEntity shooter, final ProjectileLaunchEvent event) {
 	}
 
 	/**
@@ -214,7 +214,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param shooter
 	 * @param event
 	 */
-	protected void onHit(int level, LivingEntity shooter, ProjectileHitEvent event) {
+	protected void onHit(final int level, final LivingEntity shooter, final ProjectileHitEvent event) {
 	}
 
 	// ------------------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param level
 	 * @return
 	 */
-	public String getLore(int level) {
+	public String getLore(final int level) {
 		return this.name + " " + MathUtil.toRoman(level);
 	}
 
@@ -270,7 +270,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param item
 	 * @return
 	 */
-	public final boolean hasEnchant(ItemStack item) {
+	public final boolean hasEnchant(final ItemStack item) {
 		return SimpleEnchantment.hasEnchantment(item, this);
 	}
 
@@ -280,7 +280,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param level
 	 * @return
 	 */
-	public final ItemStack applyTo(ItemStack item, int level) {
+	public final ItemStack applyTo(final ItemStack item, final int level) {
 		if (this.isAvailable()) {
 			final ItemMeta meta = item.getItemMeta();
 
@@ -328,7 +328,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param other
 	 * @return
 	 */
-	public boolean conflictsWith(Enchantment other) {
+	public boolean conflictsWith(final Enchantment other) {
 		return false;
 	}
 
@@ -338,7 +338,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param item
 	 * @return
 	 */
-	public boolean canEnchantItem(ItemStack item) {
+	public boolean canEnchantItem(final ItemStack item) {
 		return true;
 	}
 
@@ -362,7 +362,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @return
 	 */
 	@Deprecated
-	public int getMinCost(int level) {
+	public int getMinCost(final int level) {
 		return this.getMinCost().calculate(level);
 	}
 
@@ -393,7 +393,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @return
 	 */
 	@Deprecated
-	public int getMaxCost(int level) {
+	public int getMaxCost(final int level) {
 		return this.getMaxCost().calculate(level);
 	}
 
@@ -474,7 +474,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param id
 	 */
 	@Deprecated
-	public final void setLegacyId(int id) {
+	public final void setLegacyId(final int id) {
 		this.id = id;
 	}
 
@@ -487,7 +487,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 *
 	 * @param handleClass
 	 */
-	public static void registerEnchantmentHandle(Class<? extends NmsEnchant> handleClass) {
+	public static void registerEnchantmentHandle(final Class<? extends NmsEnchant> handleClass) {
 		Remain.unfreezeEnchantRegistry();
 
 		SimpleEnchantment.handleClass = handleClass;
@@ -499,7 +499,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param item
 	 * @return
 	 */
-	public static Map<SimpleEnchantment, Integer> findEnchantments(ItemStack item) {
+	public static Map<SimpleEnchantment, Integer> findEnchantments(final ItemStack item) {
 		final Map<SimpleEnchantment, Integer> map = new HashMap<>();
 
 		if (item == null)
@@ -538,7 +538,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @param simpleEnchantment
 	 * @return
 	 */
-	public static boolean hasEnchantment(ItemStack item, @NonNull SimpleEnchantment simpleEnchantment) {
+	public static boolean hasEnchantment(final ItemStack item, @NonNull final SimpleEnchantment simpleEnchantment) {
 		if (item == null)
 			return false;
 
@@ -577,7 +577,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	public static ItemStack removeEnchantmentLores(ItemStack item) {
+	public static ItemStack removeEnchantmentLores(final ItemStack item) {
 		if (!item.hasItemMeta())
 			return null;
 
@@ -651,7 +651,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	public static ItemStack addEnchantmentLores(ItemStack item) {
+	public static ItemStack addEnchantmentLores(final ItemStack item) {
 		final List<String> customEnchants = new ArrayList<>();
 
 		// Fill in our enchants
@@ -721,7 +721,7 @@ public abstract class SimpleEnchantment implements Listener {
 		return null;
 	}
 
-	private static SimpleEnchantment fromBukkit(Enchantment bukkitEnchantment) {
+	private static SimpleEnchantment fromBukkit(final Enchantment bukkitEnchantment) {
 		if (hasNamespacedKeys) {
 			final String key = bukkitEnchantment.getKey().getNamespace() + ":" + bukkitEnchantment.getKey().getKey();
 
@@ -759,12 +759,12 @@ public abstract class SimpleEnchantment implements Listener {
 		private final int base;
 		private final int perLevel;
 
-		public Cost(int var0, int var1) {
+		public Cost(final int var0, final int var1) {
 			this.base = var0;
 			this.perLevel = var1;
 		}
 
-		public int calculate(int level) {
+		public int calculate(final int level) {
 			return this.base + this.perLevel * (level - 1);
 		}
 	}
@@ -782,7 +782,7 @@ public abstract class SimpleEnchantment implements Listener {
 		private static final Listener instance = new Listener();
 
 		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-		public void onEntityDamage(EntityDamageByEntityEvent event) {
+		public void onEntityDamage(final EntityDamageByEntityEvent event) {
 			final Entity damager = event.getDamager();
 
 			if (damager instanceof LivingEntity)
@@ -790,7 +790,7 @@ public abstract class SimpleEnchantment implements Listener {
 		}
 
 		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
-		public void onInteract(PlayerInteractEvent event) {
+		public void onInteract(final PlayerInteractEvent event) {
 			if (!Remain.isInteractEventPrimaryHand(event))
 				return;
 
@@ -802,12 +802,12 @@ public abstract class SimpleEnchantment implements Listener {
 		}
 
 		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-		public void onBreakBlock(BlockBreakEvent event) {
+		public void onBreakBlock(final BlockBreakEvent event) {
 			this.execute(event.getPlayer(), (enchant, level) -> enchant.onBreakBlock(level, event));
 		}
 
 		@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-		public void onShoot(ProjectileLaunchEvent event) {
+		public void onShoot(final ProjectileLaunchEvent event) {
 			try {
 				final ProjectileSource projectileSource = event.getEntity().getShooter();
 
@@ -823,7 +823,7 @@ public abstract class SimpleEnchantment implements Listener {
 			}
 		}
 
-		private void execute(LivingEntity source, BiConsumer<SimpleEnchantment, Integer> executer) {
+		private void execute(final LivingEntity source, final BiConsumer<SimpleEnchantment, Integer> executer) {
 			try {
 				final ItemStack hand = source instanceof Player ? ((Player) source).getItemInHand() : source.getEquipment().getItemInHand();
 

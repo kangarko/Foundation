@@ -35,12 +35,12 @@ final class BukkitListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onQuit(PlayerQuitEvent event) {
+	public void onQuit(final PlayerQuitEvent event) {
 		SimpleScoreboard.clearBoardsFor(event.getPlayer());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onServiceRegister(ServiceRegisterEvent event) {
+	public void onServiceRegister(final ServiceRegisterEvent event) {
 		HookManager.updateVaultIntegration();
 	}
 
@@ -50,7 +50,7 @@ final class BukkitListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onCommand(PlayerCommandPreprocessEvent event) {
+	public void onCommand(final PlayerCommandPreprocessEvent event) {
 
 		final Player player = event.getPlayer();
 		final FoundationPlayer audience = Platform.toPlayer(player);
@@ -167,7 +167,7 @@ final class BukkitListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onJoin(PlayerJoinEvent event) {
+	public void onJoin(final PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
 		final FoundationPlayer audience = Platform.toPlayer(player);
 

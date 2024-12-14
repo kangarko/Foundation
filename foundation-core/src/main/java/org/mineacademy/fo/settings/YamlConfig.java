@@ -155,7 +155,7 @@ public class YamlConfig extends FileConfig {
 	}
 
 	@Override
-	public final void loadFromString(@NonNull String contents) {
+	public final void loadFromString(@NonNull final String contents) {
 
 		MappingNode node;
 		Node rawNode;
@@ -223,7 +223,7 @@ public class YamlConfig extends FileConfig {
 		}
 	}
 
-	private void fromNodeTree(MappingNode input, ConfigSection section) {
+	private void fromNodeTree(final MappingNode input, final ConfigSection section) {
 		this.constructor.flattenMapping(input);
 
 		for (final NodeTuple nodeTuple : input.getValue()) {
@@ -251,7 +251,7 @@ public class YamlConfig extends FileConfig {
 		}
 	}
 
-	private boolean hasSerializedTypeKey(MappingNode node) {
+	private boolean hasSerializedTypeKey(final MappingNode node) {
 		for (final NodeTuple nodeTuple : node.getValue()) {
 			final Node keyNode = nodeTuple.getKeyNode();
 
@@ -266,7 +266,7 @@ public class YamlConfig extends FileConfig {
 		return false;
 	}
 
-	private MappingNode toNodeTreeWithDefaults(ConfigSection section, ConfigSection defaults) {
+	private MappingNode toNodeTreeWithDefaults(final ConfigSection section, final ConfigSection defaults) {
 
 		// Move settings which are NOT in the default file to the unused folder.
 		// You can configure which sections are allowed to stay using uncommentedSections field above.
@@ -307,7 +307,7 @@ public class YamlConfig extends FileConfig {
 		return this.toNodeTreeWithDefaults0(section, defaults, true);
 	}
 
-	private MappingNode toNodeTreeWithDefaults0(ConfigSection section, ConfigSection defaults, boolean pullFromDefaults) {
+	private MappingNode toNodeTreeWithDefaults0(final ConfigSection section, final ConfigSection defaults, final boolean pullFromDefaults) {
 		final List<NodeTuple> nodeTuples = new ArrayList<>();
 
 		for (final Map.Entry<String, Object> entry : (pullFromDefaults && defaults != null ? defaults : section).getValues(false).entrySet()) {
@@ -353,7 +353,7 @@ public class YamlConfig extends FileConfig {
 		return new MappingNode(Tag.MAP, nodeTuples, FlowStyle.BLOCK);
 	}
 
-	private List<String> getCommentLines(List<CommentLine> comments) {
+	private List<String> getCommentLines(final List<CommentLine> comments) {
 		final List<String> lines = new ArrayList<>();
 
 		if (comments != null)
@@ -371,7 +371,7 @@ public class YamlConfig extends FileConfig {
 		return lines;
 	}
 
-	private List<CommentLine> getCommentLines(List<String> comments, CommentType commentType) {
+	private List<CommentLine> getCommentLines(final List<String> comments, final CommentType commentType) {
 		final List<CommentLine> lines = new ArrayList<>();
 
 		for (final String comment : comments)
@@ -395,7 +395,7 @@ public class YamlConfig extends FileConfig {
 	 * @param header The list of heading comments
 	 * @return The modified list
 	 */
-	private List<String> loadHeader(List<String> header) {
+	private List<String> loadHeader(final List<String> header) {
 		final LinkedList<String> list = new LinkedList<>(header);
 
 		if (!list.isEmpty())
@@ -414,7 +414,7 @@ public class YamlConfig extends FileConfig {
 	 * @param header The list of heading comments
 	 * @return The modified list
 	 */
-	private List<String> saveHeader(List<String> header) {
+	private List<String> saveHeader(final List<String> header) {
 		final LinkedList<String> list = new LinkedList<>(header);
 
 		if (!list.isEmpty())
@@ -457,7 +457,7 @@ public class YamlConfig extends FileConfig {
 	 *
 	 * @param lines New header, every entry represents one line.
 	 */
-	public final void setHeader(String... lines) {
+	public final void setHeader(final String... lines) {
 		this.setHeader(CommonCore.newList(lines));
 	}
 
@@ -476,7 +476,7 @@ public class YamlConfig extends FileConfig {
 	 *
 	 * @param value New header, every entry represents one line.
 	 */
-	public final void setHeader(List<String> value) {
+	public final void setHeader(final List<String> value) {
 		final List<String> actualLines = new ArrayList<>();
 
 		if (value != null)
@@ -525,7 +525,7 @@ public class YamlConfig extends FileConfig {
 	 *
 	 * @param value New footer, every entry represents one line.
 	 */
-	public final void setFooter(List<String> value) {
+	public final void setFooter(final List<String> value) {
 		this.footer = value;
 	}
 
@@ -550,7 +550,7 @@ public class YamlConfig extends FileConfig {
 	 *
 	 * @param uncommentedSections
 	 */
-	public final void setUncommentedSections(Collection<String> uncommentedSections) {
+	public final void setUncommentedSections(final Collection<String> uncommentedSections) {
 		this.uncommentedSections = new HashSet<>(uncommentedSections);
 	}
 
@@ -560,7 +560,7 @@ public class YamlConfig extends FileConfig {
 	 * @param path the path in the plugin's jar
 	 * @return Resulting configuration
 	 */
-	public static YamlConfig fromInternalPath(@NonNull String path) {
+	public static YamlConfig fromInternalPath(@NonNull final String path) {
 		final YamlConfig config = new YamlConfig();
 		config.loadFromInternal(path);
 
@@ -573,7 +573,7 @@ public class YamlConfig extends FileConfig {
 	 * @param file Input file
 	 * @return Resulting configuration
 	 */
-	public static YamlConfig fromFile(@NonNull File file) {
+	public static YamlConfig fromFile(@NonNull final File file) {
 		final YamlConfig config = new YamlConfig();
 		config.loadFromFile(file);
 
@@ -586,7 +586,7 @@ public class YamlConfig extends FileConfig {
 	 * @param reader Input file
 	 * @return Resulting configuration
 	 */
-	public static YamlConfig fromReader(@NonNull Reader reader) {
+	public static YamlConfig fromReader(@NonNull final Reader reader) {
 		final YamlConfig config = new YamlConfig();
 		config.loadFromReader(reader);
 
@@ -598,7 +598,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static class YamlConstructor extends StandardConstructor {
 
-		public YamlConstructor(LoadSettings loadSettings) {
+		public YamlConstructor(final LoadSettings loadSettings) {
 			super(loadSettings);
 
 			this.tagConstructors.put(Tag.COMMENT, new ConstructComment());
@@ -610,13 +610,13 @@ public class YamlConfig extends FileConfig {
 		}
 
 		@Override
-		public Object construct(Node node) {
+		public Object construct(final Node node) {
 			return this.constructObject(node);
 		}
 
 		private static class ConstructComment extends ConstructScalar {
 			@Override
-			public Object construct(Node node) {
+			public Object construct(final Node node) {
 
 				// Handle the comment node - For now, we'll just return null.
 				return null;
@@ -629,7 +629,7 @@ public class YamlConfig extends FileConfig {
 	 */
 	public static class YamlRepresenter extends StandardRepresenter {
 
-		public YamlRepresenter(DumpSettings settings) {
+		public YamlRepresenter(final DumpSettings settings) {
 			super(settings);
 
 			// We use our own custom enum serializer

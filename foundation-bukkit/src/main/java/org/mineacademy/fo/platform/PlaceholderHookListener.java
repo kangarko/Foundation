@@ -12,7 +12,7 @@ import me.clip.placeholderapi.events.ExpansionsLoadedEvent;
 final class PlaceholderHookListener implements Listener {
 
 	@EventHandler
-	public void onExpansionRegister(ExpansionsLoadedEvent event) {
+	public void onExpansionRegister(final ExpansionsLoadedEvent event) {
 		HookManager.reloadPlaceholderAPIHooks();
 	}
 }

@@ -31,7 +31,7 @@ public final class BukkitLibraryManager extends LibraryManager {
 	 *
 	 * @param plugin the plugin to manage
 	 */
-	public BukkitLibraryManager(@NonNull Plugin plugin) {
+	public BukkitLibraryManager(@NonNull final Plugin plugin) {
 		super(Bukkit.getWorldContainer().toPath().resolve("libraries"));
 
 		this.classLoader = new URLClassLoaderHelper((URLClassLoader) plugin.getClass().getClassLoader(), this);
@@ -44,12 +44,12 @@ public final class BukkitLibraryManager extends LibraryManager {
 	 * @param file the file to add
 	 */
 	@Override
-	protected void addToClasspath(@NonNull Path file) {
+	protected void addToClasspath(@NonNull final Path file) {
 		this.classLoader.addToClasspath(file);
 	}
 
 	@Override
-	protected InputStream getResourceAsStream(@NonNull String path) {
+	protected InputStream getResourceAsStream(@NonNull final String path) {
 		return this.plugin.getResource(path);
 	}
 }

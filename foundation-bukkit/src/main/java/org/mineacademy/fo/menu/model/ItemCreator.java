@@ -28,15 +28,14 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
-import org.mineacademy.fo.model.SimpleBook;
 import org.mineacademy.fo.model.CompChatColor;
+import org.mineacademy.fo.model.SimpleBook;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompEnchantment;
 import org.mineacademy.fo.remain.CompEntityType;
@@ -211,7 +210,7 @@ public final class ItemCreator {
 	 * @param item
 	 * @return
 	 */
-	public ItemCreator item(ItemStack item) {
+	public ItemCreator item(final ItemStack item) {
 		this.item = item;
 
 		return this;
@@ -224,7 +223,7 @@ public final class ItemCreator {
 	 * @param meta
 	 * @return
 	 */
-	public ItemCreator meta(ItemMeta meta) {
+	public ItemCreator meta(final ItemMeta meta) {
 		this.meta = meta;
 
 		return this;
@@ -237,7 +236,7 @@ public final class ItemCreator {
 	 * @param material
 	 * @return
 	 */
-	public ItemCreator material(CompMaterial material) {
+	public ItemCreator material(final CompMaterial material) {
 		this.material = material;
 
 		return this;
@@ -249,7 +248,7 @@ public final class ItemCreator {
 	 * @param amount
 	 * @return
 	 */
-	public ItemCreator amount(int amount) {
+	public ItemCreator amount(final int amount) {
 		this.amount = amount;
 
 		return this;
@@ -264,7 +263,7 @@ public final class ItemCreator {
 	 * @param damage
 	 * @return
 	 */
-	public ItemCreator damage(int damage) {
+	public ItemCreator damage(final int damage) {
 		this.damage = damage;
 
 		return this;
@@ -276,7 +275,7 @@ public final class ItemCreator {
 	 * @param name
 	 * @return
 	 */
-	public ItemCreator name(String name) {
+	public ItemCreator name(final String name) {
 		this.name = name;
 
 		return this;
@@ -300,7 +299,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public ItemCreator lore(String... lore) {
+	public ItemCreator lore(final String... lore) {
 		for (final String line : lore)
 			if (line != null)
 				for (final String subpart : line.split("\n"))
@@ -315,7 +314,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public ItemCreator lore(List<String> lore) {
+	public ItemCreator lore(final List<String> lore) {
 		for (final String line : lore)
 			if (line != null)
 				for (final String subpart : line.split("\n"))
@@ -330,7 +329,7 @@ public final class ItemCreator {
 	 * @param enchantment
 	 * @return
 	 */
-	public ItemCreator enchant(SimpleEnchantment enchantment) {
+	public ItemCreator enchant(final SimpleEnchantment enchantment) {
 		return this.enchant(enchantment.toBukkit(), 1);
 	}
 
@@ -340,7 +339,7 @@ public final class ItemCreator {
 	 * @param enchantment
 	 * @return
 	 */
-	public ItemCreator enchant(Enchantment enchantment) {
+	public ItemCreator enchant(final Enchantment enchantment) {
 		return this.enchant(enchantment, 1);
 	}
 
@@ -351,7 +350,7 @@ public final class ItemCreator {
 	 * @param level
 	 * @return
 	 */
-	public ItemCreator enchant(SimpleEnchantment enchantment, int level) {
+	public ItemCreator enchant(final SimpleEnchantment enchantment, final int level) {
 		this.enchants.put(enchantment.toBukkit(), level);
 
 		return this;
@@ -365,7 +364,7 @@ public final class ItemCreator {
 	 * @param level
 	 * @return
 	 */
-	public ItemCreator enchant(Enchantment enchantment, int level) {
+	public ItemCreator enchant(final Enchantment enchantment, final int level) {
 		this.enchants.put(enchantment, level);
 
 		return this;
@@ -377,7 +376,7 @@ public final class ItemCreator {
 	 * @param flags
 	 * @return
 	 */
-	public ItemCreator flags(CompItemFlag... flags) {
+	public ItemCreator flags(final CompItemFlag... flags) {
 		this.flags.addAll(Arrays.asList(flags));
 
 		return this;
@@ -389,7 +388,7 @@ public final class ItemCreator {
 	 * @param unbreakable
 	 * @return
 	 */
-	public ItemCreator unbreakable(boolean unbreakable) {
+	public ItemCreator unbreakable(final boolean unbreakable) {
 		this.unbreakable = unbreakable;
 
 		return this;
@@ -402,7 +401,7 @@ public final class ItemCreator {
 	 * @param color
 	 * @return
 	 */
-	public ItemCreator color(CompColor color) {
+	public ItemCreator color(final CompColor color) {
 		this.color = color;
 
 		return this;
@@ -415,7 +414,7 @@ public final class ItemCreator {
 	 * @param hideTags
 	 * @return
 	 */
-	public ItemCreator hideTags(boolean hideTags) {
+	public ItemCreator hideTags(final boolean hideTags) {
 		this.hideTags = hideTags;
 
 		return this;
@@ -427,7 +426,7 @@ public final class ItemCreator {
 	 * @param modelData
 	 * @return
 	 */
-	public ItemCreator modelData(int modelData) {
+	public ItemCreator modelData(final int modelData) {
 		this.modelData = modelData;
 
 		return this;
@@ -440,7 +439,7 @@ public final class ItemCreator {
 	 * @param glow
 	 * @return
 	 */
-	public ItemCreator glow(boolean glow) {
+	public ItemCreator glow(final boolean glow) {
 		this.glow = glow;
 
 		return this;
@@ -454,7 +453,7 @@ public final class ItemCreator {
 	 * @param skullOwner
 	 * @return
 	 */
-	public ItemCreator skullOwner(String skullOwner) {
+	public ItemCreator skullOwner(final String skullOwner) {
 		this.skullOwner = skullOwner;
 
 		return this;
@@ -468,7 +467,7 @@ public final class ItemCreator {
 	 * @param skullUrl
 	 * @return
 	 */
-	public ItemCreator skullUrl(String skullUrl) {
+	public ItemCreator skullUrl(final String skullUrl) {
 		this.skullUrl = skullUrl;
 
 		return this;
@@ -482,7 +481,7 @@ public final class ItemCreator {
 	 * @param skullBase64
 	 * @return
 	 */
-	public ItemCreator skullBase64(String skullBase64) {
+	public ItemCreator skullBase64(final String skullBase64) {
 		this.skullBase64 = skullBase64;
 
 		return this;
@@ -496,7 +495,7 @@ public final class ItemCreator {
 	 * @param skullUid
 	 * @return
 	 */
-	public ItemCreator skullUid(UUID skullUid) {
+	public ItemCreator skullUid(final UUID skullUid) {
 		this.skullUid = skullUid;
 
 		return this;
@@ -512,7 +511,7 @@ public final class ItemCreator {
 	 * @param value
 	 * @return
 	 */
-	public ItemCreator tag(String key, String value) {
+	public ItemCreator tag(final String key, final String value) {
 		this.tags.put(key, value);
 
 		return this;
@@ -524,7 +523,7 @@ public final class ItemCreator {
 	 * @param pages
 	 * @return
 	 */
-	public ItemCreator bookPages(String... pages) {
+	public ItemCreator bookPages(final String... pages) {
 		return this.bookPages(Arrays.asList(pages));
 	}
 
@@ -534,7 +533,7 @@ public final class ItemCreator {
 	 * @param pages
 	 * @return
 	 */
-	public ItemCreator bookPages(List<String> pages) {
+	public ItemCreator bookPages(final List<String> pages) {
 		if (this.bookPages == null)
 			this.bookPages = new ArrayList<>();
 
@@ -549,7 +548,7 @@ public final class ItemCreator {
 	 * @param bookAuthor
 	 * @return
 	 */
-	public ItemCreator bookAuthor(String bookAuthor) {
+	public ItemCreator bookAuthor(final String bookAuthor) {
 		this.bookAuthor = bookAuthor;
 
 		return this;
@@ -561,7 +560,7 @@ public final class ItemCreator {
 	 * @param bookTitle
 	 * @return
 	 */
-	public ItemCreator bookTitle(String bookTitle) {
+	public ItemCreator bookTitle(final String bookTitle) {
 		this.bookTitle = bookTitle;
 
 		return this;
@@ -912,7 +911,7 @@ public final class ItemCreator {
 	 * @param color the wool color
 	 * @return the new item creator
 	 */
-	public static ItemCreator fromWool(CompColor color) {
+	public static ItemCreator fromWool(final CompColor color) {
 		return fromItemStack(CompMaterial.makeWoolItem(color, 1)).color(color);
 	}
 
@@ -922,7 +921,7 @@ public final class ItemCreator {
 	 * @param entityType
 	 * @return
 	 */
-	public static ItemCreator fromMonsterEgg(EntityType entityType) {
+	public static ItemCreator fromMonsterEgg(final EntityType entityType) {
 		return fromItemStack(CompMonsterEgg.toItemStack(entityType));
 	}
 
@@ -934,7 +933,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator fromMonsterEgg(EntityType entityType, String name, String... lore) {
+	public static ItemCreator fromMonsterEgg(final EntityType entityType, final String name, final String... lore) {
 		return fromItemStack(CompMonsterEgg.toItemStack(entityType)).name(name).lore(lore);
 	}
 
@@ -944,7 +943,7 @@ public final class ItemCreator {
 	 * @param type
 	 * @return
 	 */
-	public static ItemCreator fromPotion(PotionEffectType type) {
+	public static ItemCreator fromPotion(final PotionEffectType type) {
 		return fromPotion(type, 1);
 	}
 
@@ -956,7 +955,7 @@ public final class ItemCreator {
 	 * @param level
 	 * @return
 	 */
-	public static ItemCreator fromPotion(PotionEffectType type, int durationTicks, int level) {
+	public static ItemCreator fromPotion(final PotionEffectType type, final int durationTicks, final int level) {
 		return fromPotion(type, durationTicks, level, null);
 	}
 
@@ -967,7 +966,7 @@ public final class ItemCreator {
 	 * @param level
 	 * @return
 	 */
-	public static ItemCreator fromPotion(PotionEffectType type, int level) {
+	public static ItemCreator fromPotion(final PotionEffectType type, final int level) {
 		return fromPotion(type, Integer.MAX_VALUE, level, null);
 	}
 
@@ -979,7 +978,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator fromPotion(PotionEffectType type, String name, String... lore) {
+	public static ItemCreator fromPotion(final PotionEffectType type, final String name, final String... lore) {
 		return fromPotion(type, Integer.MAX_VALUE, 1, name, lore);
 	}
 
@@ -991,7 +990,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator fromPotion(PotionEffect effect, String name, String... lore) {
+	public static ItemCreator fromPotion(final PotionEffect effect, final String name, final String... lore) {
 		return fromPotion(effect.getType(), Integer.MAX_VALUE, effect.getAmplifier() + 1, name, lore);
 	}
 
@@ -1005,7 +1004,7 @@ public final class ItemCreator {
 	 * @param lore
 	 * @return
 	 */
-	public static ItemCreator fromPotion(final PotionEffectType effect, int durationTicks, int level, String name, String... lore) {
+	public static ItemCreator fromPotion(final PotionEffectType effect, final int durationTicks, final int level, final String name, final String... lore) {
 		final boolean noLevel = level == 0;
 		final ItemStack item = new ItemStack(level == 0 ? CompMaterial.GLASS_BOTTLE.getMaterial() : CompMaterial.POTION.getMaterial());
 
@@ -1072,13 +1071,13 @@ public final class ItemCreator {
 	 * @param editable
 	 * @return
 	 */
-	public static ItemCreator fromBookAdventure(net.kyori.adventure.inventory.Book book, boolean editable) {
-		final String title = Common.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.title()), "Blank");
+	public static ItemCreator fromBookAdventure(final net.kyori.adventure.inventory.Book book, final boolean editable) {
+		final String title = CommonCore.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.title()), "Blank");
 
 		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
 				.bookTitle(title)
-				.bookAuthor(Common.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.author()), "Blank"))
-				.bookPages(Common.convertList(book.pages(), page -> LegacyComponentSerializer.legacySection().serialize(page)))
+				.bookAuthor(CommonCore.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.author()), "Blank"))
+				.bookPages(CommonCore.convertList(book.pages(), page -> LegacyComponentSerializer.legacySection().serialize(page)))
 				.name(title)
 				.tag(SimpleBook.TAG, "true")
 				.hideTags(true);
@@ -1091,10 +1090,10 @@ public final class ItemCreator {
 	 * @param editable
 	 * @return
 	 */
-	public static ItemCreator fromBook(SimpleBook book, boolean editable) {
+	public static ItemCreator fromBook(final SimpleBook book, final boolean editable) {
 		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
-				.bookTitle(Common.getOrDefault(book.getTitle(), "Blank"))
-				.bookAuthor(Common.getOrDefault(book.getAuthor(), "Blank"))
+				.bookTitle(CommonCore.getOrDefault(book.getTitle(), "Blank"))
+				.bookAuthor(CommonCore.getOrDefault(book.getAuthor(), "Blank"))
 				.bookPages(book.getPages())
 				.name(book.getTitle())
 				.tag(SimpleBook.TAG, "true")

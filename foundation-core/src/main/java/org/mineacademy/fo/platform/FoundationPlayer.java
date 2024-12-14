@@ -82,7 +82,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public final void deleteMessage(SignedMessage.Signature signature) {
+	public final void deleteMessage(final SignedMessage.Signature signature) {
 		throw new UnsupportedOperationException("deleteMessage");
 	}
 
@@ -131,7 +131,7 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj instanceof FoundationPlayer) {
 			final FoundationPlayer other = (FoundationPlayer) obj;
 
@@ -228,7 +228,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param permission
 	 * @return
 	 */
-	public final boolean hasPermission(String permission) {
+	public final boolean hasPermission(final String permission) {
 		if (permission.contains("{") || permission.contains("}"))
 			throw new FoException("Permission cannot contain variables: " + permission);
 
@@ -244,7 +244,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * Hides the boss bar from the player.
 	 */
 	@Override
-	public final void hideBossBar(BossBar bar) {
+	public final void hideBossBar(final BossBar bar) {
 		if (this.isPlayer())
 			BossBarTask.getInstance().hide(this, bar);
 	}
@@ -312,7 +312,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param reason
 	 */
-	public final void kick(String reason) {
+	public final void kick(final String reason) {
 		this.kick(SimpleComponent.fromMiniAmpersand(reason));
 	}
 
@@ -329,7 +329,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param author
 	 * @param pages
 	 */
-	public final void openBook(SimpleComponent title, SimpleComponent author, Collection<SimpleComponent> pages) {
+	public final void openBook(final SimpleComponent title, final SimpleComponent author, final Collection<SimpleComponent> pages) {
 		this.openBook(Book.book(title.toAdventure(this), author.toAdventure(this), pages.stream().map(page -> page.toAdventure(this)).collect(Collectors.toList())));
 	}
 
@@ -340,7 +340,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param author
 	 * @param pages
 	 */
-	public final void openBook(String title, String author, String... pages) {
+	public final void openBook(final String title, final String author, final String... pages) {
 		this.openBook(SimpleComponent.fromMiniAmpersand(title), SimpleComponent.fromMiniAmpersand(author), Arrays.stream(pages).map(SimpleComponent::fromMiniAmpersand).collect(Collectors.toList()));
 	}
 
@@ -354,7 +354,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public final void playSound(Sound sound) {
+	public final void playSound(final Sound sound) {
 		throw new UnsupportedOperationException("playSound");
 	}
 
@@ -363,7 +363,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public final void playSound(Sound sound, double x, double y, double z) {
+	public final void playSound(final Sound sound, final double x, final double y, final double z) {
 		this.playSound(sound);
 	}
 
@@ -372,7 +372,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public final void playSound(Sound sound, Emitter emitter) {
+	public final void playSound(final Sound sound, final Emitter emitter) {
 		this.playSound(sound);
 	}
 
@@ -386,7 +386,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * Sends an actionbar message to the player.
 	 */
 	@Override
-	public final void sendActionBar(Component message) {
+	public final void sendActionBar(final Component message) {
 		this.sendActionBar(SimpleComponent.fromAdventure(message));
 	}
 
@@ -404,7 +404,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param message
 	 */
-	public final void sendActionBar(String message) {
+	public final void sendActionBar(final String message) {
 		this.sendActionBar(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -413,7 +413,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param json
 	 */
-	public final void sendJson(String json) {
+	public final void sendJson(final String json) {
 		this.sendMessage(SimpleComponent.fromAdventureJson(json, !this.hasHexColorSupport()));
 	}
 
@@ -481,7 +481,7 @@ public abstract class FoundationPlayer implements Audience {
 		return adventure;
 	}
 
-	private static TextColor darkenOneShade(TextColor color) {
+	private static TextColor darkenOneShade(final TextColor color) {
 		final String hex = color.asHexString();
 
 		final int r = Math.max(0, Integer.parseInt(hex.substring(1, 3), 16) - 1);
@@ -497,7 +497,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param component
 	 */
 	@Override
-	public final void sendMessage(ComponentLike component) {
+	public final void sendMessage(final ComponentLike component) {
 		this.sendMessage(component.asComponent());
 	}
 
@@ -506,7 +506,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public final void sendMessage(Identity source, Component message, MessageType type) {
+	public final void sendMessage(final Identity source, final Component message, final MessageType type) {
 		this.sendMessage(message);
 	}
 
@@ -520,7 +520,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param component
 	 */
-	public final void sendMessage(SimpleComponent component) {
+	public final void sendMessage(final SimpleComponent component) {
 		this.sendMessageWithPrefix(null, component);
 	}
 
@@ -535,7 +535,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param prefix
 	 * @param component
 	 */
-	public final void sendMessageWithPrefix(SimpleComponent prefix, SimpleComponent component) {
+	public final void sendMessageWithPrefix(final SimpleComponent prefix, SimpleComponent component) {
 		final String plainMessage = component.toPlain(this);
 
 		if (plainMessage.equals("none"))
@@ -578,7 +578,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param message
 	 */
-	public final void sendMiniMessage(String message) {
+	public final void sendMiniMessage(final String message) {
 		this.sendMessage(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -587,7 +587,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param message
 	 */
-	public final void sendPlainMessage(String message) {
+	public final void sendPlainMessage(final String message) {
 		this.sendMessage(SimpleComponent.fromPlain(message));
 	}
 
@@ -597,7 +597,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * Legacy and MiniMessage tags will be replaced.
 	 */
 	@Override
-	public final void sendPlayerListHeaderAndFooter(Component header, Component footer) {
+	public final void sendPlayerListHeaderAndFooter(final Component header, final Component footer) {
 		this.sendPlayerListHeaderAndFooter(SimpleComponent.fromAdventure(header), SimpleComponent.fromAdventure(footer));
 	}
 
@@ -619,7 +619,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param header
 	 * @param footer
 	 */
-	public final void sendPlayerListHeaderAndFooter(String header, String footer) {
+	public final void sendPlayerListHeaderAndFooter(final String header, final String footer) {
 		this.sendPlayerListHeaderAndFooter(SimpleComponent.fromMiniAmpersand(header), SimpleComponent.fromMiniAmpersand(footer));
 	}
 
@@ -628,7 +628,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public final <T> void sendTitlePart(TitlePart<T> part, T value) {
+	public final <T> void sendTitlePart(final TitlePart<T> part, final T value) {
 		throw new UnsupportedOperationException("sendTitlePart, use sendTitle instead");
 	}
 
@@ -637,7 +637,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param message
 	 */
-	public final void sendToast(SimpleComponent message) {
+	public final void sendToast(final SimpleComponent message) {
 		this.sendToast(message, CompToastStyle.TASK);
 	}
 
@@ -656,7 +656,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @param message
 	 */
-	public final void sendToast(String message) {
+	public final void sendToast(final String message) {
 		this.sendToast(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -668,7 +668,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param message
 	 * @param style
 	 */
-	public final void sendToast(String message, CompToastStyle style) {
+	public final void sendToast(final String message, final CompToastStyle style) {
 		this.sendToast(SimpleComponent.fromMiniAmpersand(message), style);
 	}
 
@@ -688,7 +688,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * Legacy and MiniMessage tags will be replaced.
 	 */
 	@Override
-	public final void showBossBar(BossBar bar) {
+	public final void showBossBar(final BossBar bar) {
 		if (this.isPlayer())
 			BossBarTask.getInstance().show(this, TimedBar.permanent(bar));
 	}
@@ -703,7 +703,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @return the bossbar
 	 */
-	public final BossBar showBossBar(SimpleComponent component, float progress, BossBar.Color color, BossBar.Overlay overlay) {
+	public final BossBar showBossBar(final SimpleComponent component, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
 		final BossBar bar = BossBar.bossBar(component.toAdventure(this), progress, color, overlay);
 		this.showBossBar(bar);
 
@@ -722,7 +722,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @return
 	 */
-	public final BossBar showBossBar(String message, float progress, BossBar.Color color, BossBar.Overlay overlay) {
+	public final BossBar showBossBar(final String message, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
 		return this.showBossBar(SimpleComponent.fromMiniAmpersand(message), progress, color, overlay);
 	}
 
@@ -739,7 +739,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param secondsToShow
 	 * @param bar
 	 */
-	public final void showBossbarTimed(int secondsToShow, BossBar bar) {
+	public final void showBossbarTimed(final int secondsToShow, final BossBar bar) {
 		if (this.isPlayer())
 			BossBarTask.getInstance().show(this, TimedBar.timed(bar, secondsToShow));
 	}
@@ -755,7 +755,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @return the bossbar
 	 */
-	public final BossBar showBossbarTimed(SimpleComponent message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay) {
+	public final BossBar showBossbarTimed(final SimpleComponent message, final int seconds, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
 		final BossBar bar = BossBar.bossBar(message.toAdventure(this), progress, color, overlay);
 		this.showBossbarTimed(seconds, bar);
 
@@ -775,7 +775,7 @@ public abstract class FoundationPlayer implements Audience {
 	 *
 	 * @return the bossbar
 	 */
-	public final BossBar showBossbarTimed(String message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay) {
+	public final BossBar showBossbarTimed(final String message, final int seconds, final float progress, final BossBar.Color color, final BossBar.Overlay overlay) {
 		return this.showBossbarTimed(SimpleComponent.fromMiniAmpersand(message), seconds, progress, color, overlay);
 	}
 
@@ -840,7 +840,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Deprecated
 	@Override
-	public void stopSound(SoundStop sound) {
+	public void stopSound(final SoundStop sound) {
 		throw new UnsupportedOperationException("stopSound");
 	}
 

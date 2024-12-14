@@ -38,7 +38,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 *
 	 * @param question
 	 */
-	public SimpleDecimalPrompt(String question) {
+	public SimpleDecimalPrompt(final String question) {
 		this(question, null);
 	}
 
@@ -107,7 +107,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 * @param context
 	 * @param input
 	 */
-	protected void onValidatedInput(ConversationContext context, double input) {
+	protected void onValidatedInput(final ConversationContext context, final double input) {
 	}
 
 	/**

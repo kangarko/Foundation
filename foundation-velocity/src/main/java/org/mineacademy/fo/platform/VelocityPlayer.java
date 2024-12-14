@@ -32,14 +32,14 @@ final class VelocityPlayer extends FoundationPlayer {
 	private final Player player;
 	private final CommandSource sender;
 
-	VelocityPlayer(@NonNull CommandSource sender) {
+	VelocityPlayer(@NonNull final CommandSource sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
 	}
 
 	@Override
-	public void chat(String message) {
+	public void chat(final String message) {
 		this.player.spoofChatInput(message);
 	}
 
@@ -83,12 +83,12 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	protected boolean hasPermission0(String permission) {
+	protected boolean hasPermission0(final String permission) {
 		return this.sender.hasPermission(permission);
 	}
 
 	@Override
-	public void hideBossBar0(TimedBar bar) {
+	public void hideBossBar0(final TimedBar bar) {
 		this.sender.hideBossBar(bar.getBar());
 	}
 
@@ -118,19 +118,19 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void kick(SimpleComponent reason) {
+	public void kick(final SimpleComponent reason) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
 		this.player.disconnect(reason.toAdventure(this));
 	}
 
 	@Override
-	public void openBook(Book book) {
+	public void openBook(final Book book) {
 		throw new UnsupportedOperationException("Not supported on " + Platform.getType());
 	}
 
 	@Override
-	protected void performPlayerCommand0(String replacedCommand) {
+	protected void performPlayerCommand0(final String replacedCommand) {
 		VelocityPlugin.getServer().getCommandManager().executeImmediatelyAsync(this.sender, replacedCommand);
 	}
 
@@ -140,37 +140,37 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendActionBar(SimpleComponent message) {
+	public void sendActionBar(final SimpleComponent message) {
 		this.sender.sendActionBar(message.toAdventure(this));
 	}
 
 	@Override
-	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
+	public void sendPlayerListHeaderAndFooter(final SimpleComponent header, final SimpleComponent footer) {
 		this.sender.sendPlayerListHeaderAndFooter(header.toAdventure(this), footer.toAdventure(this));
 	}
 
 	@Override
-	public void sendMessage0(Component component) {
+	public void sendMessage0(final Component component) {
 		this.sender.sendMessage(component);
 	}
 
 	@Override
-	public void sendToast(SimpleComponent message, CompToastStyle style) {
+	public void sendToast(final SimpleComponent message, final CompToastStyle style) {
 		this.sendMessage(message);
 	}
 
 	@Override
-	public void setTempMetadata(String key, Object value) {
+	public void setTempMetadata(final String key, final Object value) {
 		throw new UnsupportedOperationException("Not supported on " + Platform.getType());
 	}
 
 	@Override
-	public void showBossBar0(TimedBar bar) {
+	public void showBossBar0(final TimedBar bar) {
 		this.sender.showBossBar(bar.getBar());
 	}
 
 	@Override
-	public void showTitle(Title title) {
+	public void showTitle(final Title title) {
 		this.sender.showTitle(title);
 	}
 }

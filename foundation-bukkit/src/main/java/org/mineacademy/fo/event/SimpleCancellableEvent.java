@@ -25,7 +25,7 @@ public abstract class SimpleCancellableEvent extends SimpleEvent {
 	 *
 	 * @param async
 	 */
-	protected SimpleCancellableEvent(boolean async) {
+	protected SimpleCancellableEvent(final boolean async) {
 		super(async);
 	}
 }

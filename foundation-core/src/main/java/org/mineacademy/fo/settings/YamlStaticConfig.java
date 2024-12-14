@@ -54,7 +54,7 @@ public abstract class YamlStaticConfig {
 	 *
 	 * @param clazz
 	 */
-	public static final void load(Class<? extends YamlStaticConfig> clazz) {
+	public static final void load(final Class<? extends YamlStaticConfig> clazz) {
 		try {
 			final YamlStaticConfig config = clazz.newInstance();
 
@@ -238,7 +238,7 @@ public abstract class YamlStaticConfig {
 	 *
 	 * @param internalPath
 	 */
-	protected final void loadConfiguration(String internalPath) {
+	protected final void loadConfiguration(final String internalPath) {
 		TEMPORARY_INSTANCE.loadAndExtract(internalPath, internalPath);
 	}
 
@@ -248,7 +248,7 @@ public abstract class YamlStaticConfig {
 	 * @param from
 	 * @param to
 	 */
-	protected final void loadConfiguration(String from, String to) {
+	protected final void loadConfiguration(final String from, final String to) {
 		TEMPORARY_INSTANCE.loadAndExtract(from, to);
 	}
 
@@ -397,7 +397,7 @@ public abstract class YamlStaticConfig {
 	 * @param setDeserializerParams
 	 * @return
 	 */
-	protected static final <K, V> Map<K, List<V>> getMapList(final String path, final Class<K> keyType, Class<V> setType, Object setDeserializerParams) {
+	protected static final <K, V> Map<K, List<V>> getMapList(final String path, final Class<K> keyType, final Class<V> setType, final Object setDeserializerParams) {
 		return TEMPORARY_INSTANCE.getMapList(path, keyType, setType, setDeserializerParams);
 	}
 
@@ -417,7 +417,7 @@ public abstract class YamlStaticConfig {
 	 * @param path
 	 * @return
 	 */
-	protected static final Double getPercentage(String path) {
+	protected static final Double getPercentage(final String path) {
 		return TEMPORARY_INSTANCE.getPercentage(path);
 	}
 
@@ -429,7 +429,7 @@ public abstract class YamlStaticConfig {
 	 * @param typeOf
 	 * @return
 	 */
-	protected static final <E> Set<E> getSet(final String path, Class<E> typeOf) {
+	protected static final <E> Set<E> getSet(final String path, final Class<E> typeOf) {
 		return TEMPORARY_INSTANCE.getSet(path, typeOf);
 	}
 

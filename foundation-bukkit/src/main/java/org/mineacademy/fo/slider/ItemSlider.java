@@ -42,7 +42,7 @@ public final class ItemSlider implements Slider<List<ItemStack>> {
 	 * @param width
 	 * @return
 	 */
-	public ItemSlider width(int width) {
+	public ItemSlider width(final int width) {
 		this.width = width;
 
 		return this;
@@ -79,7 +79,7 @@ public final class ItemSlider implements Slider<List<ItemStack>> {
 	 * @param highlighted
 	 * @return
 	 */
-	public static ItemSlider from(CompMaterial filler, CompMaterial highlighted) {
+	public static ItemSlider from(final CompMaterial filler, final CompMaterial highlighted) {
 		return from(ItemCreator.fromMaterial(filler), ItemCreator.fromMaterial(highlighted));
 	}
 
@@ -90,7 +90,7 @@ public final class ItemSlider implements Slider<List<ItemStack>> {
 	 * @param highlighted
 	 * @return
 	 */
-	public static ItemSlider from(ItemCreator filler, ItemCreator highlighted) {
+	public static ItemSlider from(final ItemCreator filler, final ItemCreator highlighted) {
 		return from(filler.make(), highlighted.make());
 	}
 
@@ -101,7 +101,7 @@ public final class ItemSlider implements Slider<List<ItemStack>> {
 	 * @param highlighted
 	 * @return
 	 */
-	public static ItemSlider from(ItemStack filler, ItemStack highlighted) {
+	public static ItemSlider from(final ItemStack filler, final ItemStack highlighted) {
 		return new ItemSlider(filler, highlighted);
 	}
 }

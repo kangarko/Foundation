@@ -71,7 +71,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 *
 	 * @param parent
 	 */
-	protected MenuContainerChances(Menu parent) {
+	protected MenuContainerChances(final Menu parent) {
 		this(parent, false);
 	}
 
@@ -82,7 +82,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param startMode
 	 * @param returnMakesNewInstance
 	 */
-	protected MenuContainerChances(Menu parent, boolean returnMakesNewInstance) {
+	protected MenuContainerChances(final Menu parent, final boolean returnMakesNewInstance) {
 		super(parent, returnMakesNewInstance);
 
 		// Default the size to 3 rows (+ 1 bottom row is added automatically)
@@ -94,7 +94,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 			 * Change the menu mode and refresh its content.
 			 */
 			@Override
-			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				final MenuContainerChances instance = MenuContainerChances.this;
 
 				// Call event to properly save data early
@@ -143,7 +143,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	}
 
 	@Override
-	public final ItemStack getItemAt(int slot) {
+	public final ItemStack getItemAt(final int slot) {
 		if (slot == this.getChangeModeButtonPosition())
 			return this.changeModeButton.getItem();
 
@@ -213,7 +213,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	// ------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
+	public final boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
 		if (this.mode == EditMode.CHANCE)
 			return false;
 
@@ -241,7 +241,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 *
 	 * @return
 	 */
-	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
+	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
 		return this.canEditItem(slot);
 	}
 
@@ -256,7 +256,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	 * @param slot
 	 * @return
 	 */
-	protected boolean canEditItem(int slot) {
+	protected boolean canEditItem(final int slot) {
 		return true;
 	}
 
@@ -265,7 +265,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	// ------------------------------------------------------------------------------------------------------------
 
 	@Override
-	protected final void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
+	protected final void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType click, final ItemStack cursor, final ItemStack clicked, final boolean cancelled) {
 
 		if (this.mode == EditMode.CHANCE && this.canEditItem(slot) && slot < this.getSize() - 9) {
 
@@ -286,7 +286,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	}
 
 	@Override
-	protected final void onMenuClick(Player player, int slot, ItemStack clicked) {
+	protected final void onMenuClick(final Player player, final int slot, final ItemStack clicked) {
 		throw new FoException("unsupported call");
 	}
 
@@ -295,7 +295,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 	// ------------------------------------------------------------------------------------------------------------
 
 	@Override
-	protected final void onMenuClose(Player player, Inventory inventory) {
+	protected final void onMenuClose(final Player player, final Inventory inventory) {
 		final Map<Integer, Tuple<ItemStack, Double>> items = new LinkedHashMap<>();
 
 		for (int slot = 0; slot < this.getSize() - 9; slot++) {

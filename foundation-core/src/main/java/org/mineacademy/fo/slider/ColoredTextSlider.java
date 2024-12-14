@@ -51,7 +51,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @param width
 	 * @return
 	 */
-	public ColoredTextSlider width(int width) {
+	public ColoredTextSlider width(final int width) {
 		this.width = width;
 
 		return this;
@@ -63,7 +63,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @param primaryPrefix
 	 * @return
 	 */
-	public ColoredTextSlider primaryPrefix(CompChatColor primaryPrefix) {
+	public ColoredTextSlider primaryPrefix(final CompChatColor primaryPrefix) {
 		return this.primaryPrefix(primaryPrefix.toString());
 	}
 
@@ -73,7 +73,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @param primaryPrefix
 	 * @return
 	 */
-	public ColoredTextSlider primaryPrefix(String primaryPrefix) {
+	public ColoredTextSlider primaryPrefix(final String primaryPrefix) {
 		this.primaryPrefix = primaryPrefix;
 
 		return this;
@@ -86,7 +86,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @param secondaryPrefix
 	 * @return
 	 */
-	public ColoredTextSlider secondaryPrefix(CompChatColor secondaryPrefix) {
+	public ColoredTextSlider secondaryPrefix(final CompChatColor secondaryPrefix) {
 		return this.secondaryPrefix(secondaryPrefix.toString());
 	}
 
@@ -97,7 +97,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @param secondaryPrefix
 	 * @return
 	 */
-	public ColoredTextSlider secondaryPrefix(String secondaryPrefix) {
+	public ColoredTextSlider secondaryPrefix(final String secondaryPrefix) {
 		this.secondaryPrefix = secondaryPrefix;
 
 		return this;
@@ -130,7 +130,7 @@ public final class ColoredTextSlider implements Slider<String> {
 	 * @param text
 	 * @return
 	 */
-	public static ColoredTextSlider from(String text) {
+	public static ColoredTextSlider from(final String text) {
 		ValidCore.checkBoolean(!CompChatColor.hasLegacyColors(text), "Text in a slider may not contain colors: " + text + ", instead, use primaryColor() and secondaryColor()");
 
 		return new ColoredTextSlider(text);

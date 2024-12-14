@@ -68,11 +68,11 @@ enum MinecraftVersion {
 		}
 	};
 
-	MinecraftVersion(int versionId) {
+	MinecraftVersion(final int versionId) {
 		this(versionId, false);
 	}
 
-	MinecraftVersion(int versionId, boolean mojangMapping) {
+	MinecraftVersion(final int versionId, final boolean mojangMapping) {
 		this.versionId = versionId;
 		this.mojangMapping = mojangMapping;
 	}
@@ -114,7 +114,7 @@ enum MinecraftVersion {
 	 * @param version The minimum version
 	 * @return
 	 */
-	public static boolean isAtLeastVersion(MinecraftVersion version) {
+	public static boolean isAtLeastVersion(final MinecraftVersion version) {
 		return getVersion().getVersionId() >= version.getVersionId();
 	}
 
@@ -124,7 +124,7 @@ enum MinecraftVersion {
 	 * @param version The minimum version
 	 * @return
 	 */
-	public static boolean isNewerThan(MinecraftVersion version) {
+	public static boolean isNewerThan(final MinecraftVersion version) {
 		return getVersion().getVersionId() > version.getVersionId();
 	}
 

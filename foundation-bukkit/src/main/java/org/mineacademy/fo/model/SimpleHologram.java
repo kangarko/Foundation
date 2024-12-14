@@ -81,7 +81,7 @@ public abstract class SimpleHologram {
 	/*
 	 * Constructs a new item and registers it
 	 */
-	protected SimpleHologram(Location spawnLocation) {
+	protected SimpleHologram(final Location spawnLocation) {
 		this.lastTeleportLocation = spawnLocation.clone();
 
 		registeredItems.add(this);
@@ -216,7 +216,7 @@ public abstract class SimpleHologram {
 	 * @param lore
 	 * @return
 	 */
-	public final SimpleHologram setLore(String... lore) {
+	public final SimpleHologram setLore(final String... lore) {
 		this.loreLines.clear();
 		this.loreLines.addAll(Arrays.asList(lore));
 
@@ -228,7 +228,7 @@ public abstract class SimpleHologram {
 	 *
 	 * @param particle
 	 */
-	public final void addParticleEffect(CompParticle particle) {
+	public final void addParticleEffect(final CompParticle particle) {
 		this.addParticleEffect(particle, null);
 	}
 
@@ -238,7 +238,7 @@ public abstract class SimpleHologram {
 	 * @param particle
 	 * @param data
 	 */
-	public final void addParticleEffect(CompParticle particle, CompMaterial data) {
+	public final void addParticleEffect(final CompParticle particle, final CompMaterial data) {
 		this.particles.add(new Tuple<>(particle, data));
 	}
 
@@ -267,7 +267,7 @@ public abstract class SimpleHologram {
 	 *
 	 * @param location
 	 */
-	public final void teleport(Location location) {
+	public final void teleport(final Location location) {
 		ValidCore.checkBoolean(this.pendingTeleport == null, this + " is already pending teleport to " + this.pendingTeleport);
 		this.checkSpawned("teleport");
 
@@ -293,7 +293,7 @@ public abstract class SimpleHologram {
 	/*
 	 * A helper method to check if this entity is spawned
 	 */
-	private void checkSpawned(String method) {
+	private void checkSpawned(final String method) {
 		ValidCore.checkBoolean(this.isSpawned(), this + " is not spawned, cannot call " + method + "!");
 	}
 

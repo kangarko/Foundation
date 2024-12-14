@@ -58,7 +58,7 @@ public abstract class SerializeUtilCore {
 	 * @param object
 	 * @return
 	 */
-	public static Object serialize(Language language, Object object) {
+	public static Object serialize(final Language language, final Object object) {
 
 		if (object == null || ValidCore.isPrimitiveWrapper(object) || object instanceof String)
 			return object;
@@ -447,7 +447,7 @@ public abstract class SerializeUtilCore {
 	 * @param <T>
 	 * @param handler
 	 */
-	public static <T> void addSerializer(Serializer handler) {
+	public static <T> void addSerializer(final Serializer handler) {
 		serializers.add(handler);
 	}
 

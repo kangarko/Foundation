@@ -16,7 +16,7 @@ final class Util {
 	 * @return The string with "{}" replaced
 	 */
 
-	public static String replaceWithDots(String str) {
+	public static String replaceWithDots(final String str) {
 		return str.replace("{}", ".");
 	}
 
@@ -26,7 +26,7 @@ final class Util {
 	 * @param string The string to convert
 	 * @return The byte array
 	 */
-	public static byte[] hexStringToByteArray(String string) {
+	public static byte[] hexStringToByteArray(final String string) {
 		final int len = string.length();
 		final byte[] data = new byte[len / 2];
 		for (int i = 0; i < len; i += 2)
@@ -45,7 +45,7 @@ final class Util {
 	 * @see Library#getPartialPath()
 	 */
 
-	public static String craftPartialPath(String artifactId, String groupId, String version) {
+	public static String craftPartialPath(final String artifactId, final String groupId, final String version) {
 		return groupId.replace('.', '/') + '/' + artifactId + '/' + version + '/';
 	}
 
@@ -60,7 +60,7 @@ final class Util {
 	 * @see Library#getPath()
 	 */
 
-	public static String craftPath(String partialPath, String artifactId, String version, String classifier) {
+	public static String craftPath(final String partialPath, final String artifactId, final String version, final String classifier) {
 		String path = partialPath + artifactId + '-' + version;
 		if (classifier != null && !classifier.isEmpty())
 			path += '-' + classifier;

@@ -17,7 +17,7 @@ import org.snakeyaml.engine.v2.nodes.Tag;
  */
 final class BukkitYamlConstructor extends YamlConfig.YamlConstructor {
 
-	public BukkitYamlConstructor(LoadSettings loadSettings) {
+	public BukkitYamlConstructor(final LoadSettings loadSettings) {
 		super(loadSettings);
 
 		this.tagConstructors.put(Tag.MAP, new ConstructCustomObject());
@@ -29,7 +29,7 @@ final class BukkitYamlConstructor extends YamlConfig.YamlConstructor {
 		private final boolean atLeast1_21 = MinecraftVersion.atLeast(V.v1_21);
 
 		@Override
-		public Object construct(Node node) {
+		public Object construct(final Node node) {
 			if (node.isRecursive())
 				throw new YamlEngineException("Unexpected referential mapping structure. Node: " + node);
 
@@ -63,7 +63,7 @@ final class BukkitYamlConstructor extends YamlConfig.YamlConstructor {
 		}
 
 		@Override
-		public void constructRecursive(Node node, Object object) {
+		public void constructRecursive(final Node node, final Object object) {
 			throw new YamlEngineException("Unexpected referential mapping structure. Node: " + node);
 		}
 	}

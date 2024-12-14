@@ -54,7 +54,7 @@ public final class Platform {
 	 *
 	 * @param type
 	 */
-	static void setType(Type type) {
+	static void setType(final Type type) {
 		Platform.type = type;
 	}
 
@@ -64,7 +64,7 @@ public final class Platform {
 	 * @param event
 	 * @return
 	 */
-	public static boolean callEvent(Object event) {
+	public static boolean callEvent(final Object event) {
 		return getPlatform().callEvent(event);
 	}
 
@@ -74,7 +74,7 @@ public final class Platform {
 	 * @param itemStack
 	 * @return
 	 */
-	public static HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack) {
+	public static HoverEventSource<?> convertItemStackToHoverEvent(final Object itemStack) {
 		return getPlatform().convertItemStackToHoverEvent(itemStack);
 	}
 
@@ -87,7 +87,7 @@ public final class Platform {
 	 * @param playerReplacement can be null
 	 * @param command
 	 */
-	public static void dispatchConsoleCommand(FoundationPlayer playerReplacement, String command) {
+	public static void dispatchConsoleCommand(final FoundationPlayer playerReplacement, final String command) {
 		getPlatform().dispatchConsoleCommand(playerReplacement, command);
 	}
 
@@ -148,7 +148,7 @@ public final class Platform {
 	 * @param name
 	 * @return
 	 */
-	public static FoundationPlayer getPlayer(String name) {
+	public static FoundationPlayer getPlayer(final String name) {
 		return getPlatform().getPlayer(name);
 	}
 
@@ -158,7 +158,7 @@ public final class Platform {
 	 * @param uniqueId
 	 * @return
 	 */
-	public static FoundationPlayer getPlayer(UUID uniqueId) {
+	public static FoundationPlayer getPlayer(final UUID uniqueId) {
 		return getPlatform().getPlayer(uniqueId);
 	}
 
@@ -177,7 +177,7 @@ public final class Platform {
 	 * @param pluginName
 	 * @return
 	 */
-	public static File getPluginFile(String pluginName) {
+	public static File getPluginFile(final String pluginName) {
 		return getPlatform().getPluginFile(pluginName);
 	}
 
@@ -197,7 +197,7 @@ public final class Platform {
 	 * @param name
 	 * @return the server or null if not found
 	 */
-	public static FoundationServer getServer(String name) {
+	public static FoundationServer getServer(final String name) {
 		return getPlatform().getServer(name);
 	}
 
@@ -247,7 +247,7 @@ public final class Platform {
 	 * @param name
 	 * @return
 	 */
-	public static boolean isPluginInstalled(String name) {
+	public static boolean isPluginInstalled(final String name) {
 		return getPlatform().isPluginInstalled(name);
 	}
 
@@ -258,7 +258,7 @@ public final class Platform {
 	 * @param message
 	 */
 	@Deprecated
-	public static void log(String message) {
+	public static void log(final String message) {
 		getPlatform().log(message);
 	}
 
@@ -271,7 +271,7 @@ public final class Platform {
 	 * @param unregisterOldAliases
 	 */
 	@Deprecated
-	public static void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
+	public static void registerCommand(final SimpleCommandCore command, final boolean unregisterOldCommand, final boolean unregisterOldAliases) {
 		getPlatform().registerCommand(command, unregisterOldCommand, unregisterOldAliases);
 	}
 
@@ -284,7 +284,7 @@ public final class Platform {
 	 * @deprecated internal use only
 	 */
 	@Deprecated
-	public static void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
+	public static void registerDefaultPlatformSubcommands(final SimpleCommandGroup group) {
 		getPlatform().registerDefaultPlatformSubcommands(group);
 	}
 
@@ -293,7 +293,7 @@ public final class Platform {
 	 *
 	 * @param listener
 	 */
-	public static void registerEvents(Object listener) {
+	public static void registerEvents(final Object listener) {
 		getPlatform().registerEvents(listener);
 	}
 
@@ -304,7 +304,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTask(int delayTicks, Runnable runnable) {
+	public static Task runTask(final int delayTicks, final Runnable runnable) {
 		return getPlatform().runTask(delayTicks, runnable);
 	}
 
@@ -314,7 +314,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTask(Runnable runnable) {
+	public static Task runTask(final Runnable runnable) {
 		return getPlatform().runTask(runnable);
 	}
 
@@ -325,7 +325,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTaskAsync(int delayTicks, Runnable runnable) {
+	public static Task runTaskAsync(final int delayTicks, final Runnable runnable) {
 		return getPlatform().runTaskAsync(delayTicks, runnable);
 	}
 
@@ -335,7 +335,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTaskAsync(Runnable runnable) {
+	public static Task runTaskAsync(final Runnable runnable) {
 		return getPlatform().runTaskAsync(runnable);
 	}
 
@@ -347,7 +347,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTaskTimer(int delayTicks, int repeatTicks, Runnable runnable) {
+	public static Task runTaskTimer(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		return getPlatform().runTaskTimer(delayTicks, repeatTicks, runnable);
 	}
 
@@ -358,7 +358,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTaskTimer(int repeatTicks, Runnable runnable) {
+	public static Task runTaskTimer(final int repeatTicks, final Runnable runnable) {
 		return getPlatform().runTaskTimer(repeatTicks, runnable);
 	}
 
@@ -370,7 +370,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTaskTimerAsync(int delayTicks, int repeatTicks, Runnable runnable) {
+	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		return getPlatform().runTaskTimerAsync(delayTicks, repeatTicks, runnable);
 	}
 
@@ -381,7 +381,7 @@ public final class Platform {
 	 * @param runnable
 	 * @return
 	 */
-	public static Task runTaskTimerAsync(int repeatTicks, Runnable runnable) {
+	public static Task runTaskTimerAsync(final int repeatTicks, final Runnable runnable) {
 		return getPlatform().runTaskTimerAsync(repeatTicks, runnable);
 	}
 
@@ -395,7 +395,7 @@ public final class Platform {
 	 * @param message
 	 */
 	@Deprecated
-	public static void sendPluginMessage(UUID senderUid, String channel, byte[] message) {
+	public static void sendPluginMessage(final UUID senderUid, final String channel, final byte[] message) {
 		getPlatform().sendPluginMessage(senderUid, channel, message);
 	}
 
@@ -406,7 +406,7 @@ public final class Platform {
 	 *
 	 * @param serverName
 	 */
-	public static void setCustomServerName(String serverName) {
+	public static void setCustomServerName(final String serverName) {
 		getPlatform().setCustomServerName(serverName);
 	}
 
@@ -415,7 +415,7 @@ public final class Platform {
 	 *
 	 * @param instance
 	 */
-	static void setInstance(FoundationPlatform instance) {
+	static void setInstance(final FoundationPlatform instance) {
 		Platform.instance = instance;
 	}
 
@@ -425,7 +425,7 @@ public final class Platform {
 	 * @param player
 	 * @return
 	 */
-	public static FoundationPlayer toPlayer(Object player) {
+	public static FoundationPlayer toPlayer(final Object player) {
 		return getPlatform().toPlayer(player);
 	}
 
@@ -435,7 +435,7 @@ public final class Platform {
 	 * @param server
 	 * @return
 	 */
-	public static FoundationServer toServer(Object server) {
+	public static FoundationServer toServer(final Object server) {
 		return getPlatform().toServer(server);
 	}
 
@@ -446,7 +446,7 @@ public final class Platform {
 	 * @param command
 	 */
 	@Deprecated
-	public static void unregisterCommand(SimpleCommandCore command) {
+	public static void unregisterCommand(final SimpleCommandCore command) {
 		getPlatform().unregisterCommand(command);
 	}
 
@@ -498,7 +498,7 @@ public final class Platform {
 		 * @param key
 		 * @return
 		 */
-		public static Platform.Type fromKey(String key) {
+		public static Platform.Type fromKey(final String key) {
 			for (final Platform.Type type : Platform.Type.values())
 				if (type.getKey().equalsIgnoreCase(key))
 					return type;

@@ -155,7 +155,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 		FoundationFilter.inject();
 	}
 
-	public VelocityPlugin(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
+	public VelocityPlugin(final ProxyServer proxy, final Logger logger, @DataDirectory final Path dataDirectory) {
 		instance = this;
 
 		try {
@@ -214,7 +214,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	}
 
 	@Subscribe
-	public final void onProxyInitialization(ProxyInitializeEvent event) {
+	public final void onProxyInitialization(final ProxyInitializeEvent event) {
 		if (this.loadingFailed)
 			return;
 
@@ -254,7 +254,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	// ----------------------------------------------------------------------------------------
 
 	@Subscribe
-	public final void onProxyShutdown(ProxyShutdownEvent event) {
+	public final void onProxyShutdown(final ProxyShutdownEvent event) {
 		if (this.loadingFailed)
 			return;
 
@@ -365,7 +365,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	 * @param group
 	 */
 	@Override
-	public final void setDefaultCommandGroup(SimpleCommandGroup group) {
+	public final void setDefaultCommandGroup(final SimpleCommandGroup group) {
 		ValidCore.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
 
 		this.defaultCommandGroup = group;
@@ -387,7 +387,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	 * @param listener
 	 */
 	@Override
-	public final void setDefaultProxyListener(ProxyListener listener) {
+	public final void setDefaultProxyListener(final ProxyListener listener) {
 		this.defaultProxyListener = listener;
 	}
 

@@ -71,7 +71,7 @@ public final class BlockUtil {
 	 * @param chunk
 	 * @return
 	 */
-	public static Set<Location> getBoundingBox(@NonNull Chunk chunk) {
+	public static Set<Location> getBoundingBox(@NonNull final Chunk chunk) {
 		final int minX = chunk.getX() << 4;
 		final int minY = 0;
 		final int minZ = chunk.getZ() << 4;
@@ -344,7 +344,7 @@ public final class BlockUtil {
 	 * @param chunk
 	 * @return
 	 */
-	public static List<Block> getBlocks(@NonNull Chunk chunk) {
+	public static List<Block> getBlocks(@NonNull final Chunk chunk) {
 		final List<Block> blocks = new ArrayList<>();
 
 		final int minX = chunk.getX() << 4;
@@ -412,7 +412,7 @@ public final class BlockUtil {
 	 * @param chunk
 	 * @return
 	 */
-	public static List<Location> getXZLocations(Chunk chunk) {
+	public static List<Location> getXZLocations(final Chunk chunk) {
 		final List<Location> found = new ArrayList<>();
 
 		final int chunkX = chunk.getX() << 4;
@@ -687,7 +687,7 @@ public final class BlockUtil {
 	 * @param location
 	 * @return
 	 */
-	public static int findHighestNetherAirBlock(@NonNull Location location) {
+	public static int findHighestNetherAirBlock(@NonNull final Location location) {
 		return findHighestNetherAirBlock(location.getWorld(), location.getBlockX(), location.getBlockZ());
 	}
 
@@ -700,7 +700,7 @@ public final class BlockUtil {
 	 * @param z
 	 * @return
 	 */
-	public static int findHighestNetherAirBlock(@NonNull World world, int x, int z) {
+	public static int findHighestNetherAirBlock(@NonNull final World world, final int x, final int z) {
 		ValidCore.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
 
 		for (int y = 0; y < world.getMaxHeight(); y++) {
@@ -722,7 +722,7 @@ public final class BlockUtil {
 	 * @param locations
 	 * @return
 	 */
-	public static Location findClosestLocation(Location location, List<Location> locations) {
+	public static Location findClosestLocation(final Location location, List<Location> locations) {
 		locations = new ArrayList<>(locations);
 		final Location playerLocation = location;
 

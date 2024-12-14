@@ -45,7 +45,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 *
 	 * @param audience
 	 */
-	public void displayTo(FoundationPlayer audience) {
+	public void displayTo(final FoundationPlayer audience) {
 		audience.showTitle(this.fadeIn, this.stay, this.fadeOut, this.titleMessage, this.subtitleMessage);
 	}
 
@@ -55,7 +55,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param audience
 	 * @param variablesReplacer
 	 */
-	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> variablesReplacer) {
+	public void displayTo(final FoundationPlayer audience, final Function<SimpleComponent, SimpleComponent> variablesReplacer) {
 		audience.showTitle(this.fadeIn, this.stay, this.fadeOut,
 				variablesReplacer.apply(SimpleComponent.fromMiniAmpersand(this.titleMessage)),
 				variablesReplacer.apply(SimpleComponent.fromMiniAmpersand(this.subtitleMessage)));
@@ -67,7 +67,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param audience
 	 * @param variablesReplacer
 	 */
-	public void displayLegacyTo(FoundationPlayer audience, Function<String, String> variablesReplacer) {
+	public void displayLegacyTo(final FoundationPlayer audience, final Function<String, String> variablesReplacer) {
 		audience.showTitle(this.fadeIn, this.stay, this.fadeOut, variablesReplacer.apply(this.titleMessage), variablesReplacer.apply(this.subtitleMessage));
 	}
 
@@ -100,7 +100,7 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static TitleMessage deserialize(SerializedMap map) {
+	public static TitleMessage deserialize(final SerializedMap map) {
 		final String title = map.getString("title");
 		final String subtitle = map.getString("subtitle");
 		final int fadeIn = map.getInteger("fadeIn");

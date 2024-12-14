@@ -163,7 +163,7 @@ public interface ReadableNBT {
 	 * @param type nbt tag type
 	 * @return whether the key is set and has the specified type
 	 */
-	default boolean hasTag(String key, NBTType type) {
+	default boolean hasTag(final String key, final NBTType type) {
 		return this.hasTag(key) && this.getType(key) == type;
 	}
 

@@ -55,7 +55,7 @@ public abstract class FoundationPlatform {
 
 	public abstract HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack);
 
-	public final void dispatchConsoleCommand(FoundationPlayer playerReplacement, String command) {
+	public final void dispatchConsoleCommand(final FoundationPlayer playerReplacement, String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
 
@@ -162,31 +162,31 @@ public abstract class FoundationPlatform {
 
 	public abstract Task runTask(int delayTicks, Runnable runnable);
 
-	public final Task runTask(Runnable runnable) {
+	public final Task runTask(final Runnable runnable) {
 		return this.runTask(0, runnable);
 	}
 
 	public abstract Task runTaskAsync(int delayTicks, Runnable runnable);
 
-	public final Task runTaskAsync(Runnable runnable) {
+	public final Task runTaskAsync(final Runnable runnable) {
 		return this.runTaskAsync(0, runnable);
 	}
 
 	public abstract Task runTaskTimer(int delayTicks, int repeatTicks, Runnable runnable);
 
-	public final Task runTaskTimer(int repeatTicks, Runnable runnable) {
+	public final Task runTaskTimer(final int repeatTicks, final Runnable runnable) {
 		return this.runTaskTimer(0, repeatTicks, runnable);
 	}
 
 	public abstract Task runTaskTimerAsync(int delayTicks, int repeatTicks, Runnable runnable);
 
-	public final Task runTaskTimerAsync(int repeatTicks, Runnable runnable) {
+	public final Task runTaskTimerAsync(final int repeatTicks, final Runnable runnable) {
 		return this.runTaskTimerAsync(0, repeatTicks, runnable);
 	}
 
 	public abstract void sendPluginMessage(UUID senderUid, String channel, byte[] array);
 
-	public final void setCustomServerName(@NonNull String serverName) {
+	public final void setCustomServerName(@NonNull final String serverName) {
 		this.customServerName = serverName;
 	}
 

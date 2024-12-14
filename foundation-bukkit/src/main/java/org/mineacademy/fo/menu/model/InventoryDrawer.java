@@ -41,7 +41,7 @@ public final class InventoryDrawer {
 	 * @param size  the size
 	 * @param title the title
 	 */
-	public InventoryDrawer(int size, String title) {
+	public InventoryDrawer(final int size, final String title) {
 		this.size = size;
 		this.title = title;
 
@@ -55,7 +55,7 @@ public final class InventoryDrawer {
 	 *
 	 * @param item the item
 	 */
-	public void pushItem(ItemStack item) {
+	public void pushItem(final ItemStack item) {
 		boolean added = false;
 
 		for (int i = 0; i < this.content.length; i++) {
@@ -79,7 +79,7 @@ public final class InventoryDrawer {
 	 * @param slot the slot
 	 * @return true if the slot is occupied
 	 */
-	public boolean isSet(int slot) {
+	public boolean isSet(final int slot) {
 		return this.getItem(slot) != null;
 	}
 
@@ -89,7 +89,7 @@ public final class InventoryDrawer {
 	 * @param slot
 	 * @return
 	 */
-	public ItemStack getItem(int slot) {
+	public ItemStack getItem(final int slot) {
 		return slot < this.content.length ? this.content[slot] : null;
 	}
 
@@ -99,7 +99,7 @@ public final class InventoryDrawer {
 	 * @param slot
 	 * @param item
 	 */
-	public void setItem(int slot, ItemStack item) {
+	public void setItem(final int slot, final ItemStack item) {
 		this.content[slot] = item;
 	}
 
@@ -110,7 +110,7 @@ public final class InventoryDrawer {
 	 *
 	 * @param newContent the new content
 	 */
-	public void setContent(ItemStack[] newContent) {
+	public void setContent(final ItemStack[] newContent) {
 		for (int i = 0; i < this.content.length; i++)
 			this.content[i] = i < newContent.length ? newContent[i] : new ItemStack(CompMaterial.AIR.getMaterial());
 	}
@@ -120,7 +120,7 @@ public final class InventoryDrawer {
 	 *
 	 * @param title
 	 */
-	public void setTitle(String title) {
+	public void setTitle(final String title) {
 		this.title = title;
 	}
 
@@ -129,7 +129,7 @@ public final class InventoryDrawer {
 	 *
 	 * @param player
 	 */
-	public void display(Player player) {
+	public void display(final Player player) {
 		final Inventory inv = this.build(player);
 
 		player.openInventory(inv);
@@ -150,7 +150,7 @@ public final class InventoryDrawer {
 	 * @param holder
 	 * @return
 	 */
-	public Inventory build(InventoryHolder holder) {
+	public Inventory build(final InventoryHolder holder) {
 
 		// Automatically append the black color in the menu, can be overriden by colors
 		final Inventory inv = Bukkit.createInventory(holder, this.size, CompChatColor.translateColorCodes("<black>" + (this.title.length() > 30 ? this.title.substring(0, 30) : this.title)));

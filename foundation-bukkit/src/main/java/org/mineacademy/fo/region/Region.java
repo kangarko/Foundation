@@ -152,7 +152,7 @@ public class Region implements ConfigSerializable {
 	 * @param location
 	 * @return
 	 */
-	public final boolean isPrimary(Location location) {
+	public final boolean isPrimary(final Location location) {
 		return this.primary != null && Valid.locationEquals(this.primary, location);
 	}
 
@@ -163,7 +163,7 @@ public class Region implements ConfigSerializable {
 	 * @param location
 	 * @return
 	 */
-	public final boolean isSecondary(Location location) {
+	public final boolean isSecondary(final Location location) {
 		return this.secondary != null && Valid.locationEquals(this.secondary, location);
 	}
 
@@ -286,7 +286,7 @@ public class Region implements ConfigSerializable {
 	 *
 	 * @param player
 	 */
-	public void teleportToCenter(Player player) {
+	public void teleportToCenter(final Player player) {
 		ValidCore.checkNotNull(this.isWhole(), "Cannot call teleportToCenter() on a non-complete region: " + this.toString());
 
 		final Location toTeleportLocation = this.getCenter().clone();
@@ -306,7 +306,7 @@ public class Region implements ConfigSerializable {
 	 * @return The recalculated Location object for the highest non-air block vertically (plus one block height).
 	 * @throws FoException if the region's border is not set.
 	 */
-	public final Location getHighestLocation(Location location) {
+	public final Location getHighestLocation(final Location location) {
 		ValidCore.checkNotNull(this.isWhole(), "Cannot call getHighestLocation() on a non-complete region: " + this.toString());
 
 		final int x = location.getBlockX();
@@ -400,7 +400,7 @@ public class Region implements ConfigSerializable {
 	 * @param location
 	 * @param click
 	 */
-	public final void setLocation(Location location, ClickType click) {
+	public final void setLocation(final Location location, final ClickType click) {
 		this.setLocation(location, click, false);
 	}
 
@@ -411,7 +411,7 @@ public class Region implements ConfigSerializable {
 	 * @param primary
 	 * @param secondary
 	 */
-	public final void updateLocation(@Nullable Location primary, @Nullable Location secondary) {
+	public final void updateLocation(@Nullable final Location primary, @Nullable final Location secondary) {
 		if (primary != null)
 			this.setPrimary(primary);
 
@@ -429,14 +429,14 @@ public class Region implements ConfigSerializable {
 	 * @param click
 	 * @return true if the location was set, null if it was removed (or location param is null)
 	 */
-	public final boolean toggleLocation(Location location, ClickType click) {
+	public final boolean toggleLocation(final Location location, final ClickType click) {
 		return this.setLocation(location, click, true);
 	}
 
 	/*
 	 * Helper method to set location from click type, removing old one if toggle mode
 	 */
-	private boolean setLocation(Location location, ClickType click, boolean toggle) {
+	private boolean setLocation(final Location location, final ClickType click, final boolean toggle) {
 		final boolean isPrimary = click == ClickType.LEFT;
 
 		if (isPrimary) {
@@ -464,7 +464,7 @@ public class Region implements ConfigSerializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 
 		if (obj instanceof Region) {
 			final Region otherRegion = (Region) obj;

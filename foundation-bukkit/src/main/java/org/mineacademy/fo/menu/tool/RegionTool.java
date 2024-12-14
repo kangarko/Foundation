@@ -180,7 +180,7 @@ public final class RegionTool extends VisualTool {
 	 * @see org.mineacademy.fo.visual.VisualTool#getVisualizedPoints(org.bukkit.entity.Player)
 	 */
 	@Override
-	protected List<Location> getVisualizedPoints(Player player) {
+	protected List<Location> getVisualizedPoints(final Player player) {
 		final List<Location> blocks = new ArrayList<>();
 		final Region region = DiskRegion.getCreatedRegion(player);
 
@@ -197,7 +197,7 @@ public final class RegionTool extends VisualTool {
 	 * @see org.mineacademy.fo.visual.VisualTool#getVisualizedRegion(org.bukkit.entity.Player)
 	 */
 	@Override
-	protected VisualizedRegion getVisualizedRegion(Player player) {
+	protected VisualizedRegion getVisualizedRegion(final Player player) {
 		final VisualizedRegion region = DiskRegion.getCreatedRegion(player);
 
 		return region.isWhole() ? region : null;

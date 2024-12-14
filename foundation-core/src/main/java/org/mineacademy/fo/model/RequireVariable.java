@@ -38,7 +38,7 @@ public final class RequireVariable {
 	 * @param replacer the function to replace the variable with its actual value, parse variables here
 	 * @return
 	 */
-	public boolean matches(Function<String, String> replacer) {
+	public boolean matches(final Function<String, String> replacer) {
 		String result = replacer.apply(this.variable);
 
 		if ("yes".equals(result) || "1".equals(result))
@@ -62,7 +62,7 @@ public final class RequireVariable {
 	 * @param line
 	 * @return
 	 */
-	public static RequireVariable parse(String line) {
+	public static RequireVariable parse(final String line) {
 		final String[] split = line.split(" ");
 
 		if (split.length != 1 && split.length != 2)
@@ -83,7 +83,7 @@ public final class RequireVariable {
 	 * @param requiredValue
 	 * @return
 	 */
-	public static RequireVariable from(String variable, String requiredValue) {
+	public static RequireVariable from(final String variable, String requiredValue) {
 		if ("yes".equals(requiredValue) || "1".equals(requiredValue))
 			requiredValue = "true";
 

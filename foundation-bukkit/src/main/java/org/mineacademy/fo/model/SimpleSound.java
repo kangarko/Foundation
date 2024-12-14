@@ -47,11 +47,11 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 */
 	private boolean enabled = true;
 
-	private SimpleSound(CompSound sound, float volume, float pitch) {
+	private SimpleSound(final CompSound sound, final float volume, final float pitch) {
 		this(sound, volume, pitch, false, true);
 	}
 
-	private SimpleSound(CompSound sound, float volume) {
+	private SimpleSound(final CompSound sound, final float volume) {
 		this(sound, volume, 1.0F, true, true);
 	}
 
@@ -60,7 +60,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @param players
 	 */
-	public void play(Iterable<Player> players) {
+	public void play(final Iterable<Player> players) {
 		if (this.enabled)
 			for (final Player player : players)
 				this.play(player);
@@ -71,7 +71,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @param audience
 	 */
-	public void play(FoundationPlayer audience) {
+	public void play(final FoundationPlayer audience) {
 		if (audience.isPlayer())
 			this.play((Player) audience.getPlayer());
 	}
@@ -81,7 +81,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @param player
 	 */
-	public void play(Player player) {
+	public void play(final Player player) {
 		if (this.enabled) {
 			ValidCore.checkNotNull(this.sound);
 
@@ -98,7 +98,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @param location
 	 */
-	public void play(Location location) {
+	public void play(final Location location) {
 		if (this.enabled) {
 			ValidCore.checkNotNull(this.sound);
 
@@ -145,7 +145,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 * @param line
 	 * @return
 	 */
-	public static SimpleSound fromString(String line) {
+	public static SimpleSound fromString(final String line) {
 		if ("none".equals(line))
 			return new SimpleSound(CompSound.UI_BUTTON_CLICK, 0.0F, 1.0F, false, false);
 
@@ -191,7 +191,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @return
 	 */
-	public static SimpleSound fromSound(@NonNull CompSound sound, float volume, float pitch) {
+	public static SimpleSound fromSound(@NonNull final CompSound sound, final float volume, final float pitch) {
 		return new SimpleSound(sound, volume, pitch);
 	}
 
@@ -203,7 +203,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @return
 	 */
-	public static SimpleSound fromSound(@NonNull CompSound sound, float volume) {
+	public static SimpleSound fromSound(@NonNull final CompSound sound, final float volume) {
 		return new SimpleSound(sound, volume);
 	}
 }

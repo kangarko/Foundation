@@ -17,12 +17,12 @@ public final class SimplePrefix implements ConversationPrefix {
 	@Getter
 	private final String prefix;
 
-	public SimplePrefix(String prefix) {
+	public SimplePrefix(final String prefix) {
 		this.prefix = CompChatColor.translateColorCodes(prefix);
 	}
 
 	@Override
-	public String getPrefix(ConversationContext context) {
+	public String getPrefix(final ConversationContext context) {
 		return this.prefix;
 	}
 }

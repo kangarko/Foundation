@@ -125,7 +125,7 @@ public abstract class PacketListener {
 			}
 
 			@Override
-			public void onPacketReceiving(PacketEvent event) {
+			public void onPacketReceiving(final PacketEvent event) {
 				if (type == PacketType.Play.Server.CHAT || type == PacketType.Play.Client.CHAT) {
 					// Packet can be both sided
 				} else
@@ -321,7 +321,7 @@ public abstract class PacketListener {
 		 *
 		 * @return
 		 */
-		protected String onJsonMessage(Player player, String json) {
+		protected String onJsonMessage(final Player player, final String json) {
 			return json;
 		}
 

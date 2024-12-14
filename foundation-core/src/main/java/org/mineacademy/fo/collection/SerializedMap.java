@@ -73,7 +73,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 *
 	 * @param mode
 	 */
-	public SerializedMap(SerializeUtilCore.Language mode) {
+	public SerializedMap(final SerializeUtilCore.Language mode) {
 		this.language = mode;
 	}
 
@@ -138,7 +138,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param anotherMap
 	 * @return this
 	 */
-	public SerializedMap put(@NonNull SerializedMap anotherMap) {
+	public SerializedMap put(@NonNull final SerializedMap anotherMap) {
 		this.map.putAll(anotherMap.asMap());
 
 		return this;
@@ -406,7 +406,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param valueType
 	 * @return
 	 */
-	public <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
+	public <K, V> Tuple<K, V> getTuple(final String key, final Class<K> keyType, final Class<V> valueType) {
 		return this.getTuple(key, null, keyType, valueType);
 	}
 
@@ -421,7 +421,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param valueType
 	 * @return
 	 */
-	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
+	public <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, final Class<K> keyType, final Class<V> valueType) {
 		return this.get(key, Tuple.class, def, keyType, valueType);
 	}
 
@@ -515,7 +515,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param type
 	 * @return
 	 */
-	public <T> IsInList<T> getIsInList(String path, Class<T> type) {
+	public <T> IsInList<T> getIsInList(final String path, final Class<T> type) {
 		final List<String> stringList = this.getStringList(path);
 
 		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
@@ -628,7 +628,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param valueType
 	 * @return
 	 */
-	public <Key, Value> Map<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType) {
+	public <Key, Value> Map<Key, Value> getMap(@NonNull final String path, final Class<Key> keyType, final Class<Value> valueType) {
 		// The map we are creating, preserve order
 		final Map<Key, Value> map = new LinkedHashMap<>();
 		final Object raw = this.map.get(path);
@@ -658,7 +658,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param setType
 	 * @return
 	 */
-	public <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull String path, final Class<Key> keyType, final Class<Value> setType) {
+	public <Key, Value> LinkedHashMap<Key, Set<Value>> getMapSet(@NonNull final String path, final Class<Key> keyType, final Class<Value> setType) {
 		final LinkedHashMap<Key, Set<Value>> map = new LinkedHashMap<>();
 		Object raw = this.map.get(path);
 
@@ -734,7 +734,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param deserializeParameters
 	 * @return
 	 */
-	public <T> T get(final String key, final Class<T> type, final T def, Object... deserializeParameters) {
+	public <T> T get(final String key, final Class<T> type, final T def, final Object... deserializeParameters) {
 		Object raw = this.removeOnGet ? this.map.remove(key) : this.map.get(key);
 
 		// Try to get the value by key with ignoring case
@@ -911,7 +911,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @return
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj instanceof SerializedMap) {
 			final SerializedMap other = (SerializedMap) obj;
 
@@ -984,7 +984,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param object
 	 * @return the serialized map, or an empty map if object could not be parsed
 	 */
-	public static SerializedMap fromObject(@NonNull Object object) {
+	public static SerializedMap fromObject(@NonNull final Object object) {
 		return fromObject(Language.YAML, object);
 	}
 
@@ -995,7 +995,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	 * @param object
 	 * @return
 	 */
-	public static SerializedMap fromObject(Language language, @NonNull final Object object) {
+	public static SerializedMap fromObject(final Language language, @NonNull final Object object) {
 		if (language == Language.JSON) {
 			if (object instanceof Map)
 				return fromInternal(language, object);
@@ -1025,7 +1025,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	/*
 	 * Parses the given object into Serialized map
 	 */
-	private static SerializedMap fromInternal(Language language, @NonNull Object object) {
+	private static SerializedMap fromInternal(final Language language, @NonNull final Object object) {
 
 		if (object instanceof SerializedMap) {
 			((SerializedMap) object).language = language;
@@ -1083,7 +1083,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	/*
 	 * Converts a JsonObject into a Map<String, Object> where JSON elements are parsed into their respective values.
 	 */
-	private static Map<String, Object> toValueMap(JsonObject json) {
+	private static Map<String, Object> toValueMap(final JsonObject json) {
 		final Map<String, Object> resultMap = new LinkedHashMap<>();
 
 		for (final Map.Entry<String, JsonElement> entry : json.entrySet())
@@ -1095,7 +1095,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	/*
 	 * Parses a JsonElement based on its type and returns an appropriate Java object representation.
 	 */
-	private static Object parseJsonElement(JsonElement element) {
+	private static Object parseJsonElement(final JsonElement element) {
 		if (element.isJsonObject())
 			return toValueMap(element.getAsJsonObject());
 
@@ -1115,7 +1115,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	/*
 	 * Converts a JsonArray into a List<Object> where each element is recursively parsed.
 	 */
-	private static List<Object> parseJsonArray(JsonArray jsonArray) {
+	private static List<Object> parseJsonArray(final JsonArray jsonArray) {
 		final List<Object> resultList = new ArrayList<>();
 
 		for (final JsonElement element : jsonArray)
@@ -1127,7 +1127,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	/*
 	 * Converts a JsonPrimitive into its corresponding primitive Java value (Boolean, Number, or String).
 	 */
-	private static Object parseJsonPrimitive(JsonPrimitive jsonPrimitive) {
+	private static Object parseJsonPrimitive(final JsonPrimitive jsonPrimitive) {
 		if (jsonPrimitive.isBoolean())
 			return jsonPrimitive.getAsBoolean();
 

@@ -42,7 +42,7 @@ public abstract class ChunkedTask {
 	 *
 	 * @param processAmount
 	 */
-	public ChunkedTask(int processAmount) {
+	public ChunkedTask(final int processAmount) {
 		this.processAmount = processAmount;
 	}
 
@@ -53,7 +53,7 @@ public abstract class ChunkedTask {
 	 * @param processAmount
 	 * @param waitPeriodTicks
 	 */
-	public ChunkedTask(int processAmount, int waitPeriodTicks) {
+	public ChunkedTask(final int processAmount, final int waitPeriodTicks) {
 		this.processAmount = processAmount;
 		this.waitPeriodTicks = waitPeriodTicks;
 	}
@@ -154,7 +154,7 @@ public abstract class ChunkedTask {
 	 * @param processed
 	 * @return
 	 */
-	protected String getProcessMessage(long initialTime, int processed) {
+	protected String getProcessMessage(final long initialTime, final int processed) {
 		return "Processed " + String.format("%,d", processed) + " " + this.getLabel() + ". Took " + (System.currentTimeMillis() - initialTime) + " ms";
 	}
 
@@ -163,7 +163,7 @@ public abstract class ChunkedTask {
 	 *
 	 * @param gracefully true if natural end, false if {@link #cancel()} used
 	 */
-	protected void onFinish(boolean gracefully) {
+	protected void onFinish(final boolean gracefully) {
 	}
 
 	/**

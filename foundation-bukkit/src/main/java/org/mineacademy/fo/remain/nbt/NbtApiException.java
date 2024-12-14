@@ -31,25 +31,25 @@ public class NbtApiException extends RuntimeException {
 	 * @param message
 	 * @param cause
 	 */
-	public NbtApiException(String message, Throwable cause) {
+	public NbtApiException(final String message, final Throwable cause) {
 		super(generateMessage(message), cause);
 	}
 
 	/**
 	 * @param message
 	 */
-	public NbtApiException(String message) {
+	public NbtApiException(final String message) {
 		super(generateMessage(message));
 	}
 
 	/**
 	 * @param cause
 	 */
-	public NbtApiException(Throwable cause) {
+	public NbtApiException(final Throwable cause) {
 		super(generateMessage(cause == null ? null : cause.toString()), cause);
 	}
 
-	private static String generateMessage(String message) {
+	private static String generateMessage(final String message) {
 		if (message == null)
 			return null;
 

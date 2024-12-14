@@ -33,7 +33,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param item
 	 */
 	@Deprecated
-	public NBTItem(ItemStack item) {
+	public NBTItem(final ItemStack item) {
 		this(item, false);
 	}
 
@@ -44,7 +44,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 *                    Modifying the stack in that case is not valid! Also
 	 *                    overwrites directApply
 	 */
-	protected NBTItem(ItemStack item, boolean directApply, boolean readOnly, boolean finalizer) {
+	protected NBTItem(final ItemStack item, final boolean directApply, final boolean readOnly, final boolean finalizer) {
 		super(null, null, readOnly);
 		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0)
 			throw new NullPointerException("ItemStack can't be null/air/amount of 0! This is not a NBTAPI bug!");
@@ -73,7 +73,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param directApply
 	 */
 	@Deprecated
-	public NBTItem(ItemStack item, boolean directApply) {
+	public NBTItem(final ItemStack item, final boolean directApply) {
 		super(null, null);
 		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0)
 			throw new NullPointerException("ItemStack can't be null/air/amount of 0! This is not a NBTAPI bug!");
@@ -169,7 +169,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param item ItemStack that should get the new NBT data
 	 */
 	@Deprecated
-	public void applyNBT(ItemStack item) {
+	public void applyNBT(final ItemStack item) {
 		if (item == null || item.getType() == Material.AIR)
 			throw new NullPointerException("ItemStack can't be null/Air! This is not a NBTAPI bug!");
 		final NBTItem nbti = new NBTItem(new ItemStack(item.getType()));
@@ -183,7 +183,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param item ItemStack that should get the new NBT data
 	 */
 	@Deprecated
-	public void mergeNBT(ItemStack item) {
+	public void mergeNBT(final ItemStack item) {
 		final NBTItem nbti = new NBTItem(item);
 		nbti.mergeCompound(this);
 		item.setItemMeta(nbti.getItem().getItemMeta());
@@ -195,7 +195,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param item ItemStack that should get the new NBT data
 	 */
 	@Deprecated
-	public void mergeCustomNBT(ItemStack item) {
+	public void mergeCustomNBT(final ItemStack item) {
 		if (item == null || item.getType() == Material.AIR)
 			throw new NullPointerException("ItemStack can't be null/Air!");
 		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
@@ -252,7 +252,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 		return this.bukkitItem;
 	}
 
-	protected void setItem(ItemStack item) {
+	protected void setItem(final ItemStack item) {
 		this.bukkitItem = item;
 	}
 
@@ -278,7 +278,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param handler
 	 */
 	@Override
-	public void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler) {
+	public void modifyMeta(final BiConsumer<ReadableNBT, ItemMeta> handler) {
 		this.finalizeChanges();
 		final ItemMeta meta = this.bukkitItem.getItemMeta();
 		handler.accept(new NBTContainer(this.getResolvedObject()).setReadOnly(true), meta);
@@ -303,7 +303,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @param handler
 	 */
 	@Override
-	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler) {
+	public <T extends ItemMeta> void modifyMeta(final Class<T> type, final BiConsumer<ReadableNBT, T> handler) {
 		this.finalizeChanges();
 
 		final T meta = (T) this.bukkitItem.getItemMeta();
@@ -322,7 +322,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
 	@Deprecated
-	public static NBTContainer convertItemtoNBT(ItemStack item) {
+	public static NBTContainer convertItemtoNBT(final ItemStack item) {
 		return NBTReflectionUtil.convertNMSItemtoNBTCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, item));
 	}
 
@@ -335,7 +335,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Nullable
 	@Deprecated
-	public static ItemStack convertNBTtoItem(NBTCompound comp) {
+	public static ItemStack convertNBTtoItem(final NBTCompound comp) {
 		return (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null,
 				NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
 	}
@@ -349,7 +349,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
 	@Deprecated
-	public static NBTContainer convertItemArraytoNBT(ItemStack[] items) {
+	public static NBTContainer convertItemArraytoNBT(final ItemStack[] items) {
 		final NBTContainer container = new NBTContainer();
 		container.setInteger("size", items.length);
 		final NBTCompoundList list = container.getCompoundList("items");
@@ -377,7 +377,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Nullable
 	@Deprecated
-	public static ItemStack[] convertNBTtoItemArray(NBTCompound comp) {
+	public static ItemStack[] convertNBTtoItemArray(final NBTCompound comp) {
 		if (!comp.hasTag("size"))
 			return null;
 		final ItemStack[] rebuild = new ItemStack[comp.getInteger("size")];

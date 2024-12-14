@@ -39,7 +39,7 @@ public final class VelocityListener {
 	 * @param event
 	 */
 	@Subscribe
-	public void onPluginMessage(PluginMessageEvent event) {
+	public void onPluginMessage(final PluginMessageEvent event) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final ChannelMessageSource sender = event.getSource();
 			final byte[] data = event.getData();
@@ -95,11 +95,11 @@ public final class VelocityListener {
 
 			if (subChannel.equals("ForwardToPlayer")) {
 				proxy.getPlayer(in.readUTF())
-						.ifPresent(player -> player.sendPluginMessage(event.getIdentifier(), prepareForwardMessage(in)));
+						.ifPresent(player -> player.sendPluginMessage(event.getIdentifier(), this.prepareForwardMessage(in)));
 
 			} else if (subChannel.equals("Forward")) {
 				final String target = in.readUTF();
-				final byte[] toForward = prepareForwardMessage(in);
+				final byte[] toForward = this.prepareForwardMessage(in);
 
 				if (target.equals("ALL")) {
 					for (final RegisteredServer other : Remain.getServers())
@@ -219,7 +219,7 @@ public final class VelocityListener {
 	}
 
 	// Credits: https://github.com/VelocityPowered/BungeeQuack/blob/master/src/main/java/com/velocitypowered/bungeequack/BungeeQuack.java
-	private byte[] prepareForwardMessage(ByteArrayDataInput in) {
+	private byte[] prepareForwardMessage(final ByteArrayDataInput in) {
 		final String channel = in.readUTF();
 		final short messageLength = in.readShort();
 		final byte[] message = new byte[messageLength];

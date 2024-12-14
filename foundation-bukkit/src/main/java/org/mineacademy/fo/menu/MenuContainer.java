@@ -45,7 +45,7 @@ public abstract class MenuContainer extends Menu {
 	 *
 	 * @param parent
 	 */
-	protected MenuContainer(Menu parent) {
+	protected MenuContainer(final Menu parent) {
 		this(parent, false);
 	}
 
@@ -56,7 +56,7 @@ public abstract class MenuContainer extends Menu {
 	 * @param returnMakesNewInstance should we re-instatiate the parent menu when
 	 *                               returning to it?
 	 */
-	protected MenuContainer(Menu parent, boolean returnMakesNewInstance) {
+	protected MenuContainer(final Menu parent, final boolean returnMakesNewInstance) {
 		super(parent, returnMakesNewInstance);
 
 		// Default the size to 3 rows (+ 1 bottom row is added automatically)
@@ -68,7 +68,7 @@ public abstract class MenuContainer extends Menu {
 	// ------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public final ItemStack getItemAt(int slot) {
+	public final ItemStack getItemAt(final int slot) {
 
 		final ItemStack customDrop = this.getDropAt(slot);
 
@@ -114,7 +114,7 @@ public abstract class MenuContainer extends Menu {
 	 *
 	 * @return
 	 */
-	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, InventoryAction action) {
+	protected boolean canEditItem(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
 		return this.canEditItem(slot);
 	}
 
@@ -126,7 +126,7 @@ public abstract class MenuContainer extends Menu {
 	 * @param slot
 	 * @return
 	 */
-	protected boolean canEditItem(int slot) {
+	protected boolean canEditItem(final int slot) {
 		return slot < this.getSize() - 9;
 	}
 
@@ -144,7 +144,7 @@ public abstract class MenuContainer extends Menu {
 	// ------------------------------------------------------------------------------------------------------------
 
 	@Override
-	protected final void onMenuClick(Player player, int slot, InventoryAction action, ClickType clickType, ItemStack cursor, ItemStack clicked, boolean cancelled) {
+	protected final void onMenuClick(final Player player, final int slot, final InventoryAction action, final ClickType clickType, final ItemStack cursor, ItemStack clicked, final boolean cancelled) {
 
 		if (this.canEditItem(slot) && slot < this.getSize() - 9) {
 
@@ -157,7 +157,7 @@ public abstract class MenuContainer extends Menu {
 	}
 
 	@Override
-	protected final void onMenuClick(Player player, int slot, ItemStack clicked) {
+	protected final void onMenuClick(final Player player, final int slot, final ItemStack clicked) {
 		throw new FoException("unsupported call");
 	}
 
@@ -170,7 +170,7 @@ public abstract class MenuContainer extends Menu {
 	 * @param item
 	 * @return
 	 */
-	protected ItemStack onItemClick(int slot, ClickType clickType, @Nullable ItemStack item) {
+	protected ItemStack onItemClick(final int slot, final ClickType clickType, @Nullable final ItemStack item) {
 		return item;
 	}
 
@@ -179,7 +179,7 @@ public abstract class MenuContainer extends Menu {
 	// ------------------------------------------------------------------------------------------------------------
 
 	@Override
-	protected final void onMenuClose(Player player, Inventory inventory) {
+	protected final void onMenuClose(final Player player, final Inventory inventory) {
 		final Map<Integer, ItemStack> items = new LinkedHashMap<>();
 
 		for (int slot = 0; slot < this.getSize() - 9; slot++)

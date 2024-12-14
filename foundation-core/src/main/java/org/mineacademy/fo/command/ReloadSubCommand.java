@@ -25,7 +25,7 @@ public final class ReloadSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param label
 	 */
-	public ReloadSubCommand(String label) {
+	public ReloadSubCommand(final String label) {
 		super(label);
 
 		this.setProperties();
@@ -36,7 +36,7 @@ public final class ReloadSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param group
 	 */
-	public ReloadSubCommand(SimpleCommandGroup group) {
+	public ReloadSubCommand(final SimpleCommandGroup group) {
 		this(group, "reload|rl");
 	}
 
@@ -46,7 +46,7 @@ public final class ReloadSubCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param label
 	 */
-	public ReloadSubCommand(SimpleCommandGroup group, String label) {
+	public ReloadSubCommand(final SimpleCommandGroup group, final String label) {
 		super(group, label);
 
 		this.setProperties();

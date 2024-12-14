@@ -48,7 +48,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 *
 	 * @param audience
 	 */
-	public void displayTo(FoundationPlayer audience) {
+	public void displayTo(final FoundationPlayer audience) {
 		audience.showBossbarTimed(this.message, this.seconds, this.progress, this.color, this.overlay);
 	}
 
@@ -58,7 +58,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param audience
 	 * @param messageEditor to replace variables in the message
 	 */
-	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> messageEditor) {
+	public void displayTo(final FoundationPlayer audience, final Function<SimpleComponent, SimpleComponent> messageEditor) {
 		audience.showBossbarTimed(messageEditor.apply(SimpleComponent.fromMiniAmpersand(this.message)), this.seconds, this.progress, this.color, this.overlay);
 	}
 
@@ -68,7 +68,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param audience
 	 * @param messageEditor to replace variables in the message
 	 */
-	public void displayLegacyTo(FoundationPlayer audience, Function<String, String> messageEditor) {
+	public void displayLegacyTo(final FoundationPlayer audience, final Function<String, String> messageEditor) {
 		audience.showBossbarTimed(messageEditor.apply(this.message), this.seconds, this.progress, this.color, this.overlay);
 	}
 
@@ -98,7 +98,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static BossBarMessage deserialize(SerializedMap map) {
+	public static BossBarMessage deserialize(final SerializedMap map) {
 		final BossBar.Color color = map.get("Color", BossBar.Color.class);
 		final BossBar.Overlay overlay = ReflectionUtil.lookupEnum(BossBar.Overlay.class, map.getString("Style"));
 		final int seconds = map.getInteger("Seconds");

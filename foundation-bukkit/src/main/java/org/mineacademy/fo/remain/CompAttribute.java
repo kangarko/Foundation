@@ -226,7 +226,7 @@ public enum CompAttribute {
 	 *
 	 * @param names
 	 */
-	CompAttribute(String... names) {
+	CompAttribute(final String... names) {
 		if (MinecraftVersion.atLeast(V.v1_9))
 			for (final String name : names)
 				try {

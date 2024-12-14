@@ -55,7 +55,7 @@ public class ConfigSection {
 	 * @throws IllegalArgumentException Thrown is parent or path is null, or
 	 *     if parent contains no root Configuration.
 	 */
-	protected ConfigSection(@NonNull ConfigSection parent, @NonNull String path) {
+	protected ConfigSection(@NonNull final ConfigSection parent, @NonNull final String path) {
 		this.path = path;
 		this.parent = parent;
 		this.root = parent.root;
@@ -75,7 +75,7 @@ public class ConfigSection {
 	 * @param deep
 	 * @return
 	 */
-	public final Set<String> getKeys(boolean deep) {
+	public final Set<String> getKeys(final boolean deep) {
 		final Set<String> result = new LinkedHashSet<>();
 
 		this.mapChildrenKeys(result, this, deep);
@@ -83,7 +83,7 @@ public class ConfigSection {
 		return result;
 	}
 
-	private void mapChildrenKeys(Set<String> output, ConfigSection section, boolean deep) {
+	private void mapChildrenKeys(final Set<String> output, final ConfigSection section, final boolean deep) {
 		if (section instanceof ConfigSection) {
 			final ConfigSection sec = section;
 
@@ -114,7 +114,7 @@ public class ConfigSection {
 	 * @param deep
 	 * @return
 	 */
-	public final Map<String, Object> getValues(boolean deep) {
+	public final Map<String, Object> getValues(final boolean deep) {
 		final Map<String, Object> result = new LinkedHashMap<>();
 
 		this.mapChildrenValues(result, this, deep);
@@ -122,7 +122,7 @@ public class ConfigSection {
 		return result;
 	}
 
-	private void mapChildrenValues(Map<String, Object> output, ConfigSection section, boolean deep) {
+	private void mapChildrenValues(final Map<String, Object> output, final ConfigSection section, final boolean deep) {
 		if (section instanceof ConfigSection) {
 			final ConfigSection sec = section;
 
@@ -150,13 +150,13 @@ public class ConfigSection {
 	// Getting values
 	// ------------------------------------------------------------------------------------------------------------
 
-	final boolean isMemorySection(String path) {
+	final boolean isMemorySection(final String path) {
 		final Object val = this.retrieve(path);
 
 		return val instanceof ConfigSection;
 	}
 
-	final ConfigSection retrieveMemorySection(String path) {
+	final ConfigSection retrieveMemorySection(final String path) {
 		Object val = this.retrieve(path);
 
 		if (val != null)
@@ -173,7 +173,7 @@ public class ConfigSection {
 	 * @param fullPath
 	 * @return
 	 */
-	public final Object retrieve(@NonNull String fullPath) {
+	public final Object retrieve(@NonNull final String fullPath) {
 		if (fullPath.length() == 0)
 			return this;
 
@@ -213,11 +213,11 @@ public class ConfigSection {
 	// Setting values
 	// ------------------------------------------------------------------------------------------------------------
 
-	final boolean isStored(String fullPath) {
+	final boolean isStored(final String fullPath) {
 		return this.root != null && this.retrieve(fullPath) != null;
 	}
 
-	final void store(String fullPath, Object value) {
+	final void store(final String fullPath, final Object value) {
 		ValidCore.checkNotEmpty(fullPath, "Cannot set to an empty path");
 
 		final ConfigSection root = this.root;
@@ -265,33 +265,33 @@ public class ConfigSection {
 	// Comments
 	// ------------------------------------------------------------------------------------------------------------
 
-	final List<String> getComments(String fullPath) {
+	final List<String> getComments(final String fullPath) {
 		final SectionPathData pathData = this.getSectionPathData(fullPath);
 
 		return pathData == null ? Collections.emptyList() : pathData.getComments();
 	}
 
-	final List<String> getInlineComments(String fullPath) {
+	final List<String> getInlineComments(final String fullPath) {
 		final SectionPathData pathData = this.getSectionPathData(fullPath);
 
 		return pathData == null ? Collections.emptyList() : pathData.getInlineComments();
 	}
 
-	final void setComments(String fullPath, final List<String> comments) {
+	final void setComments(final String fullPath, final List<String> comments) {
 		final SectionPathData pathData = this.getSectionPathData(fullPath);
 
 		if (pathData != null)
 			pathData.setComments(comments);
 	}
 
-	final void setInlineComments(String fullPath, final List<String> comments) {
+	final void setInlineComments(final String fullPath, final List<String> comments) {
 		final SectionPathData pathData = this.getSectionPathData(fullPath);
 
 		if (pathData != null)
 			pathData.setInlineComments(comments);
 	}
 
-	private final SectionPathData getSectionPathData(@NonNull String fullPath) {
+	private final SectionPathData getSectionPathData(@NonNull final String fullPath) {
 		final ConfigSection root = this.root;
 
 		if (root == null)
@@ -327,7 +327,7 @@ public class ConfigSection {
 	// Helpers
 	// ------------------------------------------------------------------------------------------------------------
 
-	final ConfigSection createSection(String fullPath) {
+	final ConfigSection createSection(final String fullPath) {
 		ValidCore.checkNotEmpty(fullPath, "Cannot create section at empty path");
 
 		final ConfigSection root = this.root;
@@ -391,7 +391,7 @@ public class ConfigSection {
 	 *
 	 * You may use this method for any given memory section.
 	 */
-	private static String createPath(ConfigSection section, String key) {
+	private static String createPath(final ConfigSection section, final String key) {
 		return createPath(section, key, (section == null) ? null : section.root);
 	}
 
@@ -401,7 +401,7 @@ public class ConfigSection {
 	 *
 	 * You may use this method for any given memory section.
 	 */
-	private static String createPath(@NonNull ConfigSection section, String key, ConfigSection relativeTo) {
+	private static String createPath(@NonNull final ConfigSection section, final String key, final ConfigSection relativeTo) {
 		final ConfigSection root = section.root;
 
 		if (root == null)
@@ -461,7 +461,7 @@ public class ConfigSection {
 		 *
 		 * @param data
 		 */
-		public SectionPathData(Object data) {
+		public SectionPathData(final Object data) {
 			this.data = data;
 		}
 	}

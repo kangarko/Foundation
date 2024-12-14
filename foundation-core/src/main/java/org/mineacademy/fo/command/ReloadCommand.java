@@ -19,7 +19,7 @@ public final class ReloadCommand extends SimpleCommandCore {
 	 *
 	 * @param label
 	 */
-	public ReloadCommand(String label) {
+	public ReloadCommand(final String label) {
 		super(label);
 
 		this.setMaxArguments(0);
@@ -31,7 +31,7 @@ public final class ReloadCommand extends SimpleCommandCore {
 		handleCommand(this);
 	}
 
-	static void handleCommand(SimpleCommandCore command) {
+	static void handleCommand(final SimpleCommandCore command) {
 		try {
 			command.tellInfo(Lang.component("command-reload-started"));
 			final List<String> erroredFiles = new ArrayList<>();
@@ -71,7 +71,7 @@ public final class ReloadCommand extends SimpleCommandCore {
 	 * Get a list of all files ending with "yml" in the given directory
 	 * and its subdirectories
 	 */
-	static List<File> collectYamlFiles(File directory, List<File> list) {
+	static List<File> collectYamlFiles(final File directory, final List<File> list) {
 		if (directory.exists())
 			for (final File file : directory.listFiles()) {
 				if (file.getName().endsWith("yml"))

@@ -36,7 +36,7 @@ public class SelectRegionMenu extends MenuPaged<String> {
 	 *
 	 * @param parent
 	 */
-	private SelectRegionMenu(Menu parent) {
+	private SelectRegionMenu(final Menu parent) {
 		super(parent, DiskRegion.getRegionNames());
 
 		this.setTitle("Create Or Edit Regions");
@@ -60,12 +60,12 @@ public class SelectRegionMenu extends MenuPaged<String> {
 	 * @see org.mineacademy.fo.menu.MenuPaged#onPostDisplay(org.mineacademy.fo.menu.model.InventoryDrawer)
 	 */
 	@Override
-	protected void onPostDisplay(InventoryDrawer drawer) {
+	protected void onPostDisplay(final InventoryDrawer drawer) {
 		this.colorMask = 0;
 	}
 
 	@Override
-	protected ItemStack convertToItemStack(String regionName) {
+	protected ItemStack convertToItemStack(final String regionName) {
 		return ItemCreator.from(CompMaterial.WHITE_STAINED_GLASS,
 				"Region " + regionName,
 				"",
@@ -89,7 +89,7 @@ public class SelectRegionMenu extends MenuPaged<String> {
 	}
 
 	@Override
-	protected void onPageClick(Player player, String regionName, ClickType click) {
+	protected void onPageClick(final Player player, final String regionName, final ClickType click) {
 		RegionMenu.showTo(player, DiskRegion.findRegion(regionName));
 	}
 
@@ -103,7 +103,7 @@ public class SelectRegionMenu extends MenuPaged<String> {
 	 * @param parent
 	 * @return
 	 */
-	public static Menu create(Menu parent) {
+	public static Menu create(final Menu parent) {
 		return new SelectRegionMenu(parent);
 	}
 

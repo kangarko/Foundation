@@ -39,7 +39,7 @@ public final class NetworkUtil {
 	 * @param endpoint The URL to send the GET request to.
 	 * @return A JsonObject containing the response, or null if the request or parsing fails.
 	 */
-	public static JsonObject getJson(String endpoint) {
+	public static JsonObject getJson(final String endpoint) {
 		return getJson(endpoint, new HashMap<>());
 	}
 
@@ -50,7 +50,7 @@ public final class NetworkUtil {
 	 * @param params A map of query parameters to include in the request.
 	 * @return
 	 */
-	public static JsonObject getJson(String endpoint, Map<String, String> params) {
+	public static JsonObject getJson(final String endpoint, final Map<String, String> params) {
 		return getJson(endpoint, params, new HashMap<>());
 	}
 
@@ -63,7 +63,7 @@ public final class NetworkUtil {
 	 *
 	 * @return A JsonObject containing the response, or null if the request or parsing fails.
 	 */
-	public static JsonObject getJson(String endpoint, Map<String, String> params, Map<String, String> requestProperties) {
+	public static JsonObject getJson(final String endpoint, final Map<String, String> params, final Map<String, String> requestProperties) {
 		requestProperties.put("Content-Type", "application/json");
 
 		final String response = get(endpoint, params, requestProperties);
@@ -89,7 +89,7 @@ public final class NetworkUtil {
 	 * @param endpoint The URL to send the POST request to.
 	 * @return A JsonObject containing the response, or null if the request or parsing fails.
 	 */
-	public static JsonObject postJson(String endpoint) {
+	public static JsonObject postJson(final String endpoint) {
 		return postJson(endpoint, new HashMap<>());
 	}
 
@@ -100,7 +100,7 @@ public final class NetworkUtil {
 	 * @param params A map of parameters to include in the request.
 	 * @return
 	 */
-	public static JsonObject postJson(String endpoint, Map<String, Object> params) {
+	public static JsonObject postJson(final String endpoint, final Map<String, Object> params) {
 		return postJson(endpoint, params, new HashMap<>());
 	}
 
@@ -113,7 +113,7 @@ public final class NetworkUtil {
 	 *
 	 * @return A JsonObject containing the response, or null if the request or parsing fails.
 	 */
-	public static JsonObject postJson(String endpoint, Map<String, Object> params, Map<String, String> requestProperties) {
+	public static JsonObject postJson(final String endpoint, final Map<String, Object> params, final Map<String, String> requestProperties) {
 		requestProperties.put("Content-Type", "application/json");
 
 		final String response = post(endpoint, params, requestProperties);
@@ -139,7 +139,7 @@ public final class NetworkUtil {
 	 * @param endpoint The URL to send the GET request to.
 	 * @return A string containing the response, or an empty string if the request fails.
 	 */
-	public static String get(String endpoint) {
+	public static String get(final String endpoint) {
 		return get(endpoint, new HashMap<>());
 	}
 
@@ -150,7 +150,7 @@ public final class NetworkUtil {
 	 * @param params A map of query parameters to include in the request, null to ignore.
 	 * @return
 	 */
-	public static String get(String endpoint, Map<String, String> params) {
+	public static String get(final String endpoint, final Map<String, String> params) {
 		return get(endpoint, params, new HashMap<>());
 	}
 
@@ -163,7 +163,7 @@ public final class NetworkUtil {
 	 *
 	 * @return A string containing the response, or an empty string if the request fails.
 	 */
-	public static String get(@NonNull String endpoint, @NonNull Map<String, String> params, @NonNull Map<String, String> requestProperties) {
+	public static String get(@NonNull String endpoint, @NonNull final Map<String, String> params, @NonNull final Map<String, String> requestProperties) {
 		final String rawEndpoint = endpoint;
 
 		// Bust cache
@@ -221,7 +221,7 @@ public final class NetworkUtil {
 	 * @param endpoint The URL to send the POST request to.
 	 * @return A string containing the response, or an empty string if the request fails.
 	 */
-	public static String post(String endpoint) {
+	public static String post(final String endpoint) {
 		return post(endpoint, new HashMap<>());
 	}
 
@@ -232,7 +232,7 @@ public final class NetworkUtil {
 	 * @param params A map of parameters to include in the request, null to ignore.
 	 * @return
 	 */
-	public static String post(String endpoint, Map<String, Object> params) {
+	public static String post(final String endpoint, final Map<String, Object> params) {
 		return post(endpoint, params, new HashMap<>());
 	}
 
@@ -245,7 +245,7 @@ public final class NetworkUtil {
 	 *
 	 * @return A string containing the response, or an empty string if the request fails.
 	 */
-	public static String post(@NonNull String endpoint, @NonNull Map<String, Object> params, @NonNull Map<String, String> requestProperties) {
+	public static String post(@NonNull final String endpoint, @NonNull final Map<String, Object> params, @NonNull final Map<String, String> requestProperties) {
 
 		// Bust cache
 		params.put("t", String.valueOf(System.currentTimeMillis()));
@@ -290,7 +290,7 @@ public final class NetworkUtil {
 	/*
 	 * Set user agent and request properties
 	 */
-	private static void setUserAgentAndRequestProperties(URLConnection connection, Map<String, ?> params, Map<String, ?> requestProperties) {
+	private static void setUserAgentAndRequestProperties(final URLConnection connection, final Map<String, ?> params, final Map<String, ?> requestProperties) {
 
 		// Set user agent (some webhosts blocks Java agent)
 		if (remoteUserAgent != null)

@@ -60,7 +60,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 *
 	 * @param event
 	 */
-	public SimpleListener(Class<T> event) {
+	public SimpleListener(final Class<T> event) {
 		this(event, EventPriority.NORMAL);
 	}
 
@@ -70,12 +70,12 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param event
 	 * @param priority
 	 */
-	public SimpleListener(Class<T> event, EventPriority priority) {
+	public SimpleListener(final Class<T> event, final EventPriority priority) {
 		this(event, priority, true);
 	}
 
 	@Override
-	public final void execute(Listener listener, Event event) throws EventException {
+	public final void execute(final Listener listener, final Event event) throws EventException {
 
 		if (!event.getClass().equals(this.eventClass))
 			return;
@@ -133,7 +133,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 *
 	 * @param player
 	 */
-	protected final void setPlayer(Player player) {
+	protected final void setPlayer(final Player player) {
 		this.player = player;
 	}
 
@@ -154,7 +154,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param toCheck
 	 * @param falseMessages
 	 */
-	protected final void checkNotNull(Object toCheck, SimpleComponent nullMessages) {
+	protected final void checkNotNull(final Object toCheck, final SimpleComponent nullMessages) {
 		this.checkBoolean(toCheck != null, nullMessages);
 	}
 
@@ -165,7 +165,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param condition
 	 * @param falseMessages
 	 */
-	protected final void checkBoolean(boolean condition, SimpleComponent falseMessages) {
+	protected final void checkBoolean(final boolean condition, final SimpleComponent falseMessages) {
 		if (!condition)
 			throw new EventHandledException(true, falseMessages);
 	}
@@ -176,7 +176,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 *
 	 * @param permission
 	 */
-	protected final void checkPerm(String permission) {
+	protected final void checkPerm(final String permission) {
 		this.checkPerm(permission, Lang.component("no-permission"));
 	}
 
@@ -186,7 +186,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param permission
 	 * @return
 	 */
-	protected final boolean hasPerm(String permission) {
+	protected final boolean hasPerm(final String permission) {
 		return this.findPlayer().hasPermission(permission);
 	}
 
@@ -197,7 +197,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param permission
 	 * @param falseMessage
 	 */
-	protected final void checkPerm(String permission, SimpleComponent falseMessage) {
+	protected final void checkPerm(final String permission, final SimpleComponent falseMessage) {
 		this.checkBoolean(this.findPlayer().hasPermission(permission), falseMessage.replaceBracket(null, "permission", SimpleComponent.fromPlain(permission)));
 	}
 
@@ -206,7 +206,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 *
 	 * @param messages
 	 */
-	protected final void cancel(SimpleComponent messages) {
+	protected final void cancel(final SimpleComponent messages) {
 		throw new EventHandledException(true, messages);
 	}
 
@@ -222,7 +222,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 *
 	 * @param messages
 	 */
-	protected final void returnTell(SimpleComponent messages) {
+	protected final void returnTell(final SimpleComponent messages) {
 		throw new EventHandledException(false, messages);
 	}
 

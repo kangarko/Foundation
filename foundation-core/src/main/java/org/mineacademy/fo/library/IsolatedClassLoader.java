@@ -25,7 +25,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 *
 	 * @param urls the URLs to add to the classpath
 	 */
-	public IsolatedClassLoader(URL... urls) {
+	public IsolatedClassLoader(final URL... urls) {
 		super(requireNonNull(urls, "urls"), ClassLoader.getSystemClassLoader().getParent());
 	}
 
@@ -35,7 +35,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 * @param url the URL to add
 	 */
 	@Override
-	public void addURL(URL url) {
+	public void addURL(final URL url) {
 		super.addURL(url);
 	}
 
@@ -44,7 +44,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 *
 	 * @param path the path to add
 	 */
-	public void addPath(Path path) {
+	public void addPath(final Path path) {
 		try {
 			this.addURL(requireNonNull(path, "path").toUri().toURL());
 		} catch (final MalformedURLException e) {
@@ -62,7 +62,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 * @throws IOException If an exception occurs while reading the provided {@link InputStream}
 	 * @throws ClassFormatError If the bytes provided by the {@link InputStream} doesn't contain valid class
 	 */
-	public Class<?> defineClass(String name, InputStream classBytes) throws IOException, ClassFormatError {
+	public Class<?> defineClass(final String name, final InputStream classBytes) throws IOException, ClassFormatError {
 		final byte[] bytes = readAllBytes(classBytes);
 		return super.defineClass(name, bytes, 0, bytes.length);
 	}
@@ -75,7 +75,7 @@ final class IsolatedClassLoader extends URLClassLoader {
 	 * @throws IOException If {@link InputStream} has been closed, or bytes cannot be read, or other I/O error occurs.
 	 * @see InputStream#read(byte[], int, int)
 	 */
-	private static byte[] readAllBytes(InputStream inputStream) throws IOException {
+	private static byte[] readAllBytes(final InputStream inputStream) throws IOException {
 		final int bufLen = 4 * 0x400; // 4KB
 		final byte[] buf = new byte[bufLen];
 		int readLen;

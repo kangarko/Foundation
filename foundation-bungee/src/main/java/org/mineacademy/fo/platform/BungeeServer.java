@@ -20,7 +20,7 @@ final class BungeeServer implements FoundationServer {
 	 *
 	 * @param server
 	 */
-	BungeeServer(@NonNull ServerInfo server) {
+	BungeeServer(@NonNull final ServerInfo server) {
 		this.server = server;
 	}
 
@@ -48,7 +48,7 @@ final class BungeeServer implements FoundationServer {
 	}
 
 	@Override
-	public void sendData(String channel, byte[] byteArray) {
+	public void sendData(final String channel, final byte[] byteArray) {
 		this.server.sendData(channel, byteArray);
 	}
 }

@@ -107,7 +107,7 @@ public final class ReflectionUtil {
 	 * @param enumClass
 	 * @param map
 	 */
-	public static void addLegacyEnumType(Class<? extends Enum<?>> enumClass, Map<String, V> map) {
+	public static void addLegacyEnumType(final Class<? extends Enum<?>> enumClass, final Map<String, V> map) {
 		legacyEnumTypes.put(enumClass, map);
 	}
 
@@ -304,7 +304,7 @@ public final class ReflectionUtil {
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, Class<?>... args) {
+	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, final Class<?>... args) {
 		while (!clazz.equals(Object.class))
 			try {
 				final Method method = clazz.getDeclaredMethod(methodName, args);
@@ -646,7 +646,7 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return the enum, or null if not exists
 	 */
-	public static <E> E lookupEnumSilent(@NonNull Class<E> typeOf, @NonNull String name) {
+	public static <E> E lookupEnumSilent(@NonNull final Class<E> typeOf, @NonNull String name) {
 		name = name.toUpperCase().replace(" ", "_");
 		E found = lookupEnumSilent0(typeOf, name);
 
@@ -660,7 +660,7 @@ public final class ReflectionUtil {
 		return found;
 	}
 
-	private static <E> E lookupEnumSilent0(@NonNull Class<E> typeOf, @NonNull String name) {
+	private static <E> E lookupEnumSilent0(@NonNull final Class<E> typeOf, @NonNull String name) {
 		try {
 			// Some compatibility workaround for plugins having these values in their default config
 			// to prevents malfunction on plugin's first load when loaded on older Minecraft version.
@@ -732,7 +732,7 @@ public final class ReflectionUtil {
 	 * @param instance the instance's class to check
 	 * @return {@code true} if the class is an enum or implements the `Keyed` interface, {@code false} otherwise
 	 */
-	public static boolean isEnumLike(Object instance) {
+	public static boolean isEnumLike(final Object instance) {
 		return isEnumLike(instance.getClass());
 	}
 
@@ -742,7 +742,7 @@ public final class ReflectionUtil {
 	 * @param clazz the class to check
 	 * @return {@code true} if the class is an enum or implements the `Keyed` interface, {@code false} otherwise
 	 */
-	public static boolean isEnumLike(Class<?> clazz) {
+	public static boolean isEnumLike(final Class<?> clazz) {
 		return clazz.isEnum() || (orgBukkitKeyed != null && orgBukkitKeyed.isAssignableFrom(clazz));
 	}
 
@@ -752,7 +752,7 @@ public final class ReflectionUtil {
 	 * @param enumOrKeyed
 	 * @return
 	 */
-	public static String getEnumName(Object enumOrKeyed) {
+	public static String getEnumName(final Object enumOrKeyed) {
 		return enumOrKeyed instanceof Enum ? ((Enum<?>) enumOrKeyed).name() : invoke("name", enumOrKeyed);
 	}
 
@@ -763,7 +763,7 @@ public final class ReflectionUtil {
 	 * @param enumOrKeyed
 	 * @return
 	 */
-	public static <T> T[] getEnumValues(Class<T> enumOrKeyed) {
+	public static <T> T[] getEnumValues(final Class<T> enumOrKeyed) {
 		return enumOrKeyed.isEnum() ? enumOrKeyed.getEnumConstants() : invokeStatic(enumOrKeyed, "values");
 	}
 
@@ -776,7 +776,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	@SneakyThrows
-	public static <T> TreeSet<Class<T>> getClasses(@NonNull File pluginFile, Class<T> extendingClass) {
+	public static <T> TreeSet<Class<T>> getClasses(@NonNull final File pluginFile, final Class<T> extendingClass) {
 
 		final TreeSet<Class<T>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
 
@@ -831,7 +831,7 @@ public final class ReflectionUtil {
 	 *
 	 * @author Apache Commons ClassUtils
 	 */
-	public static Class<?> wrapperToPrimitive(Class<?> cls) {
+	public static Class<?> wrapperToPrimitive(final Class<?> cls) {
 		return wrapperToPrimitiveMap.get(cls);
 	}
 

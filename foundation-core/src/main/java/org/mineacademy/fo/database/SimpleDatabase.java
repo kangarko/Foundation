@@ -445,7 +445,7 @@ public class SimpleDatabase {
 	 * @param uniqueColumnName
 	 * @param columnsAndValues
 	 */
-	protected final void upsert(final Table table, @NonNull Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
+	protected final void upsert(final Table table, @NonNull final Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
 		synchronized (this.connection) {
 			final String tableName = this.replaceVariables(table.getName());
 

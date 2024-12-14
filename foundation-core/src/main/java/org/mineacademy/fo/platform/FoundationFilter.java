@@ -48,7 +48,7 @@ final class FoundationFilter {
 	 *
 	 * @param javaFilterConsumer
 	 */
-	static void inject(@Nullable Consumer<FilterJava> javaFilterConsumer) {
+	static void inject(@Nullable final Consumer<FilterJava> javaFilterConsumer) {
 
 		// Set filter for System out
 		System.setOut(new FilterSystemOut());
@@ -137,7 +137,7 @@ final class FoundationFilter {
 class FilterJava implements java.util.logging.Filter {
 
 	@Override
-	public boolean isLoggable(LogRecord record) {
+	public boolean isLoggable(final LogRecord record) {
 		final String message = record.getMessage();
 
 		return !FoundationFilter.isFiltered(message);
@@ -154,13 +154,13 @@ class FilterSystemOut extends PrintStream {
 	}
 
 	@Override
-	public void println(Object x) {
+	public void println(final Object x) {
 		if (x != null && !FoundationFilter.isFiltered(x.toString()))
 			super.println(x);
 	}
 
 	@Override
-	public void println(String x) {
+	public void println(final String x) {
 		if (x != null && !FoundationFilter.isFiltered(x))
 			super.println(x);
 	}
@@ -185,29 +185,29 @@ class FilterLog4j implements org.apache.logging.log4j.core.Filter {
 	}
 
 	@Override
-	public Result filter(LogEvent record) {
+	public Result filter(final LogEvent record) {
 		return this.checkMessage(record.getMessage().getFormattedMessage());
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String message, Object... arg4) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String message, final Object... arg4) {
 		return this.checkMessage(message);
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, Object message, Throwable arg4) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final Object message, final Throwable arg4) {
 		return this.checkMessage(message.toString());
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, Message message, Throwable arg4) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final Message message, final Throwable arg4) {
 		return this.checkMessage(message.getFormattedMessage());
 	}
 
 	/*
 	 * Return if the message should be filtered
 	 */
-	private final Result checkMessage(String message) {
+	private final Result checkMessage(final String message) {
 		return FoundationFilter.isFiltered(message) ? Result.DENY : Result.NEUTRAL;
 	}
 
@@ -257,52 +257,52 @@ class FilterLog4j implements org.apache.logging.log4j.core.Filter {
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7, Object arg8) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7, final Object arg8) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7, Object arg8, Object arg9) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7, final Object arg8, final Object arg9) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7, Object arg8, Object arg9, Object arg10) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7, final Object arg8, final Object arg9, final Object arg10) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7, Object arg8, Object arg9, Object arg10, Object arg11) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7, final Object arg8, final Object arg9, final Object arg10, final Object arg11) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7, Object arg8, Object arg9, Object arg10, Object arg11, Object arg12) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7, final Object arg8, final Object arg9, final Object arg10, final Object arg11, final Object arg12) {
 		return null;
 	}
 
 	@Override
-	public Result filter(Logger arg0, Level arg1, Marker arg2, String arg3, Object arg4, Object arg5, Object arg6, Object arg7, Object arg8, Object arg9, Object arg10, Object arg11, Object arg12, Object arg13) {
+	public Result filter(final Logger arg0, final Level arg1, final Marker arg2, final String arg3, final Object arg4, final Object arg5, final Object arg6, final Object arg7, final Object arg8, final Object arg9, final Object arg10, final Object arg11, final Object arg12, final Object arg13) {
 		return null;
 	}
 }

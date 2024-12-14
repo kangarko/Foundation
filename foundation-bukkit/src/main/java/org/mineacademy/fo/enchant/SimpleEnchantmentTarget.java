@@ -15,7 +15,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	ARMOR("enchantable/armor") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return ARMOR_FEET.includes(item)
 					|| ARMOR_LEGS.includes(item)
 					|| ARMOR_HEAD.includes(item)
@@ -28,7 +28,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	ARMOR_FEET("enchantable/foot_armor") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(Material.LEATHER_BOOTS)
 					|| item.equals(Material.CHAINMAIL_BOOTS)
 					|| item.equals(Material.IRON_BOOTS)
@@ -43,7 +43,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	ARMOR_LEGS("enchantable/leg_armor") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(Material.LEATHER_LEGGINGS)
 					|| item.equals(Material.CHAINMAIL_LEGGINGS)
 					|| item.equals(Material.IRON_LEGGINGS)
@@ -58,7 +58,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	ARMOR_CHEST("enchantable/chest_armor") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(Material.LEATHER_CHESTPLATE)
 					|| item.equals(Material.CHAINMAIL_CHESTPLATE)
 					|| item.equals(Material.IRON_CHESTPLATE)
@@ -73,7 +73,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	ARMOR_HEAD("enchantable/head_armor") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(Material.LEATHER_HELMET)
 					|| item.equals(Material.CHAINMAIL_HELMET)
 					|| item.equals(Material.DIAMOND_HELMET)
@@ -89,7 +89,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	WEAPON("enchantable/sharp_weapon") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.WOODEN_SWORD.getMaterial())
 					|| item.equals(Material.STONE_SWORD)
 					|| item.equals(Material.IRON_SWORD)
@@ -104,7 +104,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	DIGGER("enchantable/mining") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return SHOVEL.includes(item)
 					|| PICKAXE.includes(item)
 					|| AXE.includes(item)
@@ -117,7 +117,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	SHOVEL("shovels") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.WOODEN_SHOVEL.getMaterial())
 					|| item.equals(CompMaterial.STONE_SHOVEL.getMaterial())
 					|| item.equals(CompMaterial.IRON_SHOVEL.getMaterial())
@@ -132,7 +132,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	PICKAXE("pickaxes") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.WOODEN_PICKAXE.getMaterial())
 					|| item.equals(Material.STONE_PICKAXE)
 					|| item.equals(Material.IRON_PICKAXE)
@@ -147,7 +147,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	AXE("axes") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.WOODEN_AXE.getMaterial())
 					|| item.equals(Material.STONE_AXE)
 					|| item.equals(Material.IRON_AXE)
@@ -162,7 +162,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	HOE("hoes") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.WOODEN_HOE.getMaterial())
 					|| item.equals(Material.STONE_HOE)
 					|| item.equals(Material.IRON_HOE)
@@ -177,7 +177,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	BOW("enchantable/bow") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(Material.BOW);
 		}
 	},
@@ -187,7 +187,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	FISHING_ROD("enchantable/fishing") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(Material.FISHING_ROD);
 		}
 	},
@@ -197,7 +197,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	BREAKABLE("enchantable/durability") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.getMaxDurability() > 0 && item.getMaxStackSize() == 1;
 		}
 	},
@@ -207,7 +207,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	WEARABLE("enchantable/equippable") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return ARMOR.includes(item)
 					|| ELYTRA.includes(item)
 					|| item.equals(CompMaterial.CARVED_PUMPKIN.getMaterial())
@@ -226,7 +226,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	ELYTRA("enchantable/mace") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.ELYTRA.getMaterial());
 		}
 	},
@@ -236,7 +236,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	TRIDENT("enchantable/trident") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.TRIDENT.getMaterial());
 		}
 	},
@@ -246,7 +246,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	CROSSBOW("enchantable/crossbow") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return item.equals(CompMaterial.CROSSBOW.getMaterial());
 		}
 	},
@@ -256,7 +256,7 @@ public enum SimpleEnchantmentTarget {
 	 */
 	VANISHABLE("enchantable/vanishing") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			return BREAKABLE.includes(item) || WEARABLE.includes(item) && !item.equals(CompMaterial.ELYTRA.getMaterial()) || item.equals(Material.COMPASS);
 		}
 	},
@@ -267,7 +267,7 @@ public enum SimpleEnchantmentTarget {
 	@Deprecated
 	TOOL("enchantable/mining") {
 		@Override
-		public boolean includes(Material item) {
+		public boolean includes(final Material item) {
 			throw new RuntimeException("Please use SimpleEnchantmentTarget.DIGGER");
 		}
 	};
@@ -277,7 +277,7 @@ public enum SimpleEnchantmentTarget {
 
 	public abstract boolean includes(Material item);
 
-	public boolean includes(ItemStack item) {
+	public boolean includes(final ItemStack item) {
 		return this.includes(item.getType());
 	}
 }

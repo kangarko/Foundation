@@ -38,7 +38,7 @@ public final class SimpleResultSet {
 	 */
 	private final ResultSet delegate;
 
-	private SimpleResultSet(Table table, ResultSet resultSet) {
+	private SimpleResultSet(final Table table, final ResultSet resultSet) {
 		this.tableName = table.getName();
 		this.delegate = resultSet;
 	}
@@ -68,7 +68,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException If there is an issue accessing the database.
 	 * @throws InvalidRowException If the row contains invalid data that cannot be deserialized.
 	 */
-	public <T> T get(String columnLabel, Class<T> typeOf) throws SQLException {
+	public <T> T get(final String columnLabel, final Class<T> typeOf) throws SQLException {
 		final String value = this.getString(columnLabel);
 
 		if (value == null || "".equals(value))
@@ -93,7 +93,7 @@ public final class SimpleResultSet {
 	 * @return
 	 * @throws SQLException
 	 */
-	public <T> List<T> getList(String columnLabel, Class<T> typeOf) throws SQLException {
+	public <T> List<T> getList(final String columnLabel, final Class<T> typeOf) throws SQLException {
 		final String value = this.getString(columnLabel);
 
 		if (value == null || "".equals(value))
@@ -140,7 +140,7 @@ public final class SimpleResultSet {
 	 * @return the boolean value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public boolean getBoolean(int columnIndex) throws SQLException {
+	public boolean getBoolean(final int columnIndex) throws SQLException {
 		return this.delegate.getBoolean(columnIndex);
 	}
 
@@ -151,7 +151,7 @@ public final class SimpleResultSet {
 	 * @return the boolean value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public boolean getBoolean(String columnLabel) throws SQLException {
+	public boolean getBoolean(final String columnLabel) throws SQLException {
 		return this.delegate.getBoolean(columnLabel);
 	}
 
@@ -163,7 +163,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is not a valid boolean
 	 */
-	public boolean getBooleanStrict(String columnLabel) throws SQLException {
+	public boolean getBooleanStrict(final String columnLabel) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 
 		try {
@@ -183,7 +183,7 @@ public final class SimpleResultSet {
 	 * @return the byte value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public byte getByte(int columnIndex) throws SQLException {
+	public byte getByte(final int columnIndex) throws SQLException {
 		return this.delegate.getByte(columnIndex);
 	}
 
@@ -194,7 +194,7 @@ public final class SimpleResultSet {
 	 * @return the date value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public Date getDate(int columnIndex) throws SQLException {
+	public Date getDate(final int columnIndex) throws SQLException {
 		return this.delegate.getDate(columnIndex);
 	}
 
@@ -205,7 +205,7 @@ public final class SimpleResultSet {
 	 * @return the date value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public Date getDate(String columnLabel) throws SQLException {
+	public Date getDate(final String columnLabel) throws SQLException {
 		return this.delegate.getDate(columnLabel);
 	}
 
@@ -216,7 +216,7 @@ public final class SimpleResultSet {
 	 * @return the double value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public double getDouble(int columnIndex) throws SQLException {
+	public double getDouble(final int columnIndex) throws SQLException {
 		return this.delegate.getDouble(columnIndex);
 	}
 
@@ -227,7 +227,7 @@ public final class SimpleResultSet {
 	 * @return the double value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public double getDouble(String columnLabel) throws SQLException {
+	public double getDouble(final String columnLabel) throws SQLException {
 		return this.delegate.getDouble(columnLabel);
 	}
 
@@ -239,7 +239,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is not a valid double
 	 */
-	public double getDoubleStrict(String columnLabel) throws SQLException {
+	public double getDoubleStrict(final String columnLabel) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 
 		try {
@@ -262,7 +262,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the enum value is invalid
 	 */
-	public <T extends Enum<T>> T getEnum(String columnLabel, Class<T> typeOf) throws SQLException {
+	public <T extends Enum<T>> T getEnum(final String columnLabel, final Class<T> typeOf) throws SQLException {
 		final String value = this.getString(columnLabel);
 
 		if (value != null && !"".equals(value)) {
@@ -290,7 +290,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the enum value is invalid
 	 */
-	public <T extends Enum<T>> T getEnumStrict(String columnLabel, Class<T> typeOf) throws SQLException {
+	public <T extends Enum<T>> T getEnumStrict(final String columnLabel, final Class<T> typeOf) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 		final T enumValue = ReflectionUtil.lookupEnumSilent(typeOf, value);
 
@@ -310,7 +310,7 @@ public final class SimpleResultSet {
 	 * @return the float value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public float getFloat(int columnIndex) throws SQLException {
+	public float getFloat(final int columnIndex) throws SQLException {
 		return this.delegate.getFloat(columnIndex);
 	}
 
@@ -321,7 +321,7 @@ public final class SimpleResultSet {
 	 * @return the int value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public int getInt(int columnIndex) throws SQLException {
+	public int getInt(final int columnIndex) throws SQLException {
 		return this.delegate.getInt(columnIndex);
 	}
 
@@ -332,7 +332,7 @@ public final class SimpleResultSet {
 	 * @return the int value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public int getInt(String columnLabel) throws SQLException {
+	public int getInt(final String columnLabel) throws SQLException {
 		return this.delegate.getInt(columnLabel);
 	}
 
@@ -344,7 +344,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is not a valid integer
 	 */
-	public int getIntStrict(String columnLabel) throws SQLException {
+	public int getIntStrict(final String columnLabel) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 
 		try {
@@ -365,7 +365,7 @@ public final class SimpleResultSet {
 	 * @return
 	 * @throws SQLException
 	 */
-	public SimpleLocation getLocation(String worldColumn, String positionColumn) throws SQLException {
+	public SimpleLocation getLocation(final String worldColumn, final String positionColumn) throws SQLException {
 		final String worldName = this.getStringStrict(worldColumn);
 		final int[] position = this.getLocationArrayStrict(positionColumn);
 
@@ -380,7 +380,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is not valid
 	 */
-	public int[] getLocationArrayStrict(String columnLabel) throws SQLException {
+	public int[] getLocationArrayStrict(final String columnLabel) throws SQLException {
 		final String value = this.getString(columnLabel);
 
 		if (value == null || "".equals(value)) {
@@ -411,7 +411,7 @@ public final class SimpleResultSet {
 	 * @return the long value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public long getLong(int columnIndex) throws SQLException {
+	public long getLong(final int columnIndex) throws SQLException {
 		return this.delegate.getLong(columnIndex);
 	}
 
@@ -422,7 +422,7 @@ public final class SimpleResultSet {
 	 * @return the long value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public long getLong(String columnLabel) throws SQLException {
+	public long getLong(final String columnLabel) throws SQLException {
 		return this.delegate.getLong(columnLabel);
 	}
 
@@ -434,7 +434,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is not a valid long
 	 */
-	public long getLongStrict(String columnLabel) throws SQLException {
+	public long getLongStrict(final String columnLabel) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 
 		try {
@@ -454,7 +454,7 @@ public final class SimpleResultSet {
 	 * @return the object value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public Object getObject(int columnIndex) throws SQLException {
+	public Object getObject(final int columnIndex) throws SQLException {
 		return this.delegate.getObject(columnIndex);
 	}
 
@@ -467,7 +467,7 @@ public final class SimpleResultSet {
 	 * @return the object value cast to the specified type
 	 * @throws SQLException if a database access error occurs
 	 */
-	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+	public <T> T getObject(final int columnIndex, final Class<T> type) throws SQLException {
 		return this.delegate.getObject(columnIndex, type);
 	}
 
@@ -478,7 +478,7 @@ public final class SimpleResultSet {
 	 * @return the short value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public short getShort(int columnIndex) throws SQLException {
+	public short getShort(final int columnIndex) throws SQLException {
 		return this.delegate.getShort(columnIndex);
 	}
 
@@ -492,7 +492,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is invalid
 	 */
-	public <T> T getStrict(String columnLabel, Class<T> typeOf) throws SQLException {
+	public <T> T getStrict(final String columnLabel, final Class<T> typeOf) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 
 		if (value == null || "".equals(value)) {
@@ -518,7 +518,7 @@ public final class SimpleResultSet {
 	 * @return the String value or an empty String if null
 	 * @throws SQLException if a database access error occurs
 	 */
-	public String getString(int columnIndex) throws SQLException {
+	public String getString(final int columnIndex) throws SQLException {
 		return CommonCore.getOrEmpty(this.delegate.getString(columnIndex));
 	}
 
@@ -529,7 +529,7 @@ public final class SimpleResultSet {
 	 * @return the String value or an empty String if null
 	 * @throws SQLException if a database access error occurs
 	 */
-	public String getString(String columnLabel) throws SQLException {
+	public String getString(final String columnLabel) throws SQLException {
 		return CommonCore.getOrEmpty(this.delegate.getString(columnLabel));
 	}
 
@@ -541,7 +541,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is null or empty
 	 */
-	public String getStringStrict(String columnLabel) throws SQLException {
+	public String getStringStrict(final String columnLabel) throws SQLException {
 		final String value = this.getString(columnLabel);
 
 		if (value == null || "".equals(value)) {
@@ -560,7 +560,7 @@ public final class SimpleResultSet {
 	 * @return the time value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public Time getTime(int columnIndex) throws SQLException {
+	public Time getTime(final int columnIndex) throws SQLException {
 		return this.delegate.getTime(columnIndex);
 	}
 
@@ -571,7 +571,7 @@ public final class SimpleResultSet {
 	 * @return the time value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public Time getTime(String columnLabel) throws SQLException {
+	public Time getTime(final String columnLabel) throws SQLException {
 		return this.delegate.getTime(columnLabel);
 	}
 
@@ -582,7 +582,7 @@ public final class SimpleResultSet {
 	 * @return the timestamp value
 	 * @throws SQLException if a database access error occurs
 	 */
-	public Timestamp getTimestamp(int columnIndex) throws SQLException {
+	public Timestamp getTimestamp(final int columnIndex) throws SQLException {
 		return this.delegate.getTimestamp(columnIndex);
 	}
 
@@ -594,7 +594,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the timestamp format is invalid
 	 */
-	public long getTimestamp(String columnLabel) throws SQLException {
+	public long getTimestamp(final String columnLabel) throws SQLException {
 		final String rawTimestamp = this.delegate.getString(columnLabel);
 
 		if (rawTimestamp == null)
@@ -618,7 +618,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the timestamp format is invalid
 	 */
-	public long getTimestampStrict(String columnLabel) throws SQLException {
+	public long getTimestampStrict(final String columnLabel) throws SQLException {
 		final String rawTimestamp = this.delegate.getString(columnLabel);
 
 		if (rawTimestamp == null) {
@@ -644,7 +644,7 @@ public final class SimpleResultSet {
 	 * @return the UUID value or null if the value is invalid
 	 * @throws SQLException if a database access error occurs
 	 */
-	public UUID getUniqueId(String columnLabel) throws SQLException {
+	public UUID getUniqueId(final String columnLabel) throws SQLException {
 		final String value = this.getString(columnLabel);
 
 		if (value == null || "".equals(value))
@@ -668,7 +668,7 @@ public final class SimpleResultSet {
 	 * @throws SQLException if a database access error occurs
 	 * @throws InvalidRowException if the value is invalid
 	 */
-	public UUID getUniqueIdStrict(String columnLabel) throws SQLException {
+	public UUID getUniqueIdStrict(final String columnLabel) throws SQLException {
 		final String value = this.getStringStrict(columnLabel);
 
 		try {
@@ -698,7 +698,7 @@ public final class SimpleResultSet {
 	 * @param resultSet
 	 * @return
 	 */
-	public static SimpleResultSet wrap(Table table, ResultSet resultSet) {
+	public static SimpleResultSet wrap(final Table table, final ResultSet resultSet) {
 		return new SimpleResultSet(table, resultSet);
 	}
 }

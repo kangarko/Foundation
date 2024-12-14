@@ -22,26 +22,26 @@ public class CreateRegionPrompt extends CreatePrompt<DiskRegion> {
 	/*
 	 * Create prompt
 	 */
-	private CreateRegionPrompt(@NonNull VisualizedRegion region) {
+	private CreateRegionPrompt(@NonNull final VisualizedRegion region) {
 		super("region");
 
 		this.region = region;
 	}
 
 	@Override
-	protected String findByName(String name) {
+	protected String findByName(final String name) {
 		final DiskRegion region = DiskRegion.findRegion(name);
 
 		return region != null ? region.getFileName() : null;
 	}
 
 	@Override
-	protected DiskRegion create(String name) {
+	protected DiskRegion create(final String name) {
 		return DiskRegion.createRegion(name, this.region.clone());
 	}
 
 	@Override
-	protected void onCreateFinish(Player player, DiskRegion createdItem) {
+	protected void onCreateFinish(final Player player, final DiskRegion createdItem) {
 		RegionMenu.showTo(player, createdItem);
 
 		Messenger.success(player, "Region &e" + createdItem.getFileName() + " &7has been created.");
@@ -56,7 +56,7 @@ public class CreateRegionPrompt extends CreatePrompt<DiskRegion> {
 	 *
 	 * @param player
 	 */
-	public static void showToOrHint(Player player) {
+	public static void showToOrHint(final Player player) {
 		final VisualizedRegion region = DiskRegion.getCreatedRegion(player);
 
 		if (!region.isWhole()) {

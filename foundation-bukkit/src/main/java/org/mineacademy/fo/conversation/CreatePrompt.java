@@ -39,7 +39,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 *
 	 * @param objectName
 	 */
-	protected CreatePrompt(String objectName) {
+	protected CreatePrompt(final String objectName) {
 		super(false);
 
 		this.objectName = objectName;
@@ -90,7 +90,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#getPrompt(org.bukkit.conversations.ConversationContext)
 	 */
 	@Override
-	protected final String getPrompt(ConversationContext context) {
+	protected final String getPrompt(final ConversationContext context) {
 		return Lang.legacy("conversation-create-prompt", "object", this.objectName);
 	}
 
@@ -98,7 +98,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#isInputValid(org.bukkit.conversations.ConversationContext, java.lang.String)
 	 */
 	@Override
-	protected final boolean isInputValid(ConversationContext context, String input) {
+	protected final boolean isInputValid(final ConversationContext context, final String input) {
 		if (input.contains(" ") && !this.allowSpaces())
 			return false;
 
@@ -109,7 +109,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#getFailedValidationText(org.bukkit.conversations.ConversationContext, java.lang.String)
 	 */
 	@Override
-	protected final String getFailedValidationText(ConversationContext context, String invalidInput) {
+	protected final String getFailedValidationText(final ConversationContext context, final String invalidInput) {
 
 		@Nullable
 		final String existing = this.findByName(invalidInput);
@@ -131,7 +131,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 * @see org.bukkit.conversations.ValidatingPrompt#acceptValidatedInput(org.bukkit.conversations.ConversationContext, java.lang.String)
 	 */
 	@Override
-	protected final Prompt acceptValidatedInput(ConversationContext context, String input) {
+	protected final Prompt acceptValidatedInput(final ConversationContext context, final String input) {
 		this.name = input;
 
 		return END_OF_CONVERSATION;
@@ -141,7 +141,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 * @see org.mineacademy.fo.conversation.SimplePrompt#onConversationEnd(org.mineacademy.fo.conversation.SimpleConversation, org.bukkit.conversations.ConversationAbandonedEvent)
 	 */
 	@Override
-	public final void onConversationEnd(SimpleConversation conversation, ConversationAbandonedEvent event) {
+	public final void onConversationEnd(final SimpleConversation conversation, final ConversationAbandonedEvent event) {
 		if (event.gracefulExit()) {
 			ValidCore.checkNotNull(this.name, "Prompt failed to carry " + this.objectName + " name");
 

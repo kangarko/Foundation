@@ -63,7 +63,7 @@ public final class ChatImage {
 	 * @param height
 	 * @return
 	 */
-	public ChatImage height(int height) {
+	public ChatImage height(final int height) {
 		this.height = height;
 
 		return this;
@@ -75,7 +75,7 @@ public final class ChatImage {
 	 * @param fillerCharacter
 	 * @return
 	 */
-	public ChatImage fillerCharacter(FillerCharacter fillerCharacter) {
+	public ChatImage fillerCharacter(final FillerCharacter fillerCharacter) {
 		this.fillerCharacter = fillerCharacter;
 
 		return this;
@@ -87,7 +87,7 @@ public final class ChatImage {
 	 * @param resizeMethod
 	 * @return
 	 */
-	public ChatImage resizeMethod(int resizeMethod) {
+	public ChatImage resizeMethod(final int resizeMethod) {
 		this.resizeMethod = resizeMethod;
 
 		return this;
@@ -99,7 +99,7 @@ public final class ChatImage {
 	 * @param backgroundColor
 	 * @return
 	 */
-	public ChatImage backgroundColor(Color backgroundColor) {
+	public ChatImage backgroundColor(final Color backgroundColor) {
 		this.backgroundColor = backgroundColor;
 
 		return this;
@@ -111,7 +111,7 @@ public final class ChatImage {
 	 * @param lines
 	 * @return
 	 */
-	public ChatImage lines(String[] lines) {
+	public ChatImage lines(final String[] lines) {
 		this.lines = lines;
 
 		return this;
@@ -124,7 +124,7 @@ public final class ChatImage {
 	 * @return
 	 * @throws IOException
 	 */
-	public ChatImage drawFromHead(String playerName) throws IOException {
+	public ChatImage drawFromHead(final String playerName) throws IOException {
 		return this.drawFromUrl("https://mc-heads.net/avatar/" + playerName + "/" + this.height + ".png");
 	}
 
@@ -135,7 +135,7 @@ public final class ChatImage {
 	 * @return
 	 * @throws IOException
 	 */
-	public ChatImage drawFromFile(File file) throws IOException {
+	public ChatImage drawFromFile(final File file) throws IOException {
 		ValidCore.checkBoolean(file.exists(), "Cannot load image from non existing file " + file.toPath());
 
 		return this.draw(ImageIO.read(file));
@@ -148,7 +148,7 @@ public final class ChatImage {
 	 * @return
 	 * @throws IOException
 	 */
-	public ChatImage drawFromUrl(String webUrl) throws IOException {
+	public ChatImage drawFromUrl(final String webUrl) throws IOException {
 		return this.draw(ImageIO.read(new URL(webUrl)));
 	}
 
@@ -158,7 +158,7 @@ public final class ChatImage {
 	 * @param image
 	 * @return
 	 */
-	public ChatImage draw(BufferedImage image) {
+	public ChatImage draw(final BufferedImage image) {
 		ValidCore.checkBoolean(this.height >= 2, "File image height must be equal or above 2");
 
 		final BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -174,7 +174,7 @@ public final class ChatImage {
 	/*
 	 * Parse the given image into chat colors.
 	 */
-	private TextColor[][] parseImage(BufferedImage newImage) {
+	private TextColor[][] parseImage(final BufferedImage newImage) {
 		final double ratio = (double) newImage.getHeight() / newImage.getWidth();
 		int width = (int) (this.height / ratio);
 
@@ -194,7 +194,7 @@ public final class ChatImage {
 	/*
 	 * Resize the given image.
 	 */
-	private BufferedImage resizeImage(BufferedImage originalImage, int width, int height) {
+	private BufferedImage resizeImage(final BufferedImage originalImage, final int width, final int height) {
 		final AffineTransform af = new AffineTransform();
 
 		af.scale(
@@ -209,7 +209,7 @@ public final class ChatImage {
 	/*
 	 * Parse the given 2D colors to fit lines.
 	 */
-	private String[] parseColors(TextColor[][] colors) {
+	private String[] parseColors(final TextColor[][] colors) {
 		final String[] lines = new String[colors[0].length];
 
 		for (int y = 0; y < colors[0].length; y++) {
@@ -234,7 +234,7 @@ public final class ChatImage {
 	 * @param text
 	 * @return
 	 */
-	public String[] toString(Collection<String> text) {
+	public String[] toString(final Collection<String> text) {
 		return this.toString(CommonCore.toArray(text));
 	}
 
@@ -245,7 +245,7 @@ public final class ChatImage {
 	 * @param text
 	 * @return
 	 */
-	public String[] toString(@NonNull String... text) {
+	public String[] toString(@NonNull final String... text) {
 		ValidCore.checkBoolean(this.lines != null && this.lines.length > 0, "Set lines first using draw() methods or setLines()");
 
 		final String[] lines = this.lines.clone();
@@ -313,7 +313,7 @@ public final class ChatImage {
 		@Getter
 		private final char character;
 
-		FillerCharacter(char c) {
+		FillerCharacter(final char c) {
 			this.character = c;
 		}
 

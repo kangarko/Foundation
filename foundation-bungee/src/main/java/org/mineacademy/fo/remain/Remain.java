@@ -40,7 +40,7 @@ public final class Remain {
 	 * @param name
 	 * @return
 	 */
-	public static ServerInfo getServer(String name) {
+	public static ServerInfo getServer(final String name) {
 		for (final ServerInfo server : Remain.getServers())
 			if (server.getName().equalsIgnoreCase(name))
 				return server;
@@ -63,7 +63,7 @@ public final class Remain {
 	 * @param ignoreVanished
 	 * @return the online players
 	 */
-	public static Collection<ProxiedPlayer> getOnlinePlayers(boolean ignoreVanished) {
+	public static Collection<ProxiedPlayer> getOnlinePlayers(final boolean ignoreVanished) {
 		final Collection<ProxiedPlayer> players = new ArrayList<>();
 
 		for (final ServerInfo serverInfo : getServers())
@@ -85,7 +85,7 @@ public final class Remain {
 	 * @param name
 	 * @return
 	 */
-	public static ProxiedPlayer getPlayer(String name, boolean ignoreVanished) {
+	public static ProxiedPlayer getPlayer(final String name, final boolean ignoreVanished) {
 		for (final ProxiedPlayer player : getOnlinePlayers(ignoreVanished))
 			if (player.getName().equalsIgnoreCase(name))
 				return player;
@@ -100,7 +100,7 @@ public final class Remain {
 	 * @param uuid
 	 * @return
 	 */
-	public static ProxiedPlayer getPlayer(UUID uuid, boolean ignoreVanished) {
+	public static ProxiedPlayer getPlayer(final UUID uuid, final boolean ignoreVanished) {
 		for (final ProxiedPlayer player : getOnlinePlayers(ignoreVanished))
 			if (player.getUniqueId().equals(uuid))
 				return player;
@@ -115,7 +115,7 @@ public final class Remain {
 	 * @param timer
 	 * @return the task or null
 	 */
-	public static Task runTaskAsync(final int delayTicks, Runnable timer) {
+	public static Task runTaskAsync(final int delayTicks, final Runnable timer) {
 		ValidCore.checkBoolean(!(timer instanceof ScheduledTask), "Cannot use ScheduledTask for scheduling tasks!");
 		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
@@ -134,7 +134,7 @@ public final class Remain {
 	 * @param timer
 	 * @return
 	 */
-	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, Runnable timer) {
+	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, final Runnable timer) {
 		ValidCore.checkBoolean(!(timer instanceof ScheduledTask), "Cannot use ScheduledTask for scheduling tasks!");
 		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
@@ -156,7 +156,7 @@ final class SimpleBungeeTask implements Task {
 	@Getter
 	private boolean cancelled = false;
 
-	public SimpleBungeeTask(ScheduledTask task) {
+	public SimpleBungeeTask(final ScheduledTask task) {
 		this.task = task;
 	}
 
@@ -182,7 +182,7 @@ final class SimpleBungeeTask implements Task {
 		return BungeePlugin.getInstance();
 	}
 
-	static SimpleBungeeTask fromBungee(ScheduledTask task) {
+	static SimpleBungeeTask fromBungee(final ScheduledTask task) {
 		return new SimpleBungeeTask(task);
 	}
 }

@@ -48,7 +48,7 @@ final class RelocationHelper {
 	 *
 	 * @param libraryManager the library manager used to download dependencies
 	 */
-	public RelocationHelper(LibraryManager libraryManager) {
+	public RelocationHelper(final LibraryManager libraryManager) {
 		requireNonNull(libraryManager, "libraryManager");
 
 		final IsolatedClassLoader classLoader = new IsolatedClassLoader();
@@ -106,7 +106,7 @@ final class RelocationHelper {
 	 * @param out         output jar
 	 * @param relocations relocations to apply
 	 */
-	public void relocate(Path in, Path out, Collection<Relocation> relocations) {
+	public void relocate(final Path in, final Path out, final Collection<Relocation> relocations) {
 		requireNonNull(in, "in");
 		requireNonNull(out, "out");
 		requireNonNull(relocations, "relocations");

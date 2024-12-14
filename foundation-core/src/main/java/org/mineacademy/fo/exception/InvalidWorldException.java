@@ -16,7 +16,7 @@ public final class InvalidWorldException extends RuntimeException {
 	@Getter
 	private final String world;
 
-	public InvalidWorldException(String message, String world) {
+	public InvalidWorldException(final String message, final String world) {
 		super(message);
 
 		this.world = world;

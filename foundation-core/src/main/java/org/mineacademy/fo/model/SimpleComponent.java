@@ -112,7 +112,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/*
 	 * Create a new simple component.
 	 */
-	private SimpleComponent(List<ConditionalComponent> components, Style lastStyle) {
+	private SimpleComponent(final List<ConditionalComponent> components, final Style lastStyle) {
 		this.subcomponents = components;
 		this.lastStyle = lastStyle;
 	}
@@ -120,7 +120,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/*
 	 * Create a new simple component.
 	 */
-	private SimpleComponent(ConditionalComponent component, Style lastStyle) {
+	private SimpleComponent(final ConditionalComponent component, final Style lastStyle) {
 		this.subcomponents = Collections.singletonList(component);
 		this.lastStyle = lastStyle;
 	}
@@ -135,7 +135,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param components
 	 * @return
 	 */
-	public SimpleComponent onHover(List<SimpleComponent> components) {
+	public SimpleComponent onHover(final List<SimpleComponent> components) {
 		return this.onHover(components.toArray(new SimpleComponent[components.size()]));
 	}
 
@@ -145,7 +145,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param components
 	 * @return
 	 */
-	public SimpleComponent onHover(SimpleComponent... components) {
+	public SimpleComponent onHover(final SimpleComponent... components) {
 		final FoundationPlayer receiver = null; // possibly fix in the future
 		Component joined = Component.empty();
 
@@ -175,7 +175,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param messages
 	 * @return
 	 */
-	public SimpleComponent onHoverLegacy(List<String> messages) {
+	public SimpleComponent onHoverLegacy(final List<String> messages) {
 		return this.onHoverLegacy(messages.toArray(new String[messages.size()]));
 	}
 
@@ -185,7 +185,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param messages
 	 * @return
 	 */
-	public SimpleComponent onHoverLegacy(String... messages) {
+	public SimpleComponent onHoverLegacy(final String... messages) {
 		Component joined = Component.empty();
 
 		for (int i = 0; i < messages.length; i++) {
@@ -217,7 +217,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param hover
 	 * @return
 	 */
-	public SimpleComponent onHover(HoverEventSource<?> hover) {
+	public SimpleComponent onHover(final HoverEventSource<?> hover) {
 		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(hover));
 	}
 
@@ -227,7 +227,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent onClickRunCmd(String text) {
+	public SimpleComponent onClickRunCmd(final String text) {
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.runCommand(text)));
 	}
 
@@ -237,7 +237,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent onClickSuggestCmd(String text) {
+	public SimpleComponent onClickSuggestCmd(final String text) {
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.suggestCommand(text)));
 	}
 
@@ -247,7 +247,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param url
 	 * @return
 	 */
-	public SimpleComponent onClickOpenUrl(String url) {
+	public SimpleComponent onClickOpenUrl(final String url) {
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.openUrl(url)));
 	}
 
@@ -257,7 +257,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param url
 	 * @return
 	 */
-	public SimpleComponent onClickCopyToClipboard(String url) {
+	public SimpleComponent onClickCopyToClipboard(final String url) {
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.copyToClipboard(url)));
 	}
 
@@ -267,7 +267,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param insertion
 	 * @return
 	 */
-	public SimpleComponent onClickInsert(String insertion) {
+	public SimpleComponent onClickInsert(final String insertion) {
 		return this.modifyLastComponentAndReturn(component -> component.insertion(insertion));
 	}
 
@@ -277,7 +277,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param viewCondition
 	 * @return
 	 */
-	public SimpleComponent viewCondition(String viewCondition) {
+	public SimpleComponent viewCondition(final String viewCondition) {
 		this.subcomponents.get(this.subcomponents.size() - 1).setViewCondition(viewCondition);
 
 		return this;
@@ -289,7 +289,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param viewPermission
 	 * @return
 	 */
-	public SimpleComponent viewPermission(String viewPermission) {
+	public SimpleComponent viewPermission(final String viewPermission) {
 		this.subcomponents.get(this.subcomponents.size() - 1).setViewPermission(viewPermission);
 
 		return this;
@@ -301,7 +301,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param requiredVariable
 	 * @return
 	 */
-	public SimpleComponent viewRequireVariable(RequireVariable requiredVariable) {
+	public SimpleComponent viewRequireVariable(final RequireVariable requiredVariable) {
 		this.subcomponents.get(this.subcomponents.size() - 1).setViewVariable(requiredVariable);
 
 		return this;
@@ -329,7 +329,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param color
 	 * @return
 	 */
-	public SimpleComponent decoration(TextDecoration color) {
+	public SimpleComponent decoration(final TextDecoration color) {
 		return this.modifyLastComponentAndReturn(component -> component.decoration(color, true));
 	}
 
@@ -341,7 +341,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceBracket(String variable, String value) {
+	public SimpleComponent replaceBracket(final String variable, final String value) {
 		return this.replaceBracket(null, variable, fromPlain(value));
 	}
 
@@ -354,7 +354,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceBracket(FoundationPlayer receiver, String variable, String value) {
+	public SimpleComponent replaceBracket(final FoundationPlayer receiver, final String variable, final String value) {
 		return this.replaceBracket(receiver, variable, fromPlain(value));
 	}
 
@@ -366,7 +366,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceBracket(String variable, SimpleComponent value) {
+	public SimpleComponent replaceBracket(final String variable, final SimpleComponent value) {
 		return this.replaceLiteral(null, "{" + variable + "}", value);
 	}
 
@@ -379,7 +379,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceBracket(FoundationPlayer receiver, String variable, SimpleComponent value) {
+	public SimpleComponent replaceBracket(final FoundationPlayer receiver, final String variable, final SimpleComponent value) {
 		return this.replaceLiteral(receiver, "{" + variable + "}", value);
 	}
 
@@ -390,7 +390,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceLiteral(String variable, String value) {
+	public SimpleComponent replaceLiteral(final String variable, final String value) {
 		return this.replaceLiteral(null, variable, fromPlain(value));
 	}
 
@@ -402,7 +402,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceLiteral(FoundationPlayer receiver, String variable, String value) {
+	public SimpleComponent replaceLiteral(final FoundationPlayer receiver, final String variable, final String value) {
 		return this.replaceLiteral(receiver, variable, fromPlain(value));
 	}
 
@@ -413,7 +413,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceLiteral(String variable, SimpleComponent value) {
+	public SimpleComponent replaceLiteral(final String variable, final SimpleComponent value) {
 		return this.replaceLiteral(null, variable, value);
 	}
 
@@ -425,7 +425,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param value
 	 * @return
 	 */
-	public SimpleComponent replaceLiteral(FoundationPlayer receiver, String variable, SimpleComponent value) {
+	public SimpleComponent replaceLiteral(final FoundationPlayer receiver, final String variable, final SimpleComponent value) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
@@ -445,7 +445,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param replacement
 	 * @return
 	 */
-	public SimpleComponent replaceMatch(Pattern pattern, BiFunction<MatchResult, TextComponent.Builder, ComponentLike> replacement) {
+	public SimpleComponent replaceMatch(final Pattern pattern, final BiFunction<MatchResult, TextComponent.Builder, ComponentLike> replacement) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
@@ -465,7 +465,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param replacement
 	 * @return
 	 */
-	public SimpleComponent replaceMatch(Pattern pattern, String replacement) {
+	public SimpleComponent replaceMatch(final Pattern pattern, final String replacement) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
@@ -486,7 +486,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param replacement
 	 * @return
 	 */
-	public SimpleComponent replaceMatch(FoundationPlayer receiver, Pattern pattern, SimpleComponent replacement) {
+	public SimpleComponent replaceMatch(final FoundationPlayer receiver, final Pattern pattern, final SimpleComponent replacement) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
@@ -517,7 +517,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendPlain(String text) {
+	public SimpleComponent appendPlain(final String text) {
 		return this.append(fromPlain(text));
 	}
 
@@ -527,7 +527,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendAmpersand(String text) {
+	public SimpleComponent appendAmpersand(final String text) {
 		return this.append(fromAmpersand(text));
 	}
 
@@ -537,7 +537,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendSection(String text) {
+	public SimpleComponent appendSection(final String text) {
 		return this.append(fromSection(text));
 	}
 
@@ -547,7 +547,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendMiniAmpersand(String text) {
+	public SimpleComponent appendMiniAmpersand(final String text) {
 		return this.append(fromMiniLegacy(text, true));
 	}
 
@@ -557,7 +557,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendMiniSection(String text) {
+	public SimpleComponent appendMiniSection(final String text) {
 		return this.append(fromMiniLegacy(text, false));
 	}
 
@@ -567,7 +567,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendMiniNative(String text) {
+	public SimpleComponent appendMiniNative(final String text) {
 		return this.append(fromMiniNative(text));
 	}
 
@@ -577,7 +577,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param newComponent
 	 * @return
 	 */
-	public SimpleComponent append(Component newComponent) {
+	public SimpleComponent append(final Component newComponent) {
 		return this.append(SimpleComponent.fromAdventure(newComponent));
 	}
 
@@ -587,7 +587,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent append(SimpleComponent component) {
+	public SimpleComponent append(final SimpleComponent component) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent old : this.subcomponents)
@@ -636,7 +636,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param receiver
 	 * @return
 	 */
-	public boolean isEmpty(FoundationPlayer receiver) {
+	public boolean isEmpty(final FoundationPlayer receiver) {
 		return this.subcomponents.isEmpty() || this.toPlain(receiver).isEmpty();
 	}
 
@@ -657,7 +657,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param receiver
 	 * @return
 	 */
-	public String toLegacy(FoundationPlayer receiver) {
+	public String toLegacy(final FoundationPlayer receiver) {
 		final StringBuilder result = new StringBuilder(LegacyComponentSerializer.legacySection().serialize(this.toAdventure(receiver)));
 
 		if (this.lastStyle != null) {
@@ -698,7 +698,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	@Deprecated
-	public String toMini(FoundationPlayer receiver) {
+	public String toMini(final FoundationPlayer receiver) {
 		return SimpleComponent.MINIMESSAGE_PARSER.serialize(this.toAdventure(receiver));
 	}
 
@@ -723,7 +723,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param receiver
 	 * @return
 	 */
-	public String toPlain(FoundationPlayer receiver) {
+	public String toPlain(final FoundationPlayer receiver) {
 		return PlainTextComponentSerializer.plainText().serialize(this.toAdventure(receiver));
 	}
 
@@ -733,7 +733,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param legacy
 	 * @return
 	 */
-	public String toAdventureJson(boolean legacy) {
+	public String toAdventureJson(final boolean legacy) {
 		return this.toAdventureJson(null, legacy);
 	}
 
@@ -745,7 +745,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	public String toAdventureJson(FoundationPlayer receiver, boolean legacy) {
+	public String toAdventureJson(final FoundationPlayer receiver, final boolean legacy) {
 		return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 	}
 
@@ -755,7 +755,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param legacy
 	 * @return
 	 */
-	public BaseComponent[] toBungee(boolean legacy) {
+	public BaseComponent[] toBungee(final boolean legacy) {
 		return this.toBungee(null, legacy);
 	}
 
@@ -766,7 +766,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param legacy
 	 * @return
 	 */
-	public BaseComponent[] toBungee(FoundationPlayer receiver, boolean legacy) {
+	public BaseComponent[] toBungee(final FoundationPlayer receiver, final boolean legacy) {
 		return (legacy ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(this.toAdventure(receiver));
 	}
 
@@ -785,7 +785,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param receiver the given receiver, can be null
 	 * @return
 	 */
-	public Component toAdventure(FoundationPlayer receiver) {
+	public Component toAdventure(final FoundationPlayer receiver) {
 		final List<Component> children = new ArrayList<>();
 
 		for (final ConditionalComponent part : this.subcomponents) {
@@ -806,7 +806,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/*
 	 * Helper method to modify the last component.
 	 */
-	protected SimpleComponent modifyLastComponentAndReturn(Function<Component, Component> editor) {
+	protected SimpleComponent modifyLastComponentAndReturn(final Function<Component, Component> editor) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (int i = 0; i < this.subcomponents.size(); i++) {
@@ -839,7 +839,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj == this)
 			return true;
 
@@ -884,7 +884,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param message
 	 * @return
 	 */
-	public static SimpleComponent fromMiniAmpersand(String message) {
+	public static SimpleComponent fromMiniAmpersand(final String message) {
 		return fromMiniLegacy(message, true);
 	}
 
@@ -896,14 +896,14 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param message
 	 * @return
 	 */
-	public static SimpleComponent fromMiniSection(String message) {
+	public static SimpleComponent fromMiniSection(final String message) {
 		return fromMiniLegacy(message, false);
 	}
 
 	/*
 	 * Create a new component from the given message.
 	 */
-	private static SimpleComponent fromMiniLegacy(String message, boolean ampersand) {
+	private static SimpleComponent fromMiniLegacy(String message, final boolean ampersand) {
 		if (message == null)
 			return SimpleComponent.empty();
 
@@ -972,7 +972,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param legacyText
 	 * @return
 	 */
-	public static SimpleComponent fromSection(@NonNull String legacyText) {
+	public static SimpleComponent fromSection(@NonNull final String legacyText) {
 		final Component mini = LegacyComponentSerializer.legacySection().deserialize(legacyText);
 		final String withMiniTags = CompChatColor.convertLegacyToMini(legacyText, false);
 
@@ -987,7 +987,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	public static SimpleComponent fromBungee(@NonNull BaseComponent[] component, boolean legacy) {
+	public static SimpleComponent fromBungee(@NonNull final BaseComponent[] component, final boolean legacy) {
 		return fromAdventure((legacy ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).deserialize(component));
 	}
 
@@ -999,7 +999,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 *
 	 * @return
 	 */
-	public static SimpleComponent fromAdventureJson(@NonNull String json, boolean legacy) {
+	public static SimpleComponent fromAdventureJson(@NonNull final String json, final boolean legacy) {
 		return fromAdventure((legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).deserialize(json));
 	}
 
@@ -1009,7 +1009,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param component
 	 * @return
 	 */
-	public static SimpleComponent fromAdventure(@NonNull Component component) {
+	public static SimpleComponent fromAdventure(@NonNull final Component component) {
 		return new SimpleComponent(ConditionalComponent.fromAdventure(component), Style.empty());
 	}
 
@@ -1019,7 +1019,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param plainText
 	 * @return
 	 */
-	public static SimpleComponent fromPlain(@NonNull String plainText) {
+	public static SimpleComponent fromPlain(@NonNull final String plainText) {
 		return new SimpleComponent(ConditionalComponent.fromPlain(plainText), Style.empty());
 	}
 
@@ -1029,7 +1029,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static SimpleComponent deserialize(SerializedMap map) {
+	public static SimpleComponent deserialize(final SerializedMap map) {
 		final List<ConditionalComponent> components = map.getList("Components", ConditionalComponent.class);
 		final SimpleComponent component = new SimpleComponent(components, map.get("Last_Style", Style.class));
 
@@ -1042,7 +1042,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param components
 	 * @return
 	 */
-	public static SimpleComponent join(Collection<SimpleComponent> components) {
+	public static SimpleComponent join(final Collection<SimpleComponent> components) {
 		return join(components.toArray(new SimpleComponent[components.size()]));
 	}
 
@@ -1052,7 +1052,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param components
 	 * @return
 	 */
-	public static SimpleComponent join(SimpleComponent... components) {
+	public static SimpleComponent join(final SimpleComponent... components) {
 		SimpleComponent main = empty();
 
 		for (int i = 0; i < components.length; i++) {
@@ -1121,7 +1121,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @param map
 		 * @return
 		 */
-		public static ConditionalComponent deserialize(SerializedMap map) {
+		public static ConditionalComponent deserialize(final SerializedMap map) {
 			final Component component = SimpleComponent.MINIMESSAGE_PARSER.deserialize(map.getString("Component"));
 			final ConditionalComponent part = new ConditionalComponent(component);
 
@@ -1135,7 +1135,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		/*
 		 * Build the component for the given receiver.
 		 */
-		private Component build(FoundationPlayer receiver) {
+		private Component build(final FoundationPlayer receiver) {
 			if (this.viewPermission != null && !this.viewPermission.isEmpty() && (receiver == null || !receiver.hasPermission(this.viewPermission)))
 				return null;
 
@@ -1184,7 +1184,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @param component
 		 * @return
 		 */
-		static ConditionalComponent fromAdventure(Component component) {
+		static ConditionalComponent fromAdventure(final Component component) {
 			return new ConditionalComponent(component);
 		}
 
@@ -1194,7 +1194,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @param component
 		 * @return
 		 */
-		static ConditionalComponent fromPlain(String plainText) {
+		static ConditionalComponent fromPlain(final String plainText) {
 			return new ConditionalComponent(Component.text(plainText));
 		}
 	}
@@ -1229,7 +1229,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		/*
 		 * Parse the given message.
 		 */
-		private void parseMessage(String message) {
+		private void parseMessage(final String message) {
 
 			// Reset parsing state
 			this.message = message;
@@ -1284,7 +1284,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @param message
 		 * @return the last message style
 		 */
-		public static Style parseStyle(String message) {
+		public static Style parseStyle(final String message) {
 			final LastMessageStyleParser parser = new LastMessageStyleParser();
 
 			parser.parseMessage(message);

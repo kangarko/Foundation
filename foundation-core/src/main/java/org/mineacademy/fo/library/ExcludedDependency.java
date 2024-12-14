@@ -24,7 +24,7 @@ public final class ExcludedDependency {
 	 * @param groupId    Maven group ID
 	 * @param artifactId Maven artifact ID
 	 */
-	public ExcludedDependency(String groupId, String artifactId) {
+	public ExcludedDependency(final String groupId, final String artifactId) {
 		this.groupId = Util.replaceWithDots(requireNonNull(groupId, "groupId"));
 		this.artifactId = Util.replaceWithDots(requireNonNull(artifactId, "artifactId"));
 	}
@@ -50,7 +50,7 @@ public final class ExcludedDependency {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(final Object o) {
 		if (this == o)
 			return true;
 		if (o == null || this.getClass() != o.getClass())

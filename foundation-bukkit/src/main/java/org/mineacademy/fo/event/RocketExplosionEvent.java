@@ -44,7 +44,7 @@ public final class RocketExplosionEvent extends SimpleEvent implements Cancellab
 	@Setter
 	private boolean cancelled;
 
-	public RocketExplosionEvent(Rocket rocket, Projectile projectile, float power, boolean breakBlocks) {
+	public RocketExplosionEvent(final Rocket rocket, final Projectile projectile, final float power, final boolean breakBlocks) {
 		this.rocket = rocket;
 		this.projectile = projectile;
 		this.power = power;

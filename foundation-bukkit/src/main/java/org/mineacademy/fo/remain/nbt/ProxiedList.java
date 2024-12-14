@@ -9,13 +9,13 @@ final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 	private final ReadWriteNBTCompoundList nbt;
 	private final Class<E> proxy;
 
-	public ProxiedList(ReadWriteNBTCompoundList nbt, Class<E> proxyClass) {
+	public ProxiedList(final ReadWriteNBTCompoundList nbt, final Class<E> proxyClass) {
 		this.nbt = nbt;
 		this.proxy = proxyClass;
 	}
 
 	@Override
-	public E get(int index) {
+	public E get(final int index) {
 		final ReadWriteNBT tag = this.nbt.get(index);
 		return new ProxyBuilder<>(tag, this.proxy).build();
 	}
@@ -26,7 +26,7 @@ final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 	}
 
 	@Override
-	public void remove(int index) {
+	public void remove(final int index) {
 		this.nbt.remove(index);
 	}
 

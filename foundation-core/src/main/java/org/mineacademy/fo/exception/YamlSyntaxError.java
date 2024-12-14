@@ -14,7 +14,7 @@ public final class YamlSyntaxError extends RuntimeException {
 	 */
 	private final File file;
 
-	public YamlSyntaxError(Throwable parent, File file) {
+	public YamlSyntaxError(final Throwable parent, final File file) {
 		super(parent);
 
 		this.file = file;

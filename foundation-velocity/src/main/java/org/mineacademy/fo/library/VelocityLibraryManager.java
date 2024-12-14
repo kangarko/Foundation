@@ -29,7 +29,7 @@ public class VelocityLibraryManager extends LibraryManager {
 	 * @param pluginManager Velocity plugin manager
 	 * @param plugin        the plugin to manage
 	 */
-	public VelocityLibraryManager(Object plugin, Path dataDirectory, PluginManager pluginManager) {
+	public VelocityLibraryManager(final Object plugin, final Path dataDirectory, final PluginManager pluginManager) {
 		super(new File(dataDirectory.toFile().getParentFile().getParentFile(), "libraries").toPath());
 
 		this.pluginManager = pluginManager;
@@ -42,12 +42,12 @@ public class VelocityLibraryManager extends LibraryManager {
 	 * @param file the file to add
 	 */
 	@Override
-	protected void addToClasspath(Path file) {
+	protected void addToClasspath(final Path file) {
 		this.pluginManager.addToClasspath(this.plugin, file);
 	}
 
 	@Override
-	protected InputStream getResourceAsStream(String path) {
+	protected InputStream getResourceAsStream(final String path) {
 		return this.getClass().getClassLoader().getResourceAsStream(path);
 	}
 }

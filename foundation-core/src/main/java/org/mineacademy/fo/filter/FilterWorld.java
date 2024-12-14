@@ -26,7 +26,7 @@ public final class FilterWorld extends Filter {
 	}
 
 	@Override
-	public boolean isApplicable(Table table) {
+	public boolean isApplicable(final Table table) {
 		return RowLocationDate.class.isAssignableFrom(table.getRowClass());
 	}
 
@@ -38,7 +38,7 @@ public final class FilterWorld extends Filter {
 	}
 
 	@Override
-	public Collection<String> tabComplete(FoundationPlayer audience) {
+	public Collection<String> tabComplete(final FoundationPlayer audience) {
 		final Set<String> worldNames = new TreeSet<>();
 
 		ValidCore.checkNotNull(networkWorldsSupplier, "Call FilterWorld#setNetworkWorldsSupplier using the world filter.");
@@ -48,7 +48,7 @@ public final class FilterWorld extends Filter {
 	}
 
 	@Override
-	public boolean validate(FoundationPlayer audience, String value) {
+	public boolean validate(final FoundationPlayer audience, final String value) {
 		this.worlds.clear();
 
 		for (final String split : value.split("\\|"))
@@ -58,7 +58,7 @@ public final class FilterWorld extends Filter {
 	}
 
 	@Override
-	public boolean canDisplay(Row row) {
+	public boolean canDisplay(final Row row) {
 		return this.worlds.contains(((RowLocationDate) row).getLocation().getWorldName());
 	}
 }

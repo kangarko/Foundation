@@ -78,7 +78,7 @@ final class BossBarTask implements Runnable {
 		}
 	}
 
-	void show(FoundationPlayer audience, TimedBar bar) {
+	void show(final FoundationPlayer audience, final TimedBar bar) {
 		synchronized (this.playerBars) {
 			this.playerBars.computeIfAbsent(audience.getUniqueId(), key -> new ArrayList<>()).add(bar);
 
@@ -86,7 +86,7 @@ final class BossBarTask implements Runnable {
 		}
 	}
 
-	void hide(FoundationPlayer audience, BossBar bar) {
+	void hide(final FoundationPlayer audience, final BossBar bar) {
 		synchronized (this.playerBars) {
 			final List<TimedBar> bars = this.playerBars.get(audience.getUniqueId());
 
@@ -107,7 +107,7 @@ final class BossBarTask implements Runnable {
 		}
 	}
 
-	void hideAll(FoundationPlayer player) {
+	void hideAll(final FoundationPlayer player) {
 		synchronized (this.playerBars) {
 			final List<TimedBar> bars = this.playerBars.remove(player.getUniqueId());
 
@@ -125,24 +125,24 @@ final class BossBarTask implements Runnable {
 		private final BossBar bar;
 		private final int secondsToShow;
 
-		public boolean equals(BossBar bar) {
+		public boolean equals(final BossBar bar) {
 			return this.bar.equals(bar);
 		}
 
 		@Override
 		public String toString() {
-			return LegacyComponentSerializer.legacySection().serialize(bar.name());
+			return LegacyComponentSerializer.legacySection().serialize(this.bar.name());
 		}
 
 		boolean isTimed() {
 			return this.secondsToShow != -1;
 		}
 
-		static TimedBar permanent(BossBar bar) {
+		static TimedBar permanent(final BossBar bar) {
 			return new TimedBar(UUID.randomUUID(), bar, -1);
 		}
 
-		static TimedBar timed(BossBar bar, int secondsToShow) {
+		static TimedBar timed(final BossBar bar, final int secondsToShow) {
 			return new TimedBar(UUID.randomUUID(), bar, secondsToShow);
 		}
 	}

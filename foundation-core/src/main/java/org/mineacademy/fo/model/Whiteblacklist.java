@@ -59,7 +59,7 @@ public final class Whiteblacklist {
 	 *
 	 * @param items
 	 */
-	public Whiteblacklist(@NonNull List<String> items) {
+	public Whiteblacklist(@NonNull final List<String> items) {
 		this(items, false);
 	}
 
@@ -72,7 +72,7 @@ public final class Whiteblacklist {
 	 * @param items
 	 * @param compileAsPatterns shall we precompile the list for maximum performance?
 	 */
-	public Whiteblacklist(@NonNull List<String> items, boolean compileAsPatterns) {
+	public Whiteblacklist(@NonNull final List<String> items, final boolean compileAsPatterns) {
 		this.patterns = new HashSet<>();
 		this.compileAsPatterns = compileAsPatterns;
 
@@ -118,7 +118,7 @@ public final class Whiteblacklist {
 	 * @param items
 	 * @return
 	 */
-	public boolean isInList(Collection<String> items) {
+	public boolean isInList(final Collection<String> items) {
 		if (this.entireList)
 			if (this.whitelist && !items.isEmpty())
 				return true;
@@ -140,7 +140,7 @@ public final class Whiteblacklist {
 	 * @param item
 	 * @return
 	 */
-	public boolean isInList(String item) {
+	public boolean isInList(final String item) {
 		if (this.entireList)
 			return this.whitelist;
 
@@ -156,7 +156,7 @@ public final class Whiteblacklist {
 	 * @param item
 	 * @return
 	 */
-	public boolean isInListRegex(String item) {
+	public boolean isInListRegex(final String item) {
 		if (this.entireList)
 			return this.whitelist;
 
@@ -172,7 +172,7 @@ public final class Whiteblacklist {
 	 * @param item
 	 * @return
 	 */
-	public boolean isInListStartsWith(String item) {
+	public boolean isInListStartsWith(final String item) {
 		if (this.entireList)
 			return this.whitelist;
 

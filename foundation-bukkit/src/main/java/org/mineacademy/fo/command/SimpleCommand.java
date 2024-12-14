@@ -18,7 +18,7 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 	 *
 	 * @param labelAndAliases
 	 */
-	protected SimpleCommand(List<String> labelAndAliases) {
+	protected SimpleCommand(final List<String> labelAndAliases) {
 		super(labelAndAliases);
 	}
 
@@ -27,7 +27,7 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 	 *
 	 * @param label
 	 */
-	protected SimpleCommand(String label) {
+	protected SimpleCommand(final String label) {
 		super(label);
 	}
 
@@ -37,7 +37,7 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 	 * @param label
 	 * @param aliases
 	 */
-	protected SimpleCommand(String label, List<String> aliases) {
+	protected SimpleCommand(final String label, final List<String> aliases) {
 		super(label, aliases);
 	}
 

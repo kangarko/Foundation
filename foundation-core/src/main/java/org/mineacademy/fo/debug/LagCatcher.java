@@ -26,7 +26,7 @@ public final class LagCatcher {
 	 *
 	 * @param section
 	 */
-	public static void start(String section) {
+	public static void start(final String section) {
 		if (SimpleSettings.LAG_THRESHOLD_MILLIS != -1)
 			startTimesMap.put(section, System.nanoTime());
 	}
@@ -37,7 +37,7 @@ public final class LagCatcher {
 	 *
 	 * @param section
 	 */
-	public static void end(String section) {
+	public static void end(final String section) {
 		end(section, SimpleSettings.LAG_THRESHOLD_MILLIS);
 	}
 
@@ -49,7 +49,7 @@ public final class LagCatcher {
 	 * @param section
 	 * @param thresholdMs
 	 */
-	public static void end(String section, int thresholdMs) {
+	public static void end(final String section, final int thresholdMs) {
 		end(section, thresholdMs, "{section} took {time} ms");
 	}
 
@@ -63,7 +63,7 @@ public final class LagCatcher {
 	 * @param thresholdMs
 	 * @param message
 	 */
-	public static void end(String section, int thresholdMs, String message) {
+	public static void end(final String section, final int thresholdMs, String message) {
 		final double lag = finishAndCalculate(section);
 
 		if (lag > thresholdMs && thresholdMs != -1) {
@@ -79,14 +79,14 @@ public final class LagCatcher {
 	 * @param startNano the start time in nanoseconds, put System.nanoTime() on top of your code you want to measure
 	 * @param section
 	 */
-	public static void took(long startNano, String section) {
+	public static void took(final long startNano, final String section) {
 		System.out.println(section + " took: " + (System.nanoTime() - startNano) / 1_000_000D + "ms");
 	}
 
 	/*
 	 * Calculates how long a section took (in ms) and removes it from the timings map
 	 */
-	private static double finishAndCalculate(String section) {
+	private static double finishAndCalculate(final String section) {
 		final Long nanoTime = startTimesMap.remove(section);
 
 		return nanoTime == null ? 0D : (System.nanoTime() - nanoTime) / 1_000_000D;

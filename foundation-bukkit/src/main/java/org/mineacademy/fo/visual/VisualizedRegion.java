@@ -89,7 +89,7 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 * @param durationTicks
 	 */
-	public void showParticles(Player player, int durationTicks) {
+	public void showParticles(final Player player, final int durationTicks) {
 		this.showParticles(player, null, durationTicks);
 	}
 
@@ -101,7 +101,7 @@ public final class VisualizedRegion extends Region {
 	 * @param color
 	 * @param durationTicks
 	 */
-	public void showParticles(Player player, @Nullable Color color, int durationTicks) {
+	public void showParticles(final Player player, @Nullable final Color color, final int durationTicks) {
 		this.showParticles(player, color);
 
 		Platform.runTask(durationTicks, () -> {
@@ -125,7 +125,7 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 * @param color
 	 */
-	public void showParticles(final Player player, @Nullable Color color) {
+	public void showParticles(final Player player, @Nullable final Color color) {
 		ValidCore.checkBoolean(!this.canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
 		ValidCore.checkBoolean(this.isWhole(), "Cannot show particles of an incomplete region " + this);
 

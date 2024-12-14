@@ -589,14 +589,14 @@ public final class Messenger {
 	/*
 	 * Send a message to the player with the given prefix.
 	 */
-	private static void tell(final FoundationPlayer audience, final SimpleComponent prefix, @NonNull String message) {
+	private static void tell(final FoundationPlayer audience, final SimpleComponent prefix, @NonNull final String message) {
 		tell(audience, prefix, SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/*
 	 * Send a message to the player with the given prefix.
 	 */
-	private static void tell(final FoundationPlayer audience, final SimpleComponent prefix, @NonNull SimpleComponent component) {
+	private static void tell(final FoundationPlayer audience, final SimpleComponent prefix, @NonNull final SimpleComponent component) {
 		audience.sendMessageWithPrefix(prefix, component);
 	}
 }

@@ -49,7 +49,6 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.SerializeUtilCore.Serializer;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.BukkitCommandImpl;
@@ -86,7 +85,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	private static BukkitAudiences adventure;
 
 	public static BukkitAudiences getAdventure() {
-		Valid.checkNotNull(hasAdventure(), "Adventure not initialized or not available!");
+		ValidCore.checkNotNull(hasAdventure(), "Adventure not initialized or not available!");
 
 		return adventure;
 	}
@@ -103,7 +102,7 @@ final class BukkitPlatform extends FoundationPlatform {
 		}
 	}
 
-	public static void createAudiences(Plugin plugin) {
+	public static void createAudiences(final Plugin plugin) {
 		adventure = BukkitAudiences.create(plugin);
 	}
 
@@ -169,7 +168,7 @@ final class BukkitPlatform extends FoundationPlatform {
 		ReflectionUtil.setLegacyEnumNameTranslator(new LegacyEnumNameTranslator() {
 
 			@Override
-			public <E> String translateName(Class<E> enumType, String name) {
+			public <E> String translateName(final Class<E> enumType, String name) {
 				if (enumType == ChatColor.class && name.contains(ChatColor.COLOR_CHAR + ""))
 					name = ChatColor.getByChar(name.charAt(1)).name();
 				else if (enumType == Biome.class) {
@@ -224,7 +223,7 @@ final class BukkitPlatform extends FoundationPlatform {
 		SerializeUtilCore.addSerializer(new Serializer() {
 
 			@Override
-			public <T> T deserialize(@NonNull Language language, @NonNull Class<T> classOf, @NonNull Object object, Object... parameters) {
+			public <T> T deserialize(@NonNull final Language language, @NonNull final Class<T> classOf, @NonNull final Object object, final Object... parameters) {
 				if (classOf == Location.class) {
 					if (object instanceof Location)
 						return (T) object;
@@ -407,7 +406,7 @@ final class BukkitPlatform extends FoundationPlatform {
 			}
 
 			@Override
-			public Object serialize(Language language, Object object) {
+			public Object serialize(final Language language, final Object object) {
 				if (object instanceof World)
 					return ((World) object).getName();
 
@@ -523,14 +522,14 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack) {
+	public HoverEventSource<?> convertItemStackToHoverEvent(final Object itemStack) {
 		ValidCore.checkBoolean(itemStack instanceof ItemStack, "Expected item stack, got: " + itemStack);
 
 		return Remain.convertItemStackToHoverEvent((ItemStack) itemStack);
 	}
 
 	@Override
-	protected void dispatchConsoleCommand0(String command) {
+	protected void dispatchConsoleCommand0(final String command) {
 		if (Bukkit.isPrimaryThread())
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
 		else
@@ -558,14 +557,14 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	protected FoundationPlayer getPlayer(String name) {
+	protected FoundationPlayer getPlayer(final String name) {
 		final Player player = Bukkit.getPlayerExact(name);
 
 		return player != null ? this.toPlayer(player) : null;
 	}
 
 	@Override
-	protected FoundationPlayer getPlayer(UUID uniqueid) {
+	protected FoundationPlayer getPlayer(final UUID uniqueid) {
 		final Player player = Remain.getPlayerByUUID(uniqueid);
 
 		return player != null && player.isOnline() ? this.toPlayer(player) : null;
@@ -577,7 +576,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public File getPluginFile(String pluginName) {
+	public File getPluginFile(final String pluginName) {
 		final Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
 		ValidCore.checkNotNull(plugin, "Plugin " + pluginName + " not found!");
 		ValidCore.checkBoolean(plugin instanceof JavaPlugin, "Plugin " + pluginName + " is not a JavaPlugin. Got: " + plugin.getClass());
@@ -591,7 +590,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public FoundationServer getServer(String name) {
+	public FoundationServer getServer(final String name) {
 		throw new UnsupportedOperationException("Bukkit does not support multiple servers.");
 	}
 
@@ -606,7 +605,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public boolean isPluginInstalled(String name) {
+	public boolean isPluginInstalled(final String name) {
 		Plugin lookup = null;
 
 		for (final Plugin otherPlugin : Bukkit.getPluginManager().getPlugins())
@@ -633,12 +632,12 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public void log(String message) {
+	public void log(final String message) {
 		Bukkit.getConsoleSender().sendMessage(message);
 	}
 
 	@Override
-	public void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
+	public void registerCommand(final SimpleCommandCore command, final boolean unregisterOldCommand, final boolean unregisterOldAliases) {
 
 		// Navigate developers on proper simple command class usage.
 		ValidCore.checkBoolean(!(command instanceof CommandExecutor), "Please do not write 'implements CommandExecutor' for /" + command + " command since it's already registered.");
@@ -653,7 +652,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
+	public void registerDefaultPlatformSubcommands(final SimpleCommandGroup group) {
 		group.registerSubcommand(new ConversationSubCommand());
 
 		if (SimpleSettings.REGISTER_REGIONS)
@@ -668,27 +667,27 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public Task runTask(int delayTicks, Runnable runnable) {
+	public Task runTask(final int delayTicks, final Runnable runnable) {
 		return Remain.runTask(delayTicks, runnable);
 	}
 
 	@Override
-	public Task runTaskAsync(int delayTicks, Runnable runnable) {
+	public Task runTaskAsync(final int delayTicks, final Runnable runnable) {
 		return Remain.runTaskAsync(delayTicks, runnable);
 	}
 
 	@Override
-	public Task runTaskTimer(int delayTicks, int repeatTicks, Runnable runnable) {
+	public Task runTaskTimer(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		return Remain.runTaskTimer(delayTicks, repeatTicks, runnable);
 	}
 
 	@Override
-	public Task runTaskTimerAsync(int delayTicks, int repeatTicks, Runnable runnable) {
+	public Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		return Remain.runTaskTimerAsync(delayTicks, repeatTicks, runnable);
 	}
 
 	@Override
-	public void sendPluginMessage(UUID senderUid, String channel, byte[] array) {
+	public void sendPluginMessage(final UUID senderUid, final String channel, final byte[] array) {
 		final Player player = Remain.getPlayerByUUID(senderUid);
 		ValidCore.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
@@ -696,7 +695,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public FoundationPlayer toPlayer(Object sender) {
+	public FoundationPlayer toPlayer(final Object sender) {
 		if (sender instanceof FoundationPlayer)
 			return (FoundationPlayer) sender;
 
@@ -710,12 +709,12 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public FoundationServer toServer(Object server) {
+	public FoundationServer toServer(final Object server) {
 		throw new UnsupportedOperationException("Bukkit does not support Platform#toServer(). To get the server, call Platform#getServers().get(0)");
 	}
 
 	@Override
-	public void unregisterCommand(SimpleCommandCore command) {
+	public void unregisterCommand(final SimpleCommandCore command) {
 		Remain.unregisterCommand(command.getLabel());
 	}
 }

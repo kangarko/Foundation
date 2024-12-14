@@ -81,7 +81,7 @@ public enum MenuQuantity {
 	 *
 	 * @return the previous enum ordinal, or last if overflows
 	 */
-	public final MenuQuantity previous(boolean allowDecimals) {
+	public final MenuQuantity previous(final boolean allowDecimals) {
 		return CommonCore.getNext(this, this.compileQuantities(allowDecimals), false);
 	}
 
@@ -91,14 +91,14 @@ public enum MenuQuantity {
 	 *
 	 * @return the next enum ordinal, or first if overflows
 	 */
-	public final MenuQuantity next(boolean allowDecimals) {
+	public final MenuQuantity next(final boolean allowDecimals) {
 		return CommonCore.getNext(this, this.compileQuantities(allowDecimals), true);
 	}
 
 	/*
 	 * Helper to compile quantities including below 1%
 	 */
-	private List<MenuQuantity> compileQuantities(boolean includeDecimals) {
+	private List<MenuQuantity> compileQuantities(final boolean includeDecimals) {
 		final List<MenuQuantity> available = new ArrayList<>();
 
 		for (final MenuQuantity quantity : values())

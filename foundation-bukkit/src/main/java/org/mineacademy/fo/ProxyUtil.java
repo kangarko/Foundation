@@ -41,7 +41,7 @@ public final class ProxyUtil {
 	 * @param datas
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessage(ProxyMessage message, T... datas) {
+	public static <T> void sendPluginMessage(final ProxyMessage message, final T... datas) {
 		final ProxyListener proxy = BukkitPlugin.getInstance().getDefaultProxyListener();
 		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessage() without channel name because " + BukkitPlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage!");
 
@@ -62,7 +62,7 @@ public final class ProxyUtil {
 	 * @param datas
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessageAs(@Nullable FoundationPlayer audience, ProxyMessage message, T... datas) {
+	public static <T> void sendPluginMessageAs(@Nullable final FoundationPlayer audience, final ProxyMessage message, final T... datas) {
 		sendPluginMessageAs((Player) audience.getPlayer(), message, datas);
 	}
 
@@ -80,7 +80,7 @@ public final class ProxyUtil {
 	 * @param datas
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessageAs(@Nullable Player player, ProxyMessage message, T... datas) {
+	public static <T> void sendPluginMessageAs(@Nullable final Player player, final ProxyMessage message, final T... datas) {
 		final ProxyListener proxy = BukkitPlugin.getInstance().getDefaultProxyListener();
 		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + BukkitPlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage");
 
@@ -101,7 +101,7 @@ public final class ProxyUtil {
 	 * @param data
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessage(String channel, ProxyMessage message, T... data) {
+	public static <T> void sendPluginMessage(final String channel, final ProxyMessage message, final T... data) {
 		sendPluginMessage(null, channel, message, data);
 	}
 
@@ -117,7 +117,7 @@ public final class ProxyUtil {
 	 * @param dataArray
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessage(@Nullable Player sender, String channel, ProxyMessage message, T... dataArray) {
+	public static <T> void sendPluginMessage(@Nullable Player sender, final String channel, final ProxyMessage message, final T... dataArray) {
 		synchronized (BukkitPlugin.getInstance()) {
 			if (sender == null)
 				sender = findFirstPlayer();
@@ -146,7 +146,7 @@ public final class ProxyUtil {
 	 * @param player     the living non-dead player
 	 * @param serverName the server name as you have in your proxy
 	 */
-	public static void connect(@NonNull Player player, @NonNull String serverName) {
+	public static void connect(@NonNull final Player player, @NonNull final String serverName) {
 		sendBungeeMessage(player, "Connect", serverName);
 	}
 
@@ -160,7 +160,7 @@ public final class ProxyUtil {
 	 * @param sender the player to send the message as
 	 * @param data  the data
 	 */
-	public static void sendBungeeMessage(@NonNull Player sender, Object... data) {
+	public static void sendBungeeMessage(@NonNull final Player sender, final Object... data) {
 		synchronized (BukkitPlugin.getInstance()) {
 			ValidCore.checkBoolean(data != null && data.length >= 1, "");
 

@@ -14,7 +14,7 @@ public class HandledException extends RuntimeException {
 	@Getter
 	private final Throwable handle;
 
-	public HandledException(@NonNull Throwable handle) {
+	public HandledException(@NonNull final Throwable handle) {
 		this.handle = handle;
 	}
 

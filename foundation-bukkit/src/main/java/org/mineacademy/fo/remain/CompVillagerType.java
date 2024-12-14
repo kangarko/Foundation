@@ -37,7 +37,7 @@ public enum CompVillagerType {
 	 *
 	 * @param villager
 	 */
-	public void apply(Villager villager) {
+	public void apply(final Villager villager) {
 		villager.setVillagerType(this.toBukkit());
 	}
 
@@ -47,7 +47,7 @@ public enum CompVillagerType {
 	 * @param name
 	 * @return
 	 */
-	public static Villager.Type convertNameToBukkit(String name) {
+	public static Villager.Type convertNameToBukkit(final String name) {
 		for (final CompVillagerType type : values())
 			if (type.getEnumName().equalsIgnoreCase(name))
 				return type.toBukkit();

@@ -124,7 +124,7 @@ public enum CompVillagerProfession {
 	 *
 	 * @param villager
 	 */
-	public void apply(Villager villager) {
+	public void apply(final Villager villager) {
 		villager.setProfession(this.toBukkit());
 	}
 
@@ -134,7 +134,7 @@ public enum CompVillagerProfession {
 	 * @param name
 	 * @return
 	 */
-	public static Profession convertNameToBukkit(String name) {
+	public static Profession convertNameToBukkit(final String name) {
 		for (final CompVillagerProfession profession : values())
 			if (profession.name().equalsIgnoreCase(name) || profession.getLegacyName().equalsIgnoreCase(name))
 				return profession.toBukkit();

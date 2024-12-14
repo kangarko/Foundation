@@ -140,7 +140,7 @@ class PlayerSwapHandItemsListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-	public void onSwapItems(PlayerSwapHandItemsEvent event) {
+	public void onSwapItems(final PlayerSwapHandItemsEvent event) {
 		if (Menu.getMenu(event.getPlayer()) != null)
 			event.setCancelled(true);
 	}

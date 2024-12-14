@@ -453,19 +453,19 @@ public enum CompBiome {
 	@Getter
 	private final World.Environment environment;
 
-	CompBiome(@NonNull World.Environment environment, @NonNull String... legacyNames) {
+	CompBiome(@NonNull final World.Environment environment, @NonNull final String... legacyNames) {
 		this(environment, null, legacyNames);
 	}
 
-	CompBiome(@NonNull String... legacyNames) {
+	CompBiome(@NonNull final String... legacyNames) {
 		this(World.Environment.NORMAL, legacyNames);
 	}
 
-	CompBiome(CompBiome newBiome, @NonNull String... legacyNames) {
+	CompBiome(final CompBiome newBiome, @NonNull final String... legacyNames) {
 		this(World.Environment.NORMAL, newBiome, legacyNames);
 	}
 
-	CompBiome(@NonNull World.Environment environment, CompBiome newVersion, @NonNull String... legacyNames) {
+	CompBiome(@NonNull final World.Environment environment, final CompBiome newVersion, @NonNull final String... legacyNames) {
 		this.environment = environment;
 
 		BiomeData.BY_NAME.put(this.name(), this);
@@ -531,7 +531,7 @@ public enum CompBiome {
 	 *
 	 * @param chunk
 	 */
-	public void setBiome(@NonNull Chunk chunk) {
+	public void setBiome(@NonNull final Chunk chunk) {
 		ValidCore.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
 
 		if (!chunk.isLoaded())
@@ -562,7 +562,7 @@ public enum CompBiome {
 	 * @param end   the end position.
 	 * @since 1.0.0
 	 */
-	public void setBiome(@NonNull Location start, @NonNull Location end) {
+	public void setBiome(@NonNull final Location start, @NonNull final Location end) {
 		ValidCore.checkNotNull(this.biome, "Biome " + this.name() + " is not available in this server version");
 		ValidCore.checkBoolean(start.getWorld().equals(end.getWorld()), "Locations must be in the same world, got " + start.getWorld().getName() + " and " + end.getWorld().getName());
 
@@ -604,7 +604,7 @@ public enum CompBiome {
 	 * @param biome
 	 * @return
 	 */
-	public static CompBiome fromName(@NonNull String biome) {
+	public static CompBiome fromName(@NonNull final String biome) {
 		return BiomeData.BY_NAME.get(biome.toUpperCase());
 	}
 
@@ -614,7 +614,7 @@ public enum CompBiome {
 	 * @param id
 	 * @return
 	 */
-	public static CompBiome fromId(int id) {
+	public static CompBiome fromId(final int id) {
 		return BiomeData.BY_ID.get(id);
 	}
 
@@ -624,7 +624,7 @@ public enum CompBiome {
 	 * @param biome
 	 * @return
 	 */
-	public static CompBiome fromBukkit(@NonNull Biome biome) {
+	public static CompBiome fromBukkit(@NonNull final Biome biome) {
 		return BiomeData.BY_NAME.get(biome.name());
 	}
 
@@ -634,7 +634,7 @@ public enum CompBiome {
 	 * @param block
 	 * @return
 	 */
-	public static CompBiome fromBlock(@NonNull Block block) {
+	public static CompBiome fromBlock(@NonNull final Block block) {
 		return fromName(ReflectionUtil.getEnumName(Remain.getBiome(block)));
 	}
 }

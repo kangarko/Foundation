@@ -217,7 +217,7 @@ public abstract class MenuPaged<T> extends Menu {
 	 * @param parent   the parent menu
 	 * @param items    the pages the pages
 	 */
-	protected MenuPaged(final int pageSize, final Menu parent, @NonNull T... items) {
+	protected MenuPaged(final int pageSize, final Menu parent, @NonNull final T... items) {
 		this(pageSize, parent, null, Arrays.asList(items), false);
 	}
 
@@ -394,7 +394,7 @@ public abstract class MenuPaged<T> extends Menu {
 	 *
 	 * @param currentPage
 	 */
-	protected void setCurrentPage(int currentPage) {
+	protected void setCurrentPage(final int currentPage) {
 		this.currentPage = currentPage;
 
 		this.updatePage();
@@ -451,7 +451,7 @@ public abstract class MenuPaged<T> extends Menu {
 	 *
 	 * @param drawer
 	 */
-	protected void onPostDisplay(InventoryDrawer drawer) {
+	protected void onPostDisplay(final InventoryDrawer drawer) {
 	}
 
 	/**

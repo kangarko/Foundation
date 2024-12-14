@@ -16,7 +16,7 @@ import org.snakeyaml.engine.v2.nodes.Node;
  */
 class BukkitYamlRepresenter extends YamlConfig.YamlRepresenter {
 
-	public BukkitYamlRepresenter(DumpSettings settings) {
+	public BukkitYamlRepresenter(final DumpSettings settings) {
 		super(settings);
 
 		this.parentClassRepresenters.put(ConfigurationSection.class, new RepresentConfigurationSection());
@@ -26,7 +26,7 @@ class BukkitYamlRepresenter extends YamlConfig.YamlRepresenter {
 	private class RepresentConfigurationSection extends RepresentMap {
 
 		@Override
-		public Node representData(Object data) {
+		public Node representData(final Object data) {
 			return super.representData(((ConfigurationSection) data).getValues(false));
 		}
 	}
@@ -34,7 +34,7 @@ class BukkitYamlRepresenter extends YamlConfig.YamlRepresenter {
 	private class RepresentConfigurationSerializable extends RepresentMap {
 
 		@Override
-		public Node representData(Object data) {
+		public Node representData(final Object data) {
 			final ConfigurationSerializable serializable = (ConfigurationSerializable) data;
 			final Map<String, Object> values = new LinkedHashMap<>();
 

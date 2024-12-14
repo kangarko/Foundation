@@ -66,7 +66,7 @@ public abstract class Button {
 	 *
 	 * @param slot
 	 */
-	public Button(int slot) {
+	public Button(final int slot) {
 		this.slot = slot;
 	}
 
@@ -130,7 +130,7 @@ public abstract class Button {
 	 * @param lore
 	 * @return
 	 */
-	public static final DummyButton makeDummy(final CompMaterial material, String title, String... lore) {
+	public static final DummyButton makeDummy(final CompMaterial material, final String title, final String... lore) {
 		return makeDummy(ItemCreator.fromMaterial(material).name(title).lore(lore));
 	}
 
@@ -192,7 +192,7 @@ public abstract class Button {
 	 * @param onClickFunction
 	 * @return
 	 */
-	public static final Button makeSimple(ItemCreator builder, final Consumer<Player> onClickFunction) {
+	public static final Button makeSimple(final ItemCreator builder, final Consumer<Player> onClickFunction) {
 		return new Button() {
 
 			@Override
@@ -244,13 +244,13 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static final Button makeBoolean(ItemCreator creator, Supplier<Boolean> getter, Consumer<Boolean> setter) {
+	public static final Button makeBoolean(final ItemCreator creator, final Supplier<Boolean> getter, final Consumer<Boolean> setter) {
 		final String menuTitle = creator.getName().toLowerCase();
 
 		return new Button() {
 
 			@Override
-			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				final boolean has = getter.get();
 
 				setter.accept(!has);
@@ -285,7 +285,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeIntegerPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Object> getter, Consumer<Integer> setter) {
+	public static Button makeIntegerPrompt(final ItemCreator item, final String question, final RangedValue minMaxRange, final Supplier<Object> getter, final Consumer<Integer> setter) {
 		return makeIntegerPrompt(item, question, null, minMaxRange, getter, setter);
 	}
 
@@ -300,25 +300,25 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeIntegerPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, Supplier<Object> getter, Consumer<Integer> setter) {
+	public static Button makeIntegerPrompt(final ItemCreator item, final String question, final String menuTitle, final RangedValue minMaxRange, final Supplier<Object> getter, final Consumer<Integer> setter) {
 		return new Button() {
 
 			@Override
-			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				new SimplePrompt() {
 
 					@Override
-					protected String getPrompt(ConversationContext ctx) {
+					protected String getPrompt(final ConversationContext ctx) {
 						return question.replace("{current}", getter.get().toString());
 					}
 
 					@Override
-					protected boolean isInputValid(ConversationContext context, String input) {
+					protected boolean isInputValid(final ConversationContext context, final String input) {
 						return ValidCore.isInteger(input) && ValidCore.isInRange(Integer.parseInt(input), minMaxRange.getMinLong(), minMaxRange.getMaxLong());
 					}
 
 					@Override
-					protected String getFailedValidationText(ConversationContext context, String invalidInput) {
+					protected String getFailedValidationText(final ConversationContext context, final String invalidInput) {
 						return "Invalid input '" + invalidInput + "'! Enter a whole number from " + minMaxRange.getMinLong() + " to " + minMaxRange.getMaxLong() + ".";
 					}
 
@@ -328,7 +328,7 @@ public abstract class Button {
 					}
 
 					@Override
-					protected Prompt acceptValidatedInput(ConversationContext context, String input) {
+					protected Prompt acceptValidatedInput(final ConversationContext context, final String input) {
 						setter.accept(Integer.parseInt(input));
 
 						return END_OF_CONVERSATION;
@@ -353,7 +353,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeDecimalPrompt(ItemCreator item, String question, RangedValue minMaxRange, Consumer<Double> setter) {
+	public static Button makeDecimalPrompt(final ItemCreator item, final String question, final RangedValue minMaxRange, final Consumer<Double> setter) {
 		return makeDecimalPrompt(item, question, minMaxRange, null, setter);
 	}
 
@@ -367,7 +367,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeDecimalPrompt(ItemCreator item, String question, RangedValue minMaxRange, Supplier<Object> getter, Consumer<Double> setter) {
+	public static Button makeDecimalPrompt(final ItemCreator item, final String question, final RangedValue minMaxRange, final Supplier<Object> getter, final Consumer<Double> setter) {
 		return makeDecimalPrompt(item, question, null, minMaxRange, getter, setter);
 	}
 
@@ -382,25 +382,25 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeDecimalPrompt(ItemCreator item, String question, String menuTitle, RangedValue minMaxRange, @Nullable Supplier<Object> getter, Consumer<Double> setter) {
+	public static Button makeDecimalPrompt(final ItemCreator item, final String question, final String menuTitle, final RangedValue minMaxRange, @Nullable final Supplier<Object> getter, final Consumer<Double> setter) {
 		return new Button() {
 
 			@Override
-			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				new SimplePrompt() {
 
 					@Override
-					protected String getPrompt(ConversationContext ctx) {
+					protected String getPrompt(final ConversationContext ctx) {
 						return question.replace("{current}", getter != null ? getter.get().toString() : "");
 					}
 
 					@Override
-					protected boolean isInputValid(ConversationContext context, String input) {
+					protected boolean isInputValid(final ConversationContext context, final String input) {
 						return ValidCore.isDecimal(input) && ValidCore.isInRange(Double.parseDouble(input), minMaxRange.getMinDouble(), minMaxRange.getMaxDouble());
 					}
 
 					@Override
-					protected String getFailedValidationText(ConversationContext context, String invalidInput) {
+					protected String getFailedValidationText(final ConversationContext context, final String invalidInput) {
 						return "Invalid input '" + invalidInput + "'! Enter a whole number from " + minMaxRange.getMinDouble() + " to " + minMaxRange.getMaxDouble() + ".";
 					}
 
@@ -410,7 +410,7 @@ public abstract class Button {
 					}
 
 					@Override
-					protected Prompt acceptValidatedInput(ConversationContext context, String input) {
+					protected Prompt acceptValidatedInput(final ConversationContext context, final String input) {
 						setter.accept(Double.parseDouble(input));
 
 						return END_OF_CONVERSATION;
@@ -440,7 +440,7 @@ public abstract class Button {
 	 * @param onPromptFinish
 	 * @return
 	 */
-	public static Button makeStringPrompt(ItemCreator creator, String question, Consumer<String> onPromptFinish) {
+	public static Button makeStringPrompt(final ItemCreator creator, final String question, final Consumer<String> onPromptFinish) {
 		return makeStringPrompt(creator, question, null, onPromptFinish);
 	}
 
@@ -453,11 +453,11 @@ public abstract class Button {
 	 * @param onPromptFinish
 	 * @return
 	 */
-	public static Button makeStringPrompt(ItemCreator creator, String question, @Nullable String menuTitle, Consumer<String> onPromptFinish) {
+	public static Button makeStringPrompt(final ItemCreator creator, final String question, @Nullable final String menuTitle, final Consumer<String> onPromptFinish) {
 		return new Button() {
 
 			@Override
-			public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+			public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 				new SimpleStringPrompt(question) {
 
 					@Override
@@ -466,7 +466,7 @@ public abstract class Button {
 					}
 
 					@Override
-					protected void onValidatedInput(ConversationContext context, String input) {
+					protected void onValidatedInput(final ConversationContext context, final String input) {
 						onPromptFinish.accept(input);
 					}
 

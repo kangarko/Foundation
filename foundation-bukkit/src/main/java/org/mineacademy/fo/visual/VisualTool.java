@@ -49,7 +49,7 @@ public abstract class VisualTool extends BlockTool {
 	 * @param click
 	 * @param block
 	 */
-	protected void handleBlockClick(Player player, ClickType click, Block block) {
+	protected void handleBlockClick(final Player player, final ClickType click, final Block block) {
 		final boolean isPrimary = click == ClickType.LEFT;
 		final Location location = block.getLocation();
 
@@ -117,7 +117,7 @@ public abstract class VisualTool extends BlockTool {
 	 *
 	 * @return
 	 */
-	protected List<Location> getVisualizedPoints(Player player) {
+	protected List<Location> getVisualizedPoints(final Player player) {
 		final Region region = this.getVisualizedRegion(player);
 		final List<Location> points = new ArrayList<>();
 
@@ -139,7 +139,7 @@ public abstract class VisualTool extends BlockTool {
 	 *
 	 * @return
 	 */
-	protected VisualizedRegion getVisualizedRegion(Player player) {
+	protected VisualizedRegion getVisualizedRegion(final Player player) {
 		return null;
 	}
 
@@ -150,7 +150,7 @@ public abstract class VisualTool extends BlockTool {
 	 * @param player
 	 * @return
 	 */
-	protected String getBlockName(Block block, Player player) {
+	protected String getBlockName(final Block block, final Player player) {
 		final Region region = this.getVisualizedRegion(player);
 		String name = "&7Point";
 

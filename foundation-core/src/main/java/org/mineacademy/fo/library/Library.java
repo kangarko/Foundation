@@ -124,19 +124,19 @@ public class Library {
 	 * @param resolveTransitiveDependencies transitive dependencies resolution for this library
 	 * @param excludedTransitiveDependencies excluded transitive dependencies or null
 	 */
-	private Library(Collection<String> urls,
-			Collection<String> repositories,
-			Collection<String> fallbackRepositories,
-			String groupId,
-			String artifactId,
-			String version,
-			String classifier,
-			byte[] checksum,
-			Collection<Relocation> relocations,
-			boolean isolatedLoad,
-			String loaderId,
-			boolean resolveTransitiveDependencies,
-			Collection<ExcludedDependency> excludedTransitiveDependencies) {
+	private Library(final Collection<String> urls,
+			final Collection<String> repositories,
+			final Collection<String> fallbackRepositories,
+			final String groupId,
+			final String artifactId,
+			final String version,
+			final String classifier,
+			final byte[] checksum,
+			final Collection<Relocation> relocations,
+			final boolean isolatedLoad,
+			final String loaderId,
+			final boolean resolveTransitiveDependencies,
+			final Collection<ExcludedDependency> excludedTransitiveDependencies) {
 
 		this.urls = urls != null ? Collections.unmodifiableList(new LinkedList<>(urls)) : Collections.emptyList();
 		this.groupId = Util.replaceWithDots(requireNonNull(groupId, "groupId"));
@@ -452,7 +452,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder url(String url) {
+		public Builder url(final String url) {
 			this.urls.add(requireNonNull(url, "url"));
 			return this;
 		}
@@ -466,7 +466,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder repository(String url) {
+		public Builder repository(final String url) {
 			this.repositories.add(requireNonNull(url, "repository").endsWith("/") ? url : url + '/');
 			return this;
 		}
@@ -478,7 +478,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder fallbackRepository(String url) {
+		public Builder fallbackRepository(final String url) {
 			this.fallbackRepositories.add(requireNonNull(url, "fallbackRepository").endsWith("/") ? url : url + '/');
 			return this;
 		}
@@ -493,7 +493,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder groupId(String groupId) {
+		public Builder groupId(final String groupId) {
 			this.groupId = requireNonNull(groupId, "groupId");
 			return this;
 		}
@@ -508,7 +508,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder artifactId(String artifactId) {
+		public Builder artifactId(final String artifactId) {
 			this.artifactId = requireNonNull(artifactId, "artifactId");
 			return this;
 		}
@@ -520,7 +520,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder version(String version) {
+		public Builder version(final String version) {
 			this.version = requireNonNull(version, "version");
 			return this;
 		}
@@ -532,7 +532,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder classifier(String classifier) {
+		public Builder classifier(final String classifier) {
 			this.classifier = classifier;
 			return this;
 		}
@@ -544,7 +544,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder checksum(byte[] checksum) {
+		public Builder checksum(final byte[] checksum) {
 			this.checksum = checksum;
 			return this;
 		}
@@ -556,7 +556,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder checksum(String checksum) {
+		public Builder checksum(final String checksum) {
 			return checksum != null ? this.checksum(Util.hexStringToByteArray(checksum)) : this;
 		}
 
@@ -567,7 +567,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder checksumFromBase64(String checksum) {
+		public Builder checksumFromBase64(final String checksum) {
 			return checksum != null ? this.checksum(Base64.getDecoder().decode(checksum)) : this;
 		}
 
@@ -578,7 +578,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder isolatedLoad(boolean isolatedLoad) {
+		public Builder isolatedLoad(final boolean isolatedLoad) {
 			this.isolatedLoad = isolatedLoad;
 			return this;
 		}
@@ -590,7 +590,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder loaderId(String loaderId) {
+		public Builder loaderId(final String loaderId) {
 			this.loaderId = loaderId;
 			return this;
 		}
@@ -602,7 +602,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder relocate(Relocation relocation) {
+		public Builder relocate(final Relocation relocation) {
 			requireNonNull(relocation, "relocation");
 			if (!relocation.getPattern().equals(relocation.getRelocatedPattern()))
 				this.relocations.add(relocation);
@@ -617,7 +617,7 @@ public class Library {
 		 * @return this builder
 		 */
 
-		public Builder relocate(String pattern, String relocatedPattern) {
+		public Builder relocate(final String pattern, final String relocatedPattern) {
 			return this.relocate(new Relocation(pattern, relocatedPattern));
 		}
 
@@ -629,7 +629,7 @@ public class Library {
 		 * @see #excludeTransitiveDependency(ExcludedDependency)
 		 */
 
-		public Builder resolveTransitiveDependencies(boolean resolveTransitiveDependencies) {
+		public Builder resolveTransitiveDependencies(final boolean resolveTransitiveDependencies) {
 			this.resolveTransitiveDependencies = resolveTransitiveDependencies;
 			return this;
 		}
@@ -642,7 +642,7 @@ public class Library {
 		 * @see #resolveTransitiveDependencies(boolean)
 		 */
 
-		public Builder excludeTransitiveDependency(ExcludedDependency excludedDependency) {
+		public Builder excludeTransitiveDependency(final ExcludedDependency excludedDependency) {
 			this.excludedTransitiveDependencies.add(requireNonNull(excludedDependency, "excludedDependency"));
 			return this;
 		}
@@ -656,7 +656,7 @@ public class Library {
 		 * @see #excludeTransitiveDependency(ExcludedDependency)
 		 */
 
-		public Builder excludeTransitiveDependency(String groupId, String artifactId) {
+		public Builder excludeTransitiveDependency(final String groupId, final String artifactId) {
 			return this.excludeTransitiveDependency(new ExcludedDependency(groupId, artifactId));
 		}
 

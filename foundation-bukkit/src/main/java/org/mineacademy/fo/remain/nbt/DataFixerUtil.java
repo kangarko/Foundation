@@ -24,7 +24,7 @@ final class DataFixerUtil {
 	public static final int VERSION1_21_2 = 4080;
 	public static final int VERSION1_21_3 = 4189;
 
-	public static Object fixUpRawItemData(Object nbt, int fromVersion, int toVersion)
+	public static Object fixUpRawItemData(final Object nbt, final int fromVersion, final int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		final DataFixer dataFixer = (DataFixer) ReflectionMethod.GET_DATAFIXER.run(null);
 		final TypeReference itemStackReference = (TypeReference) ClassWrapper.NMS_REFERENCES.getClazz()
@@ -37,7 +37,7 @@ final class DataFixerUtil {
 		return fixed.getValue();
 	}
 
-	public static ReadWriteNBT fixUpItemData(ReadWriteNBT nbt, int fromVersion, int toVersion)
+	public static ReadWriteNBT fixUpItemData(final ReadWriteNBT nbt, final int fromVersion, final int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		return new NBTContainer(fixUpRawItemData(
 				NBTReflectionUtil.getToCompount(((NBTCompound) nbt).getCompound(), ((NBTCompound) nbt)), fromVersion,

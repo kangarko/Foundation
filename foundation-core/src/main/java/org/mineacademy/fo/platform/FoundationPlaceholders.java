@@ -28,7 +28,7 @@ final class FoundationPlaceholders extends SimpleExpansion {
 	private static final FoundationPlaceholders instance = new FoundationPlaceholders();
 
 	@Override
-	protected String onReplace(FoundationPlayer audience, String identifier) {
+	protected String onReplace(final FoundationPlayer audience, final String identifier) {
 		if ("server_version".equals(identifier))
 			return MinecraftVersion.hasVersion() ? MinecraftVersion.getFullVersion() : Platform.getPlatformVersion();
 
