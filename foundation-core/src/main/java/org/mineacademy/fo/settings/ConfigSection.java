@@ -361,18 +361,6 @@ public class ConfigSection {
 		return section.createSection(key);
 	}
 
-	private ConfigSection createSection(String fullPath, Map<?, ?> map) {
-		final ConfigSection section = this.createSection(fullPath);
-
-		for (final Map.Entry<?, ?> entry : map.entrySet())
-			if (entry.getValue() instanceof Map)
-				section.createSection(entry.getKey().toString(), (Map<?, ?>) entry.getValue());
-			else
-				section.store(entry.getKey().toString(), entry.getValue());
-
-		return section;
-	}
-
 	final String getFullPath() {
 		return this.fullPath;
 	}
