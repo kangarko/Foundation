@@ -128,6 +128,6 @@ final class FoundationPlaceholders extends SimpleExpansion {
 
 	@Override
 	public int getPriority() {
-		return 0;
+		return 8;
 	}
 }

@@ -90,7 +90,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 			return Remain.getNmsVersion();
 
 		else
-			return HookManager.getPlaceholderAPIValue(player, identifier);
+			return null;
 	}
 
 	/*
@@ -104,6 +104,6 @@ final class BukkitPlaceholders extends SimpleExpansion {
 
 	@Override
 	public int getPriority() {
-		return 1;
+		return 9;
 	}
 }

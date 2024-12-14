@@ -75,12 +75,11 @@ public abstract class SimpleExpansion {
 
 	/**
 	 * Return the priority of this expansion, the higher the sooner
-	 * it will be called. You can override FoundationPlaceholders if
-	 * you change this to 20 or more.
+	 * it will be called.
 	 *
 	 * @return
 	 */
 	public int getPriority() {
-		return 1;
+		return 0;
 	}
 }
