@@ -430,6 +430,9 @@ public final class Variables {
 						replacedValue = LegacyComponentSerializer.legacySection().serialize(component);
 				}
 
+				else if (rawValue instanceof List)
+					replacedValue = CommonCore.join((List<?>) rawValue);
+
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
