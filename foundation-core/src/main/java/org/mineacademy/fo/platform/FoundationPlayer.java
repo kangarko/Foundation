@@ -2,8 +2,11 @@ package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -14,6 +17,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.SimpleComponent.LastMessageStyleParser;
 import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.BossBarTask.TimedBar;
@@ -31,6 +35,12 @@ import net.kyori.adventure.sound.Sound.Emitter;
 import net.kyori.adventure.sound.SoundStop;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.format.TextDecoration.State;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.title.TitlePart;
@@ -303,7 +313,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param reason
 	 */
 	public final void kick(String reason) {
-		this.kick(SimpleComponent.fromMini(reason));
+		this.kick(SimpleComponent.fromMiniAmpersand(reason));
 	}
 
 	/**
@@ -331,7 +341,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param pages
 	 */
 	public final void openBook(String title, String author, String... pages) {
-		this.openBook(SimpleComponent.fromMini(title), SimpleComponent.fromMini(author), Arrays.stream(pages).map(SimpleComponent::fromMini).collect(Collectors.toList()));
+		this.openBook(SimpleComponent.fromMiniAmpersand(title), SimpleComponent.fromMiniAmpersand(author), Arrays.stream(pages).map(SimpleComponent::fromMiniAmpersand).collect(Collectors.toList()));
 	}
 
 	/*
@@ -395,7 +405,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param message
 	 */
 	public final void sendActionBar(String message) {
-		this.sendActionBar(SimpleComponent.fromMini(message));
+		this.sendActionBar(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -405,6 +415,90 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	public final void sendJson(String json) {
 		this.sendMessage(SimpleComponent.fromAdventureJson(json, !this.hasHexColorSupport()));
+	}
+
+	/**
+	 * Sends a message to the player.
+	 *
+	 * @param component
+	 */
+	@Override
+	public final void sendMessage(@NonNull Component component) {
+		if (!this.hasHexColorSupport())
+			component = fixMultilineHoverText(component);
+
+		this.sendMessage0(component);
+	}
+
+	protected abstract void sendMessage0(@NonNull Component component);
+
+	private static Component fixMultilineHoverText(Component adventure) {
+		if (adventure.hoverEvent() != null) {
+			final HoverEvent<?> hover = adventure.hoverEvent();
+
+			if (hover.action() == HoverEvent.Action.SHOW_TEXT) {
+				final Component oldHover = (Component) hover.value();
+				final String oldMini = MiniMessage.miniMessage().serialize(oldHover);
+
+				if (oldMini.contains("\n")) {
+					final String[] oldLines = oldMini.split("\n");
+					Style lastStyle = null;
+
+					for (int i = 0; i < oldLines.length; i++) {
+						final String line = oldLines[i];
+
+						if (lastStyle != null) {
+
+							// Append decorations
+							for (final Map.Entry<TextDecoration, State> entry : lastStyle.decorations().entrySet())
+								if (entry.getValue() == State.TRUE)
+									oldLines[i] = "<" + entry.getKey().name() + ">" + line;
+
+							// Append color
+							if (lastStyle.color() != null)
+								oldLines[i] = "<" + darkenOneShade(lastStyle.color()).asHexString() + ">" + line;
+						}
+
+						lastStyle = LastMessageStyleParser.parseStyle(line);
+					}
+
+					final String newMiniHover = String.join("\n", oldLines);
+
+					adventure = adventure.hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize(newMiniHover)));
+				}
+			}
+		}
+
+		if (!adventure.children().isEmpty()) {
+			final List<Component> newChildren = new ArrayList<>();
+
+			for (final Component child : adventure.children())
+				newChildren.add(fixMultilineHoverText(child));
+
+			adventure = adventure.children(newChildren);
+		}
+
+		return adventure;
+	}
+
+	private static TextColor darkenOneShade(TextColor color) {
+		final String hex = color.asHexString();
+
+		final int r = Math.max(0, Integer.parseInt(hex.substring(1, 3), 16) - 1);
+		final int g = Integer.parseInt(hex.substring(3, 5), 16);
+		final int b = Integer.parseInt(hex.substring(5, 7), 16);
+
+		return TextColor.color(r, g, b);
+	}
+
+	/**
+	 * Sends a message to the player.
+	 *
+	 * @param component
+	 */
+	@Override
+	public final void sendMessage(ComponentLike component) {
+		this.sendMessage(component.asComponent());
 	}
 
 	/**
@@ -480,30 +574,12 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	/**
-	 * Sends a message to the player.
-	 *
-	 * @param component
-	 */
-	@Override
-	public final void sendMessage(ComponentLike component) {
-		this.sendMessage(component.asComponent());
-	}
-
-	/**
-	 * Sends a message to the player.
-	 *
-	 * @param component
-	 */
-	@Override
-	public abstract void sendMessage(@NonNull Component component);
-
-	/**
 	 * Sends a MiniMessage message to the player. Legacy and mini tags are both supported.
 	 *
 	 * @param message
 	 */
 	public final void sendMiniMessage(String message) {
-		this.sendMessage(SimpleComponent.fromMini(message));
+		this.sendMessage(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -544,7 +620,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param footer
 	 */
 	public final void sendPlayerListHeaderAndFooter(String header, String footer) {
-		this.sendPlayerListHeaderAndFooter(SimpleComponent.fromMini(header), SimpleComponent.fromMini(footer));
+		this.sendPlayerListHeaderAndFooter(SimpleComponent.fromMiniAmpersand(header), SimpleComponent.fromMiniAmpersand(footer));
 	}
 
 	/**
@@ -581,7 +657,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param message
 	 */
 	public final void sendToast(String message) {
-		this.sendToast(SimpleComponent.fromMini(message));
+		this.sendToast(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -593,7 +669,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param style
 	 */
 	public final void sendToast(String message, CompToastStyle style) {
-		this.sendToast(SimpleComponent.fromMini(message), style);
+		this.sendToast(SimpleComponent.fromMiniAmpersand(message), style);
 	}
 
 	/**
@@ -647,7 +723,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @return
 	 */
 	public final BossBar showBossBar(String message, float progress, BossBar.Color color, BossBar.Overlay overlay) {
-		return this.showBossBar(SimpleComponent.fromMini(message), progress, color, overlay);
+		return this.showBossBar(SimpleComponent.fromMiniAmpersand(message), progress, color, overlay);
 	}
 
 	/**
@@ -700,7 +776,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @return the bossbar
 	 */
 	public final BossBar showBossbarTimed(String message, int seconds, float progress, BossBar.Color color, BossBar.Overlay overlay) {
-		return this.showBossbarTimed(SimpleComponent.fromMini(message), seconds, progress, color, overlay);
+		return this.showBossbarTimed(SimpleComponent.fromMiniAmpersand(message), seconds, progress, color, overlay);
 	}
 
 	/**
@@ -728,7 +804,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param subtitle the subtitle, will be colorized
 	 */
 	public final void showTitle(final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
-		this.showTitle(fadeIn, stay, fadeOut, SimpleComponent.fromMini(title), SimpleComponent.fromMini(subtitle));
+		this.showTitle(fadeIn, stay, fadeOut, SimpleComponent.fromMiniAmpersand(title), SimpleComponent.fromMiniAmpersand(subtitle));
 	}
 
 	/**

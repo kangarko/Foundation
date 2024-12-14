@@ -167,16 +167,16 @@ final class BukkitPlayer extends FoundationPlayer {
 			for (final Component component : book.pages()) {
 				final String legacyPage = LegacyComponentSerializer.legacySection().serialize(component);
 
-				pages.add(Lang.componentVars("command-book-page", "page", pageNumber++));
+				pages.add(Lang.component("command-book-page", "page", pageNumber++));
 
 				for (final String line : legacyPage.split("\n"))
-					pages.add(SimpleComponent.fromMini(" &7- &r" + variables.replaceLegacy(line)));
+					pages.add(SimpleComponent.fromMiniAmpersand(" &7- &r" + variables.replaceLegacy(line)));
 
 				pages.add(SimpleComponent.empty());
 			}
 
 			new ChatPaginator()
-					.setFoundationHeader(Lang.legacyVars("command-book-page-header",
+					.setFoundationHeader(Lang.legacy("command-book-page-header",
 							"title", CommonCore.getOrDefault(book.title(), Lang.component("command-book-unnamed")),
 							"author", CommonCore.getOrDefault(book.author(), Lang.component("command-book-unsigned"))))
 					.setPages(pages)
@@ -250,7 +250,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendMessage(Component component) {
+	public void sendMessage0(Component component) {
 
 		// Paper is fastest: ~0.1ms vs ~0.3ms below
 		if (Remain.isCommandSenderAudience()) {
