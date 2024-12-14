@@ -404,7 +404,7 @@ public abstract class ValidCore {
 	 * @param input
 	 * @return
 	 */
-	public static boolean isPrimitiveWrapper(Object input) {
+	public static boolean isPrimitiveWrapper(final Object input) {
 		return input instanceof Integer || input instanceof Boolean || input instanceof Character || input instanceof Byte || input instanceof Short || input instanceof Double || input instanceof Long || input instanceof Float;
 	}
 

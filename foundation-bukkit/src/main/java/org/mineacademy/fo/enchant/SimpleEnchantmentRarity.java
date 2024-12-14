@@ -9,7 +9,7 @@ public enum SimpleEnchantmentRarity {
 
 	private final int weight;
 
-	SimpleEnchantmentRarity(int weight) {
+	SimpleEnchantmentRarity(final int weight) {
 		this.weight = weight;
 	}
 

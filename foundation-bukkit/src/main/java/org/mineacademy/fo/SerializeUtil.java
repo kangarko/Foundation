@@ -31,7 +31,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @param player
 	 * @return
 	 */
-	public static SimpleLocation serializeLocationToSimple(Player player) {
+	public static SimpleLocation serializeLocationToSimple(final Player player) {
 		return serializeLocationToSimple(player.getLocation());
 	}
 
@@ -41,7 +41,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @param location
 	 * @return
 	 */
-	public static SimpleLocation serializeLocationToSimple(Location location) {
+	public static SimpleLocation serializeLocationToSimple(final Location location) {
 		return new SimpleLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
 	}
 
@@ -97,7 +97,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static ItemStack deserializeItem(SimpleResultSet resultSet, String columnLabel) throws SQLException {
+	public static ItemStack deserializeItem(final SimpleResultSet resultSet, final String columnLabel) throws SQLException {
 		final String value = resultSet.getString(columnLabel);
 
 		if (value == null || "".equals(value))
@@ -123,7 +123,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static ItemStack deserializeItemStrict(SimpleResultSet resultSet, String columnLabel) throws SQLException {
+	public static ItemStack deserializeItemStrict(final SimpleResultSet resultSet, final String columnLabel) throws SQLException {
 		final String value = resultSet.getStringStrict(columnLabel);
 
 		try {
@@ -145,7 +145,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static ItemStack[] deserializeItemArray(SimpleResultSet resultSet, String columnLabel) throws SQLException {
+	public static ItemStack[] deserializeItemArray(final SimpleResultSet resultSet, final String columnLabel) throws SQLException {
 		final String value = resultSet.getString(columnLabel);
 
 		if (value == null || "".equals(value))
@@ -164,7 +164,7 @@ public final class SerializeUtil extends SerializeUtilCore {
 	 * @return
 	 * @throws SQLException
 	 */
-	public static ItemStack[] deserializeItemArrayStrict(SimpleResultSet resultSet, String columnLabel) throws SQLException {
+	public static ItemStack[] deserializeItemArrayStrict(final SimpleResultSet resultSet, final String columnLabel) throws SQLException {
 		final String value = resultSet.getString(columnLabel);
 
 		if (value == null || "".equals(value)) {

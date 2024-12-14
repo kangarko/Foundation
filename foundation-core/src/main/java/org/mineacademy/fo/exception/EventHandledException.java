@@ -27,7 +27,7 @@ public final class EventHandledException extends CommandException {
 	 *
 	 * @param cancelled
 	 */
-	public EventHandledException(boolean cancelled) {
+	public EventHandledException(final boolean cancelled) {
 		super();
 
 		this.cancelled = cancelled;
@@ -39,7 +39,7 @@ public final class EventHandledException extends CommandException {
 	 * @param cancelled
 	 * @param message
 	 */
-	public EventHandledException(boolean cancelled, SimpleComponent message) {
+	public EventHandledException(final boolean cancelled, final SimpleComponent message) {
 		super(message);
 
 		this.cancelled = cancelled;

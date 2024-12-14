@@ -1827,7 +1827,7 @@ public enum CompMaterial {
 	@Getter
 	private final Material material;
 
-	CompMaterial(int data, int version, String... legacy) {
+	CompMaterial(final int data, final int version, final String... legacy) {
 		this.data = (byte) data;
 		this.version = (byte) version;
 		this.legacy = legacy;
@@ -1845,11 +1845,11 @@ public enum CompMaterial {
 		this.material = CommonCore.getOrDefault(mat, Material.STONE);
 	}
 
-	CompMaterial(int data, String... legacy) {
+	CompMaterial(final int data, final String... legacy) {
 		this(data, 0, legacy);
 	}
 
-	CompMaterial(int version) {
+	CompMaterial(final int version) {
 		this(0, version);
 	}
 
@@ -1857,7 +1857,7 @@ public enum CompMaterial {
 		this(0, 0);
 	}
 
-	CompMaterial(String... legacy) {
+	CompMaterial(final String... legacy) {
 		this(0, 0, legacy);
 	}
 
@@ -1902,7 +1902,7 @@ public enum CompMaterial {
 	 * @param amount
 	 */
 
-	public ItemStack toItem(int amount) {
+	public ItemStack toItem(final int amount) {
 		final Material material = this.getMaterial();
 
 		if (material == null)
@@ -1984,7 +1984,7 @@ public enum CompMaterial {
 	 * @param block
 	 * @return
 	 */
-	public final boolean equals(Block block) {
+	public final boolean equals(final Block block) {
 		return block.getData() == this.getData() && block.getType() == this.material;
 	}
 
@@ -2041,7 +2041,7 @@ public enum CompMaterial {
 	 * @param item
 	 * @return
 	 */
-	public static boolean isAir(@Nullable ItemStack item) {
+	public static boolean isAir(@Nullable final ItemStack item) {
 		return item == null || isAir(item.getType());
 	}
 
@@ -2349,7 +2349,7 @@ public enum CompMaterial {
 	 * @return an optional that can be empty.
 	 * @since 5.1.0
 	 */
-	private static CompMaterial getIfPresent(String name) {
+	private static CompMaterial getIfPresent(final String name) {
 		return NAMES.get(name);
 	}
 
@@ -2360,7 +2360,7 @@ public enum CompMaterial {
 	 * @see #matchDefinedCompMaterial(String, byte)
 	 * @since 1.0.0
 	 */
-	private static CompMaterial requestOldMaterial(String name, int data) {
+	private static CompMaterial requestOldMaterial(final String name, final int data) {
 
 		for (final CompMaterial material : VALUES)
 			// Not using material.name().equals(name) check is intended.
@@ -2408,7 +2408,7 @@ public enum CompMaterial {
 	 * @see #matchCompMaterial(String)
 	 * @since 3.0.0
 	 */
-	private static CompMaterial matchWithData(String name) {
+	private static CompMaterial matchWithData(final String name) {
 		final int index = name.indexOf(':');
 
 		if (index != -1) {
@@ -2448,7 +2448,7 @@ public enum CompMaterial {
 	 * @see #fromMaterial(Material)
 	 * @since 2.0.0
 	 */
-	public static CompMaterial fromItem(@NonNull ItemStack item) {
+	public static CompMaterial fromItem(@NonNull final ItemStack item) {
 		final String material = ReflectionUtil.getEnumName(item.getType());
 		final byte data = (byte) (Data.ISFLAT || item.getType().getMaxDurability() > 0 ? 0 : item.getDurability());
 
@@ -2472,7 +2472,7 @@ public enum CompMaterial {
 	 * @param material
 	 * @return
 	 */
-	public static CompMaterial fromMaterial(@NonNull Material material) {
+	public static CompMaterial fromMaterial(@NonNull final Material material) {
 
 		try {
 			return CompMaterial.valueOf(material.toString());
@@ -2508,7 +2508,7 @@ public enum CompMaterial {
 	 * @param data
 	 * @return
 	 */
-	public static CompMaterial fromLegacy(String name, int data) {
+	public static CompMaterial fromLegacy(String name, final int data) {
 
 		// try to resolve common pitfalls and emulate the material enum writing style
 		name = name.replace(" ", "_").toUpperCase();
@@ -2552,7 +2552,7 @@ public enum CompMaterial {
 	 * @return true if there's a duplicated material for this material, otherwise false.
 	 * @since 2.0.0
 	 */
-	private static boolean isDuplicated(String name) {
+	private static boolean isDuplicated(final String name) {
 		// Don't use matchCompMaterial() since this method is being called from matchCompMaterial() itself and will cause a StackOverflowError.
 		return DUPLICATED.contains(name);
 	}
@@ -2568,7 +2568,7 @@ public enum CompMaterial {
 	 * @see #fromItem(ItemStack)
 	 * @since 2.0.0
 	 */
-	public static CompMaterial fromId(int id, byte data) {
+	public static CompMaterial fromId(final int id, final byte data) {
 		if (id < 0 || id > MAX_ID || data < 0)
 			return null;
 
@@ -2590,7 +2590,7 @@ public enum CompMaterial {
 	 * @return an enum name.
 	 * @since 2.0.0
 	 */
-	protected static String format(String name) {
+	protected static String format(final String name) {
 		final int len = name.length();
 		final char[] chs = new char[len];
 		int count = 0;
@@ -2629,7 +2629,7 @@ public enum CompMaterial {
 	 * @return true of the version is equal or higher than the current version.
 	 * @since 2.0.0
 	 */
-	private static boolean supports(int version) {
+	private static boolean supports(final int version) {
 		return Data.VERSION >= version;
 	}
 
@@ -2713,7 +2713,7 @@ public enum CompMaterial {
 	 * @return true if one of the given material names is similar to the base material.
 	 * @since 3.1.1
 	 */
-	public boolean isOneOf(Collection<String> materials) {
+	public boolean isOneOf(final Collection<String> materials) {
 		if (materials == null || materials.isEmpty())
 			return false;
 		final String name = this.name();
@@ -2750,7 +2750,7 @@ public enum CompMaterial {
 	 * @see #toItem()
 	 * @since 3.0.0
 	 */
-	public ItemStack setType(ItemStack item) {
+	public ItemStack setType(final ItemStack item) {
 		Objects.requireNonNull(item, "Cannot set material for null ItemStack");
 		final Material material = this.getMaterial();
 		Objects.requireNonNull(material, () -> "Unsupported material: " + this.name());
@@ -2771,7 +2771,7 @@ public enum CompMaterial {
 	 * @return true if it's one of the legacy names, otherwise false.
 	 * @since 2.0.0
 	 */
-	private boolean anyMatchLegacy(String name) {
+	private boolean anyMatchLegacy(final String name) {
 		for (int i = this.legacy.length - 1; i >= 0; i--)
 			if (name.equals(this.legacy[i]))
 				return true;
@@ -2809,7 +2809,7 @@ public enum CompMaterial {
 	 * @return
 	 * @see ItemUtil#isSimilar(ItemStack, ItemStack)
 	 */
-	public boolean isSimilar(ItemStack item) {
+	public boolean isSimilar(final ItemStack item) {
 		return ItemUtil.isSimilar(this.toItem(), item);
 	}
 

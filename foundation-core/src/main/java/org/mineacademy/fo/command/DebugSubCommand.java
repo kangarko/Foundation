@@ -44,7 +44,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param label
 	 */
-	public DebugSubCommand(String label) {
+	public DebugSubCommand(final String label) {
 		super(label);
 
 		this.setProperties();
@@ -55,7 +55,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param group
 	 */
-	public DebugSubCommand(SimpleCommandGroup group) {
+	public DebugSubCommand(final SimpleCommandGroup group) {
 		this(group, "debug");
 	}
 
@@ -65,7 +65,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	 * @param group
 	 * @param label
 	 */
-	public DebugSubCommand(SimpleCommandGroup group, String label) {
+	public DebugSubCommand(final SimpleCommandGroup group, final String label) {
 		super(group, label);
 
 		this.setProperties();
@@ -122,7 +122,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	/*
 	 * Copy the given files into debug/ folder
 	 */
-	private void copyFilesToDebug(List<File> files) {
+	private void copyFilesToDebug(final List<File> files) {
 		for (final File file : files)
 			try {
 				// Get the path in our folder
@@ -160,7 +160,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	/*
 	 * Zips the given folder and removes it afterwards
 	 */
-	private void zipAndRemoveFolder(File folder) {
+	private void zipAndRemoveFolder(final File folder) {
 		try {
 			final String path = folder.getPath();
 
@@ -177,7 +177,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	/*
 	 * Load the list of files available to ZIP
 	 */
-	private List<File> listFilesRecursively(File folder, List<File> files) {
+	private List<File> listFilesRecursively(final File folder, final List<File> files) {
 		for (final File file : folder.listFiles())
 			if (file.isDirectory()) {
 				// Ignore log directory and ignore the debug directory itself
@@ -204,7 +204,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	 *
 	 * @param lines
 	 */
-	public static void addDebugLines(String... lines) {
+	public static void addDebugLines(final String... lines) {
 		for (final String line : lines)
 			debugLines.add(line);
 	}

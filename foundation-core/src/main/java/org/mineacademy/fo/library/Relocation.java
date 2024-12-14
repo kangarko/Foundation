@@ -45,7 +45,7 @@ public class Relocation {
 	 * @param includes         classes and resources to include
 	 * @param excludes         classes and resources to exclude
 	 */
-	public Relocation(String pattern, String relocatedPattern, Collection<String> includes, Collection<String> excludes) {
+	public Relocation(final String pattern, final String relocatedPattern, final Collection<String> includes, final Collection<String> excludes) {
 		this.pattern = Util.replaceWithDots(requireNonNull(pattern, "pattern"));
 		this.relocatedPattern = Util.replaceWithDots(requireNonNull(relocatedPattern, "relocatedPattern"));
 		this.includes = includes != null ? Collections.unmodifiableSet(includes.stream()
@@ -62,7 +62,7 @@ public class Relocation {
 	 * @param pattern          search pattern
 	 * @param relocatedPattern replacement pattern
 	 */
-	public Relocation(String pattern, String relocatedPattern) {
+	public Relocation(final String pattern, final String relocatedPattern) {
 		this(pattern, relocatedPattern, null, null);
 	}
 
@@ -107,7 +107,7 @@ public class Relocation {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(final Object o) {
 		if (this == o)
 			return true;
 		if (o == null || this.getClass() != o.getClass())
@@ -172,7 +172,7 @@ public class Relocation {
 		 * @return this builder
 		 */
 
-		public Builder pattern(String pattern) {
+		public Builder pattern(final String pattern) {
 			this.pattern = requireNonNull(pattern, "pattern");
 			return this;
 		}
@@ -184,7 +184,7 @@ public class Relocation {
 		 * @return this builder
 		 */
 
-		public Builder relocatedPattern(String relocatedPattern) {
+		public Builder relocatedPattern(final String relocatedPattern) {
 			this.relocatedPattern = requireNonNull(relocatedPattern, "relocatedPattern");
 			return this;
 		}
@@ -196,7 +196,7 @@ public class Relocation {
 		 * @return this builder
 		 */
 
-		public Builder include(String include) {
+		public Builder include(final String include) {
 			this.includes.add(requireNonNull(include, "include"));
 			return this;
 		}
@@ -208,7 +208,7 @@ public class Relocation {
 		 * @return this builder
 		 */
 
-		public Builder exclude(String exclude) {
+		public Builder exclude(final String exclude) {
 			this.excludes.add(requireNonNull(exclude, "exclude"));
 			return this;
 		}

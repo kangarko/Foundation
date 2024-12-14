@@ -25,7 +25,7 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 	 *
 	 * @param sublabel
 	 */
-	protected SimpleSubCommandCore(String sublabel) {
+	protected SimpleSubCommandCore(final String sublabel) {
 		this(getMainCommandGroup0(), sublabel);
 	}
 
@@ -47,7 +47,7 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 	 * @param parent
 	 * @param sublabel
 	 */
-	protected SimpleSubCommandCore(SimpleCommandGroup parent, String sublabel) {
+	protected SimpleSubCommandCore(final SimpleCommandGroup parent, final String sublabel) {
 		super(parent.getLabel());
 
 		final String[] split = sublabel.split("(\\||\\/)");
@@ -106,7 +106,7 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 	 * @return
 	 */
 	@Override
-	public final boolean equals(Object obj) {
+	public final boolean equals(final Object obj) {
 		if (obj instanceof SimpleSubCommandCore) {
 			final SimpleSubCommandCore other = (SimpleSubCommandCore) obj;
 

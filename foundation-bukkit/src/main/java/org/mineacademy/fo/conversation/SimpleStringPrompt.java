@@ -38,7 +38,7 @@ public class SimpleStringPrompt extends SimplePrompt {
 	 *
 	 * @param question
 	 */
-	public SimpleStringPrompt(String question) {
+	public SimpleStringPrompt(final String question) {
 		this(question, null);
 	}
 
@@ -47,7 +47,7 @@ public class SimpleStringPrompt extends SimplePrompt {
 	 *
 	 * @param openMenu
 	 */
-	public SimpleStringPrompt(boolean openMenu) {
+	public SimpleStringPrompt(final boolean openMenu) {
 		super(openMenu);
 	}
 
@@ -105,7 +105,7 @@ public class SimpleStringPrompt extends SimplePrompt {
 	 * @param context
 	 * @param input
 	 */
-	protected void onValidatedInput(ConversationContext context, String input) {
+	protected void onValidatedInput(final ConversationContext context, final String input) {
 	}
 
 	/**

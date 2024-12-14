@@ -145,7 +145,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param event
 	 * @param canceledFromInactivity true if user failed to enter input in the period set in {@link #getTimeout()}
 	 */
-	protected void onConversationEnd(final ConversationAbandonedEvent event, boolean canceledFromInactivity) {
+	protected void onConversationEnd(final ConversationAbandonedEvent event, final boolean canceledFromInactivity) {
 		this.onConversationEnd(event);
 	}
 
@@ -258,7 +258,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param message
 	 */
-	protected static final void tell(final Conversable conversable, String message) {
+	protected static final void tell(final Conversable conversable, final String message) {
 		tell(conversable, SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -278,7 +278,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param conversable
 	 * @param message
 	 */
-	protected static final void tell(final Conversable conversable, SimpleComponent message) {
+	protected static final void tell(final Conversable conversable, final SimpleComponent message) {
 		final FoundationPlayer player = Platform.toPlayer(conversable);
 
 		player.sendMessage(Variables.builder(player).replaceComponent(message));
@@ -300,14 +300,14 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 		}
 
 		@Override
-		public void setConversation(Conversation conversation) {
+		public void setConversation(final Conversation conversation) {
 			this.conversation = conversation;
 
 			this.startTimer();
 		}
 
 		@Override
-		public boolean cancelBasedOnInput(ConversationContext context, String input) {
+		public boolean cancelBasedOnInput(final ConversationContext context, final String input) {
 			this.stopTimer();
 			this.startTimer();
 

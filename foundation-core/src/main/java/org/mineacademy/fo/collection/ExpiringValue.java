@@ -21,7 +21,7 @@ final class ExpiringValue<V> {
 	 * @param value the value to store
 	 * @see ExpiringMap#put(Object, Object)
 	 */
-	public ExpiringValue(V value) {
+	public ExpiringValue(final V value) {
 		this(value, UNSET_DURATION, null, null);
 	}
 
@@ -33,7 +33,7 @@ final class ExpiringValue<V> {
 	 * @param expirationPolicy the expiration policy for the value
 	 * @see ExpiringMap#put(Object, Object, ExpirationPolicy)
 	 */
-	public ExpiringValue(V value, ExpirationPolicy expirationPolicy) {
+	public ExpiringValue(final V value, final ExpirationPolicy expirationPolicy) {
 		this(value, UNSET_DURATION, null, expirationPolicy);
 	}
 
@@ -47,7 +47,7 @@ final class ExpiringValue<V> {
 	 * @throws NullPointerException on null timeUnit
 	 * @see ExpiringMap#put(Object, Object, long, TimeUnit)
 	 */
-	public ExpiringValue(V value, long duration, TimeUnit timeUnit) {
+	public ExpiringValue(final V value, final long duration, final TimeUnit timeUnit) {
 		this(value, duration, timeUnit, null);
 		if (timeUnit == null)
 			throw new NullPointerException();
@@ -63,13 +63,13 @@ final class ExpiringValue<V> {
 	 * @throws NullPointerException on null timeUnit
 	 * @see ExpiringMap#put(Object, Object, ExpirationPolicy, long, TimeUnit)
 	 */
-	public ExpiringValue(V value, ExpirationPolicy expirationPolicy, long duration, TimeUnit timeUnit) {
+	public ExpiringValue(final V value, final ExpirationPolicy expirationPolicy, final long duration, final TimeUnit timeUnit) {
 		this(value, duration, timeUnit, expirationPolicy);
 		if (timeUnit == null)
 			throw new NullPointerException();
 	}
 
-	private ExpiringValue(V value, long duration, TimeUnit timeUnit, ExpirationPolicy expirationPolicy) {
+	private ExpiringValue(final V value, final long duration, final TimeUnit timeUnit, final ExpirationPolicy expirationPolicy) {
 		this.value = value;
 		this.expirationPolicy = expirationPolicy;
 		this.duration = duration;
@@ -98,7 +98,7 @@ final class ExpiringValue<V> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(final Object o) {
 		if (this == o)
 			return true;
 		if (o == null || this.getClass() != o.getClass())

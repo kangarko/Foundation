@@ -40,7 +40,7 @@ public final class IsInList<T> implements Iterable<T> {
 	 * @param list
 	 * @param matchAll
 	 */
-	private IsInList(final Collection<T> list, boolean matchAll) {
+	private IsInList(final Collection<T> list, final boolean matchAll) {
 		this.list = new HashSet<>(list);
 		this.matchAll = matchAll;
 	}
@@ -148,7 +148,7 @@ public final class IsInList<T> implements Iterable<T> {
 	 * @param list
 	 * @return
 	 */
-	public static <T> IsInList<T> fromList(Collection<T> list) {
+	public static <T> IsInList<T> fromList(final Collection<T> list) {
 		boolean matchAll = false;
 
 		for (final T t : list)

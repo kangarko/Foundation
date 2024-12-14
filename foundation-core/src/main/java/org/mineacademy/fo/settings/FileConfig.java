@@ -81,7 +81,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param internalPath
 	 */
-	public final void loadAndExtract(String internalPath) {
+	public final void loadAndExtract(final String internalPath) {
 		this.loadAndExtract(internalPath, internalPath);
 	}
 
@@ -95,7 +95,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param from
 	 * @param to
 	 */
-	public final void loadAndExtract(String from, String to) {
+	public final void loadAndExtract(final String from, final String to) {
 		if (from != null) {
 			final List<String> defaultContent = FileUtil.readLinesFromInternalPath(from);
 			ValidCore.checkNotNull(defaultContent, "Inbuilt " + from + " not found! Did you reload?");
@@ -116,7 +116,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param file File to load from.
 	 */
-	public final void loadFromFile(@NonNull File file) {
+	public final void loadFromFile(@NonNull final File file) {
 		this.file = file;
 
 		try {
@@ -143,7 +143,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param internalPath
 	 */
-	public final void loadFromInternal(@NonNull String internalPath) {
+	public final void loadFromInternal(@NonNull final String internalPath) {
 		try {
 			final List<String> content = FileUtil.readLinesFromInternalPath(internalPath);
 			ValidCore.checkNotNull(content, "Inbuilt " + internalPath + " not found! Did you reload?");
@@ -163,7 +163,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param reader
 	 */
-	public final void loadFromReader(Reader reader) {
+	public final void loadFromReader(final Reader reader) {
 		final StringBuilder builder = new StringBuilder();
 
 		try (BufferedReader input = reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader)) {
@@ -275,7 +275,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @param value
 	 */
-	public final void save(String path, Object value) {
+	public final void save(final String path, final Object value) {
 		this.set(path, value);
 		this.save();
 	}
@@ -286,7 +286,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param fromRel from relative path, path prefix is added
 	 * @param toAbs to absolute path, path prefix is not added
 	 */
-	public final void move(String fromRel, String toAbs) {
+	public final void move(final String fromRel, final String toAbs) {
 		final Object oldValue = this.getObject(fromRel);
 
 		this.setAbsolute(toAbs, oldValue);
@@ -305,7 +305,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @param value
 	 */
-	public final void set(String path, Object value) {
+	public final void set(final String path, final Object value) {
 		this.setAbsolute(this.buildPathPrefix(path), value);
 	}
 
@@ -317,7 +317,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @param value
 	 */
-	public final void setAbsolute(String path, Object value) {
+	public final void setAbsolute(final String path, final Object value) {
 		this.store(path, value);
 	}
 
@@ -365,7 +365,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @return
 	 */
-	public final Object getObject(String path) {
+	public final Object getObject(final String path) {
 		return this.get(path, Object.class);
 	}
 
@@ -384,7 +384,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param typeOf
 	 * @return
 	 */
-	public final <T> T get(String path, Class<T> typeOf) {
+	public final <T> T get(String path, final Class<T> typeOf) {
 		path = this.buildPathPrefix(path);
 
 		final Object object = this.retrieve(path);
@@ -424,7 +424,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @return
 	 */
-	public final Boolean getBoolean(String path) {
+	public final Boolean getBoolean(final String path) {
 		return this.getBoolean(path, null);
 	}
 
@@ -443,7 +443,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Boolean getBoolean(String path, Boolean def) {
+	public final Boolean getBoolean(final String path, final Boolean def) {
 		final Boolean val = this.get(path, Boolean.class);
 
 		return val != null ? val : def;
@@ -460,7 +460,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Double getDouble(String path) {
+	public final Double getDouble(final String path) {
 		return this.getDouble(path, null);
 	}
 
@@ -479,7 +479,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Double getDouble(String path, Double def) {
+	public final Double getDouble(final String path, final Double def) {
 		final Double val = this.get(path, Double.class);
 
 		return val != null ? val : def;
@@ -496,7 +496,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Integer getInteger(String path) {
+	public final Integer getInteger(final String path) {
 		return this.getInteger(path, null);
 	}
 
@@ -515,7 +515,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Integer getInteger(String path, Integer def) {
+	public final Integer getInteger(final String path, final Integer def) {
 		final Integer val = this.get(path, Integer.class);
 
 		return val != null ? val : def;
@@ -532,7 +532,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Long getLong(String path) {
+	public final Long getLong(final String path) {
 		return this.getLong(path, null);
 	}
 
@@ -551,7 +551,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final Long getLong(String path, Long def) {
+	public final Long getLong(final String path, final Long def) {
 		final Long val = this.get(path, Long.class);
 
 		return val != null ? val : def;
@@ -570,7 +570,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final String getString(String path) {
+	public final String getString(final String path) {
 		return this.getString(path, null);
 	}
 
@@ -591,7 +591,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @return
 	 */
-	public final String getString(String path, String def) {
+	public final String getString(final String path, final String def) {
 		final Object object = this.getObject(path);
 
 		if (object == null)
@@ -635,7 +635,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param valueType
 	 * @return
 	 */
-	public final <K, V> Tuple<K, V> getTuple(final String key, Class<K> keyType, Class<V> valueType) {
+	public final <K, V> Tuple<K, V> getTuple(final String key, final Class<K> keyType, final Class<V> valueType) {
 		return this.getTuple(key, null, keyType, valueType);
 	}
 
@@ -659,7 +659,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param valueType
 	 * @return
 	 */
-	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, Class<K> keyType, Class<V> valueType) {
+	public final <K, V> Tuple<K, V> getTuple(final String key, final Tuple<K, V> def, final Class<K> keyType, final Class<V> valueType) {
 		final Object object = this.getObject(key);
 
 		return object != null ? Tuple.deserialize(SerializedMap.fromObject(object), keyType, valueType) : def;
@@ -678,7 +678,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @return
 	 */
-	public final CaseNumberFormat getCaseNumberFormat(String path) {
+	public final CaseNumberFormat getCaseNumberFormat(final String path) {
 		return this.getCaseNumberFormat(path, null);
 	}
 
@@ -699,7 +699,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param def
 	 * @return
 	 */
-	public final CaseNumberFormat getCaseNumberFormat(String path, String def) {
+	public final CaseNumberFormat getCaseNumberFormat(final String path, final String def) {
 		final String raw = this.getString(path, def);
 
 		return raw == null ? null : CaseNumberFormat.fromString(raw);
@@ -786,7 +786,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @return
 	 */
-	public final Double getPercentage(String path) {
+	public final Double getPercentage(final String path) {
 		return this.getPercentage(path, null);
 	}
 
@@ -804,7 +804,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param def
 	 * @return
 	 */
-	public final Double getPercentage(String path, Double def) {
+	public final Double getPercentage(final String path, final Double def) {
 		final Object object = this.getObject(path);
 
 		if (object != null) {
@@ -842,7 +842,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param typeOf
 	 * @return
 	 */
-	public final <T> IsInList<T> getIsInList(String path, Class<T> typeOf) {
+	public final <T> IsInList<T> getIsInList(final String path, final Class<T> typeOf) {
 		final List<String> stringList = this.getStringList(path);
 
 		if (stringList.size() == 1 && "*".equals(stringList.get(0)))
@@ -894,7 +894,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @return
 	 */
-	public final List<String> getStringList(String path) {
+	public final List<String> getStringList(final String path) {
 		final List<?> list = this.getList(path);
 
 		if (list == null)
@@ -985,7 +985,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param setDeserializeParameters
 	 * @return
 	 */
-	public final <Key, Value> LinkedHashMap<Key, List<Value>> getMapList(@NonNull String path, final Class<Key> keyType, final Class<Value> setType, Object... setDeserializeParameters) {
+	public final <Key, Value> LinkedHashMap<Key, List<Value>> getMapList(@NonNull final String path, final Class<Key> keyType, final Class<Value> setType, final Object... setDeserializeParameters) {
 		final LinkedHashMap<Key, List<Value>> map = new LinkedHashMap<>();
 		final Object section = this.getObject(path);
 
@@ -1093,7 +1093,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param path
 	 * @return
 	 */
-	public final List<Object> getList(String path) {
+	public final List<Object> getList(final String path) {
 		return this.getList(path, null);
 	}
 
@@ -1112,7 +1112,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param def
 	 * @return
 	 */
-	public final List<Object> getList(final String path, List<Object> def) {
+	public final List<Object> getList(final String path, final List<Object> def) {
 		Object obj = this.getObject(path);
 
 		if (obj == null)
@@ -1171,7 +1171,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @param valueDeserializeParams
 	 * @return
 	 */
-	public final <Key, Value> Map<Key, Value> getMap(@NonNull String path, final Class<Key> keyType, final Class<Value> valueType, Object... valueDeserializeParams) {
+	public final <Key, Value> Map<Key, Value> getMap(@NonNull final String path, final Class<Key> keyType, final Class<Value> valueType, final Object... valueDeserializeParams) {
 		final Map<Key, Value> map = new LinkedHashMap<>();
 		final Object savedKeys = this.getObject(path);
 
@@ -1200,7 +1200,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @return
 	 */
 	public final String getPathPrefix() {
-		return pathPrefix;
+		return this.pathPrefix;
 	}
 
 	/**
@@ -1209,7 +1209,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param pathPrefix
 	 */
-	public final void setPathPrefix(String pathPrefix) {
+	public final void setPathPrefix(final String pathPrefix) {
 		this.pathPrefix = pathPrefix;
 	}
 
@@ -1256,7 +1256,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param defaults
 	 */
-	public final void setDefaults(@NonNull FileConfig defaults) {
+	public final void setDefaults(@NonNull final FileConfig defaults) {
 		this.defaults = defaults;
 	}
 
@@ -1270,7 +1270,7 @@ public abstract class FileConfig extends ConfigSection {
 	 * @return
 	 */
 	public final File getFile() {
-		return file;
+		return this.file;
 	}
 
 	/**
@@ -1278,7 +1278,7 @@ public abstract class FileConfig extends ConfigSection {
 	 *
 	 * @param file
 	 */
-	public final void setFile(File file) {
+	public final void setFile(final File file) {
 		this.file = file;
 	}
 
@@ -1330,7 +1330,7 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj instanceof FileConfig) {
 			final FileConfig other = (FileConfig) obj;
 

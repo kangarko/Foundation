@@ -32,7 +32,7 @@ public abstract class SimpleTrait extends Trait {
 	@Setter(value = AccessLevel.PROTECTED)
 	private int tickThreshold;
 
-	protected SimpleTrait(String traitName) {
+	protected SimpleTrait(final String traitName) {
 		super(traitName);
 	}
 
@@ -40,7 +40,7 @@ public abstract class SimpleTrait extends Trait {
 	 * @see net.citizensnpcs.api.trait.Trait#load(net.citizensnpcs.api.util.DataKey)
 	 */
 	@Override
-	public final void load(DataKey key) {
+	public final void load(final DataKey key) {
 		final SerializedMap map = SerializedMap.fromObject(Language.JSON, key.getString("Data"));
 
 		this.load(map);
@@ -60,7 +60,7 @@ public abstract class SimpleTrait extends Trait {
 	 * @see net.citizensnpcs.api.trait.Trait#save(net.citizensnpcs.api.util.DataKey)
 	 */
 	@Override
-	public final void save(DataKey key) {
+	public final void save(final DataKey key) {
 		final SerializedMap map = new SerializedMap();
 
 		this.save(map);
@@ -81,7 +81,7 @@ public abstract class SimpleTrait extends Trait {
 	 * @param event
 	 */
 	@EventHandler
-	public final void onRightClick(NPCRightClickEvent event) {
+	public final void onRightClick(final NPCRightClickEvent event) {
 		this.handleClickEvent(event, ClickType.RIGHT);
 	}
 
@@ -91,14 +91,14 @@ public abstract class SimpleTrait extends Trait {
 	 * @param event
 	 */
 	@EventHandler
-	public final void onLeftClick(NPCLeftClickEvent event) {
+	public final void onLeftClick(final NPCLeftClickEvent event) {
 		this.handleClickEvent(event, ClickType.LEFT);
 	}
 
 	/*
 	 * A helper method for click events
 	 */
-	private void handleClickEvent(NPCClickEvent event, ClickType clickType) {
+	private void handleClickEvent(final NPCClickEvent event, final ClickType clickType) {
 
 		// Only apply this event for this particular NPC
 		if (!event.getNPC().equals(this.getNPC()))
@@ -126,7 +126,7 @@ public abstract class SimpleTrait extends Trait {
 	 *
 	 * @throws EventHandledException
 	 */
-	public void onClick(Player player, ClickType clickType) throws EventHandledException {
+	public void onClick(final Player player, final ClickType clickType) throws EventHandledException {
 	}
 
 	/**
@@ -135,7 +135,7 @@ public abstract class SimpleTrait extends Trait {
 	 *
 	 * @param messages
 	 */
-	protected final void cancel(String message) {
+	protected final void cancel(final String message) {
 		throw new EventHandledException(true, SimpleComponent.fromMiniAmpersand(message));
 	}
 

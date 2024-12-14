@@ -147,7 +147,7 @@ public final class JavaScriptExecutor {
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, final FoundationPlayer audience) throws FoScriptException {
+	public static Object run(@NonNull final String javascript, final FoundationPlayer audience) throws FoScriptException {
 		return run(javascript, audience, new HashMap<>());
 	}
 
@@ -220,7 +220,7 @@ public final class JavaScriptExecutor {
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull String javascript, Map<String, Object> placeholders) throws FoScriptException {
+	public static Object run(@NonNull final String javascript, Map<String, Object> placeholders) throws FoScriptException {
 		if (engine == null) {
 			CommonCore.warning("Not running JavaScript code because nashorn-core library is missing (see earlier logs for details). Ignoring code: " + javascript);
 

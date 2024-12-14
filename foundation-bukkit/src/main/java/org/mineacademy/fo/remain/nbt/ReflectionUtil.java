@@ -32,14 +32,14 @@ final class ReflectionUtil {
 			throw new NbtApiException("Unable to init the modifiers Field.");
 	}
 
-	public static Field makeNonFinal(Field field) throws IllegalArgumentException, IllegalAccessException {
+	public static Field makeNonFinal(final Field field) throws IllegalArgumentException, IllegalAccessException {
 		final int mods = field.getModifiers();
 		if (Modifier.isFinal(mods))
 			field_modifiers.set(field, mods & ~Modifier.FINAL);
 		return field;
 	}
 
-	public static void setFinal(Object obj, Field field, Object newValue)
+	public static void setFinal(final Object obj, Field field, final Object newValue)
 			throws IllegalArgumentException, IllegalAccessException {
 		field.setAccessible(true);
 		field = makeNonFinal(field);

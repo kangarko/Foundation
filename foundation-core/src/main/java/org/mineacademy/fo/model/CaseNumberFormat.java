@@ -104,7 +104,7 @@ public final class CaseNumberFormat implements ConfigStringSerializable {
 	 * @param line
 	 * @return
 	 */
-	public static CaseNumberFormat fromString(String line) {
+	public static CaseNumberFormat fromString(final String line) {
 		return new CaseNumberFormat(line);
 	}
 }

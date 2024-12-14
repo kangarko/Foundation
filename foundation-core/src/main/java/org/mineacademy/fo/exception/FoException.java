@@ -25,7 +25,7 @@ public class FoException extends RuntimeException {
 	 *
 	 * @param t
 	 */
-	public FoException(Throwable t) {
+	public FoException(final Throwable t) {
 		super(t);
 
 		if (errorSavedAutomatically)
@@ -37,7 +37,7 @@ public class FoException extends RuntimeException {
 	 *
 	 * @param message
 	 */
-	public FoException(String message) {
+	public FoException(final String message) {
 		super(message);
 
 		if (errorSavedAutomatically)
@@ -50,7 +50,7 @@ public class FoException extends RuntimeException {
 	 * @param message
 	 * @param report
 	 */
-	public FoException(String message, boolean report) {
+	public FoException(final String message, final boolean report) {
 		super(message);
 
 		if (errorSavedAutomatically && report)
@@ -63,7 +63,7 @@ public class FoException extends RuntimeException {
 	 * @param message
 	 * @param t
 	 */
-	public FoException(String message, Throwable t) {
+	public FoException(final String message, final Throwable t) {
 		this(t, message);
 	}
 
@@ -73,7 +73,7 @@ public class FoException extends RuntimeException {
 	 * @param message
 	 * @param t
 	 */
-	public FoException(Throwable t, String message) {
+	public FoException(final Throwable t, final String message) {
 		super(message, t);
 
 		if (errorSavedAutomatically)
@@ -87,7 +87,7 @@ public class FoException extends RuntimeException {
 	 * @param t
 	 * @param report
 	 */
-	public FoException(Throwable t, String message, boolean report) {
+	public FoException(final Throwable t, final String message, final boolean report) {
 		super(message, t);
 
 		if (errorSavedAutomatically && report)

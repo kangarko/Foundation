@@ -30,7 +30,7 @@ final class DefaultMethodInvoker {
 	 * @param args
 	 * @return
 	 */
-	public static Object invokeDefault(Class<?> srcInt, Object target, Method method, Object[] args) {
+	public static Object invokeDefault(final Class<?> srcInt, final Object target, final Method method, final Object[] args) {
 		if (invokeDefaultMethod != null)
 			try {
 				return invokeDefaultMethod.invoke(null, target, method, args);

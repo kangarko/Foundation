@@ -47,7 +47,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 *
 	 * @param label
 	 */
-	public RegionSubCommand(String label) {
+	public RegionSubCommand(final String label) {
 		super(label);
 
 		this.setProperties();
@@ -58,7 +58,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 *
 	 * @param group
 	 */
-	public RegionSubCommand(SimpleCommandGroup group) {
+	public RegionSubCommand(final SimpleCommandGroup group) {
 		this(group, "region|rg");
 	}
 
@@ -68,7 +68,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 * @param group
 	 * @param label
 	 */
-	public RegionSubCommand(SimpleCommandGroup group, String label) {
+	public RegionSubCommand(final SimpleCommandGroup group, final String label) {
 		super(group, label);
 
 		this.setProperties();
@@ -261,7 +261,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 *
 	 * We automatically will invoke /{label} region list before showing this message.
 	 */
-	private void tellAndList(DiskRegion region, final String message) {
+	private void tellAndList(final DiskRegion region, final String message) {
 
 		if (this.isPlayer() && this.args.length > 2 && "-list".equals(this.args[2]))
 			this.getPlayer().performCommand(this.getLabel() + " " + this.getSublabel() + " " + Param.LIST);
@@ -386,7 +386,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 		 * @param command
 		 * @return
 		 */
-		public static SimpleComponent generateUsages(RegionSubCommand command) {
+		public static SimpleComponent generateUsages(final RegionSubCommand command) {
 			final Param[] params = Param.values();
 			final List<SimpleComponent> usages = new ArrayList<>();
 

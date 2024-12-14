@@ -14,7 +14,7 @@ final class FoundationLibraries {
 	 *
 	 * @param plugin
 	 */
-	public static void load(FoundationPlugin plugin) {
+	public static void load(final FoundationPlugin plugin) {
 		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.8");
 
 		if (CommonCore.getJavaVersion() >= 15 && !ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))

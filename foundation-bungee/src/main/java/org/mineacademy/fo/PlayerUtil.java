@@ -25,7 +25,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static boolean isVanished(ProxiedPlayer player) {
+	public static boolean isVanished(final ProxiedPlayer player) {
 		return isVanished.apply(player);
 	}
 }

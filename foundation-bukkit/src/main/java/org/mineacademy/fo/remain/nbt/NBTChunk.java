@@ -8,7 +8,7 @@ public class NBTChunk {
 
 	private final Chunk chunk;
 
-	public NBTChunk(Chunk chunk) {
+	public NBTChunk(final Chunk chunk) {
 		this.chunk = chunk;
 	}
 

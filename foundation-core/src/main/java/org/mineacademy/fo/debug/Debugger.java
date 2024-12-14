@@ -43,7 +43,7 @@ public final class Debugger {
 	 * @param section
 	 * @param messages
 	 */
-	public static void debug(String section, String... messages) {
+	public static void debug(final String section, final String... messages) {
 		if (isDebugged(section))
 			for (final String message : messages)
 				log("[" + section + "] " + message);
@@ -57,7 +57,7 @@ public final class Debugger {
 	 * @param section
 	 * @return
 	 */
-	public static boolean isDebugged(String section) {
+	public static boolean isDebugged(final String section) {
 		return SimpleSettings.DEBUG_SECTIONS.contains(section) || SimpleSettings.DEBUG_SECTIONS.contains("*");
 	}
 
@@ -89,7 +89,7 @@ public final class Debugger {
 	 *
 	 * <p>File is written to the server's base directory.</p>
 	 */
-	public static void saveError(Throwable throwable, String... messages) {
+	public static void saveError(Throwable throwable, final String... messages) {
 
 		// Log to sentry if enabled.
 		final FoundationPlugin plugin = Platform.getPlugin();
@@ -227,7 +227,7 @@ public final class Debugger {
 	/*
 	 * Fill the list with the messages.
 	 */
-	private static void fill(List<String> list, String... messages) {
+	private static void fill(final List<String> list, final String... messages) {
 		list.addAll(Arrays.asList(messages));
 	}
 
@@ -240,7 +240,7 @@ public final class Debugger {
 	 *
 	 * @param values
 	 */
-	public static void printValues(Object[] values) {
+	public static void printValues(final Object[] values) {
 		if (values != null) {
 			log(CommonCore.chatLine());
 			log("Enumeration of " + values.length + "x" + values.getClass().getSimpleName().toLowerCase().replace("[]", ""));
@@ -256,7 +256,7 @@ public final class Debugger {
 	 *
 	 * @param debugLogMessage purely informative message to wrap the thrown stack trace around
 	 */
-	public static void printStackTrace(String debugLogMessage) {
+	public static void printStackTrace(final String debugLogMessage) {
 		final StackTraceElement[] trace = new Exception().getStackTrace();
 
 		log("!----------------------------------------------------------------------------------------------------------!");
@@ -296,7 +296,7 @@ public final class Debugger {
 	 * <p>The method first logs the message of the original throwable, then prints the stack trace elements.
 	 * If there are additional causes, it logs and prints them as well.</p>
 	 */
-	public static void printStackTrace(@NonNull Throwable throwable) {
+	public static void printStackTrace(@NonNull final Throwable throwable) {
 
 		if (throwable instanceof HandledException)
 			return;
@@ -333,7 +333,7 @@ public final class Debugger {
 	/*
 	 * Print the stack trace elements of the throwable.
 	 */
-	private static void printStackTraceElements(Throwable throwable) {
+	private static void printStackTraceElements(final Throwable throwable) {
 		for (final StackTraceElement element : throwable.getStackTrace()) {
 			final String line = element.toString();
 
@@ -349,7 +349,7 @@ public final class Debugger {
 	 * @param stackTraceLine
 	 * @return
 	 */
-	private static boolean canPrint(String stackTraceLine) {
+	private static boolean canPrint(final String stackTraceLine) {
 		return !stackTraceLine.startsWith("net.minecraft") &&
 				!stackTraceLine.startsWith("org.bukkit.") &&
 				!stackTraceLine.startsWith("org.github.paperspigot.") &&
@@ -368,7 +368,7 @@ public final class Debugger {
 	/*
 	 * Helper method to log the message.
 	 */
-	private static void log(String message) {
+	private static void log(final String message) {
 		System.out.println(message);
 	}
 }

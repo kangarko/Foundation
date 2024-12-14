@@ -84,7 +84,7 @@ public abstract class DiscordListener implements Listener {
 	/*
 	 * Called automatically when someone writes a message in a Discord channel
 	 */
-	private final void handleMessageReceived(DiscordGuildMessagePreProcessEvent event) {
+	private final void handleMessageReceived(final DiscordGuildMessagePreProcessEvent event) {
 		this.message = event.getMessage();
 
 		this.onMessageReceived(event);
@@ -93,7 +93,7 @@ public abstract class DiscordListener implements Listener {
 	/*
 	 * Called automatically when someone writes a message in a Discord channel
 	 */
-	private final void handleMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
+	private final void handleMessageReceivedLate(final DiscordGuildMessagePostProcessEvent event) {
 		this.message = event.getMessage();
 
 		this.onMessageReceivedLate(event);
@@ -112,7 +112,7 @@ public abstract class DiscordListener implements Listener {
 	 *
 	 * @param event
 	 */
-	protected void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
+	protected void onMessageReceivedLate(final DiscordGuildMessagePostProcessEvent event) {
 
 	}
 
@@ -123,7 +123,7 @@ public abstract class DiscordListener implements Listener {
 	 *
 	 * @param event
 	 */
-	protected void onMessageSent(GameChatMessagePreProcessEvent event) {
+	protected void onMessageSent(final GameChatMessagePreProcessEvent event) {
 	}
 
 	/**
@@ -134,7 +134,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param offlineMessage
 	 * @return
 	 */
-	protected final Player findPlayer(String playerName, String offlineMessage) {
+	protected final Player findPlayer(final String playerName, final String offlineMessage) {
 		final Player player = Bukkit.getPlayer(playerName);
 
 		this.checkBoolean(player != null, offlineMessage);
@@ -147,7 +147,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelId
 	 * @return
 	 */
-	protected final TextChannel findChannel(long channelId) {
+	protected final TextChannel findChannel(final long channelId) {
 		final JDA jda = DiscordUtil.getJda();
 
 		// JDA can be null when server is starting or connecting
@@ -163,7 +163,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelId
 	 * @return
 	 */
-	protected final List<TextChannel> findChannels(String channelName) {
+	protected final List<TextChannel> findChannels(final String channelName) {
 		final JDA jda = DiscordUtil.getJda();
 
 		// JDA can be null when server is starting or connecting
@@ -199,7 +199,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param warningMessage
 	 * @throws RemovedMessageException
 	 */
-	protected final void checkBoolean(boolean value, String warningMessage) throws RemovedMessageException {
+	protected final void checkBoolean(final boolean value, final String warningMessage) throws RemovedMessageException {
 		if (!value)
 			this.removeAndWarn(warningMessage);
 	}
@@ -210,7 +210,7 @@ public abstract class DiscordListener implements Listener {
 	 *
 	 * @param warningMessage
 	 */
-	protected final void removeAndWarn(String warningMessage) {
+	protected final void removeAndWarn(final String warningMessage) {
 		this.removeAndWarn(this.message, warningMessage);
 	}
 
@@ -221,7 +221,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param message
 	 * @param warningMessage
 	 */
-	protected final void removeAndWarn(Message message, String warningMessage) {
+	protected final void removeAndWarn(final Message message, final String warningMessage) {
 		this.removeAndWarn(message, warningMessage, 2);
 	}
 
@@ -233,7 +233,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param warningMessage
 	 * @param warningDurationSeconds how long to show the warning message
 	 */
-	protected final void removeAndWarn(Message message, String warningMessage, int warningDurationSeconds) {
+	protected final void removeAndWarn(final Message message, final String warningMessage, final int warningDurationSeconds) {
 		message.delete().complete();
 
 		final MessageChannel channel = message.getChannel();
@@ -249,7 +249,7 @@ public abstract class DiscordListener implements Listener {
 	 *
 	 * @param message
 	 */
-	protected final void returnHandled(String message) {
+	protected final void returnHandled(final String message) {
 		final Message notifyMessage = this.message.getChannel().sendMessage(message).complete();
 		notifyMessage.delete().completeAfter(2, TimeUnit.SECONDS);
 
@@ -264,7 +264,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param roleName
 	 * @return
 	 */
-	public final boolean hasRole(Member member, String roleName) {
+	public final boolean hasRole(final Member member, final String roleName) {
 		for (final Role role : member.getRoles())
 			if (role.getName().equalsIgnoreCase(roleName))
 				return true;
@@ -281,7 +281,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelName
 	 * @param message
 	 */
-	public final void sendMessage(Player sender, String channelName, String message) {
+	public final void sendMessage(final Player sender, final String channelName, final String message) {
 		HookManager.sendDiscordMessage(sender, channelName, message);
 	}
 
@@ -291,7 +291,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelName
 	 * @param message
 	 */
-	public final void sendMessage(String channelName, String message) {
+	public final void sendMessage(final String channelName, final String message) {
 		HookManager.sendDiscordMessage(channelName, message);
 	}
 
@@ -301,7 +301,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelId
 	 * @param message
 	 */
-	public final void sendMessage(long channelId, String message) {
+	public final void sendMessage(final long channelId, final String message) {
 		HookManager.sendDiscordMessage(channelId, message);
 	}
 
@@ -312,7 +312,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelName
 	 * @param message
 	 */
-	public final void sendWebhookMessage(@Nullable CommandSender sender, String channelName, String message) {
+	public final void sendWebhookMessage(@Nullable final CommandSender sender, final String channelName, final String message) {
 		final List<TextChannel> channels = this.findChannels(channelName);
 		final TextChannel channel = channels.isEmpty() ? null : channels.get(0);
 
@@ -341,7 +341,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channel
 	 * @param message
 	 */
-	public final void flashMessage(TextChannel channel, SimpleComponent message) {
+	public final void flashMessage(final TextChannel channel, final SimpleComponent message) {
 		final String finalMessage = message.toPlain(null);
 
 		Platform.runTaskAsync(() -> {
@@ -367,7 +367,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channel
 	 * @param messageId
 	 */
-	public final void deleteMessageById(TextChannel channel, long messageId) {
+	public final void deleteMessageById(final TextChannel channel, final long messageId) {
 		Platform.runTaskAsync(() -> {
 
 			// Try updating the message ID in case it has been edited
@@ -396,7 +396,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param messageId
 	 * @param format
 	 */
-	public final void editMessageById(TextChannel channel, long messageId, String format) {
+	public final void editMessageById(final TextChannel channel, final long messageId, final String format) {
 		Platform.runTaskAsync(() -> {
 			try {
 				final Message message = channel.retrieveMessageById(messageId).complete();
@@ -428,7 +428,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param author
 	 * @return
 	 */
-	protected final String findPlayerName(Member member, User author) {
+	protected final String findPlayerName(final Member member, final User author) {
 		final String discordName = CommonCore.getOrDefaultStrict(member.getNickname(), author.getName());
 		final UUID linkedId = DiscordSRV.getPlugin().getAccountLinkManager().getUuid(author.getId());
 
@@ -453,7 +453,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param discordSender
 	 * @param reason
 	 */
-	public final void kickMember(DiscordSender discordSender, String reason) {
+	public final void kickMember(final DiscordSender discordSender, final String reason) {
 		Platform.runTaskAsync(() -> {
 			try {
 				final Member member = DiscordUtil.getMemberById(discordSender.getUser().getId());
@@ -515,7 +515,7 @@ public abstract class DiscordListener implements Listener {
 		 * @param event
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
-		public void onMessageReceived(DiscordGuildMessagePreProcessEvent event) {
+		public void onMessageReceived(final DiscordGuildMessagePreProcessEvent event) {
 			synchronized (BukkitPlugin.getInstance()) {
 				for (final DiscordListener listener : registeredListeners)
 					try {
@@ -540,7 +540,7 @@ public abstract class DiscordListener implements Listener {
 		 * @param event
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
-		public void onMessageReceivedLate(DiscordGuildMessagePostProcessEvent event) {
+		public void onMessageReceivedLate(final DiscordGuildMessagePostProcessEvent event) {
 			synchronized (BukkitPlugin.getInstance()) {
 				for (final DiscordListener listener : registeredListeners)
 					try {
@@ -566,7 +566,7 @@ public abstract class DiscordListener implements Listener {
 		 * @param event
 		 */
 		@Subscribe(priority = ListenerPriority.HIGH)
-		public void onMessageSend(GameChatMessagePreProcessEvent event) {
+		public void onMessageSend(final GameChatMessagePreProcessEvent event) {
 			synchronized (BukkitPlugin.getInstance()) {
 				for (final DiscordListener listener : registeredListeners)
 					try {

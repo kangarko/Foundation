@@ -70,7 +70,7 @@ public final class ChatPaginator {
 	 * @param title
 	 * @return
 	 */
-	public ChatPaginator setFoundationHeader(String title) {
+	public ChatPaginator setFoundationHeader(final String title) {
 		return this.setHeader("&8&m" + ChatUtil.center("&r " + title + " &8&m", Lang.legacy("command-header-center-letter").charAt(0), Integer.parseInt(Lang.legacy("command-header-center-padding"))));
 	}
 
@@ -80,7 +80,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setHeader(SimpleComponent... components) {
+	public ChatPaginator setHeader(final SimpleComponent... components) {
 		Collections.addAll(this.header, components);
 
 		return this;
@@ -92,7 +92,7 @@ public final class ChatPaginator {
 	 * @param messages
 	 * @return
 	 */
-	public ChatPaginator setHeader(String... messages) {
+	public ChatPaginator setHeader(final String... messages) {
 		for (final String message : messages)
 			this.header.add(SimpleComponent.fromMiniAmpersand(message));
 
@@ -105,7 +105,7 @@ public final class ChatPaginator {
 	 * @param messages
 	 * @return
 	 */
-	public ChatPaginator setPages(String... messages) {
+	public ChatPaginator setPages(final String... messages) {
 		final List<SimpleComponent> pages = new ArrayList<>();
 
 		for (final String message : messages)
@@ -120,7 +120,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setPages(SimpleComponent... components) {
+	public ChatPaginator setPages(final SimpleComponent... components) {
 		this.pages.clear();
 		this.pages.putAll(CommonCore.fillPages(this.linesPerPage, Arrays.asList(components)));
 
@@ -133,7 +133,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setPages(List<SimpleComponent> components) {
+	public ChatPaginator setPages(final List<SimpleComponent> components) {
 		this.pages.clear();
 		this.pages.putAll(CommonCore.fillPages(this.linesPerPage, components));
 
@@ -146,7 +146,7 @@ public final class ChatPaginator {
 	 * @param messages
 	 * @return
 	 */
-	public ChatPaginator setFooter(String... messages) {
+	public ChatPaginator setFooter(final String... messages) {
 		for (final String message : messages)
 			this.footer.add(SimpleComponent.fromMiniAmpersand(message));
 
@@ -159,7 +159,7 @@ public final class ChatPaginator {
 	 * @param components
 	 * @return
 	 */
-	public ChatPaginator setFooter(SimpleComponent... components) {
+	public ChatPaginator setFooter(final SimpleComponent... components) {
 		Collections.addAll(this.footer, components);
 
 		return this;
@@ -170,7 +170,7 @@ public final class ChatPaginator {
 	 *
 	 * @param audience
 	 */
-	public void send(FoundationPlayer audience) {
+	public void send(final FoundationPlayer audience) {
 		this.send(audience, 1);
 	}
 
@@ -180,7 +180,7 @@ public final class ChatPaginator {
 	 * @param audience
 	 * @param page
 	 */
-	public void send(FoundationPlayer audience, int page) {
+	public void send(final FoundationPlayer audience, final int page) {
 		if (audience.isPlayer()) {
 			audience.setTempMetadata(Platform.getPlugin().getName() + "_Pages", this);
 			audience.dispatchCommand("/#flp " + page);

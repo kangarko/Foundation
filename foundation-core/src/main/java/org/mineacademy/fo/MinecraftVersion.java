@@ -51,7 +51,7 @@ public final class MinecraftVersion {
 		 *
 		 * @param version
 		 */
-		V(int version) {
+		V(final int version) {
 			this.minorVersionNumber = version;
 		}
 
@@ -64,7 +64,7 @@ public final class MinecraftVersion {
 		 * @throws RuntimeException if number not found
 		 */
 		@Deprecated
-		public static V parse(int number) {
+		public static V parse(final int number) {
 			for (final V v : values())
 				if (v.minorVersionNumber == number)
 					return v;
@@ -87,7 +87,7 @@ public final class MinecraftVersion {
 	 * @param version
 	 * @return
 	 */
-	public static boolean equals(V version) {
+	public static boolean equals(final V version) {
 		return compareWith(version) == 0;
 	}
 
@@ -97,7 +97,7 @@ public final class MinecraftVersion {
 	 * @param version
 	 * @return
 	 */
-	public static boolean olderThan(V version) {
+	public static boolean olderThan(final V version) {
 		return compareWith(version) < 0;
 	}
 
@@ -107,7 +107,7 @@ public final class MinecraftVersion {
 	 * @param version
 	 * @return
 	 */
-	public static boolean newerThan(V version) {
+	public static boolean newerThan(final V version) {
 		return compareWith(version) > 0;
 	}
 
@@ -117,14 +117,14 @@ public final class MinecraftVersion {
 	 * @param version
 	 * @return
 	 */
-	public static boolean atLeast(V version) {
+	public static boolean atLeast(final V version) {
 		return equals(version) || newerThan(version);
 	}
 
 	/*
 	 * Compares two versions by the number
 	 */
-	private static int compareWith(V version) {
+	private static int compareWith(final V version) {
 		try {
 			return getCurrent().minorVersionNumber - version.minorVersionNumber;
 
@@ -187,7 +187,7 @@ public final class MinecraftVersion {
 	 * @param subversion
 	 */
 	@Deprecated
-	public static void setVersion(V current, int subversion) {
+	public static void setVersion(final V current, final int subversion) {
 		if (MinecraftVersion.current != null)
 			throw new FoException("Version already set to " + MinecraftVersion.current + " (avoid using plugin managers to reload this plugin as they are known to cause issues)", false);
 

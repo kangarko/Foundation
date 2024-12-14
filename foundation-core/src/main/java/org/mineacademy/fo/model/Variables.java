@@ -99,7 +99,7 @@ public final class Variables {
 	 * @param audience
 	 * @return
 	 */
-	public Variables audience(@Nullable Object audience) {
+	public Variables audience(@Nullable final Object audience) {
 		this.audience = audience == null ? null : Platform.toPlayer(audience);
 
 		return this;
@@ -111,7 +111,7 @@ public final class Variables {
 	 * @param placeholders
 	 * @return
 	 */
-	public Variables placeholders(@NonNull Map<String, Object> placeholders) {
+	public Variables placeholders(@NonNull final Map<String, Object> placeholders) {
 		this.placeholders.putAll(placeholders);
 
 		return this;
@@ -136,7 +136,7 @@ public final class Variables {
 	 * @param placeholders
 	 * @return
 	 */
-	public Variables placeholderArray(@NonNull Object... placeholders) {
+	public Variables placeholderArray(@NonNull final Object... placeholders) {
 		final Map<String, Object> map = CommonCore.newHashMap(placeholders);
 
 		for (final Map.Entry<String, Object> entry : map.entrySet()) {
@@ -158,7 +158,7 @@ public final class Variables {
 	 * @param value
 	 * @return
 	 */
-	public Variables placeholder(@NonNull String key, @NonNull Object value) {
+	public Variables placeholder(@NonNull final String key, @NonNull final Object value) {
 		this.placeholders.put(key, value);
 
 		return this;
@@ -170,7 +170,7 @@ public final class Variables {
 	 * @param toLegacyMode
 	 * @return
 	 */
-	public Variables toLegacyMode(@NonNull ToLegacyMode toLegacyMode) {
+	public Variables toLegacyMode(@NonNull final ToLegacyMode toLegacyMode) {
 		this.toLegacyMode = toLegacyMode;
 
 		return this;
@@ -184,7 +184,7 @@ public final class Variables {
 	 * @param list
 	 * @return
 	 */
-	public List<String> replaceLegacyList(@NonNull List<String> list) {
+	public List<String> replaceLegacyList(@NonNull final List<String> list) {
 		final List<String> replaced = new ArrayList<>(list.size());
 
 		for (int i = 0; i < list.size(); i++)
@@ -201,7 +201,7 @@ public final class Variables {
 	 * @param array
 	 * @return
 	 */
-	public String[] replaceLegacyArray(@NonNull String[] array) {
+	public String[] replaceLegacyArray(@NonNull final String[] array) {
 		final String[] replaced = new String[array.length];
 
 		for (int i = 0; i < array.length; i++)
@@ -226,7 +226,7 @@ public final class Variables {
 	 * @param message
 	 * @return
 	 */
-	public String replaceLegacy(@NonNull String message) {
+	public String replaceLegacy(@NonNull final String message) {
 		final Matcher matcher = BRACKET_VARIABLE_PATTERN.matcher(message);
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
@@ -280,7 +280,7 @@ public final class Variables {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent replaceComponent(@NonNull SimpleComponent component) {
+	public SimpleComponent replaceComponent(@NonNull final SimpleComponent component) {
 		return component.replaceMatch(BRACKET_VARIABLE_PATTERN, (result, input) -> {
 			final String variable = result.group(1);
 			final SimpleComponent value = this.replaceVariable(variable);
@@ -495,7 +495,7 @@ public final class Variables {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent replaceMessageVariables(SimpleComponent component) {
+	public SimpleComponent replaceMessageVariables(final SimpleComponent component) {
 		return component.replaceMatch(Variables.MESSAGE_VARIABLE_PATTERN, (match, input) -> {
 			final String key = match.group(1);
 			final Variable variable = Variable.findVariableByKey(key, Variable.Type.MESSAGE);
@@ -513,7 +513,7 @@ public final class Variables {
 	 *
 	 * @param expansion
 	 */
-	public static void addExpansion(SimpleExpansion expansion) {
+	public static void addExpansion(final SimpleExpansion expansion) {
 		expansions.add(expansion);
 
 		expansions.sort((first, second) -> Integer.compare(second.getPriority(), first.getPriority()));
@@ -543,7 +543,7 @@ public final class Variables {
 	 * @param audience
 	 * @return
 	 */
-	public static Variables builder(@Nullable FoundationPlayer audience) {
+	public static Variables builder(@Nullable final FoundationPlayer audience) {
 		return new Variables().audience(audience);
 	}
 

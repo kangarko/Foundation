@@ -26,7 +26,7 @@ final class SystemClassLoaderHelper extends ClassLoaderHelper {
 	 * @param classLoader the class loader to manage
 	 * @param libraryManager the library manager used to download dependencies
 	 */
-	public SystemClassLoaderHelper(ClassLoader classLoader, LibraryManager libraryManager) {
+	public SystemClassLoaderHelper(final ClassLoader classLoader, final LibraryManager libraryManager) {
 		super(classLoader);
 		requireNonNull(libraryManager, "libraryManager");
 
@@ -45,7 +45,7 @@ final class SystemClassLoaderHelper extends ClassLoaderHelper {
 	}
 
 	@Override
-	public void addToClasspath(URL url) {
+	public void addToClasspath(final URL url) {
 		try {
 			if (this.appendInstrumentation != null)
 				this.appendInstrumentation.appendToSystemClassLoaderSearch(new JarFile(url.toURI().getPath()));

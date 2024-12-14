@@ -397,7 +397,7 @@ public final class CompMetadata {
 			data.set(namespacedKey, PersistentDataType.STRING, value);
 	}
 
-	private static Object getOrCacheKey(String key) {
+	private static Object getOrCacheKey(final String key) {
 		return namespacedCache.computeIfAbsent(key, k -> new NamespacedKey(BukkitPlugin.getInstance(), key));
 	}
 

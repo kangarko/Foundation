@@ -66,7 +66,7 @@ public enum CompItemFlag {
 	 *
 	 * @param item
 	 */
-	public final void applyTo(ItemStack item) {
+	public final void applyTo(final ItemStack item) {
 		try {
 			final ItemMeta meta = item.getItemMeta();
 			final ItemFlag bukkitFlag = ReflectionUtil.lookupEnum(ItemFlag.class, this.toString());
@@ -86,7 +86,7 @@ public enum CompItemFlag {
 	 * @param item
 	 * @return true if the item has this flag
 	 */
-	public final boolean has(ItemStack item) {
+	public final boolean has(final ItemStack item) {
 		try {
 			if (!item.hasItemMeta())
 				return false;

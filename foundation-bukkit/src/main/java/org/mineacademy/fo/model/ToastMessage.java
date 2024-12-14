@@ -35,7 +35,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 *
 	 * @param player
 	 */
-	public void displayTo(Player player) {
+	public void displayTo(final Player player) {
 		Remain.sendToast(player, CompChatColor.translateColorCodes(this.message), this.icon, this.style);
 	}
 
@@ -45,7 +45,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param player
 	 * @param variableReplacer
 	 */
-	public void displayTo(Player player, Function<String, String> variableReplacer) {
+	public void displayTo(final Player player, final Function<String, String> variableReplacer) {
 		Remain.sendToast(player, variableReplacer.apply(this.message), this.icon, this.style);
 	}
 
@@ -71,7 +71,7 @@ public final class ToastMessage implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static ToastMessage deserialize(SerializedMap map) {
+	public static ToastMessage deserialize(final SerializedMap map) {
 		final CompMaterial icon = CompMaterial.fromString(map.getString("icon"));
 		final CompToastStyle style = CompToastStyle.valueOf(map.getString("style"));
 		final String message = map.getString("message");

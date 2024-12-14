@@ -61,7 +61,7 @@ public class BStatsVelocity {
 
 	private MetricsBase metricsBase;
 
-	public BStatsVelocity(Object plugin, ProxyServer server, Logger logger, Path dataDirectory, int serviceId) {
+	public BStatsVelocity(final Object plugin, final ProxyServer server, final Logger logger, final Path dataDirectory, final int serviceId) {
 		this.pluginContainer = server
 				.getPluginManager()
 				.fromInstance(plugin)
@@ -115,12 +115,12 @@ public class BStatsVelocity {
 	 *
 	 * @param chart The chart to add.
 	 */
-	public void addCustomChart(CustomChart chart) {
+	public void addCustomChart(final CustomChart chart) {
 		if (this.metricsBase != null)
 			this.metricsBase.addCustomChart(chart);
 	}
 
-	private void appendPlatformData(JsonObjectBuilder builder) {
+	private void appendPlatformData(final JsonObjectBuilder builder) {
 		builder.appendField("playerAmount", this.server.getPlayerCount());
 		builder.appendField("managedServers", this.server.getAllServers().size());
 		builder.appendField("onlineMode", this.server.getConfiguration().isOnlineMode() ? 1 : 0);
@@ -134,7 +134,7 @@ public class BStatsVelocity {
 		builder.appendField("coreCount", Runtime.getRuntime().availableProcessors());
 	}
 
-	private void appendServiceData(JsonObjectBuilder builder) {
+	private void appendServiceData(final JsonObjectBuilder builder) {
 		builder.appendField(
 				"pluginVersion", this.pluginContainer.getDescription().getVersion().orElse("unknown"));
 	}
@@ -199,20 +199,20 @@ public class BStatsVelocity {
 		 * @param skipRelocateCheck Whether or not the relocate check should be skipped.
 		 */
 		public MetricsBase(
-				String platform,
-				String serverUuid,
-				int serviceId,
-				boolean enabled,
-				Consumer<JsonObjectBuilder> appendPlatformDataConsumer,
-				Consumer<JsonObjectBuilder> appendServiceDataConsumer,
-				Consumer<Runnable> submitTaskConsumer,
-				Supplier<Boolean> checkServiceEnabledSupplier,
-				BiConsumer<String, Throwable> errorLogger,
-				Consumer<String> infoLogger,
-				boolean logErrors,
-				boolean logSentData,
-				boolean logResponseStatusText,
-				boolean skipRelocateCheck) {
+				final String platform,
+				final String serverUuid,
+				final int serviceId,
+				final boolean enabled,
+				final Consumer<JsonObjectBuilder> appendPlatformDataConsumer,
+				final Consumer<JsonObjectBuilder> appendServiceDataConsumer,
+				final Consumer<Runnable> submitTaskConsumer,
+				final Supplier<Boolean> checkServiceEnabledSupplier,
+				final BiConsumer<String, Throwable> errorLogger,
+				final Consumer<String> infoLogger,
+				final boolean logErrors,
+				final boolean logSentData,
+				final boolean logResponseStatusText,
+				final boolean skipRelocateCheck) {
 			final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
 					1,
 					task -> {
@@ -247,7 +247,7 @@ public class BStatsVelocity {
 				this.startSubmitting();
 		}
 
-		public void addCustomChart(CustomChart chart) {
+		public void addCustomChart(final CustomChart chart) {
 			this.customCharts.add(chart);
 		}
 
@@ -310,7 +310,7 @@ public class BStatsVelocity {
 					});
 		}
 
-		private void sendData(JsonObjectBuilder.JsonObject data) throws Exception {
+		private void sendData(final JsonObjectBuilder.JsonObject data) throws Exception {
 			if (this.logSentData)
 				this.infoLogger.accept("Sent bStats metrics data: " + data.toString());
 			final String url = String.format(REPORT_URL, this.platform);
@@ -382,7 +382,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public AdvancedBarChart(String chartId, Callable<Map<String, int[]>> callable) {
+		public AdvancedBarChart(final String chartId, final Callable<Map<String, int[]>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -419,7 +419,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public SimplePie(String chartId, Callable<String> callable) {
+		public SimplePie(final String chartId, final Callable<String> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -444,7 +444,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public DrilldownPie(String chartId, Callable<Map<String, Map<String, Integer>>> callable) {
+		public DrilldownPie(final String chartId, final Callable<Map<String, Map<String, Integer>>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -486,7 +486,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public SingleLineChart(String chartId, Callable<Integer> callable) {
+		public SingleLineChart(final String chartId, final Callable<Integer> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -511,7 +511,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public MultiLineChart(String chartId, Callable<Map<String, Integer>> callable) {
+		public MultiLineChart(final String chartId, final Callable<Map<String, Integer>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -548,7 +548,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public AdvancedPie(String chartId, Callable<Map<String, Integer>> callable) {
+		public AdvancedPie(final String chartId, final Callable<Map<String, Integer>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -579,14 +579,14 @@ public class BStatsVelocity {
 
 		private final String chartId;
 
-		protected CustomChart(String chartId) {
+		protected CustomChart(final String chartId) {
 			if (chartId == null)
 				throw new IllegalArgumentException("chartId must not be null");
 			this.chartId = chartId;
 		}
 
 		public JsonObjectBuilder.JsonObject getRequestJsonObject(
-				BiConsumer<String, Throwable> errorLogger, boolean logErrors) {
+				final BiConsumer<String, Throwable> errorLogger, final boolean logErrors) {
 			final JsonObjectBuilder builder = new JsonObjectBuilder();
 			builder.appendField("chartId", this.chartId);
 			try {
@@ -616,7 +616,7 @@ public class BStatsVelocity {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public SimpleBarChart(String chartId, Callable<Map<String, Integer>> callable) {
+		public SimpleBarChart(final String chartId, final Callable<Map<String, Integer>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -656,7 +656,7 @@ public class BStatsVelocity {
 		 * @param key The key of the field.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendNull(String key) {
+		public JsonObjectBuilder appendNull(final String key) {
 			this.appendFieldUnescaped(key, "null");
 			return this;
 		}
@@ -668,7 +668,7 @@ public class BStatsVelocity {
 		 * @param value The value of the field.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, String value) {
+		public JsonObjectBuilder appendField(final String key, final String value) {
 			if (value == null)
 				throw new IllegalArgumentException("JSON value must not be null");
 			this.appendFieldUnescaped(key, "\"" + escape(value) + "\"");
@@ -682,7 +682,7 @@ public class BStatsVelocity {
 		 * @param value The value of the field.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, int value) {
+		public JsonObjectBuilder appendField(final String key, final int value) {
 			this.appendFieldUnescaped(key, String.valueOf(value));
 			return this;
 		}
@@ -694,7 +694,7 @@ public class BStatsVelocity {
 		 * @param object The object.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, JsonObject object) {
+		public JsonObjectBuilder appendField(final String key, final JsonObject object) {
 			if (object == null)
 				throw new IllegalArgumentException("JSON object must not be null");
 			this.appendFieldUnescaped(key, object.toString());
@@ -708,7 +708,7 @@ public class BStatsVelocity {
 		 * @param values The string array.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, String[] values) {
+		public JsonObjectBuilder appendField(final String key, final String[] values) {
 			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
 			final String escapedValues = Arrays.stream(values)
@@ -725,7 +725,7 @@ public class BStatsVelocity {
 		 * @param values The integer array.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, int[] values) {
+		public JsonObjectBuilder appendField(final String key, final int[] values) {
 			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
 			final String escapedValues = Arrays.stream(values).mapToObj(String::valueOf).collect(Collectors.joining(","));
@@ -740,7 +740,7 @@ public class BStatsVelocity {
 		 * @param values The integer array.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, JsonObject[] values) {
+		public JsonObjectBuilder appendField(final String key, final JsonObject[] values) {
 			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
 			final String escapedValues = Arrays.stream(values).map(JsonObject::toString).collect(Collectors.joining(","));
@@ -754,7 +754,7 @@ public class BStatsVelocity {
 		 * @param key The key of the field.
 		 * @param escapedValue The escaped value of the field.
 		 */
-		private void appendFieldUnescaped(String key, String escapedValue) {
+		private void appendFieldUnescaped(final String key, final String escapedValue) {
 			if (this.builder == null)
 				throw new IllegalStateException("JSON has already been built");
 			if (key == null)
@@ -787,7 +787,7 @@ public class BStatsVelocity {
 		 * @param value The value to escape.
 		 * @return The escaped value.
 		 */
-		private static String escape(String value) {
+		private static String escape(final String value) {
 			final StringBuilder builder = new StringBuilder();
 			for (int i = 0; i < value.length(); i++) {
 				final char c = value.charAt(i);
@@ -816,7 +816,7 @@ public class BStatsVelocity {
 
 			private final String value;
 
-			private JsonObject(String value) {
+			private JsonObject(final String value) {
 				this.value = value;
 			}
 
@@ -850,7 +850,7 @@ public class BStatsVelocity {
 
 		private boolean didExistBefore = true;
 
-		public MetricsConfig(File file, boolean defaultEnabled) throws IOException {
+		public MetricsConfig(final File file, final boolean defaultEnabled) throws IOException {
 			this.file = file;
 			this.defaultEnabled = defaultEnabled;
 			this.setupConfig();
@@ -939,7 +939,7 @@ public class BStatsVelocity {
 		 * @param lines The lines of the file.
 		 * @return The value of the setting.
 		 */
-		private Optional<String> getConfigValue(String key, List<String> lines) {
+		private Optional<String> getConfigValue(final String key, final List<String> lines) {
 			return lines.stream()
 					.filter(line -> line.startsWith(key + "="))
 					.map(line -> line.replaceFirst(Pattern.quote(key + "="), ""))
@@ -952,7 +952,7 @@ public class BStatsVelocity {
 		 * @param file The file to read.
 		 * @return The lines of the given file.
 		 */
-		private List<String> readFile(File file) throws IOException {
+		private List<String> readFile(final File file) throws IOException {
 			if (!file.exists())
 				return null;
 			try (FileReader fileReader = new FileReader(file);
@@ -967,7 +967,7 @@ public class BStatsVelocity {
 		 * @param file The file to write to.
 		 * @param lines The lines to write.
 		 */
-		private void writeFile(File file, List<String> lines) throws IOException {
+		private void writeFile(final File file, final List<String> lines) throws IOException {
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
 				file.createNewFile();

@@ -10,7 +10,7 @@ final class PathUtil {
 	private static final Pattern pattern = Pattern.compile("[^\\\\](\\.)");
 	private static final Pattern indexPattern = Pattern.compile(".*\\[(-?[0-9]+)\\]");
 
-	public static List<PathSegment> splitPath(String path) {
+	public static List<PathSegment> splitPath(final String path) {
 		final List<PathSegment> list = new ArrayList<>();
 		final Matcher matcher = pattern.matcher(path);
 		int startIndex = 0;
@@ -27,7 +27,7 @@ final class PathUtil {
 		private final String path;
 		private final Integer index;
 
-		private PathSegment(String path) {
+		private PathSegment(final String path) {
 			final Matcher matcher = indexPattern.matcher(path);
 			if (matcher.find()) {
 				this.path = path.substring(0, path.indexOf("["));

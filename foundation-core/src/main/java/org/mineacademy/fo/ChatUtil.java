@@ -180,7 +180,7 @@ public final class ChatUtil {
 	 * @param text
 	 * @return
 	 */
-	public static String getLastWord(String text) {
+	public static String getLastWord(final String text) {
 		final int lastSpace = text.lastIndexOf(' ');
 
 		return lastSpace == -1 ? text : text.substring(lastSpace + 1);
@@ -256,7 +256,7 @@ public final class ChatUtil {
 	 * @param color
 	 * @return
 	 */
-	public static String capitalizeFully(@NonNull CompChatColor color) {
+	public static String capitalizeFully(@NonNull final CompChatColor color) {
 		return capitalizeFully(color.getName());
 	}
 
@@ -266,7 +266,7 @@ public final class ChatUtil {
 	 * @param enumeration
 	 * @return
 	 */
-	public static String capitalizeFully(@NonNull Enum<?> enumeration) {
+	public static String capitalizeFully(@NonNull final Enum<?> enumeration) {
 		return capitalizeFully(enumeration.toString());
 	}
 
@@ -282,7 +282,7 @@ public final class ChatUtil {
 	 * @param name the string to be fully capitalized
 	 * @return the fully capitalized string
 	 */
-	public static String capitalizeFully(@NonNull String name) {
+	public static String capitalizeFully(@NonNull final String name) {
 		return capitalize(name.toLowerCase().replace("_", " "));
 	}
 
@@ -306,7 +306,7 @@ public final class ChatUtil {
 	 * @param message  the String to capitalize, may be null
 	 * @return capitalized String, <code>null</code> if null String input
 	 */
-	public static String capitalize(String message) {
+	public static String capitalize(final String message) {
 		if (message != null && message.length() != 0) {
 			final int strLen = message.length();
 			final StringBuffer buffer = new StringBuffer(strLen);
@@ -342,7 +342,7 @@ public final class ChatUtil {
 	 * @param message
 	 * @return
 	 */
-	public static String quoteReplacement(String message) {
+	public static String quoteReplacement(final String message) {
 		final StringBuilder builder = new StringBuilder();
 
 		for (int index = 0; index < message.length(); index++) {
@@ -364,7 +364,7 @@ public final class ChatUtil {
 	 * @param message
 	 * @return
 	 */
-	public static String removeEmoji(String message) {
+	public static String removeEmoji(final String message) {
 		if (message == null)
 			return "";
 
@@ -529,7 +529,7 @@ public final class ChatUtil {
 	 * @param toColor the color, such as #FF1122 or &c or red
 	 * @return
 	 */
-	public static String generateGradient(String message, String fromColor, String toColor) {
+	public static String generateGradient(final String message, final String fromColor, final String toColor) {
 		return generateGradient(message, CompChatColor.fromString(fromColor), CompChatColor.fromString(toColor));
 	}
 
@@ -544,7 +544,7 @@ public final class ChatUtil {
 	 * @param toColor
 	 * @return
 	 */
-	public static String generateGradient(String message, CompChatColor fromColor, CompChatColor toColor) {
+	public static String generateGradient(final String message, final CompChatColor fromColor, final CompChatColor toColor) {
 		return generateGradient(message, fromColor.getColor(), toColor.getColor());
 	}
 
@@ -565,7 +565,7 @@ public final class ChatUtil {
 	 * @param toColor the ending color of the gradient
 	 * @return a string with color codes representing the gradient effect
 	 */
-	public static String generateGradient(String message, Color fromColor, Color toColor) {
+	public static String generateGradient(final String message, final Color fromColor, final Color toColor) {
 		final char[] letters = message.toCharArray();
 		String gradient = "";
 

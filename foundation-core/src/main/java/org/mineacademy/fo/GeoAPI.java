@@ -35,7 +35,7 @@ public final class GeoAPI {
 	 * @param ip
 	 * @return
 	 */
-	public static GeoResponse getCountry(InetSocketAddress ip) {
+	public static GeoResponse getCountry(final InetSocketAddress ip) {
 		GeoResponse response = new GeoResponse("", "", "", "");
 
 		if (ip == null)
@@ -78,7 +78,7 @@ public final class GeoAPI {
 	/*
 	 * Get the JSON element from the page
 	 */
-	private static String getJson(String page, String element) {
+	private static String getJson(final String page, final String element) {
 		return page.contains("\"" + element + "\":\"") ? page.split("\"" + element + "\":\"")[1].split("\",")[0] : "";
 	}
 

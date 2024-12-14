@@ -24,7 +24,7 @@ public class NBTFile extends NBTCompound implements NBTFileHandle {
 	 * @deprecated Use NBT.getFileHandle(file)
 	 */
 	@Deprecated
-	public NBTFile(File file) throws IOException {
+	public NBTFile(final File file) throws IOException {
 		super(null, null);
 		if (file == null)
 			throw new NullPointerException("File can't be null!");
@@ -66,7 +66,7 @@ public class NBTFile extends NBTCompound implements NBTFileHandle {
 	}
 
 	@Override
-	protected void setCompound(Object compound) {
+	protected void setCompound(final Object compound) {
 		this.nbt = compound;
 	}
 
@@ -81,7 +81,7 @@ public class NBTFile extends NBTCompound implements NBTFileHandle {
 	 * @deprecated Use NBT.readFile(file)
 	 */
 	@Deprecated
-	public static NBTCompound readFrom(File file) throws IOException {
+	public static NBTCompound readFrom(final File file) throws IOException {
 		if (!file.exists())
 			return new NBTContainer();
 		return new NBTContainer(NBTReflectionUtil.readNBT(Files.newInputStream(file.toPath())));
@@ -98,7 +98,7 @@ public class NBTFile extends NBTCompound implements NBTFileHandle {
 	 * @deprecated Use NBT.writeFile(file, nbt)
 	 */
 	@Deprecated
-	public static void saveTo(File file, NBTCompound nbt) throws IOException {
+	public static void saveTo(final File file, final NBTCompound nbt) throws IOException {
 		if (!file.exists()) {
 			file.getParentFile().mkdirs();
 			if (!file.createNewFile())

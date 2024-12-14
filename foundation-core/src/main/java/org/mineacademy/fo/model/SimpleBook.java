@@ -71,7 +71,7 @@ public final class SimpleBook implements ConfigSerializable {
 	/*
 	 * Create a new empty book
 	 */
-	public SimpleBook(String title, String author, List<String> pages, boolean signed, long lastModified, String fileName, UUID uniqueId) {
+	public SimpleBook(final String title, final String author, final List<String> pages, final boolean signed, final long lastModified, final String fileName, final UUID uniqueId) {
 		this.title = title;
 		this.author = author;
 		this.pages = pages;
@@ -86,7 +86,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 *
 	 * @param audience
 	 */
-	public void open(FoundationPlayer audience) {
+	public void open(final FoundationPlayer audience) {
 		audience.openBook(this.title, this.author, CommonCore.toArray(Variables.builder(audience).replaceLegacyList(this.pages)));
 	}
 
@@ -96,7 +96,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @param fileName
 	 * @throws IOException
 	 */
-	public void save(String fileName) throws IOException {
+	public void save(final String fileName) throws IOException {
 		final File target = FileUtil.getFile("books/" + fileName + ".yml");
 		final boolean exists = target.exists();
 
@@ -139,7 +139,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @param map
 	 * @return
 	 */
-	public static SimpleBook deserialize(SerializedMap map) {
+	public static SimpleBook deserialize(final SerializedMap map) {
 		ValidCore.checkBoolean(!map.isEmpty(), "Cannot deserialize empty map to book!");
 
 		final String title = map.getString("Title");
@@ -191,7 +191,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @param newAuthor
 	 * @return
 	 */
-	public static SimpleBook clone(SimpleBook book, String newAuthor) {
+	public static SimpleBook clone(final SimpleBook book, final String newAuthor) {
 		return new SimpleBook(book.getTitle(), newAuthor, book.getPages(), book.isSigned(), book.getLastModified(), book.getFileName(), book.getUniqueId());
 	}
 
@@ -201,7 +201,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @param book
 	 * @return
 	 */
-	public static SimpleBook fromAdventure(net.kyori.adventure.inventory.Book book) {
+	public static SimpleBook fromAdventure(final net.kyori.adventure.inventory.Book book) {
 		final String title = SimpleComponent.fromAdventure(book.title()).toLegacy(null);
 		final String author = SimpleComponent.fromAdventure(book.author()).toLegacy(null);
 		final List<String> pages = new ArrayList<>();
@@ -218,7 +218,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @param fileName
 	 * @return
 	 */
-	public static SimpleBook fromFile(String fileName) {
+	public static SimpleBook fromFile(final String fileName) {
 		final File file = FileUtil.getFile("books/" + fileName + (fileName.endsWith(".yml") ? "" : ".yml"));
 
 		if (!file.exists())

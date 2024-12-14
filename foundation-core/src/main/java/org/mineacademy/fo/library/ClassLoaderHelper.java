@@ -104,7 +104,7 @@ abstract class ClassLoaderHelper {
 	 *
 	 * @param classLoader the class loader to manage
 	 */
-	public ClassLoaderHelper(ClassLoader classLoader) {
+	public ClassLoaderHelper(final ClassLoader classLoader) {
 		this.classLoader = requireNonNull(classLoader, "classLoader");
 	}
 
@@ -120,7 +120,7 @@ abstract class ClassLoaderHelper {
 	 *
 	 * @param path the path to add
 	 */
-	public void addToClasspath(Path path) {
+	public void addToClasspath(final Path path) {
 		try {
 			this.addToClasspath(requireNonNull(path, "path").toUri().toURL());
 		} catch (final MalformedURLException e) {
@@ -138,7 +138,7 @@ abstract class ClassLoaderHelper {
 	 * @param methodHandleConsumer a {@link Consumer} which might get called with a {@link MethodHandle} to the method
 	 * @param instrumentationConsumer a {@link Consumer} which might get called with an {@link Instrumentation} instance
 	 */
-	protected void setMethodAccessible(LibraryManager libraryManager, Method method, String methodSignature, Consumer<MethodHandle> methodHandleConsumer, Consumer<Instrumentation> instrumentationConsumer) {
+	protected void setMethodAccessible(final LibraryManager libraryManager, final Method method, final String methodSignature, final Consumer<MethodHandle> methodHandleConsumer, final Consumer<Instrumentation> instrumentationConsumer) {
 		if (Modifier.isPublic(method.getModifiers()))
 			return; // Already public
 
@@ -211,7 +211,7 @@ abstract class ClassLoaderHelper {
 		throw new RuntimeException("Cannot set accessible " + methodSignature);
 	}
 
-	private void handleInaccessibleObjectException(Exception exception, String methodSignature) {
+	private void handleInaccessibleObjectException(final Exception exception, final String methodSignature) {
 		// InaccessibleObjectException has been added in Java 9
 		if (!exception.getClass().getName().equals("java.lang.reflect.InaccessibleObjectException"))
 			throw new RuntimeException("Cannot set accessible " + methodSignature, exception);
@@ -223,7 +223,7 @@ abstract class ClassLoaderHelper {
 	 * @param toOpen The class
 	 * @throws Exception if an error occurs
 	 */
-	protected static void openModule(Class<?> toOpen) throws Exception {
+	protected static void openModule(final Class<?> toOpen) throws Exception {
 		//
 		// Snippet originally from lucko (Luck) <luck@lucko.me>, who used it in his own class loader
 		//
@@ -251,7 +251,7 @@ abstract class ClassLoaderHelper {
 	 * @param method the method to get the handle for
 	 * @return the method handle
 	 */
-	protected MethodHandle getPrivilegedMethodHandle(Method method) {
+	protected MethodHandle getPrivilegedMethodHandle(final Method method) {
 		// The Unsafe class is used to get a privileged MethodHandles.Lookup instance.
 
 		// Looking for MethodHandles.Lookup#IMPL_LOOKUP private static field
@@ -279,7 +279,7 @@ abstract class ClassLoaderHelper {
 	 * @return an {@link Instrumentation} instance
 	 * @throws Exception if an error occurs
 	 */
-	protected Instrumentation initInstrumentation(LibraryManager libraryManager) throws Exception {
+	protected Instrumentation initInstrumentation(final LibraryManager libraryManager) throws Exception {
 		final Instrumentation instr = cachedInstrumentation;
 		if (instr != null)
 			return instr;

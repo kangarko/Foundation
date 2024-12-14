@@ -11,12 +11,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class NBTFloatList extends NBTList<Float> {
 
-	protected NBTFloatList(NBTCompound owner, String name, NBTType type, Object list) {
+	protected NBTFloatList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	protected Object asTag(Float object) {
+	protected Object asTag(final Float object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGFLOAT.getClazz().getDeclaredConstructor(float.class);
 			con.setAccessible(true);
@@ -28,7 +28,7 @@ public class NBTFloatList extends NBTList<Float> {
 	}
 
 	@Override
-	public Float get(int index) {
+	public Float get(final int index) {
 		try {
 			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Float.valueOf(obj.toString());

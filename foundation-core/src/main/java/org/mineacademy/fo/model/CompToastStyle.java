@@ -24,7 +24,7 @@ public enum CompToastStyle {
 	 * @param key
 	 * @return
 	 */
-	public static CompToastStyle fromKey(String key) {
+	public static CompToastStyle fromKey(final String key) {
 		for (final CompToastStyle style : values())
 			if (style.key.equalsIgnoreCase(key))
 				return style;

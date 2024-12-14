@@ -217,7 +217,7 @@ public final class CompEntityType {
 	/*
 	 * Find the entity type by the given id and bukkit field names.
 	 */
-	private static EntityType find(int id, CompMaterial spawnEggMaterial, @NonNull String... bukkitFieldNames) {
+	private static EntityType find(final int id, final CompMaterial spawnEggMaterial, @NonNull final String... bukkitFieldNames) {
 		EntityType type = null;
 		boolean enabledByFeature = false;
 
@@ -326,7 +326,7 @@ public final class CompEntityType {
 	 * @param name
 	 * @return
 	 */
-	public static EntityType fromName(@NonNull String name) {
+	public static EntityType fromName(@NonNull final String name) {
 		EntityType type = BY_NAME.get(name.toUpperCase());
 
 		if (type == null)
@@ -342,7 +342,7 @@ public final class CompEntityType {
 	 * @param material
 	 * @return
 	 */
-	public static EntityType fromSpawnEggMaterial(CompMaterial material) {
+	public static EntityType fromSpawnEggMaterial(final CompMaterial material) {
 		return SPAWN_EGG_TO_ENTITY.get(material);
 	}
 
@@ -353,7 +353,7 @@ public final class CompEntityType {
 	 * @param type
 	 * @return
 	 */
-	public static CompMaterial getSpawnEgg(EntityType type) {
+	public static CompMaterial getSpawnEgg(final EntityType type) {
 		return ENTITY_TO_SPAWN_EGG.get(type);
 	}
 
@@ -363,7 +363,7 @@ public final class CompEntityType {
 	 * @param type
 	 * @return
 	 */
-	public static Integer getId(EntityType type) {
+	public static Integer getId(final EntityType type) {
 		return ID_TO_ENTITY.get(type);
 	}
 
@@ -374,7 +374,7 @@ public final class CompEntityType {
 	 * @param id
 	 * @return
 	 */
-	public static EntityType fromId(int id) {
+	public static EntityType fromId(final int id) {
 		ValidCore.checkBoolean(id != -1, "Cannot get entity type from id -1");
 
 		return BY_ID.get(id);

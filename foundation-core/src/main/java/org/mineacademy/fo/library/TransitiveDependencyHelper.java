@@ -62,7 +62,7 @@ final class TransitiveDependencyHelper {
 	 * @param libraryManager the library manager used to download dependencies
 	 * @param saveDirectory  the directory where all transitive dependencies would be saved
 	 */
-	public TransitiveDependencyHelper(LibraryManager libraryManager, Path saveDirectory) {
+	public TransitiveDependencyHelper(final LibraryManager libraryManager, final Path saveDirectory) {
 		requireNonNull(libraryManager, "libraryManager");
 		this.libraryManager = libraryManager;
 
@@ -119,7 +119,7 @@ final class TransitiveDependencyHelper {
 	 * @throws RuntimeException If there's any exception during the reflection-based operations.
 	 */
 
-	public Collection<Library> findTransitiveLibraries(Library library) {
+	public Collection<Library> findTransitiveLibraries(final Library library) {
 		final List<Library> transitiveLibraries = new ArrayList<>();
 		final Set<ExcludedDependency> excludedDependencies = new HashSet<>(library.getExcludedTransitiveDependencies());
 

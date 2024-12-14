@@ -73,7 +73,7 @@ public final class MathUtil {
 	 * @param value
 	 * @return
 	 */
-	public static int atLeast(int minimum, int value) {
+	public static int atLeast(final int minimum, final int value) {
 		return value < minimum ? minimum : value;
 	}
 
@@ -83,7 +83,7 @@ public final class MathUtil {
 	 * @param numbers
 	 * @return
 	 */
-	public static int max(int... numbers) {
+	public static int max(final int... numbers) {
 		return Arrays.stream(numbers).max().getAsInt();
 	}
 

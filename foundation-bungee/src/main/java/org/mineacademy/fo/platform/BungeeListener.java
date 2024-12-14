@@ -30,7 +30,7 @@ public final class BungeeListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler
-	public void onPluginMessage(PluginMessageEvent event) {
+	public void onPluginMessage(final PluginMessageEvent event) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final Connection sender = event.getSender();
 			final byte[] data = event.getData();

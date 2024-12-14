@@ -168,7 +168,7 @@ public abstract class CommonCore {
 	 * @param audience
 	 * @param messages
 	 */
-	public static void tellBoxed(FoundationPlayer audience, String... messages) {
+	public static void tellBoxed(final FoundationPlayer audience, final String... messages) {
 		tellBoxed(audience, CommonCore.convertArray(messages, SimpleComponent::fromMiniAmpersand));
 	}
 
@@ -189,7 +189,7 @@ public abstract class CommonCore {
 	 * @param audience
 	 * @param messages
 	 */
-	public static void tellBoxed(FoundationPlayer audience, SimpleComponent... messages) {
+	public static void tellBoxed(final FoundationPlayer audience, final SimpleComponent... messages) {
 		final int length = messages.length;
 
 		Platform.runTask(2, () -> {
@@ -218,7 +218,7 @@ public abstract class CommonCore {
 	 * @param audience
 	 * @param messages
 	 */
-	public static final void tell(@NonNull FoundationPlayer audience, String... messages) {
+	public static final void tell(@NonNull final FoundationPlayer audience, final String... messages) {
 		for (final String message : messages)
 			audience.sendMessage(SimpleComponent.fromMiniAmpersand(message));
 	}
@@ -360,7 +360,7 @@ public abstract class CommonCore {
 	 *
 	 * @param message
 	 */
-	public static final void warning(String message) {
+	public static final void warning(final String message) {
 		log("&cWarning: &7" + message);
 	}
 
@@ -410,7 +410,7 @@ public abstract class CommonCore {
 	 * @param throwable
 	 * @param messages
 	 */
-	public static final void error(@NonNull Throwable throwable, String... messages) {
+	public static final void error(@NonNull Throwable throwable, final String... messages) {
 		if (throwable instanceof HandledException)
 			return;
 
@@ -438,7 +438,7 @@ public abstract class CommonCore {
 	 * @param throwable
 	 * @param messages
 	 */
-	public static final void throwError(Throwable throwable, final String... messages) {
+	public static final void throwError(final Throwable throwable, final String... messages) {
 		if (throwable instanceof FoException)
 			throw (FoException) throwable;
 
@@ -492,7 +492,7 @@ public abstract class CommonCore {
 	 * @param json
 	 * @return
 	 */
-	public static List<String> convertJsonToList(@NonNull String json) {
+	public static List<String> convertJsonToList(@NonNull final String json) {
 		if (json.isEmpty() || json.equals("[]"))
 			return new ArrayList<>();
 
@@ -508,7 +508,7 @@ public abstract class CommonCore {
 	 * @param list
 	 * @return
 	 */
-	public static String convertListToJson(@NonNull Collection<String> list) {
+	public static String convertListToJson(@NonNull final Collection<String> list) {
 		return GSON.toJson(list);
 	}
 
@@ -565,7 +565,7 @@ public abstract class CommonCore {
 	 * @param nTimes
 	 * @return
 	 */
-	public static final String duplicate(String text, int nTimes) {
+	public static final String duplicate(final String text, final int nTimes) {
 		if (nTimes <= 0)
 			return "";
 
@@ -584,7 +584,7 @@ public abstract class CommonCore {
 	 * @param maxLength
 	 * @return
 	 */
-	public static final String limit(String text, int maxLength) {
+	public static final String limit(final String text, final int maxLength) {
 		final int length = text.length();
 
 		return maxLength >= length ? text : text.substring(0, maxLength) + "...";
@@ -604,7 +604,7 @@ public abstract class CommonCore {
 	 * @param maxLineLength the maximum allowed length for each line
 	 * @return an array of strings, where each element is a line that fits within the specified length
 	 */
-	public static final String[] split(String input, int maxLineLength) {
+	public static final String[] split(final String input, final int maxLineLength) {
 		final StringTokenizer tok = new StringTokenizer(input, " ");
 		final StringBuilder output = new StringBuilder(input.length());
 		int lineLen = 0;
@@ -659,7 +659,7 @@ public abstract class CommonCore {
 	 * @param object the object to simplify
 	 * @return the simplified string representation of the object
 	 */
-	public static final String simplify(Object object) {
+	public static final String simplify(final Object object) {
 		if (object == null)
 			return "";
 
@@ -713,7 +713,7 @@ public abstract class CommonCore {
 	 *
 	 * @param simplifier
 	 */
-	public static void addSimplifier(Function<Object, String> simplifier) {
+	public static void addSimplifier(final Function<Object, String> simplifier) {
 		simplifiers.add(simplifier);
 	}
 
@@ -738,7 +738,7 @@ public abstract class CommonCore {
 	 * @param items the items to split into pages
 	 * @return a map with page numbers as keys and lists of items as values
 	 */
-	public static final <T> Map<Integer, List<T>> fillPages(int cellSize, Iterable<T> items) {
+	public static final <T> Map<Integer, List<T>> fillPages(final int cellSize, final Iterable<T> items) {
 		final List<T> allItems = new ArrayList<>();
 
 		for (final T iterable : items)
@@ -791,7 +791,7 @@ public abstract class CommonCore {
 	 * @param regex The regular expression string that you want to compile.
 	 * @return A Pattern object that represents the compiled regular expression with applied platform settings.
 	 */
-	public static final Pattern compilePattern(String regex) {
+	public static final Pattern compilePattern(final String regex) {
 		if (Platform.getPlugin().isRegexCaseInsensitive())
 			return Pattern.compile(regex, Platform.getPlugin().isRegexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
 
@@ -826,7 +826,7 @@ public abstract class CommonCore {
 	 * @return A sorted list of strings that start with the specified partial name.
 	 */
 	@SafeVarargs
-	public static <T> List<String> tabComplete(String partialName, T... elements) {
+	public static <T> List<String> tabComplete(String partialName, final T... elements) {
 		final Collection<String> toComplete = new HashSet<>();
 
 		if (elements != null)
@@ -892,7 +892,7 @@ public abstract class CommonCore {
 	 * @param list
 	 * @return
 	 */
-	public static final String joinAnd(Collection<?> list) {
+	public static final String joinAnd(final Collection<?> list) {
 		final List<String> simplified = new ArrayList<>();
 
 		for (final Object element : list)
@@ -907,7 +907,7 @@ public abstract class CommonCore {
 	 * @param array
 	 * @return
 	 */
-	public static final String joinAnd(String... array) {
+	public static final String joinAnd(final String... array) {
 		if (array.length == 0)
 			return "";
 
@@ -1451,7 +1451,7 @@ public abstract class CommonCore {
 	 * @param list
 	 * @return
 	 */
-	public static final <T> T last(List<T> list) {
+	public static final <T> T last(final List<T> list) {
 		return list == null || list.isEmpty() ? null : list.get(list.size() - 1);
 	}
 
@@ -1462,7 +1462,7 @@ public abstract class CommonCore {
 	 * @param array
 	 * @return
 	 */
-	public static final <T> T last(T[] array) {
+	public static final <T> T last(final T[] array) {
 		return array == null || array.length == 0 ? null : array[array.length - 1];
 	}
 
@@ -1566,7 +1566,7 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	@SafeVarargs
-	public static final <K, V> Map<K, V> newHashMap(Object... entries) {
+	public static final <K, V> Map<K, V> newHashMap(final Object... entries) {
 		if (entries == null || entries.length == 0)
 			return new LinkedHashMap<>();
 
@@ -1627,7 +1627,7 @@ public abstract class CommonCore {
 	 * @param map
 	 * @return
 	 */
-	public static final Map<String, Integer> sortByValue(Map<String, Integer> map) {
+	public static final Map<String, Integer> sortByValue(final Map<String, Integer> map) {
 		final List<Map.Entry<String, Integer>> list = new LinkedList<>(map.entrySet());
 		list.sort(Map.Entry.comparingByValue());
 
@@ -1649,7 +1649,7 @@ public abstract class CommonCore {
 	 * @param data
 	 * @return
 	 */
-	public static final byte[] compress(String data) {
+	public static final byte[] compress(final String data) {
 		try {
 			final byte[] input = data.getBytes("UTF-8");
 			final Deflater deflater = new Deflater();
@@ -1682,7 +1682,7 @@ public abstract class CommonCore {
 	 * @param data
 	 * @return
 	 */
-	public static final String decompress(byte[] data) {
+	public static final String decompress(final byte[] data) {
 		final Inflater inflater = new Inflater();
 		inflater.setInput(data);
 
@@ -1766,19 +1766,15 @@ public abstract class CommonCore {
 	 * @param original
 	 * @return
 	 */
-	public static Runnable wrapRunnableInExceptionCatcher(@NonNull Runnable original) {
+	public static Runnable wrapRunnableInExceptionCatcher(@NonNull final Runnable original) {
 		final StackTraceElement[] outerElements = new Throwable().getStackTrace();
 
-		return new Runnable() {
+		return () -> {
+			try {
+				original.run();
 
-			@Override
-			public void run() {
-				try {
-					original.run();
-
-				} catch (final Throwable throwable) {
-					logCombinedError(throwable, outerElements);
-				}
+			} catch (final Throwable throwable) {
+				logCombinedError(throwable, outerElements);
 			}
 		};
 	}
@@ -1789,7 +1785,7 @@ public abstract class CommonCore {
 	 * @param run
 	 * @return
 	 */
-	public static boolean runIfDisabled(@NonNull Runnable run) {
+	public static boolean runIfDisabled(@NonNull final Runnable run) {
 		if (!Platform.getPlugin().isEnabled()) {
 			run.run();
 
@@ -1802,7 +1798,7 @@ public abstract class CommonCore {
 	/*
 	 * Combines the stack traces of two throwables and logs them.
 	 */
-	private static void logCombinedError(Throwable throwable, StackTraceElement[] outerTrace) {
+	private static void logCombinedError(final Throwable throwable, final StackTraceElement[] outerTrace) {
 		final StackTraceElement[] innerTrace = throwable.getStackTrace();
 
 		final StackTraceElement[] combinedTrace = new StackTraceElement[outerTrace.length + innerTrace.length];

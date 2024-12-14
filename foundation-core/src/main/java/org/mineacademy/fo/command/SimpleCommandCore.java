@@ -379,7 +379,7 @@ public abstract class SimpleCommandCore {
 	/*
 	 * Handle the command error, send the error message to the player and log.
 	 */
-	private void handleCommandError(Throwable throwable) {
+	private void handleCommandError(final Throwable throwable) {
 		if (throwable instanceof InvalidCommandArgException)
 			this.tellError(Lang.component("command-invalid-argument",
 					"arguments", ((InvalidCommandArgException) throwable).getInvalidArgument(),
@@ -532,7 +532,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param minimumVersion
 	 */
-	protected final void checkServerVersion(V minimumVersion) {
+	protected final void checkServerVersion(final V minimumVersion) {
 		ValidCore.checkBoolean(MinecraftVersion.hasVersion(), "Cannot check server version on this platform!");
 
 		this.checkBoolean(MinecraftVersion.atLeast(minimumVersion), Lang.component("command-incompatible", "version", minimumVersion.toString()));
@@ -960,7 +960,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param messages
 	 */
-	protected final void tellNoPrefix(String... messages) {
+	protected final void tellNoPrefix(final String... messages) {
 		final SimpleComponent oldLocalPrefix = this.tellPrefix;
 
 		this.tellPrefix = null;
@@ -999,7 +999,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param message
 	 */
-	protected final void tell(String message) {
+	protected final void tell(final String message) {
 		this.tell(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -1009,7 +1009,7 @@ public abstract class SimpleCommandCore {
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
 	 * @param components
 	 */
-	protected final void tell(SimpleComponent... components) {
+	protected final void tell(final SimpleComponent... components) {
 		for (SimpleComponent component : components) {
 			component = this.replacePlaceholders(component);
 
@@ -1024,7 +1024,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param message
 	 */
-	protected final void tellSuccess(String message) {
+	protected final void tellSuccess(final String message) {
 		this.tellSuccess(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -1035,7 +1035,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param component
 	 */
-	protected final void tellSuccess(SimpleComponent component) {
+	protected final void tellSuccess(final SimpleComponent component) {
 		Messenger.success(this.audience, this.replacePlaceholders(component));
 	}
 
@@ -1047,7 +1047,7 @@ public abstract class SimpleCommandCore {
 	 * @param message
 	 */
 	// PSA: Needs to be public because of shared interface
-	public final void tellInfo(String message) {
+	public final void tellInfo(final String message) {
 		this.tellInfo(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -1059,7 +1059,7 @@ public abstract class SimpleCommandCore {
 	 * @param component
 	 */
 	// PSA: Needs to be public because of shared interface
-	public final void tellInfo(SimpleComponent component) {
+	public final void tellInfo(final SimpleComponent component) {
 		Messenger.info(this.audience, this.replacePlaceholders(component));
 	}
 
@@ -1070,7 +1070,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param message
 	 */
-	protected final void tellWarn(String message) {
+	protected final void tellWarn(final String message) {
 		this.tellWarn(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -1081,7 +1081,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param component
 	 */
-	protected final void tellWarn(SimpleComponent component) {
+	protected final void tellWarn(final SimpleComponent component) {
 		if (component != null)
 			Messenger.warn(this.audience, this.replacePlaceholders(component));
 	}
@@ -1093,7 +1093,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param message
 	 */
-	protected final void tellError(String message) {
+	protected final void tellError(final String message) {
 		this.tellError(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -1104,7 +1104,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param component
 	 */
-	protected final void tellError(SimpleComponent component) {
+	protected final void tellError(final SimpleComponent component) {
 		Messenger.error(this.audience, this.replacePlaceholders(component));
 	}
 
@@ -1115,7 +1115,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param message
 	 */
-	protected final void tellQuestion(String message) {
+	protected final void tellQuestion(final String message) {
 		this.tellQuestion(SimpleComponent.fromMiniAmpersand(message));
 	}
 
@@ -1126,14 +1126,14 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param component
 	 */
-	protected final void tellQuestion(SimpleComponent component) {
+	protected final void tellQuestion(final SimpleComponent component) {
 		Messenger.question(this.audience, this.replacePlaceholders(component));
 	}
 
 	/**
 	 * Convenience method for returning the invalid arguments message for the player.
 	 */
-	protected final void returnInvalidArgs(String invalidArgs) {
+	protected final void returnInvalidArgs(final String invalidArgs) {
 		throw new InvalidCommandArgException(invalidArgs);
 	}
 
@@ -1408,7 +1408,7 @@ public abstract class SimpleCommandCore {
 	 * @param min
 	 * @param max
 	 */
-	protected final void setValidArguments(int min, int max) {
+	protected final void setValidArguments(final int min, final int max) {
 		this.setMinArguments(min);
 		this.setMaxArguments(max);
 	}
@@ -1496,7 +1496,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param permissionMessage
 	 */
-	protected final void setPermissionMessage(SimpleComponent permissionMessage) {
+	protected final void setPermissionMessage(final SimpleComponent permissionMessage) {
 		this.permissionMessage = permissionMessage;
 	}
 
@@ -1559,7 +1559,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param aliases
 	 */
-	protected final void setAliases(List<String> aliases) {
+	protected final void setAliases(final List<String> aliases) {
 		this.aliases = aliases;
 	}
 
@@ -1627,7 +1627,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param usage
 	 */
-	protected final void setUsage(String usage) {
+	protected final void setUsage(final String usage) {
 		this.usage = usage == null || usage.isEmpty() ? null : SimpleComponent.fromMiniAmpersand(usage);
 	}
 
@@ -1638,7 +1638,7 @@ public abstract class SimpleCommandCore {
 	 * @param usage
 	 * @return
 	 */
-	final SimpleComponent colorizeUsage(SimpleComponent usage) {
+	final SimpleComponent colorizeUsage(final SimpleComponent usage) {
 		return usage.replaceMatch(PATTERN_TABLE, (match, result) -> result.color(NamedTextColor.GOLD)).replaceMatch(PATTERN_FILTER, (match, result) -> result.color(NamedTextColor.DARK_GREEN)).replaceMatch(PATTERN_DASH, (match, result) -> result.color(NamedTextColor.GRAY));
 	}
 
@@ -1647,7 +1647,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param usage
 	 */
-	protected final void setUsage(SimpleComponent usage) {
+	protected final void setUsage(final SimpleComponent usage) {
 		this.usage = usage == null || usage.isEmpty() ? null : usage;
 	}
 
@@ -1656,7 +1656,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param description
 	 */
-	protected final void setDescription(String description) {
+	protected final void setDescription(final String description) {
 		this.description = description == null || description.isEmpty() ? null : SimpleComponent.fromMiniAmpersand(description);
 	}
 
@@ -1665,7 +1665,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @param description
 	 */
-	protected final void setDescription(SimpleComponent description) {
+	protected final void setDescription(final SimpleComponent description) {
 		this.description = description == null || description.isEmpty() ? null : description;
 	}
 
@@ -1680,7 +1680,7 @@ public abstract class SimpleCommandCore {
 	 * @param input
 	 * @return
 	 */
-	protected final ParsedArguments parseArguments(String input) {
+	protected final ParsedArguments parseArguments(final String input) {
 		final Map<String, String> args = new HashMap<>();
 		final Matcher matcher = COLON_ARGUMENT_PATTERN.matcher(input);
 
@@ -1707,7 +1707,7 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @return a tuple where key is the message without the filters and value is the list of filters
 	 */
-	protected final Tuple<String, List<Filter>> parseFilters(Table table, String line) {
+	protected final Tuple<String, List<Filter>> parseFilters(final Table table, final String line) {
 		final ParsedArguments parsed = this.parseArguments(line);
 		final List<Filter> filters = new ArrayList<>();
 

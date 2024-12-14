@@ -26,7 +26,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 	private final static BukkitPlaceholders instance = new BukkitPlaceholders();
 
 	@Override
-	protected String onReplace(FoundationPlayer audience, String identifier) {
+	protected String onReplace(final FoundationPlayer audience, final String identifier) {
 		final Player player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
 
 		if ("player_tab_name".equals(identifier))
@@ -96,7 +96,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 	/*
 	 * Formats the {health} variable
 	 */
-	private static String formatHealth(Player player) {
+	private static String formatHealth(final Player player) {
 		final int health = Remain.getHealth(player);
 
 		return (health > 10 ? CompChatColor.DARK_GREEN : health > 5 ? CompChatColor.GOLD : CompChatColor.RED) + "" + health + CompChatColor.RESET;

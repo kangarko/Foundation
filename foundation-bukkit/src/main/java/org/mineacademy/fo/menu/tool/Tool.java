@@ -31,7 +31,7 @@ public abstract class Tool {
 	 *
 	 * @param tool the tool
 	 */
-	static void register(Tool tool) {
+	static void register(final Tool tool) {
 		ValidCore.checkBoolean(!isRegistered(tool), "Tool with itemstack " + tool.getItem() + " already registered");
 
 		tools.add(tool);
@@ -43,7 +43,7 @@ public abstract class Tool {
 	 * @param tool the tool
 	 * @return true if the tool is registered
 	 */
-	static boolean isRegistered(Tool tool) {
+	static boolean isRegistered(final Tool tool) {
 		return getTool(tool.getItem()) != null;
 	}
 
@@ -53,7 +53,7 @@ public abstract class Tool {
 	 * @param item the item
 	 * @return the corresponding tool, or null
 	 */
-	public static Tool getTool(ItemStack item) {
+	public static Tool getTool(final ItemStack item) {
 		for (final Tool tool : tools)
 			if (tool.isTool(item))
 				return tool;
@@ -125,7 +125,7 @@ public abstract class Tool {
 	 * @param player
 	 * @return
 	 */
-	public final boolean hasTool(Player player) {
+	public final boolean hasTool(final Player player) {
 		for (final ItemStack item : player.getInventory().getContents())
 			if (this.isTool(item))
 				return true;
@@ -147,7 +147,7 @@ public abstract class Tool {
 	 *
 	 * @param event the event
 	 */
-	protected void onBlockClick(PlayerInteractEvent event) {
+	protected void onBlockClick(final PlayerInteractEvent event) {
 	}
 
 	/**
@@ -155,7 +155,7 @@ public abstract class Tool {
 	 *
 	 * @param event the event
 	 */
-	protected void onEntityRightClick(PlayerInteractEntityEvent event) {
+	protected void onEntityRightClick(final PlayerInteractEntityEvent event) {
 	}
 
 	/**
@@ -163,7 +163,7 @@ public abstract class Tool {
 	 *
 	 * @param event
 	 */
-	protected void onBlockPlace(BlockPlaceEvent event) {
+	protected void onBlockPlace(final BlockPlaceEvent event) {
 	}
 
 	/**
@@ -222,7 +222,7 @@ public abstract class Tool {
 	 * @param player
 	 * @return true if tool was given, false if player already has it
 	 */
-	public final boolean giveIfHasnt(Player player) {
+	public final boolean giveIfHasnt(final Player player) {
 		if (this.hasTool(player))
 			return false;
 

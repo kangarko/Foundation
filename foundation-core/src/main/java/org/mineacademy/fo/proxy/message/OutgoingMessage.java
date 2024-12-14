@@ -44,7 +44,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param message
 	 */
-	public OutgoingMessage(ProxyMessage message) {
+	public OutgoingMessage(final ProxyMessage message) {
 		this(getDefaultListener(), message);
 	}
 
@@ -64,7 +64,7 @@ public final class OutgoingMessage extends Message {
 	 * @param listener
 	 * @param message
 	 */
-	public OutgoingMessage(ProxyListener listener, ProxyMessage message) {
+	public OutgoingMessage(final ProxyListener listener, final ProxyMessage message) {
 		super(listener, message);
 	}
 
@@ -73,7 +73,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param messages
 	 */
-	public void writeString(String... messages) {
+	public void writeString(final String... messages) {
 		for (final String message : messages)
 			this.write(message, String.class);
 	}
@@ -83,7 +83,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param component
 	 */
-	public void writeSimpleComponent(SimpleComponent component) {
+	public void writeSimpleComponent(final SimpleComponent component) {
 		this.write(component, SimpleComponent.class);
 	}
 
@@ -92,7 +92,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param map
 	 */
-	public void writeMap(SerializedMap map) {
+	public void writeMap(final SerializedMap map) {
 		this.write(map, SerializedMap.class);
 	}
 
@@ -101,7 +101,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param bool
 	 */
-	public void writeBoolean(boolean bool) {
+	public void writeBoolean(final boolean bool) {
 		this.write(bool, Boolean.class);
 	}
 
@@ -110,7 +110,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param number
 	 */
-	public void writeByte(byte number) {
+	public void writeByte(final byte number) {
 		this.write(number, Byte.class);
 	}
 
@@ -119,7 +119,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param number
 	 */
-	public void writeDouble(double number) {
+	public void writeDouble(final double number) {
 		this.write(number, Double.class);
 	}
 
@@ -128,7 +128,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param number
 	 */
-	public void writeFloat(float number) {
+	public void writeFloat(final float number) {
 		this.write(number, Float.class);
 	}
 
@@ -137,7 +137,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param number
 	 */
-	public void writeInt(int number) {
+	public void writeInt(final int number) {
 		this.write(number, Integer.class);
 	}
 
@@ -146,7 +146,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param number
 	 */
-	public void writeLong(long number) {
+	public void writeLong(final long number) {
 		this.write(number, Long.class);
 	}
 
@@ -155,7 +155,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param number
 	 */
-	public void writeShort(short number) {
+	public void writeShort(final short number) {
 		this.write(number, Short.class);
 	}
 
@@ -164,7 +164,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param uuid
 	 */
-	public void writeUUID(UUID uuid) {
+	public void writeUUID(final UUID uuid) {
 		this.write(uuid, UUID.class);
 	}
 
@@ -173,7 +173,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param enumInstance
 	 */
-	public void writeEnum(Enum<?> enumInstance) {
+	public void writeEnum(final Enum<?> enumInstance) {
 		this.writeString(enumInstance.toString()); // Write enums as strings
 	}
 
@@ -183,7 +183,7 @@ public final class OutgoingMessage extends Message {
 	 * @param object
 	 * @param typeOf
 	 */
-	public void write(Object object, Class<?> typeOf) {
+	public void write(final Object object, final Class<?> typeOf) {
 		ValidCore.checkNotNull(object, "Added object must not be null!");
 
 		this.moveHead(typeOf);
@@ -197,7 +197,7 @@ public final class OutgoingMessage extends Message {
 	 * @param serverName
 	 * @return
 	 */
-	public byte[] toByteArray(UUID senderUid, String serverName) {
+	public byte[] toByteArray(final UUID senderUid, final String serverName) {
 		final String channel = this.getChannel();
 		final ProxyMessage message = this.getMessage();
 		final Object[] dataArray = this.queue.toArray();
@@ -281,7 +281,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param senderUid
 	 */
-	public void send(UUID senderUid) {
+	public void send(final UUID senderUid) {
 		final String channel = this.getChannel();
 		final ProxyMessage message = this.getMessage();
 		final byte[] byteArray = this.toByteArray(senderUid, Platform.getCustomServerName());
@@ -313,7 +313,7 @@ public final class OutgoingMessage extends Message {
 	 * @param out
 	 * @param data
 	 */
-	private void writeCompressedString(DataOutput out, String data) {
+	private void writeCompressedString(final DataOutput out, final String data) {
 		final byte[] compressed = CommonCore.compress(data);
 
 		try {
@@ -342,7 +342,7 @@ public final class OutgoingMessage extends Message {
 	 * @param fromServer
 	 * @param server
 	 */
-	public void sendToServer(String fromServer, FoundationServer server) {
+	public void sendToServer(final String fromServer, final FoundationServer server) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
 			final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, fromServer);
@@ -363,7 +363,6 @@ public final class OutgoingMessage extends Message {
 
 			server.sendData(DEFAULT_CHANNEL, byteArray);
 
-			
 			if (!isSpammyPacket)
 				Debugger.debug("proxy", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
 		}
@@ -381,7 +380,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param ignoredServerName
 	 */
-	public void broadcastExcept(@Nullable String ignoredServerName) {
+	public void broadcastExcept(@Nullable final String ignoredServerName) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
 			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");

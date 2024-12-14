@@ -59,7 +59,7 @@ public class JsonItemStack {
 	 *
 	 * @return The JSON string
 	 */
-	public static String toJson(@Nullable ItemStack itemStack) {
+	public static String toJson(@Nullable final ItemStack itemStack) {
 		return CommonCore.GSON.toJson(toJsonObject(itemStack));
 	}
 
@@ -69,7 +69,7 @@ public class JsonItemStack {
 	 * @param item
 	 * @return
 	 */
-	public static JsonObject toJsonObject(@Nullable ItemStack item) {
+	public static JsonObject toJsonObject(@Nullable final ItemStack item) {
 
 		if (item == null)
 			return null;
@@ -357,7 +357,7 @@ public class JsonItemStack {
 	 *
 	 * @return The {@link ItemStack} or null if not succeed
 	 */
-	public static ItemStack fromJson(@Nullable String string) {
+	public static ItemStack fromJson(@Nullable final String string) {
 		if (string == null || string.isEmpty() || "{}".equals(string) || "null".equals(string))
 			return null;
 

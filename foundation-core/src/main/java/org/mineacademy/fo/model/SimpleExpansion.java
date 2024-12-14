@@ -35,7 +35,7 @@ public abstract class SimpleExpansion {
 	 *
 	 * @return the value or null if not valid
 	 */
-	public final String replacePlaceholders(FoundationPlayer audience, String identifier) {
+	public final String replacePlaceholders(final FoundationPlayer audience, final String identifier) {
 		this.args = identifier.split("\\_");
 
 		return this.onReplace(audience, identifier);
@@ -58,7 +58,7 @@ public abstract class SimpleExpansion {
 	 * @param startIndex
 	 * @return
 	 */
-	protected final String join(int startIndex) {
+	protected final String join(final int startIndex) {
 		return CommonCore.joinRange(startIndex, this.args);
 	}
 
@@ -69,7 +69,7 @@ public abstract class SimpleExpansion {
 	 * @param stopIndex
 	 * @return
 	 */
-	protected final String join(int startIndex, int stopIndex) {
+	protected final String join(final int startIndex, final int stopIndex) {
 		return CommonCore.joinRange(startIndex, stopIndex, this.args);
 	}
 

@@ -15,12 +15,12 @@ final class NamedThreadFactory implements ThreadFactory {
 	 * single argument to the format representing the thread number.
 	 * @param nameFormat
 	 */
-	public NamedThreadFactory(String nameFormat) {
+	public NamedThreadFactory(final String nameFormat) {
 		this.nameFormat = nameFormat;
 	}
 
 	@Override
-	public Thread newThread(Runnable r) {
+	public Thread newThread(final Runnable r) {
 		final Thread thread = new Thread(r, String.format(this.nameFormat, this.threadNumber.getAndIncrement()));
 		thread.setDaemon(true);
 		return thread;

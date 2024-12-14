@@ -21,7 +21,7 @@ public class RegionMenu extends Menu {
 	private final Button viewButton;
 	private final Button removeButton;
 
-	private RegionMenu(@NonNull DiskRegion region) {
+	private RegionMenu(@NonNull final DiskRegion region) {
 		super(SelectRegionMenu.create(), true);
 
 		final String regionName = region.getFileName();
@@ -60,7 +60,7 @@ public class RegionMenu extends Menu {
 	}
 
 	@Override
-	public ItemStack getItemAt(int slot) {
+	public ItemStack getItemAt(final int slot) {
 
 		if (slot == 9 * 1 + 2)
 			return this.teleportButton.getItem();
@@ -92,7 +92,7 @@ public class RegionMenu extends Menu {
 	 * @param player
 	 * @param region
 	 */
-	public static void showTo(Player player, DiskRegion region) {
+	public static void showTo(final Player player, final DiskRegion region) {
 		create(region).displayTo(player);
 	}
 
@@ -102,7 +102,7 @@ public class RegionMenu extends Menu {
 	 * @param region
 	 * @return
 	 */
-	public static RegionMenu create(DiskRegion region) {
+	public static RegionMenu create(final DiskRegion region) {
 		return new RegionMenu(region);
 	}
 }

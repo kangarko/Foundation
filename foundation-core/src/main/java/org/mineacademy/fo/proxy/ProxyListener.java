@@ -55,7 +55,7 @@ public abstract class ProxyListener {
 	 * @param channel
 	 * @param actionEnum
 	 */
-	protected ProxyListener(@NonNull String channel, Class<? extends ProxyMessage> actionEnum) {
+	protected ProxyListener(@NonNull final String channel, final Class<? extends ProxyMessage> actionEnum) {
 		this.channel = channel;
 		this.actions = toActions(actionEnum);
 
@@ -66,7 +66,7 @@ public abstract class ProxyListener {
 		registeredListeners.add(this);
 	}
 
-	private static ProxyMessage[] toActions(@NonNull Class<? extends ProxyMessage> actionEnum) {
+	private static ProxyMessage[] toActions(@NonNull final Class<? extends ProxyMessage> actionEnum) {
 		ValidCore.checkBoolean(actionEnum != ProxyMessage.class, "When creating a new proxy listener put your own class that extend ProxyMessage there, not ProxyMessage class itself!");
 		ValidCore.checkBoolean(actionEnum.isEnum(), "Proxy listener expects ProxyMessage to be an enum, given: " + actionEnum);
 
@@ -93,12 +93,12 @@ public abstract class ProxyListener {
 	 * @param data
 	 */
 	@Deprecated
-	public final void setData(byte[] data) {
+	public final void setData(final byte[] data) {
 		this.data = data;
 	}
 
 	@Override
-	public final boolean equals(Object obj) {
+	public final boolean equals(final Object obj) {
 		return obj instanceof ProxyListener && ((ProxyListener) obj).getChannel().equals(this.getChannel());
 	}
 

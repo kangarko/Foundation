@@ -31,7 +31,7 @@ public final class ConversationSubCommand extends SimpleSubCommand {
 	 *
 	 * @param label
 	 */
-	public ConversationSubCommand(String label) {
+	public ConversationSubCommand(final String label) {
 		super(label);
 
 		this.setProperties();
@@ -42,7 +42,7 @@ public final class ConversationSubCommand extends SimpleSubCommand {
 	 *
 	 * @param group
 	 */
-	public ConversationSubCommand(SimpleCommandGroup group) {
+	public ConversationSubCommand(final SimpleCommandGroup group) {
 		this(group, "conversation|convo");
 	}
 
@@ -52,7 +52,7 @@ public final class ConversationSubCommand extends SimpleSubCommand {
 	 * @param group
 	 * @param label
 	 */
-	public ConversationSubCommand(SimpleCommandGroup group, String label) {
+	public ConversationSubCommand(final SimpleCommandGroup group, final String label) {
 		super(group, label);
 
 		this.setProperties();

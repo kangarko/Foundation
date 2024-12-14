@@ -47,7 +47,7 @@ public final class CompMonsterEgg {
 	 * @param count
 	 * @return the finished egg
 	 */
-	public static ItemStack toItemStack(@NonNull EntityType type, final int count) {
+	public static ItemStack toItemStack(@NonNull final EntityType type, final int count) {
 		CompMaterial material = CompEntityType.getSpawnEgg(type);
 
 		if (material == null && MinecraftVersion.atLeast(V.v1_13))

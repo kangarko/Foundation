@@ -316,7 +316,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	 * @param group
 	 */
 	@Override
-	public final void setDefaultCommandGroup(SimpleCommandGroup group) {
+	public final void setDefaultCommandGroup(final SimpleCommandGroup group) {
 		ValidCore.checkBoolean(this.defaultCommandGroup == null, "Main command has already been set to " + this.defaultCommandGroup);
 
 		this.defaultCommandGroup = group;
@@ -338,7 +338,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	 * @param listener
 	 */
 	@Override
-	public final void setDefaultProxyListener(ProxyListener listener) {
+	public final void setDefaultProxyListener(final ProxyListener listener) {
 		this.defaultProxyListener = listener;
 	}
 

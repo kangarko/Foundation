@@ -34,7 +34,7 @@ final class BungeePlayer extends FoundationPlayer {
 	private final ProxiedPlayer player;
 	private final CommandSender sender;
 
-	BungeePlayer(@NonNull CommandSender sender) {
+	BungeePlayer(@NonNull final CommandSender sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof ProxiedPlayer;
 		this.player = this.isPlayer ? (ProxiedPlayer) sender : null;
@@ -42,7 +42,7 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void chat(String message) {
+	public void chat(final String message) {
 		final String json = SimpleComponent.fromPlain(message).toAdventureJson(this, !this.hasHexColorSupport());
 
 		if (this.isPlayer) {
@@ -131,12 +131,12 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	protected boolean hasPermission0(String permission) {
+	protected boolean hasPermission0(final String permission) {
 		return this.sender.hasPermission(permission);
 	}
 
 	@Override
-	public void hideBossBar0(TimedBar bar) {
+	public void hideBossBar0(final TimedBar bar) {
 		if (this.isPlayer && this.player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_9)
 			this.player.unsafe().sendPacket(new net.md_5.bungee.protocol.packet.BossBar(bar.getUniqueId(), 1 /* remove action */));
 	}
@@ -167,19 +167,19 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void kick(SimpleComponent reason) {
+	public void kick(final SimpleComponent reason) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
 		this.player.disconnect(reason.toLegacy(this));
 	}
 
 	@Override
-	public void openBook(Book book) {
+	public void openBook(final Book book) {
 		throw new UnsupportedOperationException("Not supported on " + Platform.getType());
 	}
 
 	@Override
-	protected void performPlayerCommand0(String replacedCommand) {
+	protected void performPlayerCommand0(final String replacedCommand) {
 		ProxyServer.getInstance().getPluginManager().dispatchCommand(this.sender, replacedCommand);
 	}
 
@@ -194,17 +194,17 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendActionBar(SimpleComponent message) {
+	public void sendActionBar(final SimpleComponent message) {
 		this.audience.sendActionBar(message.toAdventure(this));
 	}
 
 	@Override
-	public void sendPlayerListHeaderAndFooter(SimpleComponent header, SimpleComponent footer) {
+	public void sendPlayerListHeaderAndFooter(final SimpleComponent header, final SimpleComponent footer) {
 		this.audience.sendPlayerListHeaderAndFooter(header.toAdventure(this), footer.toAdventure(this));
 	}
 
 	@Override
-	public void sendMessage0(Component component) {
+	public void sendMessage0(final Component component) {
 		// Due to adventure bug, players on modern MC are getting kicked out due to invalid
 		// packet -- unless we serialize using md_5's method
 		final String json = SimpleComponent.fromAdventure(component).toAdventureJson(this, !this.hasHexColorSupport());
@@ -213,17 +213,17 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendToast(SimpleComponent message, CompToastStyle style) {
+	public void sendToast(final SimpleComponent message, final CompToastStyle style) {
 		this.sendMessage(message);
 	}
 
 	@Override
-	public void setTempMetadata(String key, Object value) {
+	public void setTempMetadata(final String key, final Object value) {
 		throw new UnsupportedOperationException("Not supported on " + Platform.getType());
 	}
 
 	@Override
-	public void showBossBar0(TimedBar bar) {
+	public void showBossBar0(final TimedBar bar) {
 		if (this.isPlayer) {
 			if (this.player.getPendingConnection().getVersion() < ProtocolConstants.MINECRAFT_1_9) {
 				// Not really supported unless we spawn a false ender dragon, a lot of hassle
@@ -245,7 +245,7 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void showTitle(Title title) {
+	public void showTitle(final Title title) {
 		this.audience.showTitle(title);
 	}
 }

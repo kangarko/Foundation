@@ -45,7 +45,7 @@ abstract class Message {
 	 *
 	 * @param givenType
 	 */
-	protected final void moveHead(Class<?> givenType) {
+	protected final void moveHead(final Class<?> givenType) {
 		ValidCore.checkNotNull(this.message, "Action not set!");
 
 		final Class<?>[] content = this.message.getContent();

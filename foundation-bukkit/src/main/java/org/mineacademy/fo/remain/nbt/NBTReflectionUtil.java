@@ -17,7 +17,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 import com.google.gson.Gson;
 
@@ -58,7 +58,7 @@ public class NBTReflectionUtil {
 				type_custom_data = typeField.get(null);
 
 			} catch (final NullPointerException ex) {
-				Common.logTimed(60 * 60, "Error initializing NBT-API. The plugin will still work but some features won't be available. This can be due to an outdated version or incompatible server.");
+				CommonCore.logTimed(60 * 60, "Error initializing NBT-API. The plugin will still work but some features won't be available. This can be due to an outdated version or incompatible server.");
 
 				if (!knownFailure) {
 					ex.printStackTrace();
@@ -91,7 +91,7 @@ public class NBTReflectionUtil {
 	 * @param entity Bukkit Entity
 	 * @return NMS Entity
 	 */
-	public static Object getNMSEntity(Entity entity) {
+	public static Object getNMSEntity(final Entity entity) {
 		try {
 			return ReflectionMethod.CRAFT_ENTITY_GET_HANDLE.run(ClassWrapper.CRAFT_ENTITY.getClazz().cast(entity));
 		} catch (final Exception e) {
@@ -105,7 +105,7 @@ public class NBTReflectionUtil {
 	 * @param stream InputStream of any NBT file
 	 * @return NMS Compound
 	 */
-	public static Object readNBT(InputStream stream) {
+	public static Object readNBT(final InputStream stream) {
 		try {
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R3))
 				return ReflectionMethod.NBTFILE_READV2.run(null, stream,
@@ -128,7 +128,7 @@ public class NBTReflectionUtil {
 	 * @param stream Stream to write to
 	 * @return ???
 	 */
-	public static Object writeNBT(Object nbt, OutputStream stream) {
+	public static Object writeNBT(final Object nbt, final OutputStream stream) {
 		try {
 			return ReflectionMethod.NBTFILE_WRITE.run(null, nbt, stream);
 		} catch (final Exception e) {
@@ -143,7 +143,7 @@ public class NBTReflectionUtil {
 	 * @param item
 	 * @return
 	 */
-	public static Object getCraftItemHandle(ItemStack item) {
+	public static Object getCraftItemHandle(final ItemStack item) {
 		try {
 			return field_handle.get(item);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -157,7 +157,7 @@ public class NBTReflectionUtil {
 	 * @param comp   Compound
 	 * @param stream Stream to write to
 	 */
-	public static void writeApiNBT(NBTCompound comp, OutputStream stream) {
+	public static void writeApiNBT(final NBTCompound comp, final OutputStream stream) {
 		try {
 			Object workingtag = comp.getResolvedObject();
 			if (workingtag == null)
@@ -175,7 +175,7 @@ public class NBTReflectionUtil {
 	 * @param nmsitem
 	 * @return NMS Compound
 	 */
-	public static Object getItemRootNBTTagCompound(Object nmsitem) {
+	public static Object getItemRootNBTTagCompound(final Object nmsitem) {
 		try {
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 				final Object customData = ReflectionMethod.NMSDATACOMPONENTHOLDER_GET.run(nmsitem, type_custom_data);
@@ -197,7 +197,7 @@ public class NBTReflectionUtil {
 	 * @param nmsItem
 	 * @param compound
 	 */
-	public static void setItemStackCompound(Object nmsItem, Object compound) {
+	public static void setItemStackCompound(final Object nmsItem, final Object compound) {
 		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 			if (compound == null)
 				ReflectionMethod.NMSITEM_SET.run(nmsItem, type_custom_data, null);
@@ -214,7 +214,7 @@ public class NBTReflectionUtil {
 	 * @param nbtcompound Any valid {@link NBTCompound}
 	 * @return NMS ItemStack
 	 */
-	public static Object convertNBTCompoundtoNMSItem(NBTCompound nbtcompound) {
+	public static Object convertNBTCompoundtoNMSItem(final NBTCompound nbtcompound) {
 		try {
 			Object nmsComp = getToCompount(nbtcompound.getCompound(), nbtcompound);
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
@@ -237,7 +237,7 @@ public class NBTReflectionUtil {
 	 * @param nmsitem NMS ItemStack
 	 * @return {@link NBTContainer} with all the data
 	 */
-	public static NBTContainer convertNMSItemtoNBTCompound(Object nmsitem) {
+	public static NBTContainer convertNMSItemtoNBTCompound(final Object nmsitem) {
 		try {
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 				return new NBTContainer(ReflectionMethod.NMSITEM_SAVE_MODERN.run(nmsitem, registry_access));
@@ -259,7 +259,7 @@ public class NBTReflectionUtil {
 	 */
 
 	@Deprecated
-	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
+	public static Map<String, Object> getUnhandledNBTTags(final ItemMeta meta) {
 		try {
 			return (Map<String, Object>) field_unhandledTags.get(meta);
 		} catch (final Exception e) {
@@ -273,7 +273,7 @@ public class NBTReflectionUtil {
 	 * @param nmsEntity
 	 * @return NMS NBT Compound
 	 */
-	public static Object getEntityNBTTagCompound(Object nmsEntity) {
+	public static Object getEntityNBTTagCompound(final Object nmsEntity) {
 		try {
 			final Object nbt = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
 			Object answer = ReflectionMethod.NMS_ENTITY_GET_NBT.run(nmsEntity, nbt);
@@ -292,7 +292,7 @@ public class NBTReflectionUtil {
 	 * @param nmsEntity
 	 * @return The NMS Entity
 	 */
-	public static Object setEntityNBTTag(Object nbtTag, Object nmsEntity) {
+	public static Object setEntityNBTTag(final Object nbtTag, final Object nmsEntity) {
 		try {
 			ReflectionMethod.NMS_ENTITY_SET_NBT.run(nmsEntity, nbtTag);
 			return nmsEntity;
@@ -307,7 +307,7 @@ public class NBTReflectionUtil {
 	 * @param tile
 	 * @return NMS Compound with the Vanilla data
 	 */
-	public static Object getTileEntityNBTTagCompound(BlockState tile) {
+	public static Object getTileEntityNBTTagCompound(final BlockState tile) {
 		try {
 			final Object cworld = ClassWrapper.CRAFT_WORLD.getClazz().cast(tile.getWorld());
 			final Object nmsworld = ReflectionMethod.CRAFT_WORLD_GET_HANDLE.run(cworld);
@@ -347,7 +347,7 @@ public class NBTReflectionUtil {
 	 * @param tile
 	 * @param comp
 	 */
-	public static void setTileEntityNBTTagCompound(BlockState tile, Object comp) {
+	public static void setTileEntityNBTTagCompound(final BlockState tile, final Object comp) {
 		try {
 			final Object cworld = ClassWrapper.CRAFT_WORLD.getClazz().cast(tile.getWorld());
 			final Object nmsworld = ReflectionMethod.CRAFT_WORLD_GET_HANDLE.run(cworld);
@@ -380,7 +380,7 @@ public class NBTReflectionUtil {
 	 * @param name
 	 * @return NMS Compound or null
 	 */
-	public static Object getSubNBTTagCompound(Object compound, String name) {
+	public static Object getSubNBTTagCompound(final Object compound, final String name) {
 		try {
 			if ((boolean) ReflectionMethod.COMPOUND_HAS_KEY.run(compound, name))
 				return ReflectionMethod.COMPOUND_GET_COMPOUND.run(compound, name);
@@ -397,7 +397,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @param name
 	 */
-	public static void addNBTTagCompound(NBTCompound comp, String name) {
+	public static void addNBTTagCompound(final NBTCompound comp, final String name) {
 		if (name == null) {
 			remove(comp, name);
 			return;
@@ -423,7 +423,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return true if this is a valide Compound, else false
 	 */
-	public static boolean valideCompound(NBTCompound comp) {
+	public static boolean valideCompound(final NBTCompound comp) {
 		Object root = comp.getCompound();
 		if (root == null)
 			root = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
@@ -453,7 +453,7 @@ public class NBTReflectionUtil {
 	 * @param comp           Target for the merge
 	 * @param nbtcompoundSrc Data to merge
 	 */
-	public static void mergeOtherNBTCompound(NBTCompound comp, NBTCompound nbtcompoundSrc) {
+	public static void mergeOtherNBTCompound(final NBTCompound comp, final NBTCompound nbtcompoundSrc) {
 		final Object workingtagSrc = nbtcompoundSrc.getResolvedObject();
 		if (workingtagSrc == null)
 			return;
@@ -478,7 +478,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @param val
 	 */
-	public static void set(NBTCompound comp, String key, Object val) {
+	public static void set(final NBTCompound comp, final String key, final Object val) {
 		if (val == null) {
 			remove(comp, key);
 			return;
@@ -507,7 +507,7 @@ public class NBTReflectionUtil {
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalid type
 	 */
-	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
+	public static <T> NBTList<T> getList(final NBTCompound comp, final String key, final NBTType type, final Class<T> clazz) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
 			workingtag = dummyNBT.getCompound(); // it creates a new ListTag if needed, but its unlinked
@@ -536,7 +536,7 @@ public class NBTReflectionUtil {
 		}
 	}
 
-	public static NBTType getListType(NBTCompound comp, String key) {
+	public static NBTType getListType(final NBTCompound comp, final String key) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
 			workingtag = dummyNBT.getCompound(); // it creates a new ListTag if needed, but its unlinked
@@ -559,7 +559,7 @@ public class NBTReflectionUtil {
 		}
 	}
 
-	public static Object getEntry(NBTCompound comp, String key) {
+	public static Object getEntry(final NBTCompound comp, final String key) {
 		final Object workingtag = comp.getResolvedObject();
 		try {
 			return ReflectionMethod.COMPOUND_GET.run(workingtag, key);
@@ -575,7 +575,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @param value
 	 */
-	public static void setObject(NBTCompound comp, String key, Object value) {
+	public static void setObject(final NBTCompound comp, final String key, final Object value) {
 		try {
 			final String json = gson.toJson(value);
 
@@ -595,7 +595,7 @@ public class NBTReflectionUtil {
 	 * @param type
 	 * @return The loaded Object or null, if not found
 	 */
-	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
+	public static <T> T getObject(final NBTCompound comp, final String key, final Class<T> type) {
 		final String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
 
 		if (json == null)
@@ -614,7 +614,7 @@ public class NBTReflectionUtil {
 	 * @param type
 	 * @return Object that got created, or null if the json is null
 	 */
-	public static <T> T deserializeJson(String json, Class<T> type) {
+	public static <T> T deserializeJson(final String json, final Class<T> type) {
 		try {
 			if (json == null)
 				return null;
@@ -632,7 +632,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @param key
 	 */
-	public static void remove(NBTCompound comp, String key) {
+	public static void remove(final NBTCompound comp, final String key) {
 		final Object rootnbttag = comp.getCompound();
 		if (rootnbttag == null)
 			return;
@@ -650,7 +650,7 @@ public class NBTReflectionUtil {
 	 * @return Set of all keys
 	 */
 
-	public static Set<String> getKeys(NBTCompound comp) {
+	public static Set<String> getKeys(final NBTCompound comp) {
 		final Object workingtag = comp.getResolvedObject();
 		if (workingtag == null)
 			return Collections.emptySet();
@@ -665,7 +665,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @param data
 	 */
-	public static void setData(NBTCompound comp, ReflectionMethod type, String key, Object data) {
+	public static void setData(final NBTCompound comp, final ReflectionMethod type, final String key, final Object data) {
 		if (data == null) {
 			remove(comp, key);
 			return;
@@ -690,7 +690,7 @@ public class NBTReflectionUtil {
 	 * @param key
 	 * @return The value or default fallback from NMS
 	 */
-	public static Object getData(NBTCompound comp, ReflectionMethod type, String key) {
+	public static Object getData(final NBTCompound comp, final ReflectionMethod type, final String key) {
 		Object workingtag = comp.getResolvedObject();
 		// return default behavior data as if there was a compound
 		if (workingtag == null)

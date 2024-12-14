@@ -27,7 +27,7 @@ public abstract class RowDate extends Row {
 	 *
 	 * @param date
 	 */
-	protected RowDate(long date) {
+	protected RowDate(final long date) {
 		this.date = System.currentTimeMillis();
 	}
 
@@ -37,7 +37,7 @@ public abstract class RowDate extends Row {
 	 * @param resultSet
 	 * @throws SQLException
 	 */
-	protected RowDate(SimpleResultSet resultSet) throws SQLException {
+	protected RowDate(final SimpleResultSet resultSet) throws SQLException {
 		super(resultSet);
 
 		this.date = resultSet.getTimestampStrict("Date");

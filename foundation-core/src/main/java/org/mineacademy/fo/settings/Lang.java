@@ -56,7 +56,7 @@ public final class Lang {
 	/*
 	 * Return a plain String from the language file, throwing an error if the key is missing.
 	 */
-	private String getPlain(String path) {
+	private String getPlain(final String path) {
 		ValidCore.checkNotNull(this.plainCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
 		ValidCore.checkBoolean(this.plainCache.containsKey(path), "Missing localization key '" + path + "'");
 
@@ -66,7 +66,7 @@ public final class Lang {
 	/*
 	 * Return a legacy key from the given path in the language file.
 	 */
-	private String getLegacy(String path) {
+	private String getLegacy(final String path) {
 		ValidCore.checkNotNull(this.legacyCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
 		ValidCore.checkBoolean(this.legacyCache.containsKey(path), "Missing localization key '" + path + "'");
 
@@ -77,7 +77,7 @@ public final class Lang {
 	 * Return a CaseNumberFormat from the given path in the language file,
 	 * caching the result if it does not exist.
 	 */
-	private CaseNumberFormat getCaseNumberFormat(String path) {
+	private CaseNumberFormat getCaseNumberFormat(final String path) {
 		CaseNumberFormat format = this.numberFormatCache.get(path);
 
 		if (format == null) {
@@ -92,7 +92,7 @@ public final class Lang {
 	/*
 	 * Return a component from the given path in the language file.
 	 */
-	private SimpleComponent getComponent(String path) {
+	private SimpleComponent getComponent(final String path) {
 		ValidCore.checkNotNull(this.componentCache, "Dictionary not loaded yet! Call Lang.Storage.download() first!");
 		ValidCore.checkBoolean(this.componentCache.containsKey(path), "Missing localization key '" + path + "'");
 
@@ -102,7 +102,7 @@ public final class Lang {
 	/*
 	 * Return true if the plain cache has a key at the given path.
 	 */
-	private boolean has(String path) {
+	private boolean has(final String path) {
 		return this.plainCache.containsKey(path);
 	}
 
@@ -127,7 +127,7 @@ public final class Lang {
 	 * @param path
 	 * @return
 	 */
-	public static boolean exists(String path) {
+	public static boolean exists(final String path) {
 		return instance.has(path);
 	}
 
@@ -139,7 +139,7 @@ public final class Lang {
 	 * @param path
 	 * @return
 	 */
-	public static String plain(String path) {
+	public static String plain(final String path) {
 		return instance.getPlain(path);
 	}
 
@@ -160,7 +160,7 @@ public final class Lang {
 	 * @param placeholders
 	 * @return
 	 */
-	public static String legacy(String path, Object... placeholders) {
+	public static String legacy(final String path, final Object... placeholders) {
 		final String value = instance.getLegacy(path);
 		final Variables variables = Variables.builder();
 
@@ -185,7 +185,7 @@ public final class Lang {
 	 * @param placeholders
 	 * @return
 	 */
-	public static SimpleComponent component(String path, Object... placeholders) {
+	public static SimpleComponent component(final String path, final Object... placeholders) {
 		final SimpleComponent component = instance.getComponent(path);
 		final Variables variables = Variables.builder();
 
@@ -210,7 +210,7 @@ public final class Lang {
 	 * @param path
 	 * @return
 	 */
-	public static String numberFormat(String path, long amount) {
+	public static String numberFormat(final String path, final long amount) {
 		return instance.getCaseNumberFormat(path).formatWithCount(amount);
 	}
 
@@ -229,7 +229,7 @@ public final class Lang {
 	 * @param path
 	 * @return
 	 */
-	public static String numberFormatNoAmount(String path, long amount) {
+	public static String numberFormatNoAmount(final String path, final long amount) {
 		return instance.getCaseNumberFormat(path).formatWithoutCount(amount);
 	}
 
@@ -291,7 +291,7 @@ public final class Lang {
 		/*
 		 * A helper method to create a date format from the given plain lang key.
 		 */
-		private static DateFormat makeFormat(String key, String def) {
+		private static DateFormat makeFormat(final String key, final String def) {
 			final String raw = exists(key) ? plain(key) : def;
 
 			try {
@@ -337,7 +337,7 @@ public final class Lang {
 		/*
 		 * Implementation of the file dump.
 		 */
-		private static File dumpToFile0(boolean createFileIfNotExists) {
+		private static File dumpToFile0(final boolean createFileIfNotExists) {
 			final String path = "lang/" + SimpleSettings.LOCALE + ".json";
 			final File localFile = FileUtil.getFile(path);
 
@@ -517,7 +517,7 @@ public final class Lang {
 		 * Helper method to turn the lines content into a single dump, parse to JSON and
 		 * put the keys into the dictionary.
 		 */
-		private static void putToDictionary(JsonObject dictionary, List<String> content) {
+		private static void putToDictionary(final JsonObject dictionary, final List<String> content) {
 			if (content != null && !content.isEmpty()) {
 				final JsonObject json = CommonCore.GSON.fromJson(String.join("\n", content), JsonObject.class);
 

@@ -37,7 +37,7 @@ public final class BukkitServer implements FoundationServer {
 	}
 
 	@Override
-	public void sendData(String channel, byte[] byteArray) {
+	public void sendData(final String channel, final byte[] byteArray) {
 		Platform.sendPluginMessage(null, channel, byteArray);
 	}
 }

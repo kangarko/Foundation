@@ -80,7 +80,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param singleFile
 	 * @param listComparator
 	 */
-	private ConfigItems(String type, String folder, Function<String, Class<T>> prototypeCreator, boolean singleFile, Function<List<T>, List<T>> listComparator) {
+	private ConfigItems(final String type, final String folder, final Function<String, Class<T>> prototypeCreator, final boolean singleFile, final Function<List<T>, List<T>> listComparator) {
 		this.type = type;
 		this.folder = folder;
 		this.prototypeCreator = prototypeCreator;
@@ -96,7 +96,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeClass
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(final String folder, final Class<P> prototypeClass) {
 		return fromFolder(folder, prototypeClass, null);
 	}
 
@@ -109,7 +109,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param listComparator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Class<P> prototypeClass, Function<List<P>, List<P>> listComparator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(final String folder, final Class<P> prototypeClass, final Function<List<P>, List<P>> listComparator) {
 		return fromFolder(folder, fileName -> prototypeClass, listComparator);
 	}
 
@@ -121,7 +121,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeCreator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Function<String, Class<P>> prototypeCreator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(final String folder, final Function<String, Class<P>> prototypeCreator) {
 		return fromFolder(folder, prototypeCreator, null);
 	}
 
@@ -134,7 +134,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param listComparator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFolder(String folder, Function<String, Class<P>> prototypeCreator, Function<List<P>, List<P>> listComparator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFolder(final String folder, final Function<String, Class<P>> prototypeCreator, final Function<List<P>, List<P>> listComparator) {
 		return new ConfigItems<>(folder.substring(0, folder.length() - (folder.endsWith("es") && !folder.contains("rule") && !folder.contains("variable") ? 2 : folder.endsWith("s") ? 1 : 0)), folder, prototypeCreator, false, listComparator);
 	}
 
@@ -147,7 +147,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeClass
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(final String path, final String file, final Class<P> prototypeClass) {
 		return fromFile(path, file, fileName -> prototypeClass);
 	}
 
@@ -161,7 +161,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param listComparator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Class<P> prototypeClass, Function<List<P>, List<P>> listComparator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(final String path, final String file, final Class<P> prototypeClass, final Function<List<P>, List<P>> listComparator) {
 		return fromFile(path, file, fileName -> prototypeClass, listComparator);
 	}
 
@@ -174,7 +174,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param prototypeCreator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Function<String, Class<P>> prototypeCreator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(final String path, final String file, final Function<String, Class<P>> prototypeCreator) {
 		return fromFile(path, file, prototypeCreator, null);
 	}
 
@@ -188,7 +188,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 * @param listComparator
 	 * @return
 	 */
-	public static <P extends YamlConfig> ConfigItems<P> fromFile(String path, String file, Function<String, Class<P>> prototypeCreator, Function<List<P>, List<P>> listComparator) {
+	public static <P extends YamlConfig> ConfigItems<P> fromFile(final String path, final String file, final Function<String, Class<P>> prototypeCreator, final Function<List<P>, List<P>> listComparator) {
 		return new ConfigItems<>(path, file, prototypeCreator, true, listComparator);
 	}
 
@@ -204,7 +204,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @param loader for advanced loading mechanisms, most people wont use this
 	 */
-	public void loadItems(Function<File, T> loader) {
+	public void loadItems(final Function<File, T> loader) {
 
 		// Clear old items
 		this.loadedItemsMap.clear();
@@ -264,7 +264,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *                     sufficient, you can supply your custom instantiator here.
 	 * @return
 	 */
-	public T loadOrCreateItem(@NonNull final String name, Supplier<T> instantiator) {
+	public T loadOrCreateItem(@NonNull final String name, final Supplier<T> instantiator) {
 		ValidCore.checkBoolean(!this.isItemLoaded(name), "Item " + (this.type == null ? "" : this.type + " ") + "named " + name + " already exists! Available: " + this.getItemNames());
 
 		// Create a new instance of our item

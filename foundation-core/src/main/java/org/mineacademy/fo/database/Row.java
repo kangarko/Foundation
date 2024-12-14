@@ -31,7 +31,7 @@ public abstract class Row {
 	 * @param resultSet
 	 * @throws SQLException
 	 */
-	protected Row(SimpleResultSet resultSet) throws SQLException {
+	protected Row(final SimpleResultSet resultSet) throws SQLException {
 		this.id = resultSet.getIntStrict("Id");
 	}
 

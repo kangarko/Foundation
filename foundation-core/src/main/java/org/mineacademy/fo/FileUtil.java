@@ -51,7 +51,7 @@ public final class FileUtil {
 	 * @param file
 	 * @return
 	 */
-	public static String getFileName(File file) {
+	public static String getFileName(final File file) {
 		return getFileName(file.getName());
 	}
 
@@ -96,7 +96,7 @@ public final class FileUtil {
 	 * @param path
 	 * @return the file itself
 	 */
-	public static File createIfNotExists(String path) {
+	public static File createIfNotExists(final String path) {
 		final File datafolder = Platform.getPlugin().getDataFolder();
 		final int lastIndex = path.lastIndexOf('/');
 		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
@@ -122,7 +122,7 @@ public final class FileUtil {
 	 * @param path
 	 * @return
 	 */
-	public static File getFile(String path) {
+	public static File getFile(final String path) {
 		return new File(Platform.getPlugin().getDataFolder(), path);
 	}
 
@@ -133,7 +133,7 @@ public final class FileUtil {
 	 * @param extension where dot is placed automatically in case it is lacking
 	 * @return
 	 */
-	public static File[] getFiles(@NonNull String directory, @NonNull String extension) {
+	public static File[] getFiles(@NonNull final String directory, @NonNull String extension) {
 
 		// Remove initial dot, if any
 		if (extension.charAt(0) == '.')
@@ -156,7 +156,7 @@ public final class FileUtil {
 	 * @param extension where dot is placed automatically in case it is lacking
 	 * @return
 	 */
-	public static File[] getFiles(@NonNull File directory, @NonNull String extension) {
+	public static File[] getFiles(@NonNull final File directory, @NonNull String extension) {
 
 		// Remove initial dot, if any
 		if (extension.charAt(0) == '.')
@@ -189,7 +189,7 @@ public final class FileUtil {
 	 * @throws IOException if an I/O issue occurs while connecting or reading from the URL
 	 * @throws IllegalArgumentException if the URL is malformed
 	 */
-	public static List<String> readLinesFromUrl(String url) throws IOException {
+	public static List<String> readLinesFromUrl(final String url) throws IOException {
 		final List<String> lines = new ArrayList<>();
 		final URLConnection connection = new URL(url + "?token=" + System.currentTimeMillis()).openConnection();
 
@@ -216,7 +216,7 @@ public final class FileUtil {
 	 * @param fileName
 	 * @return
 	 */
-	public static List<String> readLinesFromFile(String fileName) {
+	public static List<String> readLinesFromFile(final String fileName) {
 		return readLinesFromFile(getFile(fileName));
 	}
 
@@ -226,7 +226,7 @@ public final class FileUtil {
 	 * @param file
 	 * @return
 	 */
-	public static List<String> readLinesFromFile(@NonNull File file) {
+	public static List<String> readLinesFromFile(@NonNull final File file) {
 		if (!file.exists())
 			return null;
 
@@ -257,7 +257,7 @@ public final class FileUtil {
 	 * @param path the internal path to the file within the jar (e.g., "config.yml" or "lang/en_US.json")
 	 * @return a list of strings, where each string is a line from the file, or {@code null} if the file is not found or an error occurs
 	 */
-	public static List<String> readLinesFromInternalPath(@NonNull String path) {
+	public static List<String> readLinesFromInternalPath(@NonNull final String path) {
 		return readLinesFromInternalPath(Platform.getPlugin().getFile(), path);
 	}
 
@@ -275,7 +275,7 @@ public final class FileUtil {
 	 * @param path the internal path to the file within the jar (e.g., "config.yml" or "lang/en_US.json")
 	 * @return a list of strings, where each string is a line from the file, or {@code null} if the file is not found or an error occurs
 	 */
-	public static List<String> readLinesFromInternalPath(@NonNull File pluginFile, @NonNull String path) {
+	public static List<String> readLinesFromInternalPath(@NonNull final File pluginFile, @NonNull final String path) {
 		try (JarFile jarFile = new JarFile(pluginFile)) {
 
 			for (final Enumeration<JarEntry> it = jarFile.entries(); it.hasMoreElements();) {
@@ -310,7 +310,7 @@ public final class FileUtil {
 	 * @param to
 	 * @param message
 	 */
-	public static void writeFormatted(String to, String message) {
+	public static void writeFormatted(final String to, final String message) {
 		writeFormatted(to, null, message);
 	}
 
@@ -328,7 +328,7 @@ public final class FileUtil {
 	 * @param prefix an optional prefix to add before each message line (e.g., "INFO"), or {@code null} for no prefix
 	 * @param message the message to be written, which can contain multiple lines
 	 */
-	public static void writeFormatted(String to, String prefix, String message) {
+	public static void writeFormatted(final String to, final String prefix, String message) {
 		message = CompChatColor.stripColorCodes(message);
 
 		if (!message.equalsIgnoreCase("none") && !message.isEmpty())
@@ -344,7 +344,7 @@ public final class FileUtil {
 	 * @param to
 	 * @param lines
 	 */
-	public static void write(String to, String... lines) {
+	public static void write(final String to, final String... lines) {
 		write(to, Arrays.asList(lines));
 	}
 
@@ -354,7 +354,7 @@ public final class FileUtil {
 	 * @param to
 	 * @param lines
 	 */
-	public static void write(File to, String... lines) {
+	public static void write(final File to, final String... lines) {
 		write(to, Arrays.asList(lines));
 	}
 
@@ -365,7 +365,7 @@ public final class FileUtil {
 	 * @param to
 	 * @param lines
 	 */
-	public static void write(String to, Collection<String> lines) {
+	public static void write(final String to, final Collection<String> lines) {
 		write(createIfNotExists(to), lines, StandardOpenOption.APPEND);
 	}
 
@@ -376,7 +376,7 @@ public final class FileUtil {
 	 * @param lines
 	 * @param options
 	 */
-	public static void write(File to, Collection<String> lines, StandardOpenOption... options) {
+	public static void write(final File to, final Collection<String> lines, final StandardOpenOption... options) {
 		ValidCore.checkBoolean(to.exists(), "Cannot write to non-existing file: " + to);
 
 		try {
@@ -411,7 +411,7 @@ public final class FileUtil {
 	 * @param path the path to the file inside the plugin
 	 * @return the extracted file
 	 */
-	public static File extract(String path) {
+	public static File extract(final String path) {
 		return extract(path, path);
 	}
 
@@ -426,7 +426,7 @@ public final class FileUtil {
 	 *                 folder
 	 * @return the extracted file
 	 */
-	public static File extract(String from, String to) {
+	public static File extract(final String from, final String to) {
 		final List<String> lines = readLinesFromInternalPath(from);
 		ValidCore.checkNotNull(lines, "Inbuilt " + from + " not found! Did you reload?");
 
@@ -442,7 +442,7 @@ public final class FileUtil {
 	 * @param to
 	 * @return the extracted file
 	 */
-	public static File extract(final List<String> lines, String to) {
+	public static File extract(final List<String> lines, final String to) {
 		File file = new File(Platform.getPlugin().getDataFolder(), to);
 
 		if (file.exists())
@@ -475,7 +475,7 @@ public final class FileUtil {
 	 * @param path
 	 * @return
 	 */
-	public static File extractRaw(String path) {
+	public static File extractRaw(final String path) {
 		File file = new File(Platform.getPlugin().getDataFolder(), path);
 
 		try (JarFile jarFile = new JarFile(Platform.getPlugin().getFile())) {
@@ -518,7 +518,7 @@ public final class FileUtil {
 	 * Saves us time so that we can distribute the same file across multiple
 	 * plugins each having its own unique plugin name and file name.
 	 */
-	private static String replaceVariables(String line, String fileName) {
+	private static String replaceVariables(final String line, final String fileName) {
 		return line
 				.replace("{plugin_name}", Platform.getPlugin().getName())
 				.replace("{plugin_name_lower}", Platform.getPlugin().getName().toLowerCase())
@@ -533,7 +533,7 @@ public final class FileUtil {
 	 * @param folder      the source folder in your JAR plugin file
 	 * @param destination the destination folder name in your plugin folder
 	 */
-	public static void extractFolderFromJar(String folder, final String destination) {
+	public static void extractFolderFromJar(final String folder, final String destination) {
 		ValidCore.checkBoolean(folder.charAt(0) != '/', "Folder must not start with '/'! Given: " + folder);
 		ValidCore.checkBoolean(folder.charAt(folder.length() - 1) == '/', "Folder must end with '/'! Given: " + folder);
 
@@ -560,7 +560,7 @@ public final class FileUtil {
 	 *
 	 * @param file
 	 */
-	public static void deleteRecursivelly(File file) {
+	public static void deleteRecursivelly(final File file) {
 		if (file.isDirectory())
 			for (final File subfolder : file.listFiles())
 				deleteRecursivelly(subfolder);
@@ -579,7 +579,7 @@ public final class FileUtil {
 	 * @param to
 	 * @throws IOException
 	 */
-	public static void zip(String sourceDirectory, String to) throws IOException {
+	public static void zip(final String sourceDirectory, final String to) throws IOException {
 		final File parent = Platform.getPlugin().getDataFolder().getParentFile().getParentFile();
 		final File toFile = new File(parent, to + ".zip");
 

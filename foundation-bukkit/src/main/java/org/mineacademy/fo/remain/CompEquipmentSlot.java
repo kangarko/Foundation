@@ -61,7 +61,7 @@ public enum CompEquipmentSlot {
 	 * @param entity
 	 * @param itemCreator
 	 */
-	public void applyTo(LivingEntity entity, ItemCreator itemCreator) {
+	public void applyTo(final LivingEntity entity, final ItemCreator itemCreator) {
 		this.applyTo(entity, itemCreator.make(), null);
 	}
 
@@ -73,7 +73,7 @@ public enum CompEquipmentSlot {
 	 * @param itemCreator
 	 * @param dropChance
 	 */
-	public void applyTo(LivingEntity entity, ItemCreator itemCreator, @Nullable Double dropChance) {
+	public void applyTo(final LivingEntity entity, final ItemCreator itemCreator, @Nullable final Double dropChance) {
 		this.applyTo(entity, itemCreator.make(), dropChance);
 	}
 
@@ -83,7 +83,7 @@ public enum CompEquipmentSlot {
 	 * @param entity
 	 * @param material
 	 */
-	public void applyTo(LivingEntity entity, CompMaterial material) {
+	public void applyTo(final LivingEntity entity, final CompMaterial material) {
 		this.applyTo(entity, material.toItem(), null);
 	}
 
@@ -95,7 +95,7 @@ public enum CompEquipmentSlot {
 	 * @param material
 	 * @param dropChance
 	 */
-	public void applyTo(LivingEntity entity, CompMaterial material, @Nullable Double dropChance) {
+	public void applyTo(final LivingEntity entity, final CompMaterial material, @Nullable final Double dropChance) {
 		this.applyTo(entity, material.toItem(), dropChance);
 	}
 
@@ -105,7 +105,7 @@ public enum CompEquipmentSlot {
 	 * @param entity
 	 * @param material
 	 */
-	public void applyTo(LivingEntity entity, Material material) {
+	public void applyTo(final LivingEntity entity, final Material material) {
 		this.applyTo(entity, new ItemStack(material), null);
 	}
 
@@ -117,7 +117,7 @@ public enum CompEquipmentSlot {
 	 * @param material
 	 * @param dropChance
 	 */
-	public void applyTo(LivingEntity entity, Material material, @Nullable Double dropChance) {
+	public void applyTo(final LivingEntity entity, final Material material, @Nullable final Double dropChance) {
 		this.applyTo(entity, new ItemStack(material), dropChance);
 	}
 
@@ -127,7 +127,7 @@ public enum CompEquipmentSlot {
 	 * @param entity
 	 * @param item
 	 */
-	public void applyTo(LivingEntity entity, ItemStack item) {
+	public void applyTo(final LivingEntity entity, final ItemStack item) {
 		this.applyTo(entity, item, null);
 	}
 
@@ -136,7 +136,7 @@ public enum CompEquipmentSlot {
 	 *
 	 * @param entity
 	 */
-	public void clear(LivingEntity entity) {
+	public void clear(final LivingEntity entity) {
 		this.applyTo(entity, (ItemStack) null, (Double) null);
 	}
 
@@ -148,7 +148,7 @@ public enum CompEquipmentSlot {
 	 * @param item
 	 * @param dropChance
 	 */
-	public void applyTo(@NonNull LivingEntity entity, ItemStack item, @Nullable Double dropChance) {
+	public void applyTo(@NonNull final LivingEntity entity, ItemStack item, @Nullable final Double dropChance) {
 		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
 		ValidCore.checkNotNull(equipment);
 
@@ -223,7 +223,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-			
+
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}
@@ -275,7 +275,7 @@ public enum CompEquipmentSlot {
 	 * @param entity
 	 * @param color
 	 */
-	public static void applyArmor(LivingEntity entity, CompColor color) {
+	public static void applyArmor(final LivingEntity entity, final CompColor color) {
 		applyArmor(entity, color, 0D, new HashSet<>());
 	}
 
@@ -287,7 +287,7 @@ public enum CompEquipmentSlot {
 	 * @param color
 	 * @param ignoredSlots
 	 */
-	public static void applyArmor(LivingEntity entity, CompColor color, Set<CompEquipmentSlot> ignoredSlots) {
+	public static void applyArmor(final LivingEntity entity, final CompColor color, final Set<CompEquipmentSlot> ignoredSlots) {
 		applyArmor(entity, color, 0D, ignoredSlots);
 	}
 
@@ -298,7 +298,7 @@ public enum CompEquipmentSlot {
 	 * @param color
 	 * @param dropChance
 	 */
-	public static void applyArmor(LivingEntity entity, CompColor color, double dropChance) {
+	public static void applyArmor(final LivingEntity entity, final CompColor color, final double dropChance) {
 		applyArmor(entity, color, dropChance, new HashSet<>());
 	}
 
@@ -310,7 +310,7 @@ public enum CompEquipmentSlot {
 	 * @param dropChance
 	 * @param ignoredSlots
 	 */
-	public static void applyArmor(LivingEntity entity, CompColor color, Double dropChance, Set<CompEquipmentSlot> ignoredSlots) {
+	public static void applyArmor(final LivingEntity entity, final CompColor color, final Double dropChance, final Set<CompEquipmentSlot> ignoredSlots) {
 		if (!ignoredSlots.contains(HEAD))
 			HEAD.applyTo(entity, ItemCreator.fromMaterial(CompMaterial.LEATHER_HELMET).color(color).make(), dropChance);
 
@@ -331,7 +331,7 @@ public enum CompEquipmentSlot {
 	 * @param entity
 	 * @param type
 	 */
-	public static void applyArmor(LivingEntity entity, Type type) {
+	public static void applyArmor(final LivingEntity entity, final Type type) {
 		applyArmor(entity, type, 0d, new HashSet<>());
 	}
 
@@ -343,7 +343,7 @@ public enum CompEquipmentSlot {
 	 * @param type
 	 * @param ignoredSlots
 	 */
-	public static void applyArmor(LivingEntity entity, Type type, Set<CompEquipmentSlot> ignoredSlots) {
+	public static void applyArmor(final LivingEntity entity, final Type type, final Set<CompEquipmentSlot> ignoredSlots) {
 		applyArmor(entity, type, 0d, ignoredSlots);
 	}
 
@@ -354,7 +354,7 @@ public enum CompEquipmentSlot {
 	 * @param type
 	 * @param dropChance
 	 */
-	public static void applyArmor(LivingEntity entity, Type type, double dropChance) {
+	public static void applyArmor(final LivingEntity entity, final Type type, final double dropChance) {
 		applyArmor(entity, type, dropChance, new HashSet<>());
 	}
 
@@ -366,7 +366,7 @@ public enum CompEquipmentSlot {
 	 * @param dropChance
 	 * @param ignoredSlots
 	 */
-	public static void applyArmor(LivingEntity entity, Type type, Double dropChance, Set<CompEquipmentSlot> ignoredSlots) {
+	public static void applyArmor(final LivingEntity entity, Type type, final Double dropChance, final Set<CompEquipmentSlot> ignoredSlots) {
 
 		// Compatibility
 		if (type == Type.NETHERITE && MinecraftVersion.olderThan(V.v1_16))
@@ -411,7 +411,7 @@ public enum CompEquipmentSlot {
 		 * @param armorMaterial
 		 * @return
 		 */
-		public static Type fromArmor(CompMaterial armorMaterial) {
+		public static Type fromArmor(final CompMaterial armorMaterial) {
 			final String n = armorMaterial.name();
 
 			ValidCore.checkBoolean(n.contains("LEATHER") || n.contains("CHAINMAIL") || n.contains("IRON") || n.contains("GOLD") || n.contains("DIAMOND") || n.contains("NETHERITE"),

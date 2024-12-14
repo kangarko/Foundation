@@ -230,11 +230,11 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 */
 	private final String toString;
 
-	private CompChatColor(char code, String name) {
+	private CompChatColor(final char code, final String name) {
 		this(code, name, null);
 	}
 
-	private CompChatColor(char code, String name, Color color) {
+	private CompChatColor(final char code, final String name, final Color color) {
 		this.code = code;
 		this.name = name;
 		this.color = color;
@@ -244,7 +244,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		BY_NAME.put(name.toUpperCase(Locale.ROOT), this);
 	}
 
-	private CompChatColor(String name, String toString, int rgb) {
+	private CompChatColor(final String name, final String toString, final int rgb) {
 		this.code = '#';
 		this.name = name;
 		this.color = new Color(rgb);
@@ -259,7 +259,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj)
 			return true;
 
@@ -445,7 +445,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param code the code to search for
 	 * @return the mapped colour, or null if non exists
 	 */
-	public static CompChatColor getByChar(char code) {
+	public static CompChatColor getByChar(final char code) {
 		return BY_CHAR.get(code);
 	}
 
@@ -455,7 +455,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param color
 	 * @return
 	 */
-	public static CompChatColor fromColor(Color color) {
+	public static CompChatColor fromColor(final Color color) {
 		return fromString("#" + Integer.toHexString(color.getRGB()).substring(2));
 	}
 
@@ -465,7 +465,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param string
 	 * @return
 	 */
-	public static CompChatColor fromString(@NonNull String string) {
+	public static CompChatColor fromString(@NonNull final String string) {
 		if (string.charAt(0) == '#' && string.length() == 7) {
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
 				final Color color = getColorFromHex(string);
@@ -513,7 +513,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param color
 	 * @return
 	 */
-	public static CompChatColor fromTextColor(TextColor color) {
+	public static CompChatColor fromTextColor(final TextColor color) {
 		return fromString(color.asHexString());
 	}
 
@@ -523,7 +523,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param decoration
 	 * @return
 	 */
-	public static CompChatColor fromTextDecoration(TextDecoration decoration) {
+	public static CompChatColor fromTextDecoration(final TextDecoration decoration) {
 		if (decoration == TextDecoration.BOLD)
 			return BOLD;
 		else if (decoration == TextDecoration.STRIKETHROUGH)
@@ -541,7 +541,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/*
 	 * Parse the given HEX into a Java Color object
 	 */
-	private static Color getColorFromHex(String hex) {
+	private static Color getColorFromHex(final String hex) {
 		return new Color(Integer.parseInt(hex.substring(1, 3), 16), Integer.parseInt(hex.substring(3, 5), 16), Integer.parseInt(hex.substring(5, 7), 16));
 	}
 
@@ -553,7 +553,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param color
 	 * @return
 	 */
-	public static CompChatColor getClosestLegacy(Color color) {
+	public static CompChatColor getClosestLegacy(final Color color) {
 		if (color.getAlpha() < 128)
 			return null;
 
@@ -579,7 +579,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/*
 	 * Return if colors are nearly identical
 	 */
-	private static boolean areSimilar(Color first, Color second) {
+	private static boolean areSimilar(final Color first, final Color second) {
 		return Math.abs(first.getRed() - second.getRed()) <= 5 &&
 				Math.abs(first.getGreen() - second.getGreen()) <= 5 &&
 				Math.abs(first.getBlue() - second.getBlue()) <= 5;
@@ -589,7 +589,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/*
 	 * Returns how different two colors are
 	 */
-	private static double getDistance(Color first, Color second) {
+	private static double getDistance(final Color first, final Color second) {
 		final double rmean = (first.getRed() + second.getRed()) / 2.0;
 		final double r = first.getRed() - second.getRed();
 		final double g = first.getGreen() - second.getGreen();
@@ -608,7 +608,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param message
 	 * @return
 	 */
-	public static String translateColorCodes(String message) {
+	public static String translateColorCodes(final String message) {
 		final StringBuilder result = new StringBuilder();
 
 		for (int i = 0; i < message.length(); i++) {
@@ -665,7 +665,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/*
 	 * Append a hex color to the result
 	 */
-	private static void appendHex(StringBuilder result, String code) {
+	private static void appendHex(final StringBuilder result, final String code) {
 		if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16))
 			result.append(getClosestLegacy(getColorFromHex(code)));
 
@@ -686,7 +686,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param message The input message potentially containing Minecraft color codes.
 	 * @return A new string with valid color codes removed.
 	 */
-	public static String stripColorCodes(String message) {
+	public static String stripColorCodes(final String message) {
 		return stripColorCodes(message, true);
 	}
 
@@ -698,7 +698,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param ampersand True if '&' should be considered a color code as well.
 	 * @return A new string with valid color codes removed.
 	 */
-	public static String stripColorCodes(String message, boolean ampersand) {
+	public static String stripColorCodes(final String message, final boolean ampersand) {
 		final int messageLength = message.length();
 		final char[] strippedMessage = new char[messageLength];
 		int resultIndex = 0;
@@ -733,7 +733,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param input Input string to retrieve the colors from.
 	 * @return Any remaining ChatColors to pass onto the next line.
 	 */
-	public static String getLastColors(String input) {
+	public static String getLastColors(final String input) {
 		if (input == null)
 			return "";
 
@@ -774,7 +774,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/*
 	 * Get a hex color from the input string, copied from ChatColor class.
 	 */
-	private static String getHexColor(String input, int index) {
+	private static String getHexColor(final String input, final int index) {
 		// Check for hex color with the format '§x§1§2§3§4§5§6'
 		// Our index is currently on the last '§' which means to have a potential hex color
 		// The index - 11 must be an 'x' and index - 12 must be a '§'
@@ -816,7 +816,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param supportAmpersand
 	 * @return
 	 */
-	public static String convertLegacyToMini(String message, boolean supportAmpersand) {
+	public static String convertLegacyToMini(final String message, final boolean supportAmpersand) {
 		final StringBuilder result = new StringBuilder();
 
 		for (int i = 0; i < message.length(); i++) {
@@ -843,7 +843,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param minimessage
 	 * @return
 	 */
-	public static String convertMiniToLegacy(String minimessage) {
+	public static String convertMiniToLegacy(final String minimessage) {
 		final StringBuilder filteredMessage = new StringBuilder();
 
 		// Stack to store open tags

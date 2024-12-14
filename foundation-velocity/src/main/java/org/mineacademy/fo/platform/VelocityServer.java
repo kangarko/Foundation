@@ -22,7 +22,7 @@ final class VelocityServer implements FoundationServer {
 	 *
 	 * @param server
 	 */
-	VelocityServer(@NonNull RegisteredServer server) {
+	VelocityServer(@NonNull final RegisteredServer server) {
 		this.server = server;
 	}
 
@@ -50,7 +50,7 @@ final class VelocityServer implements FoundationServer {
 	}
 
 	@Override
-	public void sendData(String channel, byte[] byteArray) {
+	public void sendData(final String channel, final byte[] byteArray) {
 		this.server.sendPluginMessage(new LegacyChannelIdentifier(channel), byteArray);
 	}
 }

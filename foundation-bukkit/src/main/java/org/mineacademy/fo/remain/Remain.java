@@ -74,7 +74,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.MathUtil;
@@ -555,7 +554,7 @@ public final class Remain {
 	 * @param entity
 	 * @return
 	 */
-	public static boolean isInvulnerable(Entity entity) {
+	public static boolean isInvulnerable(final Entity entity) {
 		try {
 			return entity.isInvulnerable();
 
@@ -579,7 +578,7 @@ public final class Remain {
 	 * @param entity
 	 * @param invulnerable
 	 */
-	public static void setInvulnerable(Entity entity, boolean invulnerable) {
+	public static void setInvulnerable(final Entity entity, final boolean invulnerable) {
 		CompProperty.INVULNERABLE.apply(entity, invulnerable);
 	}
 
@@ -754,7 +753,7 @@ public final class Remain {
 	 * @param context
 	 * @return
 	 */
-	public static Map<Object, Object> getAllSessionData(ConversationContext context) {
+	public static Map<Object, Object> getAllSessionData(final ConversationContext context) {
 		try {
 			return context.getAllSessionData();
 
@@ -773,7 +772,7 @@ public final class Remain {
 	 * @param itemStack
 	 * @return
 	 */
-	public static Object asNMSCopy(ItemStack itemStack) {
+	public static Object asNMSCopy(final ItemStack itemStack) {
 		try {
 			final Method asNmsCopy = Remain.getOBCClass("inventory.CraftItemStack").getMethod("asNMSCopy", ItemStack.class);
 
@@ -792,7 +791,7 @@ public final class Remain {
 	 * @param legacy
 	 * @return
 	 */
-	public static Object convertLegacyToIChatBase(String legacy) {
+	public static Object convertLegacyToIChatBase(final String legacy) {
 		return convertJsonToIChatBase("{\"text\":\"" + legacy.replace("\\", "\\\\").replace("\"", "\\\"") + "\"}");
 	}
 
@@ -802,8 +801,8 @@ public final class Remain {
 	 * @param json
 	 * @return
 	 */
-	public static Object convertJsonToIChatBase(String json) {
-		Valid.checkNotNull(chatSerializer, "Cannot convert JSON to IChatBaseComponent, missing chatSerializer class. Json: " + json);
+	public static Object convertJsonToIChatBase(final String json) {
+		ValidCore.checkNotNull(chatSerializer, "Cannot convert JSON to IChatBaseComponent, missing chatSerializer class. Json: " + json);
 		final Method fromJson = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
 		return ReflectionUtil.invoke(fromJson, null, json);
@@ -815,7 +814,7 @@ public final class Remain {
 	 * @param block
 	 * @return
 	 */
-	public static Biome getBiome(Block block) {
+	public static Biome getBiome(final Block block) {
 		try {
 			final Method getBiome = ReflectionUtil.getMethod(Block.class, "getBiome");
 
@@ -832,7 +831,7 @@ public final class Remain {
 	 * @param location
 	 * @return
 	 */
-	public static Biome getBiome(Location location) {
+	public static Biome getBiome(final Location location) {
 		final Method getBiome = ReflectionUtil.getMethod(World.class, "getBiome", int.class, int.class, int.class);
 
 		if (getBiome != null)
@@ -847,7 +846,7 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static Inventory getBottomInventoryFromOpenInventory(Player player) {
+	public static Inventory getBottomInventoryFromOpenInventory(final Player player) {
 		return invokeOpenInventoryMethod(player, "getBottomInventory");
 	}
 
@@ -928,7 +927,7 @@ public final class Remain {
 	/*
 	 * Get the handle of the given instance
 	 */
-	private static Object getHandle(Object instance, String methodName) {
+	private static Object getHandle(final Object instance, final String methodName) {
 		final Method handle = ReflectionUtil.getMethod(instance.getClass(), methodName);
 		ValidCore.checkNotNull(handle, "Cannot call " + methodName + "() for " + instance.getClass() + " (" + instance + ")");
 
@@ -970,7 +969,7 @@ public final class Remain {
 	 * @param event
 	 * @return
 	 */
-	public static Block getHitBlock(ProjectileHitEvent event) {
+	public static Block getHitBlock(final ProjectileHitEvent event) {
 		try {
 			return event.getHitBlock();
 
@@ -998,7 +997,7 @@ public final class Remain {
 	 * @param event
 	 * @return
 	 */
-	public static LivingEntity getHitEntity(ProjectileHitEvent event) {
+	public static LivingEntity getHitEntity(final ProjectileHitEvent event) {
 		try {
 
 			// Try getting the hit entity directly
@@ -1242,7 +1241,7 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static int getPing(Player player) {
+	public static int getPing(final Player player) {
 		try {
 			return player.getPing();
 
@@ -1358,7 +1357,7 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static Inventory getTopInventoryFromOpenInventory(Player player) {
+	public static Inventory getTopInventoryFromOpenInventory(final Player player) {
 		return invokeOpenInventoryMethod(player, "getTopInventory");
 	}
 
@@ -1385,7 +1384,7 @@ public final class Remain {
 	 * @param player
 	 * @return
 	 */
-	public static int getViewDistance(Player player) {
+	public static int getViewDistance(final Player player) {
 		try {
 			return player.getClientViewDistance();
 
@@ -1403,7 +1402,7 @@ public final class Remain {
 	 * @param methodName
 	 * @return
 	 */
-	public static <T> T invokeInventoryViewMethod(InventoryEvent event, String methodName) {
+	public static <T> T invokeInventoryViewMethod(final InventoryEvent event, final String methodName) {
 		final Object view = ReflectionUtil.invoke("getView", event);
 
 		return ReflectionUtil.invoke(methodName, view);
@@ -1416,7 +1415,7 @@ public final class Remain {
 	 * @param methodName
 	 * @return
 	 */
-	public static <T> T invokeOpenInventoryMethod(Player player, String methodName) {
+	public static <T> T invokeOpenInventoryMethod(final Player player, final String methodName) {
 		final Object view = ReflectionUtil.invoke("getOpenInventory", player);
 
 		return ReflectionUtil.invoke(methodName, view);
@@ -1470,7 +1469,7 @@ public final class Remain {
 	 * @param entity
 	 * @return
 	 */
-	public static boolean isInvisible(Entity entity) {
+	public static boolean isInvisible(final Entity entity) {
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
 			return ((LivingEntity) entity).isInvisible();
 
@@ -1546,7 +1545,7 @@ public final class Remain {
 	 * @param name
 	 * @return
 	 */
-	public static NamespacedKey newNamespaced(String name) {
+	public static NamespacedKey newNamespaced(final String name) {
 		return new NamespacedKey(BukkitPlugin.getInstance(), name);
 	}
 
@@ -1556,7 +1555,7 @@ public final class Remain {
 	 * @param audience
 	 * @param book
 	 */
-	public static void openBook(FoundationPlayer audience, ItemStack book) {
+	public static void openBook(final FoundationPlayer audience, final ItemStack book) {
 		openBook((Player) audience.getPlayer(), book);
 	}
 
@@ -1566,7 +1565,7 @@ public final class Remain {
 	 * @param player
 	 * @param book
 	 */
-	public static void openBook(Player player, ItemStack book) {
+	public static void openBook(final Player player, final ItemStack book) {
 		ValidCore.checkBoolean(MinecraftVersion.atLeast(V.v1_8), "Opening books is only supported on MC 1.8 and greater");
 		ValidCore.checkBoolean(book.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta, "openBook method called for not a book item: " + book);
 		ValidCore.checkBoolean(book.getType().toString().equals("WRITTEN_BOOK"), "Can only call openBook for WRITTEN_BOOK! Got: " + book);
@@ -1605,7 +1604,7 @@ public final class Remain {
 					final Object mainHand = ReflectionUtil.getStaticFieldContent(enumHand, "MAIN_HAND");
 
 					openBook = ReflectionUtil.getMethod(craftPlayer.getClass(), "a", nmsItemstack.getClass(), enumHand);
-					Valid.checkNotNull(openBook, "Unable to find openBook method for " + craftPlayer);
+					ValidCore.checkNotNull(openBook, "Unable to find openBook method for " + craftPlayer);
 
 					ReflectionUtil.invoke(openBook, craftPlayer, nmsItemstack, mainHand);
 
@@ -1625,7 +1624,7 @@ public final class Remain {
 	 * @param player
 	 * @param signBlock
 	 */
-	public static void openSign(Player player, Block signBlock) {
+	public static void openSign(final Player player, final Block signBlock) {
 		final BlockState state = signBlock.getState();
 		ValidCore.checkBoolean(state instanceof Sign, "Block is not a sign: " + signBlock);
 
@@ -1711,7 +1710,7 @@ public final class Remain {
 	/*
 	 * A helper method
 	 */
-	private static void sendChestAction(Block block, int action) {
+	private static void sendChestAction(final Block block, final int action) {
 
 		final BlockState state = block.getState();
 		ValidCore.checkBoolean(state instanceof Chest, "You can only send chest action packet for chests not " + block);
@@ -1743,7 +1742,7 @@ public final class Remain {
 	 *
 	 * @param block
 	 */
-	public static void sendChestClose(Block block) {
+	public static void sendChestClose(final Block block) {
 		sendChestAction(block, 0);
 	}
 
@@ -1753,7 +1752,7 @@ public final class Remain {
 	 *
 	 * @param block
 	 */
-	public static void sendChestOpen(Block block) {
+	public static void sendChestOpen(final Block block) {
 		sendChestAction(block, 1);
 	}
 
@@ -1859,7 +1858,7 @@ public final class Remain {
 	 * @param receiver
 	 * @param message
 	 */
-	public static void sendToast(Player receiver, String message) {
+	public static void sendToast(final Player receiver, final String message) {
 		sendToast(receiver, message, CompMaterial.BOOK, CompToastStyle.TASK);
 	}
 
@@ -1887,7 +1886,7 @@ public final class Remain {
 	 * @param message
 	 * @param toastStyle
 	 */
-	public static void sendToast(Player receiver, String message, CompToastStyle toastStyle) {
+	public static void sendToast(final Player receiver, final String message, final CompToastStyle toastStyle) {
 		sendToast(receiver, message, CompMaterial.BOOK, toastStyle);
 	}
 
@@ -1924,7 +1923,7 @@ public final class Remain {
 	 * @param initialBlock
 	 * @param facing
 	 */
-	public static void setBed(Block initialBlock, BlockFace facing) {
+	public static void setBed(Block initialBlock, final BlockFace facing) {
 
 		if (MinecraftVersion.atLeast(V.v1_13))
 			for (final org.bukkit.block.data.type.Bed.Part part : org.bukkit.block.data.type.Bed.Part.values()) {
@@ -1972,7 +1971,7 @@ public final class Remain {
 	 * @param initialLocation
 	 * @param facing
 	 */
-	public static void setBed(Location initialLocation, BlockFace facing) {
+	public static void setBed(final Location initialLocation, final BlockFace facing) {
 		setBed(initialLocation.getBlock(), facing);
 	}
 
@@ -2078,7 +2077,7 @@ public final class Remain {
 	 * @deprecated use {@link PlayerUtil#setVanished(Player, boolean)} to disable vanish for plugins also
 	 */
 	@Deprecated
-	public static void setInvisible(Object entity, boolean invisible) {
+	public static void setInvisible(final Object entity, final boolean invisible) {
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
 			((LivingEntity) entity).setInvisible(invisible);
 
@@ -2107,7 +2106,7 @@ public final class Remain {
 	 * @param metaObject
 	 * @param pages
 	 */
-	public static void setPages(Object metaObject, List<SimpleComponent> pages) {
+	public static void setPages(final Object metaObject, final List<SimpleComponent> pages) {
 		setPages(metaObject, pages.toArray(new SimpleComponent[pages.size()]));
 	}
 
@@ -2117,13 +2116,13 @@ public final class Remain {
 	 * @param metaObject
 	 * @param pages
 	 */
-	public static void setPages(Object metaObject, SimpleComponent... pages) {
+	public static void setPages(final Object metaObject, final SimpleComponent... pages) {
 		ValidCore.checkBoolean(metaObject instanceof org.bukkit.inventory.meta.BookMeta, "Object must be BookMeta, got: " + metaObject.getClass());
 
 		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
 
 		try {
-			meta.pages(Common.convertArray(pages, SimpleComponent::toAdventure));
+			meta.pages(CommonCore.convertArray(pages, SimpleComponent::toAdventure));
 
 		} catch (final NoSuchMethodError noAdventureError) {
 			try {
@@ -2140,7 +2139,7 @@ public final class Remain {
 				meta.spigot().setPages(spigotPages);
 
 			} catch (final NoSuchMethodError iLikeDinosaursError) {
-				meta.setPages(Common.convertArrayToList(pages, SimpleComponent::toLegacy));
+				meta.setPages(CommonCore.convertArrayToList(pages, SimpleComponent::toLegacy));
 			}
 		}
 	}
@@ -2205,7 +2204,7 @@ public final class Remain {
 	 *
 	 * @return
 	 */
-	public static boolean setViewDistance(Player player, int viewDistanceChunks) {
+	public static boolean setViewDistance(final Player player, final int viewDistanceChunks) {
 
 		try {
 			final Method setViewDistance = Player.class.getDeclaredMethod("setViewDistance", int.class);
@@ -2227,7 +2226,7 @@ public final class Remain {
 	 * @param player
 	 * @param legacy
 	 */
-	public static void sendActionBarLegacyPacket(Player player, String legacy) {
+	public static void sendActionBarLegacyPacket(final Player player, final String legacy) {
 		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		sendLegacyChat(player, convertLegacyToIChatBase(legacy), (byte) 2);
@@ -2239,11 +2238,11 @@ public final class Remain {
 	 * @param player
 	 * @param json
 	 */
-	public static void sendLegacyChat(Player player, String json) {
+	public static void sendLegacyChat(final Player player, final String json) {
 		sendLegacyChat(player, convertJsonToIChatBase(json), (byte) 1);
 	}
 
-	private static void sendLegacyChat(Player player, Object iChatBaseComponent, byte type) {
+	private static void sendLegacyChat(final Player player, final Object iChatBaseComponent, final byte type) {
 		try {
 			final Object packet;
 
@@ -2262,7 +2261,7 @@ public final class Remain {
 		}
 	}
 
-	public static void sendTitleLegacyPacket(Player player, int fadeIn, int stay, int fadeOut, String title, String subtitle) {
+	public static void sendTitleLegacyPacket(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
 		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
 
 		try {
@@ -2542,7 +2541,7 @@ public final class Remain {
 	 * @param item
 	 * @return
 	 */
-	public static HoverEvent<?> convertItemStackToHoverEvent(ItemStack item) {
+	public static HoverEvent<?> convertItemStackToHoverEvent(final ItemStack item) {
 		ValidCore.checkBoolean(item != null, "Hover item must not be null");
 
 		if (CompMaterial.isAir(item))
@@ -2575,7 +2574,7 @@ public final class Remain {
 	 * @param item the item to convert
 	 * @return the Json string representation of the item
 	 */
-	public static String convertItemStackToJson(ItemStack item) {
+	public static String convertItemStackToJson(final ItemStack item) {
 		// ItemStack methods to get a net.minecraft.server.ItemStack object for serialization
 		final Class<?> craftItemstack = Remain.getOBCClass("inventory.CraftItemStack");
 		final Method asNMSCopyMethod = ReflectionUtil.getMethod(craftItemstack, "asNMSCopy", ItemStack.class);
@@ -2810,7 +2809,7 @@ public final class Remain {
 	 * @param timer
 	 * @return the task or null
 	 */
-	public static Task runTask(final int delayTicks, Runnable timer) {
+	public static Task runTask(final int delayTicks, final Runnable timer) {
 		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
 		if (CommonCore.runIfDisabled(runnable))
@@ -2865,7 +2864,7 @@ public final class Remain {
 	 * @param timer
 	 * @return the task or null
 	 */
-	public static Task runTaskAsync(final int delayTicks, Runnable timer) {
+	public static Task runTaskAsync(final int delayTicks, final Runnable timer) {
 		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
 		if (CommonCore.runIfDisabled(runnable))
@@ -2921,7 +2920,7 @@ public final class Remain {
 	 * @param timer        the task
 	 * @return the bukkit task or null if error
 	 */
-	public static Task runTaskTimer(final int delayTicks, final int repeatTicks, Runnable timer) {
+	public static Task runTaskTimer(final int delayTicks, final int repeatTicks, final Runnable timer) {
 		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
 		if (CommonCore.runIfDisabled(runnable))
@@ -2972,7 +2971,7 @@ public final class Remain {
 	 * @param timer
 	 * @return
 	 */
-	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, Runnable timer) {
+	public static Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, final Runnable timer) {
 		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
 
 		if (CommonCore.runIfDisabled(runnable))
@@ -3081,7 +3080,7 @@ public final class Remain {
 	 *
 	 * @param entity
 	 */
-	public static void removeEntityWithPassengersAndNPC(Entity entity) {
+	public static void removeEntityWithPassengersAndNPC(final Entity entity) {
 		EntityUtil.removeVehiclesAndPassengers(entity);
 
 		if (HookManager.isCitizensLoaded())
@@ -3103,7 +3102,7 @@ public final class Remain {
 	 * @param fullName1_17
 	 * @return
 	 */
-	public static Class<?> getNMSClass(String oldName, String fullName1_17) {
+	public static Class<?> getNMSClass(final String oldName, final String fullName1_17) {
 		return MinecraftVersion.atLeast(V.v1_17) ? ReflectionUtil.lookupClass(fullName1_17) : getNMSClass(oldName);
 	}
 
@@ -3464,15 +3463,15 @@ final class SimpleBukkitTask implements Task {
 		this.cancelled = true;
 	}
 
-	static SimpleBukkitTask fromBukkit(BukkitTask task) {
+	static SimpleBukkitTask fromBukkit(final BukkitTask task) {
 		return new SimpleBukkitTask(task.getTaskId(), task.isSync(), null, null);
 	}
 
-	static SimpleBukkitTask fromBukkit(int taskId, boolean sync) {
+	static SimpleBukkitTask fromBukkit(final int taskId, final boolean sync) {
 		return taskId >= 0 ? null : new SimpleBukkitTask(taskId, sync, null, null);
 	}
 
-	static SimpleBukkitTask fromFolia(Method foliaCancelMethod, Object foliaTaskInstance) {
+	static SimpleBukkitTask fromFolia(final Method foliaCancelMethod, final Object foliaTaskInstance) {
 		return new SimpleBukkitTask(0, false, foliaCancelMethod, foliaTaskInstance);
 	}
 
@@ -3492,7 +3491,7 @@ final class AdvancementAccessor {
 	private final String message;
 	private final CompToastStyle toastStyle;
 
-	AdvancementAccessor(final String message, final String icon, CompToastStyle toastStyle) {
+	AdvancementAccessor(final String message, final String icon, final CompToastStyle toastStyle) {
 		this.key = new NamespacedKey(BukkitPlugin.getInstance(), UUID.randomUUID().toString());
 		this.message = message;
 		this.icon = icon;

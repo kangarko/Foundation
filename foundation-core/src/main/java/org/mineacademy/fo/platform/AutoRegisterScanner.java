@@ -59,17 +59,17 @@ final class AutoRegisterScanner {
 		}
 
 		@Override
-		public boolean isIgnored(Class<?> clazz, boolean printWarnings) {
+		public boolean isIgnored(final Class<?> clazz, final boolean printWarnings) {
 			return false;
 		}
 
 		@Override
-		public boolean canAutoRegister(Class<?> clazz) {
+		public boolean canAutoRegister(final Class<?> clazz) {
 			return false;
 		}
 
 		@Override
-		public boolean autoRegister(Class<?> clazz, Tuple<FindInstance, Object> tuple) {
+		public boolean autoRegister(final Class<?> clazz, final Tuple<FindInstance, Object> tuple) {
 			return false;
 		}
 	};
@@ -186,7 +186,7 @@ final class AutoRegisterScanner {
 	 * Registers settings and localization classes, either automatically if
 	 * a class is detected, or forced if settings/localization files are found
 	 */
-	private static void registerSettings(List<Class<?>> classes) {
+	private static void registerSettings(final List<Class<?>> classes) {
 		final List<Class<?>> staticSettingsFound = new ArrayList<>();
 		final List<Class<?>> staticCustom = new ArrayList<>();
 
@@ -263,7 +263,7 @@ final class AutoRegisterScanner {
 	/*
 	 * Automatically registers the given class, printing console warnings
 	 */
-	private static void autoRegister(Class<?> clazz) {
+	private static void autoRegister(final Class<?> clazz) {
 		final FoundationPlugin plugin = Platform.getPlugin();
 		final Tuple<FindInstance, Object> tuple = findInstance(clazz);
 
@@ -347,7 +347,7 @@ final class AutoRegisterScanner {
 	 * Tries to return instance of the given class, either by returning its singleon
 	 * or creating a new instance from constructor if valid
 	 */
-	private static Tuple<FindInstance, Object> findInstance(Class<?> clazz) {
+	private static Tuple<FindInstance, Object> findInstance(final Class<?> clazz) {
 		final Constructor<?>[] constructors = clazz.getDeclaredConstructors();
 
 		Object instance = null;
@@ -400,7 +400,7 @@ final class AutoRegisterScanner {
 	/*
 	 * Checks if the way the given class can be made a new instance of, correspond with the required way
 	 */
-	private static void enforceModeFor(Class<?> clazz, FindInstance actual, FindInstance required) {
+	private static void enforceModeFor(final Class<?> clazz, final FindInstance actual, final FindInstance required) {
 		ValidCore.checkBoolean(required == actual, clazz + " using @AutoRegister must have " + (required == FindInstance.NEW_FROM_CONSTRUCTOR ? "a single public no args constructor"
 				: "one private no args constructor plus a 'private static final " + clazz.getSimpleName() + " instance' field to be a singleton'"));
 	}
@@ -423,7 +423,7 @@ final class AutoRegisterScanner {
 
 		boolean canAutoRegister(Class<?> clazz);
 
-		default void enforceModeFor(Class<?> clazz, FindInstance actual, FindInstance required) {
+		default void enforceModeFor(final Class<?> clazz, final FindInstance actual, final FindInstance required) {
 			AutoRegisterScanner.enforceModeFor(clazz, actual, required);
 		}
 	}

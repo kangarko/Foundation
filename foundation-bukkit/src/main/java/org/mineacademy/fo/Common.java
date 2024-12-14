@@ -46,7 +46,7 @@ public final class Common extends CommonCore {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tellBoxed(CommandSender sender, String... messages) {
+	public static void tellBoxed(final CommandSender sender, final String... messages) {
 		CommonCore.tellBoxed(Platform.toPlayer(sender), messages);
 	}
 
@@ -66,7 +66,7 @@ public final class Common extends CommonCore {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tellBoxed(CommandSender sender, SimpleComponent... messages) {
+	public static void tellBoxed(final CommandSender sender, final SimpleComponent... messages) {
 		CommonCore.tellBoxed(Platform.toPlayer(sender), messages);
 	}
 
@@ -136,7 +136,7 @@ public final class Common extends CommonCore {
 	 * @param sender
 	 * @param messages
 	 */
-	public static void tell(@NonNull CommandSender sender, String... messages) {
+	public static void tell(@NonNull final CommandSender sender, final String... messages) {
 		CommonCore.tell(Platform.toPlayer(sender), messages);
 	}
 
@@ -148,7 +148,7 @@ public final class Common extends CommonCore {
 	 * @param sender
 	 * @param message
 	 */
-	public static void tell(@NonNull final CommandSender sender, SimpleComponent message) {
+	public static void tell(@NonNull final CommandSender sender, final SimpleComponent message) {
 		Platform.toPlayer(sender).sendMessage(message);
 	}
 
@@ -204,7 +204,7 @@ public final class Common extends CommonCore {
 	 * @param otherPlayer the player doing the query, used for checking if a player is vanished for them
 	 * @return a list of online player names, optionally including vanished players
 	 */
-	public static List<String> getPlayerNames(final boolean includeVanished, Player otherPlayer) {
+	public static List<String> getPlayerNames(final boolean includeVanished, final Player otherPlayer) {
 		final List<String> found = new ArrayList<>();
 
 		for (final Player online : Remain.getOnlinePlayers()) {
@@ -349,7 +349,7 @@ public final class Common extends CommonCore {
 	/*
 	 * Get the Y cords for the location
 	 */
-	private static double getYCords(int transform, double rectY) {
+	private static double getYCords(final int transform, final double rectY) {
 		double offsetY;
 		final double nextY = RandomUtil.getRandom().nextDouble();
 

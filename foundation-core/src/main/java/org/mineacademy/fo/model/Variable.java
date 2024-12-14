@@ -109,7 +109,7 @@ public final class Variable extends YamlConfig {
 	/*
 	 * Create and load a new variable (automatically called)
 	 */
-	private Variable(String file) {
+	private Variable(final String file) {
 		final String prototypePath = PROTOTYPE_PATH.apply(file);
 
 		this.setHeader(
@@ -210,7 +210,7 @@ public final class Variable extends YamlConfig {
 	 * @param placeholders
 	 * @return
 	 */
-	public String getValue(FoundationPlayer audience, Map<String, Object> placeholders) {
+	public String getValue(final FoundationPlayer audience, final Map<String, Object> placeholders) {
 
 		// Replace variables in script
 		final String script;
@@ -270,7 +270,7 @@ public final class Variable extends YamlConfig {
 	 * @param placeholders
 	 * @return
 	 */
-	public SimpleComponent build(FoundationPlayer audience, Map<String, Object> placeholders) {
+	public SimpleComponent build(final FoundationPlayer audience, final Map<String, Object> placeholders) {
 		final boolean replacingScript = Variables.isReplaceScript();
 		final Variables variables = Variables.builder(audience).placeholders(placeholders);
 
@@ -367,7 +367,7 @@ public final class Variable extends YamlConfig {
 	 * @param placeholders
 	 * @return
 	 */
-	public String buildLegacy(FoundationPlayer audience, Map<String, Object> placeholders) {
+	public String buildLegacy(final FoundationPlayer audience, final Map<String, Object> placeholders) {
 		final boolean replacingScript = Variables.isReplaceScript();
 		final Variables variables = Variables.builder(audience).placeholders(placeholders);
 
@@ -414,7 +414,7 @@ public final class Variable extends YamlConfig {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		return obj instanceof Variable && this.key.equals(((Variable) obj).getKey());
 	}
 
@@ -523,7 +523,7 @@ public final class Variable extends YamlConfig {
 		 * @param key
 		 * @return
 		 */
-		public static Type fromKey(String key) {
+		public static Type fromKey(final String key) {
 			for (final Type mode : values())
 				if (mode.key.equalsIgnoreCase(key))
 					return mode;

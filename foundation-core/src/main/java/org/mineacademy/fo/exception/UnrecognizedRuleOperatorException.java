@@ -25,11 +25,11 @@ public final class UnrecognizedRuleOperatorException extends RuntimeException {
 	 */
 	private final String hint;
 
-	public UnrecognizedRuleOperatorException(final String[] args, Rule rule) {
+	public UnrecognizedRuleOperatorException(final String[] args, final Rule rule) {
 		this(args, rule, null);
 	}
 
-	public UnrecognizedRuleOperatorException(final String[] args, Rule rule, String hint) {
+	public UnrecognizedRuleOperatorException(final String[] args, final Rule rule, final String hint) {
 		this.args = args;
 		this.rule = rule;
 		this.hint = hint;

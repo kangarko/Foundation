@@ -108,7 +108,7 @@ public final class ToolsListener implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	public void onToolEntityInteract(PlayerInteractEntityEvent event) {
+	public void onToolEntityInteract(final PlayerInteractEntityEvent event) {
 		if (!Remain.isInteractEventPrimaryHand(event))
 			return;
 

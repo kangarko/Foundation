@@ -314,7 +314,7 @@ public interface FoundationPlugin {
 	 *
 	 * @param library
 	 */
-	default void loadLibrary(Library library) {
+	default void loadLibrary(final Library library) {
 		this.getLibraryManager().loadLibrary(library);
 	}
 
@@ -329,7 +329,7 @@ public interface FoundationPlugin {
 	 * @param artifactId
 	 * @param version
 	 */
-	default void loadLibrary(String groupId, String artifactId, String version) {
+	default void loadLibrary(final String groupId, final String artifactId, final String version) {
 		this.loadLibrary(Library
 				.builder()
 				.groupId(groupId)
@@ -346,7 +346,7 @@ public interface FoundationPlugin {
 	 *
 	 * @param command
 	 */
-	default void registerCommand(SimpleCommandCore command) {
+	default void registerCommand(final SimpleCommandCore command) {
 		ValidCore.checkBoolean(!this.isInitializing(), "Cannot register commands during plugin initialization! Use onPluginStart() instead.");
 
 		command.register();
@@ -357,7 +357,7 @@ public interface FoundationPlugin {
 	 *
 	 * @param group
 	 */
-	default void registerCommands(SimpleCommandGroup group) {
+	default void registerCommands(final SimpleCommandGroup group) {
 		ValidCore.checkBoolean(!this.isInitializing(), "Cannot register commands during plugin initialization! Use onPluginStart() instead.");
 
 		group.register();
@@ -368,7 +368,7 @@ public interface FoundationPlugin {
 	 *
 	 * @param listener
 	 */
-	default void registerEvents(Object listener) {
+	default void registerEvents(final Object listener) {
 		ValidCore.checkBoolean(!this.isInitializing(), "Cannot register events during plugin initialization! Use onPluginStart() instead.");
 
 		Platform.registerEvents(listener);

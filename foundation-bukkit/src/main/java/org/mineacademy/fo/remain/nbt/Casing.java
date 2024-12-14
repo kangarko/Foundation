@@ -29,11 +29,11 @@ enum Casing {
 
 	private final UnaryOperator<String> convert;
 
-	Casing(UnaryOperator<String> function) {
+	Casing(final UnaryOperator<String> function) {
 		this.convert = function;
 	}
 
-	public String convertString(String str) {
+	public String convertString(final String str) {
 		return this.convert.apply(str);
 	}
 }

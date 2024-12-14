@@ -58,7 +58,7 @@ final class VelocityPlatform extends FoundationPlatform {
 		ReflectionUtil.setLegacyEnumNameTranslator(new LegacyEnumNameTranslator() {
 
 			@Override
-			public <E> String translateName(Class<E> enumType, String name) {
+			public <E> String translateName(final Class<E> enumType, String name) {
 				if (enumType == BossBar.Overlay.class)
 					name = name.toUpperCase().replace("SEGMENTED", "NOTCHED").replace("SOLID", "PROGRESS");
 
@@ -81,12 +81,12 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public HoverEventSource<?> convertItemStackToHoverEvent(Object itemStack) {
+	public HoverEventSource<?> convertItemStackToHoverEvent(final Object itemStack) {
 		throw new UnsupportedOperationException("Not supported in Velocity");
 	}
 
 	@Override
-	protected void dispatchConsoleCommand0(String command) {
+	protected void dispatchConsoleCommand0(final String command) {
 		final ProxyServer server = VelocityPlugin.getServer();
 
 		server.getCommandManager().executeAsync(server.getConsoleCommandSource(), command);
@@ -113,14 +113,14 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	protected FoundationPlayer getPlayer(String name) {
+	protected FoundationPlayer getPlayer(final String name) {
 		final Player player = VelocityPlugin.getServer().getPlayer(name).orElse(null);
 
 		return player != null ? this.toPlayer(player) : null;
 	}
 
 	@Override
-	protected FoundationPlayer getPlayer(UUID uniqueId) {
+	protected FoundationPlayer getPlayer(final UUID uniqueId) {
 		final Player player = VelocityPlugin.getServer().getPlayer(uniqueId).orElse(null);
 
 		return player != null && player.isActive() ? this.toPlayer(player) : null;
@@ -132,7 +132,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public File getPluginFile(String pluginName) {
+	public File getPluginFile(final String pluginName) {
 		return VelocityPlugin.getInstance().getFile();
 	}
 
@@ -142,7 +142,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public FoundationServer getServer(String name) {
+	public FoundationServer getServer(final String name) {
 		final RegisteredServer server = VelocityPlugin.getServer().getServer(name).orElse(null);
 
 		return server != null ? new VelocityServer(server) : null;
@@ -159,7 +159,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public boolean isPluginInstalled(String name) {
+	public boolean isPluginInstalled(final String name) {
 		final PluginManager manager = VelocityPlugin.getServer().getPluginManager();
 		final boolean present = manager.getPlugin(name).isPresent() || manager.getPlugin(name.toLowerCase()).isPresent();
 
@@ -173,14 +173,14 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public void log(String message) {
+	public void log(final String message) {
 		//final Logger logger = VelocityPlugin.getInstance().getLogger(); // Bugs out with duplicated prefix
 
 		System.out.println(CompChatColor.stripColorCodes(message));
 	}
 
 	@Override
-	public void registerCommand(SimpleCommandCore command, boolean unregisterOldCommand, boolean unregisterOldAliases) {
+	public void registerCommand(final SimpleCommandCore command, final boolean unregisterOldCommand, final boolean unregisterOldAliases) {
 		final CommandManager manager = VelocityPlugin.getServer().getCommandManager();
 		final CommandMeta oldCommand = manager.getCommandMeta(command.getLabel());
 
@@ -199,7 +199,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public void registerDefaultPlatformSubcommands(SimpleCommandGroup group) {
+	public void registerDefaultPlatformSubcommands(final SimpleCommandGroup group) {
 		// Not supported in Velocity
 	}
 
@@ -209,27 +209,27 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public Task runTask(int delayTicks, Runnable runnable) {
+	public Task runTask(final int delayTicks, final Runnable runnable) {
 		return Remain.runTaskAsync(delayTicks, runnable); // On velocity all tasks are async
 	}
 
 	@Override
-	public Task runTaskAsync(int delayTicks, Runnable runnable) {
+	public Task runTaskAsync(final int delayTicks, final Runnable runnable) {
 		return Remain.runTaskAsync(delayTicks, runnable);
 	}
 
 	@Override
-	public Task runTaskTimer(int delayTicks, int repeatTicks, Runnable runnable) {
+	public Task runTaskTimer(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		return Remain.runTaskTimerAsync(delayTicks, repeatTicks, runnable); // On velocity all tasks are async
 	}
 
 	@Override
-	public Task runTaskTimerAsync(int delayTicks, int repeatTicks, Runnable runnable) {
+	public Task runTaskTimerAsync(final int delayTicks, final int repeatTicks, final Runnable runnable) {
 		return Remain.runTaskTimerAsync(delayTicks, repeatTicks, runnable);
 	}
 
 	@Override
-	public void sendPluginMessage(UUID senderUid, String channel, byte[] array) {
+	public void sendPluginMessage(final UUID senderUid, final String channel, final byte[] array) {
 		final Player player = Remain.getPlayer(senderUid, false);
 		ValidCore.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
@@ -237,7 +237,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public FoundationPlayer toPlayer(Object sender) {
+	public FoundationPlayer toPlayer(final Object sender) {
 		if (sender instanceof FoundationPlayer)
 			return (FoundationPlayer) sender;
 
@@ -251,7 +251,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public FoundationServer toServer(Object server) {
+	public FoundationServer toServer(final Object server) {
 		if (server instanceof FoundationServer)
 			return (FoundationServer) server;
 
@@ -266,7 +266,7 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public void unregisterCommand(SimpleCommandCore command) {
+	public void unregisterCommand(final SimpleCommandCore command) {
 		VelocityPlugin.getServer().getCommandManager().unregister(command.getLabel());
 	}
 }

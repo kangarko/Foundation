@@ -28,7 +28,7 @@ public abstract class SimpleEvent extends Event {
 	 *
 	 * @param async
 	 */
-	protected SimpleEvent(boolean async) {
+	protected SimpleEvent(final boolean async) {
 		super(async);
 	}
 }

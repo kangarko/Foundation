@@ -106,7 +106,7 @@ public class SimpleScoreboard {
 		registeredBoards.add(this);
 	}
 
-	public SimpleScoreboard(String title) {
+	public SimpleScoreboard(final String title) {
 		this(title, 20);
 	}
 
@@ -115,7 +115,7 @@ public class SimpleScoreboard {
 	 * @param title
 	 * @param updateDelayTicks
 	 */
-	public SimpleScoreboard(String title, int updateDelayTicks) {
+	public SimpleScoreboard(final String title, final int updateDelayTicks) {
 		this.setTitle(title);
 		this.setUpdateDelayTicks(updateDelayTicks);
 
@@ -172,7 +172,7 @@ public class SimpleScoreboard {
 	/**
 	 * @param title the title to set
 	 */
-	public final void setTitle(String title) {
+	public final void setTitle(final String title) {
 		final int maxTitleLength = this.atLeast1_13 ? 128 : 32;
 
 		this.title = title.length() > maxTitleLength ? title.substring(0, maxTitleLength) : title;
@@ -200,7 +200,7 @@ public class SimpleScoreboard {
 	/**
 	 * @param updateDelayTicks the updateDelayTicks to set
 	 */
-	public final void setUpdateDelayTicks(int updateDelayTicks) {
+	public final void setUpdateDelayTicks(final int updateDelayTicks) {
 		this.updateDelayTicks = updateDelayTicks;
 	}
 
@@ -269,7 +269,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param primaryTheme
 	 */
-	public final void setPrimaryTheme(CompChatColor primaryTheme) {
+	public final void setPrimaryTheme(final CompChatColor primaryTheme) {
 		this.primaryTheme = primaryTheme;
 	}
 
@@ -278,7 +278,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param secondaryTheme
 	 */
-	public final void setSecondaryTheme(CompChatColor secondaryTheme) {
+	public final void setSecondaryTheme(final CompChatColor secondaryTheme) {
 		this.secondaryTheme = secondaryTheme;
 	}
 
@@ -447,7 +447,7 @@ public class SimpleScoreboard {
 	 *
 	 * @param player
 	 */
-	private void reloadEntries(Player player) throws IllegalArgumentException {
+	private void reloadEntries(final Player player) throws IllegalArgumentException {
 		final String colorizedTitle = CompChatColor.translateColorCodes(this.title);
 		final Scoreboard scoreboard = player.getScoreboard();
 		final List<String> rowsDone = new ArrayList<>();
@@ -532,7 +532,7 @@ public class SimpleScoreboard {
 	 * @param splitPoints The points to split the text
 	 * @return The method will split the text at the given splitPoints and will copy the colors over
 	 */
-	private List<String> copyColors(String text, int... splitPoints) {
+	private List<String> copyColors(String text, final int... splitPoints) {
 		// Removes useless colors in front of only spaces (e.g. [§a     §aText] becomes [     §aText])
 		final Pattern spaceMatcher = Pattern.compile("^( )+(" + COLOR_CHAR + ")");
 		final List<String> splitText = new ArrayList<>();

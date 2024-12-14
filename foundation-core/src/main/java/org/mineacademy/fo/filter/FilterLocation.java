@@ -20,7 +20,7 @@ public final class FilterLocation extends Filter {
 	}
 
 	@Override
-	public boolean isApplicable(Table table) {
+	public boolean isApplicable(final Table table) {
 		return RowLocationDate.class.isAssignableFrom(table.getRowClass());
 	}
 
@@ -33,7 +33,7 @@ public final class FilterLocation extends Filter {
 	}
 
 	@Override
-	public Collection<String> tabComplete(FoundationPlayer audience) {
+	public Collection<String> tabComplete(final FoundationPlayer audience) {
 		if (audience.isPlayer()) {
 			final SimpleLocation location = audience.getLocation();
 
@@ -45,7 +45,7 @@ public final class FilterLocation extends Filter {
 	}
 
 	@Override
-	public boolean validate(FoundationPlayer audience, String value) {
+	public boolean validate(final FoundationPlayer audience, final String value) {
 		final String[] split = value.split(",");
 
 		if (split.length != 2 && split.length != 4 && split.length != 5) {
@@ -150,7 +150,7 @@ public final class FilterLocation extends Filter {
 	}
 
 	@Override
-	public boolean canDisplay(Row row) {
+	public boolean canDisplay(final Row row) {
 		final RowLocationDate rowLocation = (RowLocationDate) row;
 
 		if (this.location.getWorldName().equalsIgnoreCase(rowLocation.getLocation().getWorldName()))

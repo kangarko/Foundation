@@ -24,7 +24,7 @@ public class BungeeLibraryManager extends LibraryManager {
 	 *
 	 * @param plugin the plugin to manage
 	 */
-	public BungeeLibraryManager(Plugin plugin) {
+	public BungeeLibraryManager(final Plugin plugin) {
 		super(new File(plugin.getDataFolder().getParentFile().getParentFile(), "libraries").toPath());
 
 		this.classLoader = new URLClassLoaderHelper((URLClassLoader) plugin.getClass().getClassLoader(), this);
@@ -37,12 +37,12 @@ public class BungeeLibraryManager extends LibraryManager {
 	 * @param file the file to add
 	 */
 	@Override
-	protected void addToClasspath(Path file) {
+	protected void addToClasspath(final Path file) {
 		this.classLoader.addToClasspath(file);
 	}
 
 	@Override
-	protected InputStream getResourceAsStream(String path) {
+	protected InputStream getResourceAsStream(final String path) {
 		return this.plugin.getResourceAsStream(path);
 	}
 }

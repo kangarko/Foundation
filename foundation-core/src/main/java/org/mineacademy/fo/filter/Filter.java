@@ -36,7 +36,7 @@ public abstract class Filter {
 	 *
 	 * @param identifier
 	 */
-	protected Filter(String identifier) {
+	protected Filter(final String identifier) {
 		this.identifier = identifier;
 	}
 
@@ -80,7 +80,7 @@ public abstract class Filter {
 	 * @param audience
 	 * @return
 	 */
-	public Collection<String> tabComplete(FoundationPlayer audience) {
+	public Collection<String> tabComplete(final FoundationPlayer audience) {
 		return null;
 	}
 
@@ -90,7 +90,7 @@ public abstract class Filter {
 	 * @param name
 	 * @return
 	 */
-	public static Filter getByName(String name) {
+	public static Filter getByName(final String name) {
 		return registeredFilters.get(name);
 	}
 
@@ -100,7 +100,7 @@ public abstract class Filter {
 	 * @param identifier
 	 * @param filter
 	 */
-	public static void register(String identifier, Filter filter) {
+	public static void register(final String identifier, final Filter filter) {
 		registeredFilters.put(identifier, filter);
 	}
 

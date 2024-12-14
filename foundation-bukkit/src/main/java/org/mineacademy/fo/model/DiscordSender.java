@@ -46,17 +46,17 @@ public final class DiscordSender implements CommandSender {
 	private final Message message;
 
 	@Override
-	public boolean isPermissionSet(String permission) {
+	public boolean isPermissionSet(final String permission) {
 		throw this.unsupported("isPermissionSet");
 	}
 
 	@Override
-	public boolean isPermissionSet(Permission permission) {
+	public boolean isPermissionSet(final Permission permission) {
 		throw this.unsupported("isPermissionSet");
 	}
 
 	@Override
-	public boolean hasPermission(String perm) {
+	public boolean hasPermission(final String perm) {
 		if (HookManager.isVaultLoaded()) {
 			final Boolean result = HookManager.hasVaultPermission(this.offlinePlayer, perm);
 
@@ -67,32 +67,32 @@ public final class DiscordSender implements CommandSender {
 	}
 
 	@Override
-	public boolean hasPermission(Permission perm) {
+	public boolean hasPermission(final Permission perm) {
 		return this.hasPermission(perm.getName());
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
+	public PermissionAttachment addAttachment(final Plugin plugin, final String name, final boolean value) {
 		throw this.unsupported("addAttachment");
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin plugin) {
+	public PermissionAttachment addAttachment(final Plugin plugin) {
 		throw this.unsupported("addAttachment");
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
+	public PermissionAttachment addAttachment(final Plugin plugin, final String name, final boolean value, final int ticks) {
 		throw this.unsupported("addAttachment");
 	}
 
 	@Override
-	public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
+	public PermissionAttachment addAttachment(final Plugin plugin, final int ticks) {
 		throw this.unsupported("addAttachment");
 	}
 
 	@Override
-	public void removeAttachment(PermissionAttachment attachment) {
+	public void removeAttachment(final PermissionAttachment attachment) {
 		throw this.unsupported("removeAttachment");
 	}
 
@@ -112,18 +112,18 @@ public final class DiscordSender implements CommandSender {
 	}
 
 	@Override
-	public void setOp(boolean op) {
+	public void setOp(final boolean op) {
 		throw this.unsupported("setOp");
 	}
 
 	@Override
-	public void sendMessage(String... messages) {
+	public void sendMessage(final String... messages) {
 		for (final String message : messages)
 			this.sendMessage(message);
 	}
 
 	@Override
-	public void sendMessage(String message) {
+	public void sendMessage(final String message) {
 		final String finalMessage = CompChatColor.stripColorCodes(message);
 
 		Platform.runTaskAsync(() -> {
@@ -157,7 +157,7 @@ public final class DiscordSender implements CommandSender {
 		throw this.unsupported("spigot");
 	}
 
-	private FoException unsupported(String method) {
+	private FoException unsupported(final String method) {
 		return new FoException("DiscordSender cannot invoke " + method + "()");
 	}
 
@@ -165,7 +165,7 @@ public final class DiscordSender implements CommandSender {
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String)
 	 */
 	@Override
-	public void sendMessage(UUID uuid, String message) {
+	public void sendMessage(final UUID uuid, final String message) {
 		this.sendMessage(message);
 	}
 
@@ -173,7 +173,7 @@ public final class DiscordSender implements CommandSender {
 	 * @see org.bukkit.command.CommandSender#sendMessage(java.util.UUID, java.lang.String[])
 	 */
 	@Override
-	public void sendMessage(UUID uuid, String... messages) {
+	public void sendMessage(final UUID uuid, final String... messages) {
 		this.sendMessage(messages);
 	}
 

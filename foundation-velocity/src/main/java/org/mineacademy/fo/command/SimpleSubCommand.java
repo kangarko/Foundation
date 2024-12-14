@@ -19,7 +19,7 @@ public abstract class SimpleSubCommand extends SimpleSubCommandCore implements S
 	 * @param parent
 	 * @param sublabel
 	 */
-	protected SimpleSubCommand(SimpleCommandGroup parent, String sublabel) {
+	protected SimpleSubCommand(final SimpleCommandGroup parent, final String sublabel) {
 		super(parent, sublabel);
 	}
 
@@ -28,7 +28,7 @@ public abstract class SimpleSubCommand extends SimpleSubCommandCore implements S
 	 *
 	 * @param sublabel
 	 */
-	protected SimpleSubCommand(String sublabel) {
+	protected SimpleSubCommand(final String sublabel) {
 		super(sublabel);
 	}
 

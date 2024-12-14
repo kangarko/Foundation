@@ -90,7 +90,7 @@ public enum CompProperty {
 	 * @param instance
 	 * @param key
 	 */
-	public void apply(Object instance, Object key) {
+	public void apply(final Object instance, final Object key) {
 		ValidCore.checkNotNull(instance, "instance is null!");
 		ValidCore.checkBoolean(this.requiredClass.isAssignableFrom(instance.getClass()), this + " accepts " + this.requiredClass.getSimpleName() + ", not " + instance.getClass().getSimpleName());
 
@@ -112,7 +112,7 @@ public enum CompProperty {
 			}
 	}
 
-	private void applyLegacy(@NonNull Object instance, @NonNull Object key) {
+	private void applyLegacy(@NonNull final Object instance, @NonNull final Object key) {
 		ValidCore.checkBoolean(Bukkit.isPrimaryThread(), "Cannot call CompProperty." + this + ".applyLegacy(" + instance.getClass().getSimpleName() + ") async on " + instance);
 
 		if (instance instanceof Entity) {
@@ -158,7 +158,7 @@ public enum CompProperty {
 	 * @param clazz
 	 * @return
 	 */
-	public boolean isAvailable(Class<?> clazz) {
+	public boolean isAvailable(final Class<?> clazz) {
 
 		if (this.isAvailable.containsKey(clazz))
 			return this.isAvailable.get(clazz);
@@ -167,7 +167,7 @@ public enum CompProperty {
 	}
 
 	// Automatically returns the correct getter or setter method for class
-	private Method getMethod(Class<?> clazz) {
+	private Method getMethod(final Class<?> clazz) {
 
 		if (this.isAvailable.containsKey(clazz) && !this.isAvailable.get(clazz))
 			return null;

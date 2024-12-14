@@ -197,9 +197,9 @@ class MojangToMapping {
 	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_21R3 = new HashMap<String, String>() {
 		{
-			putAll(MC1_21R2);
+			this.putAll(MC1_21R2);
 
-			put("net.minecraft.world.item.component.CustomData#copyTag()", "d");
+			this.put("net.minecraft.world.item.component.CustomData#copyTag()", "d");
 		}
 	};
 

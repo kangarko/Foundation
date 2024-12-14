@@ -92,7 +92,7 @@ public final class LimitedQueue<E> implements Queue<E> {
 	}
 
 	@Override
-	public boolean removeAll(Collection<?> collection) {
+	public boolean removeAll(final Collection<?> collection) {
 		return this.delegate.removeAll(collection);
 	}
 
@@ -102,22 +102,22 @@ public final class LimitedQueue<E> implements Queue<E> {
 	}
 
 	@Override
-	public boolean contains(Object object) {
+	public boolean contains(final Object object) {
 		return this.delegate.contains(object);
 	}
 
 	@Override
-	public boolean remove(Object object) {
+	public boolean remove(final Object object) {
 		return this.delegate.remove(object);
 	}
 
 	@Override
-	public boolean containsAll(Collection<?> collection) {
+	public boolean containsAll(final Collection<?> collection) {
 		return this.delegate.containsAll(collection);
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> collection) {
+	public boolean retainAll(final Collection<?> collection) {
 		return this.delegate.retainAll(collection);
 	}
 
@@ -132,7 +132,7 @@ public final class LimitedQueue<E> implements Queue<E> {
 	}
 
 	@Override
-	public <T extends Object> T[] toArray(T[] array) {
+	public <T extends Object> T[] toArray(final T[] array) {
 		return this.delegate.toArray(array);
 	}
 }

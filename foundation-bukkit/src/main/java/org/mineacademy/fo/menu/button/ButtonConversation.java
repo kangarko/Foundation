@@ -41,7 +41,7 @@ public final class ButtonConversation extends Button {
 	 * @param title
 	 * @param lore
 	 */
-	public ButtonConversation(SimpleConversation convo, CompMaterial material, String title, String... lore) {
+	public ButtonConversation(final SimpleConversation convo, final CompMaterial material, final String title, final String... lore) {
 		this(convo, ItemCreator.from(material, title, lore));
 	}
 
@@ -51,7 +51,7 @@ public final class ButtonConversation extends Button {
 	 * @param convo
 	 * @param item
 	 */
-	public ButtonConversation(SimpleConversation convo, ItemCreator item) {
+	public ButtonConversation(final SimpleConversation convo, final ItemCreator item) {
 		this(convo, null, item.make());
 	}
 
@@ -63,7 +63,7 @@ public final class ButtonConversation extends Button {
 	 * @param title
 	 * @param lore
 	 */
-	public ButtonConversation(SimplePrompt prompt, CompMaterial material, String title, String... lore) {
+	public ButtonConversation(final SimplePrompt prompt, final CompMaterial material, final String title, final String... lore) {
 		this(prompt, ItemCreator.from(material, title, lore));
 	}
 
@@ -73,18 +73,18 @@ public final class ButtonConversation extends Button {
 	 * @param prompt
 	 * @param item
 	 */
-	public ButtonConversation(SimplePrompt prompt, ItemCreator item) {
+	public ButtonConversation(final SimplePrompt prompt, final ItemCreator item) {
 		this(null, prompt, item.hideTags(true).make());
 	}
 
-	private ButtonConversation(SimpleConversation conversation, SimplePrompt prompt, ItemStack item) {
+	private ButtonConversation(final SimpleConversation conversation, final SimplePrompt prompt, final ItemStack item) {
 		this.conversation = conversation;
 		this.prompt = prompt;
 		this.item = item;
 	}
 
 	@Override
-	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+	public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 		ValidCore.checkBoolean(this.conversation != null || this.prompt != null, "Conversation and prompt cannot be null!");
 
 		if (this.conversation != null) {

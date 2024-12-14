@@ -29,7 +29,7 @@ public class CommandException extends RuntimeException {
 	 *
 	 * @param components
 	 */
-	public CommandException(SimpleComponent... components) {
+	public CommandException(final SimpleComponent... components) {
 		super("");
 
 		this.components = components;
@@ -51,7 +51,7 @@ public class CommandException extends RuntimeException {
 	 *
 	 * @param audience
 	 */
-	public final void sendErrorMessage(FoundationPlayer audience) {
+	public final void sendErrorMessage(final FoundationPlayer audience) {
 		if (this.components != null)
 			if (this.components.length == 1)
 				Messenger.error(audience, this.components[0]);

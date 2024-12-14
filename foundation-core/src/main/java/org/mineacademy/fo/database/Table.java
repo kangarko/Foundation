@@ -51,7 +51,7 @@ public interface Table {
 	 * @param id
 	 * @return
 	 */
-	default <T extends Row> T getRow(int id) {
+	default <T extends Row> T getRow(final int id) {
 		return this.getDatabase().getRow(this, id);
 	}
 
@@ -80,7 +80,7 @@ public interface Table {
 	 * @return the row or null
 	 * @throws SQLException
 	 */
-	default <T extends Row> T createRowOrNull(SimpleResultSet resultSet) throws SQLException {
+	default <T extends Row> T createRowOrNull(final SimpleResultSet resultSet) throws SQLException {
 		Constructor<?> constructor;
 		final Class<? extends Row> clazz = this.getRowClass();
 

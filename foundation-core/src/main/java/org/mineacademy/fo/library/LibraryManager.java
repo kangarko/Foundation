@@ -104,7 +104,7 @@ public abstract class LibraryManager {
 	 * @param saveDirectory data directory
 	 * @param directoryName download directory name
 	 */
-	protected LibraryManager(Path saveDirectory) {
+	protected LibraryManager(final Path saveDirectory) {
 		this.saveDirectory = saveDirectory;
 
 		this.addMavenCentral();
@@ -123,7 +123,7 @@ public abstract class LibraryManager {
 	 * @param library the library to add
 	 * @param file    the file to add
 	 */
-	protected void addToIsolatedClasspath(Library library, Path file) {
+	protected void addToIsolatedClasspath(final Library library, final Path file) {
 		IsolatedClassLoader classLoader;
 		final String loaderId = library.getLoaderId();
 		if (loaderId != null)
@@ -150,7 +150,7 @@ public abstract class LibraryManager {
 	 * @return the isolated class loader associated with the provided id
 	 */
 
-	public IsolatedClassLoader getIsolatedClassLoaderById(String loaderId) {
+	public IsolatedClassLoader getIsolatedClassLoaderById(final String loaderId) {
 		return this.isolatedLibraries.get(loaderId);
 	}
 
@@ -180,7 +180,7 @@ public abstract class LibraryManager {
 	 *
 	 * @param url repository URL to add
 	 */
-	public void addRepository(String url) {
+	public void addRepository(final String url) {
 		final String repo = requireNonNull(url, "url").endsWith("/") ? url : url + '/';
 		synchronized (this.repositories) {
 			this.repositories.add(repo);
@@ -230,7 +230,7 @@ public abstract class LibraryManager {
 	 * @param library the library to resolve
 	 * @return download URLs
 	 */
-	public List<String> resolveLibrary(Library library) {
+	public List<String> resolveLibrary(final Library library) {
 
 		// MineAcademy edit: Skip resolve if direct links are provided
 		if (!library.getUrls().isEmpty())
@@ -258,7 +258,7 @@ public abstract class LibraryManager {
 	 * @param library the library to resolve repositories for
 	 * @return the resolved repositories
 	 */
-	public List<String> resolveRepositories(Library library) {
+	public List<String> resolveRepositories(final Library library) {
 
 		// MineAcademy edit: Prioritize library repositories
 		if (!library.getRepositories().isEmpty())
@@ -275,7 +275,7 @@ public abstract class LibraryManager {
 	 * @return The URl of the artifact of a snapshot library or null if no information could be gathered from the
 	 * provided repository
 	 */
-	protected String resolveSnapshot(String repository, Library library) {
+	protected String resolveSnapshot(final String repository, final Library library) {
 		final String mavenMetadata = repository.startsWith("file") ? "maven-metadata-local.xml" : "maven-metadata.xml";
 		final String url = requireNonNull(repository, "repository") + requireNonNull(library, "library").getPartialPath() + mavenMetadata;
 
@@ -328,7 +328,7 @@ public abstract class LibraryManager {
 	 * @throws IOException If any IO errors occur
 	 */
 
-	protected String getURLFromMetadata(InputStream inputStream, Library library) throws IOException {
+	protected String getURLFromMetadata(final InputStream inputStream, final Library library) throws IOException {
 		requireNonNull(inputStream, "inputStream");
 		requireNonNull(library, "library");
 
@@ -393,7 +393,7 @@ public abstract class LibraryManager {
 	 * @param url the URL to the library jar
 	 * @return downloaded jar as byte array or null if nothing was downloaded
 	 */
-	protected byte[] downloadLibrary(String url) {
+	protected byte[] downloadLibrary(final String url) {
 		try {
 			LOGGER.info("Downloading library " + url.substring(url.lastIndexOf('/') + 1));
 
@@ -475,7 +475,7 @@ public abstract class LibraryManager {
 	 * @see #relocate(Path, String, Collection)
 	 */
 
-	public Path downloadLibrary(Library library) {
+	public Path downloadLibrary(final Library library) {
 		Path file = this.saveDirectory.resolve(requireNonNull(library, "library").getPath());
 
 		if (Files.exists(file)) {
@@ -563,7 +563,7 @@ public abstract class LibraryManager {
 	 * @return the relocated file
 	 */
 
-	public Path relocate(Path in, String out, Collection<Relocation> relocations) {
+	public Path relocate(final Path in, final String out, final Collection<Relocation> relocations) {
 		return this.relocate(in, this.saveDirectory.resolve(out), relocations);
 	}
 
@@ -577,7 +577,7 @@ public abstract class LibraryManager {
 	 * @return the relocated file
 	 */
 
-	public Path relocate(Path in, Path file, Collection<Relocation> relocations) {
+	public Path relocate(final Path in, final Path file, final Collection<Relocation> relocations) {
 		requireNonNull(in, "in");
 		requireNonNull(file, "file");
 		requireNonNull(relocations, "relocations");
@@ -616,7 +616,7 @@ public abstract class LibraryManager {
 	 * @throws NullPointerException if the provided library is null.
 	 * @see #loadLibrary(Library)
 	 */
-	protected void resolveTransitiveLibraries(Library library) {
+	protected void resolveTransitiveLibraries(final Library library) {
 		requireNonNull(library, "library");
 
 		synchronized (this) {
@@ -638,7 +638,7 @@ public abstract class LibraryManager {
 	 * @param library the library to load
 	 * @see #downloadLibrary(Library)
 	 */
-	public void loadLibrary(Library library) {
+	public void loadLibrary(final Library library) {
 		final Path file = this.downloadLibrary(requireNonNull(library, "library"));
 
 		if (library.resolveTransitiveDependencies())
@@ -657,7 +657,7 @@ public abstract class LibraryManager {
 	 * @param libraries the libraries to load
 	 * @see #loadLibrary(Library)
 	 */
-	public void loadLibraries(Library... libraries) {
+	public void loadLibraries(final Library... libraries) {
 		for (final Library library : libraries)
 			this.loadLibrary(library);
 	}
@@ -669,7 +669,7 @@ public abstract class LibraryManager {
 	 * @return input stream for the resource
 	 */
 
-	protected InputStream getResourceAsStream(String path) {
+	protected InputStream getResourceAsStream(final String path) {
 		return this.getClass().getClassLoader().getResourceAsStream(path);
 	}
 }

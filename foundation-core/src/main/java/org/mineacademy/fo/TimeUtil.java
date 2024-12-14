@@ -298,7 +298,7 @@ public final class TimeUtil {
 	 * @param input
 	 * @return
 	 */
-	public static long toMilliseconds(String input) {
+	public static long toMilliseconds(final String input) {
 
 		// Time unit values in milliseconds
 		final long MILLISECONDS_IN_SECOND = 1000;
@@ -403,7 +403,7 @@ public final class TimeUtil {
 	 * 5. If the 'future' parameter is true, it checks if the current time is before the timestamp. If the 'future' parameter is false, it checks if the current time is after the timestamp.
 	 * 6. If the current time is not within the specified timeframe, it returns false. Otherwise, it returns true.
 	 */
-	public static boolean isInTimeframe(@NonNull String time, boolean future) {
+	public static boolean isInTimeframe(@NonNull String time, final boolean future) {
 		final Calendar calendar = Calendar.getInstance();
 		final String[] months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 		final String[] fullNameMonths = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };

@@ -8,7 +8,7 @@ public class NBTPersistentDataContainer extends NBTCompound {
 
 	private final PersistentDataContainer container;
 
-	public NBTPersistentDataContainer(PersistentDataContainer container) {
+	public NBTPersistentDataContainer(final PersistentDataContainer container) {
 		super(null, null);
 		this.container = container;
 	}
@@ -19,7 +19,7 @@ public class NBTPersistentDataContainer extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(Object compound) {
+	protected void setCompound(final Object compound) {
 
 		final Map<Object, Object> map = (Map<Object, Object>) ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_GET_MAP
 				.run(this.container);

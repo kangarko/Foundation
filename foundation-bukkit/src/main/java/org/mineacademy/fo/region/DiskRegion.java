@@ -66,14 +66,14 @@ public final class DiskRegion extends YamlConfig {
 	/*
 	 * Create a new region from disk
 	 */
-	private DiskRegion(String name) {
+	private DiskRegion(final String name) {
 		this(name, null);
 	}
 
 	/*
 	 * Create a new region from command
 	 */
-	private DiskRegion(String name, @Nullable VisualizedRegion border) {
+	private DiskRegion(final String name, @Nullable final VisualizedRegion border) {
 		this.border = border;
 
 		final SimpleCommandGroup defaultGroup = Platform.getPlugin().getDefaultCommandGroup();
@@ -135,7 +135,7 @@ public final class DiskRegion extends YamlConfig {
 	 *
 	 * @param name
 	 */
-	public void setName(@NonNull String name) {
+	public void setName(@NonNull final String name) {
 		if (this.border != null)
 			this.border.setName(name);
 		else
@@ -158,7 +158,7 @@ public final class DiskRegion extends YamlConfig {
 	 *
 	 * @param primary
 	 */
-	public void setPrimary(Location primary) {
+	public void setPrimary(final Location primary) {
 		if (this.border != null)
 			this.border.setPrimary(primary);
 		else
@@ -181,7 +181,7 @@ public final class DiskRegion extends YamlConfig {
 	 *
 	 * @param secondary
 	 */
-	public void setSecondary(Location secondary) {
+	public void setSecondary(final Location secondary) {
 		if (this.border != null)
 			this.border.setSecondary(secondary);
 		else
@@ -214,7 +214,7 @@ public final class DiskRegion extends YamlConfig {
 	 * @param location
 	 * @return
 	 */
-	public boolean isWithin(Location location) {
+	public boolean isWithin(final Location location) {
 		return this.border != null ? this.border.isWithin(location) : false;
 	}
 
@@ -223,7 +223,7 @@ public final class DiskRegion extends YamlConfig {
 	 *
 	 * @param player
 	 */
-	public void teleportToCenter(Player player) {
+	public void teleportToCenter(final Player player) {
 		if (this.border != null && this.border.isWhole())
 			this.border.teleportToCenter(player);
 	}
@@ -233,7 +233,7 @@ public final class DiskRegion extends YamlConfig {
 	 *
 	 * @param player
 	 */
-	public void visualize(Player player) {
+	public void visualize(final Player player) {
 		this.visualize(player, null);
 	}
 
@@ -243,7 +243,7 @@ public final class DiskRegion extends YamlConfig {
 	 * @param player
 	 * @param color
 	 */
-	public void visualize(Player player, Color color) {
+	public void visualize(final Player player, final Color color) {
 		ValidCore.checkNotNull(this.border, "Cannot call visualize using a region with no border");
 
 		if (!this.border.canSeeParticles(player)) {
@@ -256,7 +256,7 @@ public final class DiskRegion extends YamlConfig {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		return obj instanceof DiskRegion && ((DiskRegion) obj).border != null && this.getFileName().equals(((DiskRegion) obj).getFileName());
 	}
 
@@ -275,7 +275,7 @@ public final class DiskRegion extends YamlConfig {
 	 * @param player
 	 * @return
 	 */
-	public static VisualizedRegion getCreatedRegion(Player player) {
+	public static VisualizedRegion getCreatedRegion(final Player player) {
 		ValidCore.checkNotNull(regionGetter, "Please call DiskRegion#setRegionGetter before getting the region for player!");
 
 		final VisualizedRegion region = regionGetter.apply(player);

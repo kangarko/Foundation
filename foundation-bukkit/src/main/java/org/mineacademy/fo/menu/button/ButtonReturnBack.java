@@ -63,7 +63,7 @@ public final class ButtonReturnBack extends Button {
 	 * Open the parent menu when clicked
 	 */
 	@Override
-	public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+	public void onClickedInMenu(final Player player, final Menu menu, final ClickType click) {
 
 		if (this.makeNewInstance) {
 

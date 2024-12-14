@@ -33,7 +33,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
@@ -642,7 +641,7 @@ public final class HookManager {
 	 * @param entity the entity to check.
 	 * @return
 	 */
-	public static String getBossName(@NonNull Entity entity) {
+	public static String getBossName(@NonNull final Entity entity) {
 		return isBossLoaded() ? bossHook.getBossName(entity) : null;
 	}
 
@@ -653,7 +652,7 @@ public final class HookManager {
 	 * @param entity the entity to check.
 	 * @return
 	 */
-	public static String getMythicMobName(@NonNull Entity entity) {
+	public static String getMythicMobName(@NonNull final Entity entity) {
 		return isMythicMobsLoaded() ? mythicMobsHook.getBossName(entity) : null;
 	}
 
@@ -668,7 +667,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxVisitors(Player player) {
+	public static Set<UUID> getBentoBoxVisitors(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandVisitors(player) : new HashSet<>();
 	}
 
@@ -679,7 +678,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxCoops(Player player) {
+	public static Set<UUID> getBentoBoxCoops(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandCoops(player) : new HashSet<>();
 	}
 
@@ -690,7 +689,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxTrustees(Player player) {
+	public static Set<UUID> getBentoBoxTrustees(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandTrustees(player) : new HashSet<>();
 	}
 
@@ -701,7 +700,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxMembers(Player player) {
+	public static Set<UUID> getBentoBoxMembers(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandMembers(player) : new HashSet<>();
 	}
 
@@ -712,7 +711,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxSubOwners(Player player) {
+	public static Set<UUID> getBentoBoxSubOwners(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandSubOwners(player) : new HashSet<>();
 	}
 
@@ -723,7 +722,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxOwners(Player player) {
+	public static Set<UUID> getBentoBoxOwners(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandOwners(player) : new HashSet<>();
 	}
 
@@ -734,7 +733,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxMods(Player player) {
+	public static Set<UUID> getBentoBoxMods(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandMods(player) : new HashSet<>();
 	}
 
@@ -745,7 +744,7 @@ public final class HookManager {
 	 * @param player the player's island to check.
 	 * @return
 	 */
-	public static Set<UUID> getBentoBoxAdmins(Player player) {
+	public static Set<UUID> getBentoBoxAdmins(final Player player) {
 		return isBentoBoxLoaded() ? bentoBoxHook.getIslandAdmins(player) : new HashSet<>();
 	}
 
@@ -760,7 +759,7 @@ public final class HookManager {
 	 * @param player the player's land to check.
 	 * @return
 	 */
-	public static Collection<Player> getLandPlayers(Player player) {
+	public static Collection<Player> getLandPlayers(final Player player) {
 		return isLandsLoaded() ? landsHook.getLandPlayers(player) : new ArrayList<>();
 	}
 
@@ -869,7 +868,7 @@ public final class HookManager {
 	 * @param vanished the state to set the player's vanish to.
 	 */
 	@Deprecated
-	public static void setVanished(@NonNull Player player, boolean vanished) {
+	public static void setVanished(@NonNull final Player player, final boolean vanished) {
 		if (isEssentialsLoaded())
 			essentialsHook.setVanished(player.getName(), vanished);
 
@@ -914,7 +913,7 @@ public final class HookManager {
 	 * @param durationTokenized the duration to mute the player for.
 	 * @param reason            the reason to mute the player for.
 	 */
-	public static void setLiteBansMute(String targetPlayerName, String durationTokenized, String reason) {
+	public static void setLiteBansMute(final String targetPlayerName, final String durationTokenized, final String reason) {
 		if (isLiteBansLoaded())
 			Platform.runTask(0, () -> {
 				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lmute " + targetPlayerName + " " + durationTokenized + (reason == null || reason.isEmpty() ? "" : " " + reason));
@@ -927,7 +926,7 @@ public final class HookManager {
 	 *
 	 * @param targetPlayerName the player to unmute.
 	 */
-	public static void setLiteBansUnmute(String targetPlayerName) {
+	public static void setLiteBansUnmute(final String targetPlayerName) {
 		if (isLiteBansLoaded())
 			Platform.runTask(0, () -> {
 				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lunmute " + targetPlayerName);
@@ -1013,7 +1012,7 @@ public final class HookManager {
 	 * @param player the player who's nickname you want to get.
 	 * @return the nickname or null if the player is an NPC or does not have a nick
 	 */
-	public static String getNickOrNullColored(Player player) {
+	public static String getNickOrNullColored(final Player player) {
 		return getNickOrNull(player, false);
 	}
 
@@ -1024,7 +1023,7 @@ public final class HookManager {
 	 * @param player the player whose nickname you want to get.
 	 * @return the nickname or null if the player is an NPC or does not have an ick
 	 */
-	public static String getNickOrNullColorless(Player player) {
+	public static String getNickOrNullColorless(final Player player) {
 		return getNickOrNull(player, true);
 	}
 
@@ -1032,7 +1031,7 @@ public final class HookManager {
 	 * Returns the nickname for the given recipient from CMI, EssentialsX or
 	 * Nicky, or if it's a console, their name.
 	 */
-	private static String getNickOrNull(@NonNull Player player, boolean stripColors) {
+	private static String getNickOrNull(@NonNull final Player player, final boolean stripColors) {
 		if (isNPC(player))
 			return null;
 
@@ -1065,7 +1064,7 @@ public final class HookManager {
 	 * @param playerId the player whose nickname you want to set.
 	 * @param nick     the nickname to set.
 	 */
-	public static void setNick(@NonNull final UUID playerId, @Nullable String nick) {
+	public static void setNick(@NonNull final UUID playerId, @Nullable final String nick) {
 		if (isEssentialsLoaded())
 			essentialsHook.setNick(playerId, nick);
 
@@ -1080,7 +1079,7 @@ public final class HookManager {
 	 * @param nick the nickname to use.
 	 * @return
 	 */
-	public static String getNameFromNick(@NonNull String nick) {
+	public static String getNameFromNick(@NonNull final String nick) {
 		final String essNick = isEssentialsLoaded() ? essentialsHook.getNameFromNick(nick) : nick;
 		final String cmiNick = isCMILoaded() ? CMIHook.getNameFromNick(nick) : nick;
 
@@ -1123,7 +1122,7 @@ public final class HookManager {
 	 * @param component the message.
 	 * @return
 	 */
-	public static SimpleComponent replaceFontImages(@Nullable Player player, SimpleComponent component) {
+	public static SimpleComponent replaceFontImages(@Nullable final Player player, final SimpleComponent component) {
 		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImages(player, component) : component;
 	}
 
@@ -1144,7 +1143,7 @@ public final class HookManager {
 	 * @param message the message.
 	 * @return
 	 */
-	public static String replaceFontImagesLegacy(@Nullable Player player, String message) {
+	public static String replaceFontImagesLegacy(@Nullable final Player player, final String message) {
 		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImagesLegacy(player, message) : message;
 	}
 
@@ -1341,7 +1340,7 @@ public final class HookManager {
 	 * @param perm   the permission to check.
 	 * @return
 	 */
-	public static boolean hasProtocolLibPermission(Player player, String perm) {
+	public static boolean hasProtocolLibPermission(final Player player, final String perm) {
 		if (isProtocolLibLoaded() && protocolLibHook.isTemporaryPlayer(player))
 			return hasVaultPermission(player, perm);
 
@@ -1470,7 +1469,7 @@ public final class HookManager {
 	 *
 	 * @return the value or null if not found or PAPI not installed
 	 */
-	public static String getPlaceholderAPIValue(Player player, String variable) {
+	public static String getPlaceholderAPIValue(final Player player, final String variable) {
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.getValue(player, variable) : null;
 	}
 
@@ -1816,7 +1815,7 @@ public final class HookManager {
 
 class AdvancedVanishHook {
 
-	boolean isVanished(Player player) {
+	boolean isVanished(final Player player) {
 		final Class<?> clazz = ReflectionUtil.lookupClass("me.quantiom.advancedvanish.util.AdvancedVanishAPI");
 		final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "INSTANCE");
 
@@ -1825,7 +1824,7 @@ class AdvancedVanishHook {
 		return ReflectionUtil.invoke(isPlayerVanished, instance, player);
 	}
 
-	void setVanished(Player player, boolean vanished) {
+	void setVanished(final Player player, final boolean vanished) {
 		final Class<?> clazz = ReflectionUtil.lookupClass("me.quantiom.advancedvanish.util.AdvancedVanishAPI");
 		final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "INSTANCE");
 
@@ -1919,7 +1918,7 @@ class EssentialsHook {
 		return user != null ? user.isVanished() : false;
 	}
 
-	void setVanished(final String playerName, boolean vanished) {
+	void setVanished(final String playerName, final boolean vanished) {
 		final IUser user = this.getUser(playerName);
 
 		if (user != null && user.isVanished() != vanished)
@@ -1976,7 +1975,7 @@ class EssentialsHook {
 		return nick == null || !nick.isEmpty() ? null : nick;
 	}
 
-	void setNick(final UUID uniqueId, String nick) {
+	void setNick(final UUID uniqueId, final String nick) {
 		final User user = this.getUser(uniqueId);
 
 		if (user != null) {
@@ -2282,7 +2281,7 @@ class ProtocolLibHook {
 			}
 	}
 
-	final boolean isTemporaryPlayer(Player player) {
+	final boolean isTemporaryPlayer(final Player player) {
 		try {
 			return player != null && player.getClass().getSimpleName().contains("TemporaryPlayer"); // Solves compatibiltiy issues
 
@@ -2544,11 +2543,11 @@ final class PlaceholderAPIHook {
 				this.hooks.put(expansion.getIdentifier().toLowerCase(), expansion);
 	}
 
-	private String setPlaceholders(final OfflinePlayer player, String text) {
+	private String setPlaceholders(final OfflinePlayer player, final String text) {
 		return this.setPlaceholders(player, text, this.getHooks(), Variables.BRACKET_VARIABLE_PATTERN.matcher(text));
 	}
 
-	private String setPlaceholders(@Nullable OfflinePlayer player, String message, Map<String, Object> hooks, Matcher matcher) {
+	private String setPlaceholders(@Nullable final OfflinePlayer player, String message, final Map<String, Object> hooks, final Matcher matcher) {
 		while (matcher.find()) {
 			String variable = matcher.group(1);
 			boolean frontSpace = false;
@@ -2588,11 +2587,11 @@ final class PlaceholderAPIHook {
 		return message;
 	}
 
-	private String getValue(Object placeholderExpansion, OfflinePlayer player, String params) {
+	private String getValue(final Object placeholderExpansion, final OfflinePlayer player, final String params) {
 		return ((PlaceholderExpansion) placeholderExpansion).onRequest(player, params);
 	}
 
-	String getValue(OfflinePlayer player, String variable) {
+	String getValue(final OfflinePlayer player, final String variable) {
 		final int index = variable.indexOf("_");
 
 		String pluginIdentifier = "";
@@ -2617,7 +2616,7 @@ final class PlaceholderAPIHook {
 
 	String replaceRelationPlaceholders(final Player one, final Player two, String message) {
 		try {
-			final Map<String, Object> hooks = getHooks();
+			final Map<String, Object> hooks = this.getHooks();
 
 			if (!hooks.isEmpty()) {
 				final Matcher matcher = Variables.BRACKET_REL_VARIABLE_PATTERN.matcher(message);
@@ -2660,8 +2659,8 @@ final class PlaceholderAPIHook {
 		}
 	}
 
-	SimpleComponent replaceRelationPlaceholders(@Nullable FoundationPlayer firstAudience, @Nullable FoundationPlayer secondAudience, SimpleComponent component) {
-		final Map<String, Object> hooks = getHooks();
+	SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer firstAudience, @Nullable final FoundationPlayer secondAudience, final SimpleComponent component) {
+		final Map<String, Object> hooks = this.getHooks();
 		final boolean canReplace = firstAudience.isPlayer() && secondAudience.isPlayer();
 
 		return component.replaceMatch(Variables.BRACKET_REL_VARIABLE_PATTERN, (matcher, input) -> {
@@ -2773,7 +2772,7 @@ final class PlaceholderAPIHook {
 		 * is provided.
 		 */
 		@Override
-		public String onRequest(OfflinePlayer offlinePlayer, @NonNull String identifier) {
+		public String onRequest(final OfflinePlayer offlinePlayer, @NonNull String identifier) {
 			final Player player = offlinePlayer != null ? offlinePlayer.getPlayer() : null;
 
 			if (player == null || !player.isOnline())
@@ -2834,7 +2833,7 @@ class MVdWPlaceholderHook {
 	MVdWPlaceholderHook() {
 	}
 
-	String replacePlaceholders(@Nullable OfflinePlayer player, final String message) {
+	String replacePlaceholders(@Nullable final OfflinePlayer player, final String message) {
 
 		if (player == null)
 			return message;
@@ -2883,11 +2882,11 @@ class PremiumVanishHook {
 		this.showPlayer = ReflectionUtil.getMethod(clazz, "showPlayer", Player.class, boolean.class);
 	}
 
-	boolean isVanished(Player player) {
+	boolean isVanished(final Player player) {
 		return ReflectionUtil.invokeStatic(this.isInvisible, player);
 	}
 
-	void setVanished(Player player, boolean vanished) {
+	void setVanished(final Player player, final boolean vanished) {
 		if (vanished) {
 			if (!this.isVanished(player))
 				ReflectionUtil.invokeStatic(this.hidePlayer, player, true, false);
@@ -3393,7 +3392,7 @@ class CMIHook {
 		return user != null && user.isVanished();
 	}
 
-	void setVanished(Player player, boolean vanished) {
+	void setVanished(final Player player, final boolean vanished) {
 		final CMIUser user = this.getUser(player);
 
 		if (user != null && user.isVanished() != vanished)
@@ -3486,7 +3485,7 @@ class CMIHook {
 		return nick == null || "".equals(nick) ? null : nick;
 	}
 
-	void setNick(final UUID uniqueId, String nick) {
+	void setNick(final UUID uniqueId, final String nick) {
 		final CMIUser user = this.getUser(uniqueId);
 		final TabListManager tabManager = CMI.getInstance().getTabListManager();
 
@@ -3538,7 +3537,7 @@ class CitizensHook {
 		}
 	}
 
-	Entity getNPCTarget(Entity entity) {
+	Entity getNPCTarget(final Entity entity) {
 		final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
 
 		if (npc != null) {
@@ -3551,7 +3550,7 @@ class CitizensHook {
 		return null;
 	}
 
-	void destroyNPC(Entity entity) {
+	void destroyNPC(final Entity entity) {
 		final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
 
 		if (npc != null)
@@ -3569,7 +3568,7 @@ class DiscordSRVHook {
 		return this.sendMessage(null, channel, message);
 	}
 
-	boolean sendMessage(@Nullable CommandSender sender, final String channel, String message) {
+	boolean sendMessage(@Nullable final CommandSender sender, final String channel, final String message) {
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// The channel is not configured in the config.yml of Discord,
@@ -3583,7 +3582,7 @@ class DiscordSRVHook {
 		return this.sendMessage0(sender, textChannel, message);
 	}
 
-	boolean sendMessage(long channelId, String message) {
+	boolean sendMessage(final long channelId, String message) {
 		final JDA jda = DiscordSRV.getPlugin().getJda();
 
 		if (jda == null) {
@@ -3595,7 +3594,7 @@ class DiscordSRVHook {
 		final TextChannel textChannel = jda.getTextChannelById(channelId);
 
 		if (textChannel == null) {
-			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel id '" + channelId + "'. Available: " + Common.join(jda.getTextChannels(), TextChannel::getName) + ". Not sending: " + message);
+			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel id '" + channelId + "'. Available: " + CommonCore.join(jda.getTextChannels(), TextChannel::getName) + ". Not sending: " + message);
 
 			return false;
 		}
@@ -3610,7 +3609,7 @@ class DiscordSRVHook {
 		return true;
 	}
 
-	private boolean sendMessage0(@Nullable CommandSender sender, @NonNull TextChannel textChannel, String message) {
+	private boolean sendMessage0(@Nullable final CommandSender sender, @NonNull final TextChannel textChannel, String message) {
 		message = CompChatColor.stripColorCodes(message);
 
 		if (message.replace(" ", "").isEmpty())
@@ -3672,39 +3671,39 @@ class BanManagerHook {
 
 class BentoBoxHook {
 
-	Set<UUID> getIslandVisitors(Player player) {
+	Set<UUID> getIslandVisitors(final Player player) {
 		return this.getIslandUsers(player, RanksManager.VISITOR_RANK);
 	}
 
-	Set<UUID> getIslandCoops(Player player) {
+	Set<UUID> getIslandCoops(final Player player) {
 		return this.getIslandUsers(player, RanksManager.COOP_RANK);
 	}
 
-	Set<UUID> getIslandTrustees(Player player) {
+	Set<UUID> getIslandTrustees(final Player player) {
 		return this.getIslandUsers(player, RanksManager.TRUSTED_RANK);
 	}
 
-	Set<UUID> getIslandMembers(Player player) {
+	Set<UUID> getIslandMembers(final Player player) {
 		return this.getIslandUsers(player, RanksManager.MEMBER_RANK);
 	}
 
-	Set<UUID> getIslandSubOwners(Player player) {
+	Set<UUID> getIslandSubOwners(final Player player) {
 		return this.getIslandUsers(player, RanksManager.SUB_OWNER_RANK);
 	}
 
-	Set<UUID> getIslandOwners(Player player) {
+	Set<UUID> getIslandOwners(final Player player) {
 		return this.getIslandUsers(player, RanksManager.OWNER_RANK);
 	}
 
-	Set<UUID> getIslandMods(Player player) {
+	Set<UUID> getIslandMods(final Player player) {
 		return this.getIslandUsers(player, RanksManager.MOD_RANK);
 	}
 
-	Set<UUID> getIslandAdmins(Player player) {
+	Set<UUID> getIslandAdmins(final Player player) {
 		return this.getIslandUsers(player, RanksManager.ADMIN_RANK);
 	}
 
-	private Set<UUID> getIslandUsers(Player player, int rank) {
+	private Set<UUID> getIslandUsers(final Player player, final int rank) {
 		final IslandsManager manager = BentoBox.getInstance().getIslands();
 		final Optional<Island> maybeIsland = manager.getIslandAt(player.getLocation());
 
@@ -3780,7 +3779,7 @@ class MythicMobsHook {
 	 * Attempt to return a MythicMob name from the given entity,
 	 * or null if the entity is not a MythicMob.
 	 */
-	String getBossName(Entity entity) {
+	String getBossName(final Entity entity) {
 		if (this.legacyVersion == null)
 			return null;
 
@@ -3790,7 +3789,7 @@ class MythicMobsHook {
 		return this.getBossNameV5Direct(entity);
 	}
 
-	private String getBossNameV4(Entity entity) {
+	private String getBossNameV4(final Entity entity) {
 		try {
 			final Class<?> mythicMobs = ReflectionUtil.lookupClass("io.lumine.xikage.mythicmobs.MythicMobs");
 			final Object instance = ReflectionUtil.invokeStatic(mythicMobs, "inst");
@@ -3811,7 +3810,7 @@ class MythicMobsHook {
 		return Remain.getEntityName(entity);
 	}
 
-	private String getBossNameV5Direct(Entity entity) {
+	private String getBossNameV5Direct(final Entity entity) {
 		final UUID ourUniqueId = entity.getUniqueId();
 		final MobManager mobManager = MythicProvider.get().getMobManager();
 
@@ -3843,7 +3842,7 @@ class LandsHook {
 		this.getName = ReflectionUtil.getMethod(land, "getName");
 	}
 
-	Collection<Player> getLandPlayers(Player sender) {
+	Collection<Player> getLandPlayers(final Player sender) {
 		final List<Player> playersAtLocation = new ArrayList<>();
 
 		final Object senderArea = ReflectionUtil.invoke(this.getArea, this.landsClass, sender.getLocation());
@@ -3917,7 +3916,7 @@ class LiteBansHook {
 						return;
 					}
 
-					downloadData(this);
+					LiteBansHook.this.downloadData(this);
 				}
 			});
 		}
@@ -3925,7 +3924,7 @@ class LiteBansHook {
 		return this.mutedPlayerUids.contains(player.getUniqueId().toString());
 	}
 
-	private void downloadData(BukkitRunnable task) {
+	private void downloadData(final BukkitRunnable task) {
 		LiteBansHook.this.mutedPlayerUids.clear();
 
 		try (PreparedStatement statement = ReflectionUtil.invoke(LiteBansHook.this.methodPrepareStatement, LiteBansHook.this.instance, "SELECT * FROM {mutes}")) {

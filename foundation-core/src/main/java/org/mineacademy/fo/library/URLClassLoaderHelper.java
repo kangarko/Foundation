@@ -31,7 +31,7 @@ final class URLClassLoaderHelper extends ClassLoaderHelper {
 	 * @param classLoader the class loader to manage
 	 * @param libraryManager the library manager used to download dependencies
 	 */
-	public URLClassLoaderHelper(URLClassLoader classLoader, LibraryManager libraryManager) {
+	public URLClassLoaderHelper(final URLClassLoader classLoader, final LibraryManager libraryManager) {
 		super(classLoader);
 		requireNonNull(libraryManager, "libraryManager");
 
@@ -53,7 +53,7 @@ final class URLClassLoaderHelper extends ClassLoaderHelper {
 	}
 
 	@Override
-	public void addToClasspath(URL url) {
+	public void addToClasspath(final URL url) {
 		try {
 			this.addURLMethodHandle.invokeWithArguments(requireNonNull(url, "url"));
 		} catch (final Throwable ex) {
@@ -61,7 +61,7 @@ final class URLClassLoaderHelper extends ClassLoaderHelper {
 		}
 	}
 
-	private void addOpensWithAgent(Instrumentation instrumentation) {
+	private void addOpensWithAgent(final Instrumentation instrumentation) {
 		// This is effectively calling:
 		//
 		// instrumentation.redefineModule(

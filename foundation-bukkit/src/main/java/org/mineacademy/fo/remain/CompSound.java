@@ -1722,7 +1722,7 @@ public enum CompSound {
 	@Getter
 	private final boolean modern;
 
-	CompSound(String... legacyNames) {
+	CompSound(final String... legacyNames) {
 		Sound bukkitSound = Data.BUKKIT_NAMES.get(this.name());
 
 		if (bukkitSound == null)
@@ -1748,7 +1748,7 @@ public enum CompSound {
 	 *
 	 * @param location the location to play the sound in.
 	 */
-	public void play(Location location) {
+	public void play(final Location location) {
 		this.play(location, DEFAULT_VOLUME, DEFAULT_PITCH);
 	}
 
@@ -1759,7 +1759,7 @@ public enum CompSound {
 	 *
 	 * @since 1.0.0
 	 */
-	public void play(Entity entity) {
+	public void play(final Entity entity) {
 		this.play(entity, DEFAULT_VOLUME, DEFAULT_PITCH);
 	}
 
@@ -1770,14 +1770,14 @@ public enum CompSound {
 	 * @param volume   the volume of the sound, 1 is normal.
 	 * @param pitch    the pitch of the sound, 0 is normal.
 	 */
-	public void play(@NonNull Location location, float volume, float pitch) {
+	public void play(@NonNull final Location location, final float volume, final float pitch) {
 		if (Bukkit.isPrimaryThread())
 			this.play0(location, volume, pitch);
 		else
 			Platform.runTask(() -> this.play0(location, volume, pitch));
 	}
 
-	private void play0(@NonNull Location location, float volume, float pitch) {
+	private void play0(@NonNull final Location location, final float volume, final float pitch) {
 		final Sound sound = this.getSound();
 
 		if (sound != null)
@@ -1791,14 +1791,14 @@ public enum CompSound {
 	 * @param volume the volume of the sound, 1 is normal.
 	 * @param pitch  the pitch of the sound, 0 is normal.
 	 */
-	public void play(@NonNull Entity entity, float volume, float pitch) {
+	public void play(@NonNull final Entity entity, final float volume, final float pitch) {
 		if (Bukkit.isPrimaryThread())
 			this.play0(entity, volume, pitch);
 		else
 			Platform.runTask(() -> this.play0(entity, volume, pitch));
 	}
 
-	private void play0(@NonNull Entity entity, float volume, float pitch) {
+	private void play0(@NonNull final Entity entity, final float volume, final float pitch) {
 		if (entity instanceof Player) {
 			final Sound sound = this.getSound();
 
@@ -1821,7 +1821,7 @@ public enum CompSound {
 	 * @return the async task handling this operation.
 	 * @see #play(Location, float, float)
 	 */
-	public Task playRepeatedly(@NonNull Entity entity, float volume, float pitch, int repeat, int delay) {
+	public Task playRepeatedly(@NonNull final Entity entity, final float volume, final float pitch, final int repeat, final int delay) {
 		if (repeat <= 0)
 			throw new IllegalArgumentException("Cannot repeat playing sound " + repeat + " times");
 
@@ -1847,14 +1847,14 @@ public enum CompSound {
 	 *
 	 * @see #stopMusic(Player)
 	 */
-	public void stopSound(@NonNull Player player) {
+	public void stopSound(@NonNull final Player player) {
 		if (Bukkit.isPrimaryThread())
 			this.stopSound0(player);
 		else
 			Platform.runTask(() -> this.stopSound0(player));
 	}
 
-	private void stopSound0(@NonNull Player player) {
+	private void stopSound0(@NonNull final Player player) {
 		final Sound sound = this.getSound();
 
 		if (sound != null)
@@ -1896,7 +1896,7 @@ public enum CompSound {
 	 *
 	 * @return a matched sound.
 	 */
-	public static CompSound fromSound(@NonNull Sound sound) {
+	public static CompSound fromSound(@NonNull final Sound sound) {
 		return Data.NAMES.get(ReflectionUtil.getEnumName(sound));
 	}
 
@@ -1908,7 +1908,7 @@ public enum CompSound {
 	 * @return a matched CompSound.
 	 */
 	@Nullable
-	public static CompSound fromName(@NonNull String soundName) {
+	public static CompSound fromName(@NonNull final String soundName) {
 		final int len = soundName.length();
 		final char[] chs = new char[len];
 		int count = 0;
@@ -1952,7 +1952,7 @@ public enum CompSound {
 	 *
 	 * @see #stopSound(Player)
 	 */
-	public static void stopMusic(@NonNull Player player) {
+	public static void stopMusic(@NonNull final Player player) {
 
 		// We don't need to cache because it's rarely used.
 		final CompSound[] musics = {
@@ -1988,7 +1988,7 @@ public enum CompSound {
 	 *
 	 * @return the async task handling the operation.
 	 */
-	public static Task playAscendingNote(@NonNull Player player, @NonNull Entity playTo, Instrument instrument, int ascendLevel, int delay) {
+	public static Task playAscendingNote(@NonNull final Player player, @NonNull final Entity playTo, final Instrument instrument, final int ascendLevel, final int delay) {
 
 		if (ascendLevel <= 0)
 			throw new IllegalArgumentException("Note ascend level cannot be lower than 1");

@@ -14,7 +14,7 @@ public class NBTListCompound extends NBTCompound {
 	private final NBTList<?> owner;
 	private Object compound;
 
-	protected NBTListCompound(NBTList<?> parent, Object obj) {
+	protected NBTListCompound(final NBTList<?> parent, final Object obj) {
 		super(null, null);
 		this.owner = parent;
 		this.compound = obj;
@@ -42,7 +42,7 @@ public class NBTListCompound extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(Object compound) {
+	protected void setCompound(final Object compound) {
 		if (this.isClosed())
 			throw new NbtApiException("Tried using closed NBT data!");
 		if (this.isReadOnly())

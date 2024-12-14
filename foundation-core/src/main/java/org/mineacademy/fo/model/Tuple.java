@@ -61,7 +61,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @param valueType
 	 * @return
 	 */
-	public static <K, V> Tuple<K, V> deserialize(SerializedMap map, Class<K> keyType, Class<V> valueType) {
+	public static <K, V> Tuple<K, V> deserialize(final SerializedMap map, final Class<K> keyType, final Class<V> valueType) {
 		final K key = map.containsKey("Key") ? map.get("Key", keyType) : null;
 		final V value = map.containsKey("Value") ? map.get("Value", valueType) : null;
 
@@ -79,7 +79,7 @@ public final class Tuple<K, V> implements ConfigSerializable {
 	 * @param valueType
 	 * @return tuple or null if line is null
 	 */
-	public static <K, V> Tuple<K, V> deserialize(String line, Class<K> keyType, Class<V> valueType) {
+	public static <K, V> Tuple<K, V> deserialize(final String line, final Class<K> keyType, final Class<V> valueType) {
 		if (line == null)
 			return null;
 

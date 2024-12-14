@@ -20,7 +20,7 @@ public final class FilterTo extends Filter {
 	}
 
 	@Override
-	public boolean isApplicable(Table table) {
+	public boolean isApplicable(final Table table) {
 		return RowDate.class.isAssignableFrom(table.getRowClass());
 	}
 
@@ -33,7 +33,7 @@ public final class FilterTo extends Filter {
 	}
 
 	@Override
-	public Collection<String> tabComplete(FoundationPlayer audience) {
+	public Collection<String> tabComplete(final FoundationPlayer audience) {
 		final Date now = new Date();
 
 		return Arrays.asList(
@@ -43,7 +43,7 @@ public final class FilterTo extends Filter {
 	}
 
 	@Override
-	public boolean validate(FoundationPlayer audience, String value) {
+	public boolean validate(final FoundationPlayer audience, final String value) {
 		final Date parsed = parseDate(value);
 
 		if (parsed == null) {
@@ -57,7 +57,7 @@ public final class FilterTo extends Filter {
 	}
 
 	@Override
-	public boolean canDisplay(Row row) {
+	public boolean canDisplay(final Row row) {
 		return ((RowDate) row).getDate() <= this.endDate;
 	}
 }

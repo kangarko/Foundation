@@ -28,7 +28,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @param reason
 	 */
-	public static void kick(Player player, String reason) {
+	public static void kick(final Player player, final String reason) {
 		player.disconnect(SimpleComponent.fromMiniAmpersand(reason).toAdventure(null));
 	}
 
@@ -38,7 +38,7 @@ public final class PlayerUtil {
 	 * @param player
 	 * @return
 	 */
-	public static boolean isVanished(Player player) {
+	public static boolean isVanished(final Player player) {
 		return isVanished.apply(player);
 	}
 }

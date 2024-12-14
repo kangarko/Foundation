@@ -62,7 +62,7 @@ public final class EntityUtil {
 	 * @param entityClass
 	 * @return
 	 */
-	public static <T extends LivingEntity> T findNearestEntity(Location center, double range3D, Class<T> entityClass) {
+	public static <T extends LivingEntity> T findNearestEntity(final Location center, final double range3D, final Class<T> entityClass) {
 		final List<T> found = new ArrayList<>();
 
 		for (final Entity nearby : Remain.getNearbyEntities(center, range3D))
@@ -80,7 +80,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @return
 	 */
-	public static Player getTargetPlayer(Entity entity) {
+	public static Player getTargetPlayer(final Entity entity) {
 		final Entity target = getTarget(entity);
 
 		if (target == null)
@@ -96,7 +96,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @return the target, or null if does not have / unsupported
 	 */
-	public static Entity getTarget(Entity entity) {
+	public static Entity getTarget(final Entity entity) {
 		Entity target = null;
 
 		try {
@@ -124,7 +124,7 @@ public final class EntityUtil {
 	 * @param type
 	 * @return
 	 */
-	public static double getDefaultHealth(EntityType type) {
+	public static double getDefaultHealth(final EntityType type) {
 		Valid.checkSync("Cannot use getDefaultHealth async!");
 
 		if (type == CompEntityType.PLAYER)
@@ -168,7 +168,7 @@ public final class EntityUtil {
 	 *
 	 * @param entity
 	 */
-	public static void removeVehiclesAndPassengers(Entity entity) {
+	public static void removeVehiclesAndPassengers(final Entity entity) {
 		Entity vehicle = entity.getVehicle();
 
 		while (vehicle != null) {
@@ -196,7 +196,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @return
 	 */
-	public static boolean isAggressive(Entity entity) {
+	public static boolean isAggressive(final Entity entity) {
 		if (entity instanceof Ghast || entity instanceof Slime)
 			return true;
 
@@ -218,7 +218,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @return
 	 */
-	public static boolean isCreature(Entity entity) {
+	public static boolean isCreature(final Entity entity) {
 		return entity instanceof Slime || entity instanceof Wolf || entity instanceof Creature;
 	}
 
@@ -229,7 +229,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @return
 	 */
-	public static boolean canBeCleaned(Entity entity) {
+	public static boolean canBeCleaned(final Entity entity) {
 		return entity instanceof FallingBlock || entity instanceof Item || entity instanceof Projectile || entity instanceof ExperienceOrb;
 	}
 
@@ -247,7 +247,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @param hitGroundListener
 	 */
-	public static void trackFalling(Entity entity, Runnable hitGroundListener) {
+	public static void trackFalling(final Entity entity, final Runnable hitGroundListener) {
 		track(entity, 30 * 20, null, hitGroundListener);
 	}
 
@@ -260,7 +260,7 @@ public final class EntityUtil {
 	 * @param entity
 	 * @param flyListener
 	 */
-	public static void trackFlying(Entity entity, Runnable flyListener) {
+	public static void trackFlying(final Entity entity, final Runnable flyListener) {
 		track(entity, 30 * 20, flyListener, null);
 	}
 
@@ -276,7 +276,7 @@ public final class EntityUtil {
 	 * @param flyListener
 	 * @param hitGroundListener
 	 */
-	public static void track(Entity entity, int timeoutTicks, Runnable flyListener, Runnable hitGroundListener) {
+	public static void track(final Entity entity, final int timeoutTicks, final Runnable flyListener, final Runnable hitGroundListener) {
 		if (flyListener == null && hitGroundListener == null)
 			throw new FoException("Cannot track entity with fly and hit listeners on null!");
 
@@ -324,7 +324,7 @@ public final class EntityUtil {
 	 * @param projectile
 	 * @param hitTask
 	 */
-	public static void trackHit(Projectile projectile, Consumer<ProjectileHitEvent> hitTask) {
+	public static void trackHit(final Projectile projectile, final Consumer<ProjectileHitEvent> hitTask) {
 		HitTracking.addFlyingProjectile(projectile, hitTask);
 
 		if (!registeredHitListener) {
@@ -352,7 +352,7 @@ class HitTracking implements Listener {
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onHit(ProjectileHitEvent event) {
+	public void onHit(final ProjectileHitEvent event) {
 		final List<Consumer<ProjectileHitEvent>> hitListeners = flyingProjectiles.remove(event.getEntity().getUniqueId());
 
 		if (hitListeners != null)
@@ -366,7 +366,7 @@ class HitTracking implements Listener {
 	 * @param projectile
 	 * @param hitTask
 	 */
-	static void addFlyingProjectile(Projectile projectile, Consumer<ProjectileHitEvent> hitTask) {
+	static void addFlyingProjectile(final Projectile projectile, final Consumer<ProjectileHitEvent> hitTask) {
 		final UUID uniqueId = projectile.getUniqueId();
 		final List<Consumer<ProjectileHitEvent>> listeners = flyingProjectiles.getOrDefault(uniqueId, new ArrayList<>());
 

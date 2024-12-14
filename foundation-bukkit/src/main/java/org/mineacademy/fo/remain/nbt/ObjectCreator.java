@@ -20,7 +20,7 @@ enum ObjectCreator {
 	private Constructor<?> construct;
 	private Class<?> targetClass;
 
-	ObjectCreator(MinecraftVersion from, MinecraftVersion to, Class<?> clazz, Class<?>... args) {
+	ObjectCreator(final MinecraftVersion from, final MinecraftVersion to, final Class<?> clazz, final Class<?>... args) {
 		if (clazz == null)
 			return;
 		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
@@ -43,7 +43,7 @@ enum ObjectCreator {
 	 * @param args
 	 * @return Object created
 	 */
-	public Object getInstance(Object... args) {
+	public Object getInstance(final Object... args) {
 		try {
 			return this.construct.newInstance(args);
 		} catch (final Exception ex) {

@@ -128,7 +128,7 @@ public final class RandomUtil {
 	 * @param length
 	 * @return
 	 */
-	public static String nextString(int length) {
+	public static String nextString(final int length) {
 		String text = "";
 
 		for (int i = 0; i < length; i++)

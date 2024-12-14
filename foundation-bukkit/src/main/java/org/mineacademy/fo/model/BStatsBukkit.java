@@ -59,7 +59,7 @@ public class BStatsBukkit {
 	 * @param serviceId The id of the service. It can be found at <a
 	 *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
 	 */
-	public BStatsBukkit(Plugin plugin, int serviceId) {
+	public BStatsBukkit(final Plugin plugin, final int serviceId) {
 		this.plugin = plugin;
 		// Get the config file
 		final File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
@@ -133,11 +133,11 @@ public class BStatsBukkit {
 	 *
 	 * @param chart The chart to add.
 	 */
-	public void addCustomChart(CustomChart chart) {
+	public void addCustomChart(final CustomChart chart) {
 		this.metricsBase.addCustomChart(chart);
 	}
 
-	private void appendPlatformData(JsonObjectBuilder builder) {
+	private void appendPlatformData(final JsonObjectBuilder builder) {
 		builder.appendField("playerAmount", Remain.getOnlinePlayers().size());
 		builder.appendField("onlineMode", Bukkit.getOnlineMode() ? 1 : 0);
 		builder.appendField("bukkitVersion", Bukkit.getVersion());
@@ -149,7 +149,7 @@ public class BStatsBukkit {
 		builder.appendField("coreCount", Runtime.getRuntime().availableProcessors());
 	}
 
-	private void appendServiceData(JsonObjectBuilder builder) {
+	private void appendServiceData(final JsonObjectBuilder builder) {
 		builder.appendField("pluginVersion", this.plugin.getDescription().getVersion());
 	}
 
@@ -213,20 +213,20 @@ public class BStatsBukkit {
 		 * @param skipRelocateCheck Whether or not the relocate check should be skipped.
 		 */
 		public MetricsBase(
-				String platform,
-				String serverUuid,
-				int serviceId,
-				boolean enabled,
-				Consumer<JsonObjectBuilder> appendPlatformDataConsumer,
-				Consumer<JsonObjectBuilder> appendServiceDataConsumer,
-				Consumer<Runnable> submitTaskConsumer,
-				Supplier<Boolean> checkServiceEnabledSupplier,
-				BiConsumer<String, Throwable> errorLogger,
-				Consumer<String> infoLogger,
-				boolean logErrors,
-				boolean logSentData,
-				boolean logResponseStatusText,
-				boolean skipRelocateCheck) {
+				final String platform,
+				final String serverUuid,
+				final int serviceId,
+				final boolean enabled,
+				final Consumer<JsonObjectBuilder> appendPlatformDataConsumer,
+				final Consumer<JsonObjectBuilder> appendServiceDataConsumer,
+				final Consumer<Runnable> submitTaskConsumer,
+				final Supplier<Boolean> checkServiceEnabledSupplier,
+				final BiConsumer<String, Throwable> errorLogger,
+				final Consumer<String> infoLogger,
+				final boolean logErrors,
+				final boolean logSentData,
+				final boolean logResponseStatusText,
+				final boolean skipRelocateCheck) {
 			final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
 					1,
 					task -> {
@@ -261,7 +261,7 @@ public class BStatsBukkit {
 				this.startSubmitting();
 		}
 
-		public void addCustomChart(CustomChart chart) {
+		public void addCustomChart(final CustomChart chart) {
 			this.customCharts.add(chart);
 		}
 
@@ -324,7 +324,7 @@ public class BStatsBukkit {
 					});
 		}
 
-		private void sendData(JsonObjectBuilder.JsonObject data) throws Exception {
+		private void sendData(final JsonObjectBuilder.JsonObject data) throws Exception {
 			if (this.logSentData)
 				this.infoLogger.accept("Sent bStats metrics data: " + data.toString());
 			final String url = String.format(REPORT_URL, this.platform);
@@ -396,7 +396,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public AdvancedBarChart(String chartId, Callable<Map<String, int[]>> callable) {
+		public AdvancedBarChart(final String chartId, final Callable<Map<String, int[]>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -433,7 +433,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public SimplePie(String chartId, Callable<String> callable) {
+		public SimplePie(final String chartId, final Callable<String> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -458,7 +458,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public DrilldownPie(String chartId, Callable<Map<String, Map<String, Integer>>> callable) {
+		public DrilldownPie(final String chartId, final Callable<Map<String, Map<String, Integer>>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -500,7 +500,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public SingleLineChart(String chartId, Callable<Integer> callable) {
+		public SingleLineChart(final String chartId, final Callable<Integer> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -525,7 +525,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public MultiLineChart(String chartId, Callable<Map<String, Integer>> callable) {
+		public MultiLineChart(final String chartId, final Callable<Map<String, Integer>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -562,7 +562,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public AdvancedPie(String chartId, Callable<Map<String, Integer>> callable) {
+		public AdvancedPie(final String chartId, final Callable<Map<String, Integer>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -593,14 +593,14 @@ public class BStatsBukkit {
 
 		private final String chartId;
 
-		protected CustomChart(String chartId) {
+		protected CustomChart(final String chartId) {
 			if (chartId == null)
 				throw new IllegalArgumentException("chartId must not be null");
 			this.chartId = chartId;
 		}
 
 		public JsonObjectBuilder.JsonObject getRequestJsonObject(
-				BiConsumer<String, Throwable> errorLogger, boolean logErrors) {
+				final BiConsumer<String, Throwable> errorLogger, final boolean logErrors) {
 			final JsonObjectBuilder builder = new JsonObjectBuilder();
 			builder.appendField("chartId", this.chartId);
 			try {
@@ -630,7 +630,7 @@ public class BStatsBukkit {
 		 * @param chartId The id of the chart.
 		 * @param callable The callable which is used to request the chart data.
 		 */
-		public SimpleBarChart(String chartId, Callable<Map<String, Integer>> callable) {
+		public SimpleBarChart(final String chartId, final Callable<Map<String, Integer>> callable) {
 			super(chartId);
 			this.callable = callable;
 		}
@@ -670,7 +670,7 @@ public class BStatsBukkit {
 		 * @param key The key of the field.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendNull(String key) {
+		public JsonObjectBuilder appendNull(final String key) {
 			this.appendFieldUnescaped(key, "null");
 			return this;
 		}
@@ -682,7 +682,7 @@ public class BStatsBukkit {
 		 * @param value The value of the field.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, String value) {
+		public JsonObjectBuilder appendField(final String key, final String value) {
 			if (value == null)
 				throw new IllegalArgumentException("JSON value must not be null");
 			this.appendFieldUnescaped(key, "\"" + escape(value) + "\"");
@@ -696,7 +696,7 @@ public class BStatsBukkit {
 		 * @param value The value of the field.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, int value) {
+		public JsonObjectBuilder appendField(final String key, final int value) {
 			this.appendFieldUnescaped(key, String.valueOf(value));
 			return this;
 		}
@@ -708,7 +708,7 @@ public class BStatsBukkit {
 		 * @param object The object.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, JsonObject object) {
+		public JsonObjectBuilder appendField(final String key, final JsonObject object) {
 			if (object == null)
 				throw new IllegalArgumentException("JSON object must not be null");
 			this.appendFieldUnescaped(key, object.toString());
@@ -722,7 +722,7 @@ public class BStatsBukkit {
 		 * @param values The string array.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, String[] values) {
+		public JsonObjectBuilder appendField(final String key, final String[] values) {
 			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
 			final String escapedValues = Arrays.stream(values)
@@ -739,7 +739,7 @@ public class BStatsBukkit {
 		 * @param values The integer array.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, int[] values) {
+		public JsonObjectBuilder appendField(final String key, final int[] values) {
 			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
 			final String escapedValues = Arrays.stream(values).mapToObj(String::valueOf).collect(Collectors.joining(","));
@@ -754,7 +754,7 @@ public class BStatsBukkit {
 		 * @param values The integer array.
 		 * @return A reference to this object.
 		 */
-		public JsonObjectBuilder appendField(String key, JsonObject[] values) {
+		public JsonObjectBuilder appendField(final String key, final JsonObject[] values) {
 			if (values == null)
 				throw new IllegalArgumentException("JSON values must not be null");
 			final String escapedValues = Arrays.stream(values).map(JsonObject::toString).collect(Collectors.joining(","));
@@ -768,7 +768,7 @@ public class BStatsBukkit {
 		 * @param key The key of the field.
 		 * @param escapedValue The escaped value of the field.
 		 */
-		private void appendFieldUnescaped(String key, String escapedValue) {
+		private void appendFieldUnescaped(final String key, final String escapedValue) {
 			if (this.builder == null)
 				throw new IllegalStateException("JSON has already been built");
 			if (key == null)
@@ -801,7 +801,7 @@ public class BStatsBukkit {
 		 * @param value The value to escape.
 		 * @return The escaped value.
 		 */
-		private static String escape(String value) {
+		private static String escape(final String value) {
 			final StringBuilder builder = new StringBuilder();
 			for (int i = 0; i < value.length(); i++) {
 				final char c = value.charAt(i);
@@ -830,7 +830,7 @@ public class BStatsBukkit {
 
 			private final String value;
 
-			private JsonObject(String value) {
+			private JsonObject(final String value) {
 				this.value = value;
 			}
 

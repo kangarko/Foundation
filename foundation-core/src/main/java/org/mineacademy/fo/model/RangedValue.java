@@ -26,7 +26,7 @@ public final class RangedValue implements ConfigStringSerializable {
 	 *
 	 * @param value the value
 	 */
-	public RangedValue(Number value) {
+	public RangedValue(final Number value) {
 		this(value, value);
 	}
 
@@ -36,7 +36,7 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @param min the minimum value
 	 * @param max the maximum value
 	 */
-	public RangedValue(Number min, Number max) {
+	public RangedValue(final Number min, final Number max) {
 		ValidCore.checkBoolean(min.longValue() <= max.longValue(), "Minimum must be lower or equal maximum");
 
 		this.min = min;
@@ -81,7 +81,7 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @param value the number to compare
 	 * @return
 	 */
-	public boolean isInRangeLong(long value) {
+	public boolean isInRangeLong(final long value) {
 		return value >= this.min.longValue() && value <= this.max.longValue();
 	}
 
@@ -91,7 +91,7 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @param value the number to compare
 	 * @return
 	 */
-	public boolean isInRangeDouble(double value) {
+	public boolean isInRangeDouble(final double value) {
 		return value >= this.min.doubleValue() && value <= this.max.doubleValue();
 	}
 
@@ -134,7 +134,7 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @param max
 	 * @return
 	 */
-	public static RangedValue between(double min, double max) {
+	public static RangedValue between(final double min, final double max) {
 		return new RangedValue(min, max);
 	}
 
@@ -145,7 +145,7 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @param max
 	 * @return
 	 */
-	public static RangedValue between(int min, int max) {
+	public static RangedValue between(final int min, final int max) {
 		return new RangedValue(min, max);
 	}
 

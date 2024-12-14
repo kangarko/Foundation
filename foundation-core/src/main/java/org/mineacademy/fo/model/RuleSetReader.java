@@ -28,7 +28,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 *
 	 * @param newKeyword
 	 */
-	public RuleSetReader(String newKeyword) {
+	public RuleSetReader(final String newKeyword) {
 		this.newKeyword = newKeyword;
 	}
 
@@ -47,7 +47,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param rule
 	 * @param disabled
 	 */
-	public final void toggleMessage(Rule rule, boolean disabled) {
+	public final void toggleMessage(final Rule rule, final boolean disabled) {
 
 		final File file = rule.getFile();
 		ValidCore.checkBoolean(file.exists(), "No such file: " + file + " Rule: " + rule);
@@ -90,7 +90,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param rule
 	 * @param lines
 	 */
-	protected final void saveAndLoad(File file, List<String> lines) {
+	protected final void saveAndLoad(final File file, final List<String> lines) {
 		FileUtil.write(file, lines, StandardOpenOption.TRUNCATE_EXISTING);
 
 		this.load();
@@ -103,7 +103,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param path
 	 * @return
 	 */
-	protected final List<T> loadFromFile(String path) {
+	protected final List<T> loadFromFile(final String path) {
 		final File file = FileUtil.extract(path);
 
 		return this.loadFromFile(file);
@@ -115,7 +115,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param file
 	 * @return
 	 */
-	protected final List<T> loadFromFile(File file) {
+	protected final List<T> loadFromFile(final File file) {
 		final List<T> rules = new ArrayList<>();
 		final List<String> lines = FileUtil.readLinesFromFile(file);
 
@@ -195,7 +195,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param line
 	 * @return
 	 */
-	protected boolean onNoMatchLineParse(File file, String line) {
+	protected boolean onNoMatchLineParse(final File file, final String line) {
 		return false;
 	}
 
@@ -205,7 +205,7 @@ public abstract class RuleSetReader<T extends Rule> {
 	 * @param rule
 	 * @return
 	 */
-	protected boolean canFinish(T rule) {
+	protected boolean canFinish(final T rule) {
 		return true;
 	}
 

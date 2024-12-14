@@ -16,7 +16,7 @@ public interface NBTProxy {
 		return Casing.PascalCase;
 	}
 
-	default <T> NBTHandler<T> getHandler(Class<T> clazz) {
+	default <T> NBTHandler<T> getHandler(final Class<T> clazz) {
 		return (NBTHandler<T>) handlers.get(clazz);
 	}
 
@@ -24,7 +24,7 @@ public interface NBTProxy {
 		return handlers.values();
 	}
 
-	default <T> void registerHandler(Class<T> clazz, NBTHandler<T> handler) {
+	default <T> void registerHandler(final Class<T> clazz, final NBTHandler<T> handler) {
 		handlers.put(clazz, (NBTHandler<Object>) handler);
 	}
 

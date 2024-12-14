@@ -313,8 +313,8 @@ enum ReflectionMethod {
 	private String methodName = null;
 	private ClassWrapper parentClassWrapper;
 
-	ReflectionMethod(ClassWrapper targetClass, Class<?>[] args, MinecraftVersion addedSince,
-			MinecraftVersion removedAfter, Since... methodnames) {
+	ReflectionMethod(final ClassWrapper targetClass, final Class<?>[] args, final MinecraftVersion addedSince,
+			final MinecraftVersion removedAfter, final Since... methodnames) {
 		this.removedAfter = removedAfter;
 		this.parentClassWrapper = targetClass;
 		// Special Case for Modded 1.7.10
@@ -372,7 +372,7 @@ enum ReflectionMethod {
 		}
 	}
 
-	ReflectionMethod(ClassWrapper targetClass, Class<?>[] args, MinecraftVersion addedSince, Since... methodnames) {
+	ReflectionMethod(final ClassWrapper targetClass, final Class<?>[] args, final MinecraftVersion addedSince, final Since... methodnames) {
 		this(targetClass, args, addedSince, null, methodnames);
 	}
 
@@ -383,7 +383,7 @@ enum ReflectionMethod {
 	 * @param args
 	 * @return Value returned by the method
 	 */
-	public Object run(Object target, Object... args) {
+	public Object run(final Object target, final Object... args) {
 		if (this.method == null)
 			throw new NbtApiException("Method not loaded! '" + this + "'");
 		try {
@@ -430,7 +430,7 @@ enum ReflectionMethod {
 		public final MinecraftVersion version;
 		public final String name;
 
-		public Since(MinecraftVersion version, String name) {
+		public Since(final MinecraftVersion version, final String name) {
 			this.version = version;
 			this.name = name;
 		}

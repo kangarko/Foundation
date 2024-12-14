@@ -17,14 +17,14 @@ public class FoScriptException extends FoException {
 	private final String javascript;
 	private final int lineNumber;
 
-	public FoScriptException(String message, String javascript, int lineNumber, Throwable cause) {
+	public FoScriptException(final String message, final String javascript, final int lineNumber, final Throwable cause) {
 		super(message, cause);
 
 		this.javascript = javascript;
 		this.lineNumber = lineNumber;
 	}
 
-	public FoScriptException(String message, String javascript, int lineNumber) {
+	public FoScriptException(final String message, final String javascript, final int lineNumber) {
 		super(message);
 
 		this.javascript = javascript;

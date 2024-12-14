@@ -11,12 +11,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class NBTLongList extends NBTList<Long> {
 
-	protected NBTLongList(NBTCompound owner, String name, NBTType type, Object list) {
+	protected NBTLongList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	protected Object asTag(Long object) {
+	protected Object asTag(final Long object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGLONG.getClazz().getDeclaredConstructor(long.class);
 			con.setAccessible(true);
@@ -28,7 +28,7 @@ public class NBTLongList extends NBTList<Long> {
 	}
 
 	@Override
-	public Long get(int index) {
+	public Long get(final int index) {
 		try {
 			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Long.valueOf(obj.toString().replace("L", ""));
