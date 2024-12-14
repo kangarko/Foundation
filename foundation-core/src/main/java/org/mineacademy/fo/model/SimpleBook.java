@@ -87,7 +87,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 * @param audience
 	 */
 	public void open(FoundationPlayer audience) {
-		audience.openBook(this.title, this.author, CommonCore.toArray(this.pages));
+		audience.openBook(this.title, this.author, CommonCore.toArray(Variables.builder(audience).replaceLegacyList(this.pages)));
 	}
 
 	/**
