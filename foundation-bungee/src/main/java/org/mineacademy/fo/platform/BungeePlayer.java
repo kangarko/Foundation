@@ -204,7 +204,7 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendMessage(Component component) {
+	public void sendMessage0(Component component) {
 		// Due to adventure bug, players on modern MC are getting kicked out due to invalid
 		// packet -- unless we serialize using md_5's method
 		final String json = SimpleComponent.fromAdventure(component).toAdventureJson(this, !this.hasHexColorSupport());

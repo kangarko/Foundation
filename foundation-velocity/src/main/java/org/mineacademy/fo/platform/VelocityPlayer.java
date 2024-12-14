@@ -150,7 +150,7 @@ final class VelocityPlayer extends FoundationPlayer {
 	}
 
 	@Override
-	public void sendMessage(Component component) {
+	public void sendMessage0(Component component) {
 		this.sender.sendMessage(component);
 	}
 
