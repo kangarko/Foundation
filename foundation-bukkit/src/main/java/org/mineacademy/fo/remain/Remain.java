@@ -74,6 +74,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.mineacademy.fo.ChatUtil;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.MathUtil;
@@ -1782,7 +1783,6 @@ public final class Remain {
 	 * @param style
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon, final CompToastStyle style) {
-
 		if (hasAdvancements)
 			Platform.runTaskAsync(() -> {
 				for (final Player receiver : receivers) {
@@ -1807,9 +1807,8 @@ public final class Remain {
 				final String colorized = message.apply(receiver);
 
 				if (!colorized.isEmpty())
-					Platform.toPlayer(receiver).sendMessage(SimpleComponent.fromMini(colorized));
+					Platform.toPlayer(receiver).sendMessage(SimpleComponent.fromMiniAmpersand(colorized));
 			}
-
 	}
 
 	/**
@@ -1824,7 +1823,6 @@ public final class Remain {
 	 * @param style
 	 */
 	public static void sendToastToAudience(final List<FoundationPlayer> receivers, final Function<FoundationPlayer, String> message, final CompMaterial icon, final CompToastStyle style) {
-
 		if (hasAdvancements)
 			Platform.runTaskAsync(() -> {
 				for (final FoundationPlayer receiver : receivers) {
@@ -1850,9 +1848,8 @@ public final class Remain {
 				final String messageSpecific = message.apply(receiver);
 
 				if (!messageSpecific.isEmpty())
-					receiver.sendMessage(SimpleComponent.fromMini(messageSpecific));
+					receiver.sendMessage(SimpleComponent.fromMiniAmpersand(messageSpecific));
 			}
-
 	}
 
 	/**
@@ -2015,7 +2012,7 @@ public final class Remain {
 
 			if (name != null)
 				try {
-					entity.customName(SimpleComponent.fromMini(name).toAdventure(null));
+					entity.customName(SimpleComponent.fromMiniAmpersand(name).toAdventure(null));
 
 				} catch (final NoSuchMethodError err) {
 					entity.setCustomName(CompChatColor.translateColorCodes(name));
@@ -2125,35 +2122,25 @@ public final class Remain {
 
 		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
 
-		if (MinecraftVersion.olderThan(V.v1_8)) {
-			for (final SimpleComponent component : pages)
-				meta.addPage(component.toLegacy(null));
-
-			return;
-		}
-
 		try {
-			final List<BaseComponent[]> spigotPages = new ArrayList<>();
+			meta.pages(Common.convertArray(pages, SimpleComponent::toAdventure));
 
-			for (final SimpleComponent component : pages)
-				try {
-					spigotPages.add(component.toBungee(null, MinecraftVersion.atLeast(V.v1_16)));
-
-				} catch (final Throwable t) {
-					CommonCore.error(t, "Failed to turn simple component into bungee component: " + component);
-				}
-
-			meta.spigot().setPages(spigotPages);
-
-		} catch (final NoSuchMethodError ex) {
+		} catch (final NoSuchMethodError noAdventureError) {
 			try {
-				final List<Object> chatComponentPages = (List<Object>) ReflectionUtil.getFieldContent(meta, "pages");
+				final List<BaseComponent[]> spigotPages = new ArrayList<>();
 
 				for (final SimpleComponent component : pages)
-					chatComponentPages.add(convertLegacyToIChatBase(component.toLegacy(null)));
+					try {
+						spigotPages.add(component.toBungee(null, MinecraftVersion.atLeast(V.v1_16)));
 
-			} catch (final Exception e) {
-				e.printStackTrace();
+					} catch (final Throwable t) {
+						CommonCore.error(t, "Failed to turn simple component into bungee component: " + component);
+					}
+
+				meta.spigot().setPages(spigotPages);
+
+			} catch (final NoSuchMethodError iLikeDinosaursError) {
+				meta.setPages(Common.convertArrayToList(pages, SimpleComponent::toLegacy));
 			}
 		}
 	}
