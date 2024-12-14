@@ -19,7 +19,7 @@ public final class Valid extends ValidCore {
 	 */
 	public static boolean checkPermission(final ProxiedPlayer player, final String permission) {
 		if (!player.hasPermission(permission)) {
-			Common.tell(player, Lang.componentVars("no-permission", "permission", permission));
+			Common.tell(player, Lang.component("no-permission", "permission", permission));
 
 			return false;
 		}

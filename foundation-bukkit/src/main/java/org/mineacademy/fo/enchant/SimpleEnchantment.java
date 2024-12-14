@@ -603,7 +603,7 @@ public abstract class SimpleEnchantment implements Listener {
 						final String loreLine = simpleEnchantment.getLore(entry.getValue());
 
 						if (loreLine != null && !loreLine.isEmpty())
-							colorLess.add(SimpleComponent.fromMini(loreLine).toPlain(null));
+							colorLess.add(SimpleComponent.fromMiniAmpersand(loreLine).toPlain(null));
 					}
 				}
 
@@ -615,7 +615,7 @@ public abstract class SimpleEnchantment implements Listener {
 						final String loreLine = simpleEnchantment.getLore(entry.getValue());
 
 						if (loreLine != null && !loreLine.isEmpty())
-							colorLess.add(SimpleComponent.fromMini(loreLine).toPlain(null));
+							colorLess.add(SimpleComponent.fromMiniAmpersand(loreLine).toPlain(null));
 					}
 				}
 
@@ -624,7 +624,7 @@ public abstract class SimpleEnchantment implements Listener {
 			}
 
 			for (final String line : lore)
-				if (colorLess.contains(SimpleComponent.fromMini(line).toPlain(null)))
+				if (colorLess.contains(SimpleComponent.fromMiniAmpersand(line).toPlain(null)))
 					foEnchanted = true;
 				else
 					newLore.add(line);

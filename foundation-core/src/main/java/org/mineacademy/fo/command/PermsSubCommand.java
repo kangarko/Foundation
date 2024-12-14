@@ -168,10 +168,10 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 
 			if (phrase == null || node.contains(phrase))
 				subsectionMessages.add(SimpleComponent
-						.fromMini("  " + (has ? "&a" : "&7") + node + (def ? " " + Lang.legacy("command-perms-true-by-default") : ""))
+						.fromMiniAmpersand("  " + (has ? "&a" : "&7") + node + (def ? " " + Lang.legacy("command-perms-true-by-default") : ""))
 						.onClickOpenUrl("")
 						.onClickSuggestCmd(node)
-						.onHover(Lang.componentVars("command-perms-info",
+						.onHover(Lang.component("command-perms-info",
 								"info", info,
 								"default", def ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"),
 								"state", has ? Lang.component("command-perms-yes") : Lang.component("command-perms-no"))));
@@ -179,14 +179,14 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 
 		if (!subsectionMessages.isEmpty()) {
 			messages.add(SimpleComponent
-					.fromMini("&7- ").append(messages.isEmpty() ? Lang.component("command-perms-main") : SimpleComponent.fromPlain(group.value()))
+					.fromMiniAmpersand("&7- ").append(messages.isEmpty() ? Lang.component("command-perms-main") : SimpleComponent.fromPlain(group.value()))
 					.onClickOpenUrl(""));
 
 			messages.addAll(subsectionMessages);
 		}
 
 		for (final Class<?> inner : clazz.getDeclaredClasses()) {
-			messages.add(SimpleComponent.fromMini("&r "));
+			messages.add(SimpleComponent.fromMiniNative("<reset> "));
 
 			this.listIn(inner, messages, phrase);
 		}

@@ -103,7 +103,7 @@ public abstract class CommonCore {
 	 */
 	public static final void broadcast(final String... messages) {
 		for (final String message : messages)
-			broadcast(SimpleComponent.fromMini(message));
+			broadcast(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -128,7 +128,7 @@ public abstract class CommonCore {
 	 * @param message
 	 */
 	public static final void broadcastWithPerm(final String showPermission, @NonNull final String message) {
-		broadcastWithPerm(showPermission, SimpleComponent.fromMini(message));
+		broadcastWithPerm(showPermission, SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -169,7 +169,7 @@ public abstract class CommonCore {
 	 * @param messages
 	 */
 	public static void tellBoxed(FoundationPlayer audience, String... messages) {
-		tellBoxed(audience, CommonCore.convertArray(messages, SimpleComponent::fromMini));
+		tellBoxed(audience, CommonCore.convertArray(messages, SimpleComponent::fromMiniAmpersand));
 	}
 
 	/**
@@ -193,7 +193,7 @@ public abstract class CommonCore {
 		final int length = messages.length;
 
 		Platform.runTask(2, () -> {
-			audience.sendMessage(SimpleComponent.fromMini("<dark_gray>" + CommonCore.chatLineSmooth()));
+			audience.sendMessage(SimpleComponent.fromMiniNative("<dark_gray>" + CommonCore.chatLineSmooth()));
 
 			for (int i = 0; i < (length == 1 ? 2 : length == 2 || length == 3 || length == 4 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
@@ -204,7 +204,7 @@ public abstract class CommonCore {
 			for (int i = 0; i < (length == 1 || length == 2 ? 2 : length == 3 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
 
-			audience.sendMessage(SimpleComponent.fromMini("<dark_gray>" + CommonCore.chatLineSmooth()));
+			audience.sendMessage(SimpleComponent.fromMiniNative("<dark_gray>" + CommonCore.chatLineSmooth()));
 		});
 	}
 
@@ -220,7 +220,7 @@ public abstract class CommonCore {
 	 */
 	public static final void tell(@NonNull FoundationPlayer audience, String... messages) {
 		for (final String message : messages)
-			audience.sendMessage(SimpleComponent.fromMini(message));
+			audience.sendMessage(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -235,7 +235,7 @@ public abstract class CommonCore {
 	 * @param message
 	 */
 	public static final void tellTimed(final int delaySeconds, final FoundationPlayer audience, final String message) {
-		tellTimed(delaySeconds, audience, SimpleComponent.fromMini(message));
+		tellTimed(delaySeconds, audience, SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -276,7 +276,7 @@ public abstract class CommonCore {
 	 * @param message
 	 */
 	public static final void tellLater(final int delayTicks, final FoundationPlayer audience, final String message) {
-		Platform.runTask(delayTicks, () -> audience.sendMessage(SimpleComponent.fromMini(message)));
+		Platform.runTask(delayTicks, () -> audience.sendMessage(SimpleComponent.fromMiniAmpersand(message)));
 	}
 
 	/**

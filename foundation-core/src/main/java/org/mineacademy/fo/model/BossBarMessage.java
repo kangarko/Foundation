@@ -59,7 +59,7 @@ public final class BossBarMessage implements ConfigSerializable {
 	 * @param messageEditor to replace variables in the message
 	 */
 	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> messageEditor) {
-		audience.showBossbarTimed(messageEditor.apply(SimpleComponent.fromMini(this.message)), this.seconds, this.progress, this.color, this.overlay);
+		audience.showBossbarTimed(messageEditor.apply(SimpleComponent.fromMiniAmpersand(this.message)), this.seconds, this.progress, this.color, this.overlay);
 	}
 
 	/**

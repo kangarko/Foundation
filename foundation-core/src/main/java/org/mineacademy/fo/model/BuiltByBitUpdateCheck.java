@@ -104,7 +104,7 @@ public final class BuiltByBitUpdateCheck implements Runnable {
 			line = line.replace("{release_date}", TimeUtil.getFormattedDateShort(newVersionReleaseDate));
 			line = line.replace("{url}", "https://builtbybit.com/resources/" + Platform.getPlugin().getBuiltByBitId() + "/updates");
 
-			components.add(SimpleComponent.fromMini(line));
+			components.add(SimpleComponent.fromMiniAmpersand(line));
 		}
 
 		// trick to replace {url} in click minimessage tag

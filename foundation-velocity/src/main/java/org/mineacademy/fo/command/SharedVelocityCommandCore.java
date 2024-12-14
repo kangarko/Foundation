@@ -72,7 +72,7 @@ public interface SharedVelocityCommandCore {
 		}
 
 		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isActive(), Lang.componentVars("player-not-online", "player", name));
+		this.checkBoolean(player != null && player.isActive(), Lang.component("player-not-online", "player", name));
 
 		return player;
 	}

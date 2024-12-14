@@ -148,20 +148,6 @@ public final class Lang {
 	 *
 	 * Throws an error if the key is missing.
 	 *
-	 * MiniMessage tags and & legacy colors are translated to §.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static String legacy(String path) {
-		return instance.getLegacy(path);
-	}
-
-	/**
-	 * Return a legacy key from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
 	 * Variables are supported, where key must be a string and value either a string or
 	 * SimpleComponent, or a list of either.
 	 *
@@ -174,22 +160,14 @@ public final class Lang {
 	 * @param placeholders
 	 * @return
 	 */
-	public static String legacyVars(String path, Object... placeholders) {
-		final String value = legacy(path);
+	public static String legacy(String path, Object... placeholders) {
+		final String value = instance.getLegacy(path);
+		final Variables variables = Variables.builder();
 
-		return Variables.builder().placeholderArray(placeholders).replaceLegacy(value);
-	}
+		if (placeholders != null && placeholders.length > 0)
+			variables.placeholderArray(placeholders);
 
-	/**
-	 * Return a component from the given path in the language file.
-	 *
-	 * Throws an error if the key is missing.
-	 *
-	 * @param path
-	 * @return
-	 */
-	public static SimpleComponent component(String path) {
-		return instance.getComponent(path);
+		return variables.replaceLegacy(value);
 	}
 
 	/**
@@ -207,10 +185,14 @@ public final class Lang {
 	 * @param placeholders
 	 * @return
 	 */
-	public static SimpleComponent componentVars(String path, Object... placeholders) {
-		final SimpleComponent component = component(path);
+	public static SimpleComponent component(String path, Object... placeholders) {
+		final SimpleComponent component = instance.getComponent(path);
+		final Variables variables = Variables.builder();
 
-		return Variables.builder().placeholderArray(placeholders).replaceComponent(component);
+		if (placeholders != null && placeholders.length > 0)
+			variables.placeholderArray(placeholders);
+
+		return variables.replaceComponent(component);
 	}
 
 	/**
@@ -485,7 +467,7 @@ public final class Lang {
 					if (string.isEmpty())
 						string = "none";
 
-					final SimpleComponent component = SimpleComponent.fromMini(string);
+					final SimpleComponent component = SimpleComponent.fromMiniAmpersand(string);
 
 					plainCache.put(key, string);
 					componentCache.put(key, component);
@@ -503,7 +485,7 @@ public final class Lang {
 					for (final JsonElement element : array)
 						if (element.isJsonPrimitive()) {
 							final String string = element.getAsString();
-							final SimpleComponent component = SimpleComponent.fromMini(string);
+							final SimpleComponent component = SimpleComponent.fromMiniAmpersand(string);
 
 							plainList.add(string);
 							componentList.add(component);

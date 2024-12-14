@@ -71,7 +71,7 @@ public class SimpleDecimalPrompt extends SimplePrompt {
 	 */
 	@Override
 	protected String getFailedValidationText(final ConversationContext context, final String invalidInput) {
-		return Lang.legacyVars("command-invalid-number", "input", invalidInput);
+		return Lang.legacy("command-invalid-number", "input", invalidInput);
 	}
 
 	/**

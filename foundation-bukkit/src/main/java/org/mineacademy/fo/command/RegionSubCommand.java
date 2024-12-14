@@ -120,34 +120,34 @@ public class RegionSubCommand extends SimpleSubCommand {
 
 			for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
 
-				final String longestText = "&7Secondary: &2" + SerializeUtil.serializeLocation(otherRegion.getSecondary());
+				final String longestText = "<gray>Secondary: <dark_green>" + SerializeUtil.serializeLocation(otherRegion.getSecondary());
 
 				components.add(SimpleComponent
 						.fromPlain(" ")
 
-						.appendMini("&8[&4X&8]")
+						.appendMiniAmpersand("<dark_gray>[<dark_red>X<dark_gray>]")
 						.onHoverLegacy("Click to remove permanently.")
 						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.REMOVE + " " + otherRegion.getFileName() + " -list")
 
 						.appendPlain(" ")
 
-						.appendMini("&8[&2?&8]")
+						.appendMiniAmpersand("<dark_gray>[<dark_green>?<dark_gray>]")
 						.onHoverLegacy("Click to visualize.")
 						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.VIEW + " " + otherRegion.getFileName() + " -list")
 
 						.appendPlain(" ")
 
-						.appendMini("&8[&3>&8]")
+						.appendMiniAmpersand("<dark_gray>[<dark_aqua>><dark_gray>]")
 						.onHoverLegacy("Click to teleport to the center.")
 						.onClickRunCmd("/" + this.getLabel() + " " + this.getSublabel() + " " + Param.TELEPORT + " " + otherRegion.getFileName() + " -list")
 
 						.appendPlain(" ")
 
-						.appendMini("&7" + otherRegion.getFileName())
-						.onHoverLegacy(ChatUtil.center("&fRegion Information", longestText.length() * 2 + longestText.length() / 3),
-								"&7Primary: &2" + SerializeUtil.serializeLocation(otherRegion.getPrimary()),
+						.appendMiniAmpersand("<gray>" + otherRegion.getFileName())
+						.onHoverLegacy(ChatUtil.center("<white>Region Information", longestText.length() * 2 + longestText.length() / 3),
+								"<gray>Primary: <dark_green>" + SerializeUtil.serializeLocation(otherRegion.getPrimary()),
 								longestText,
-								"&7Size: &2" + otherRegion.getBlocks().size() + " blocks"));
+								"<gray>Size: <dark_green>" + otherRegion.getBlocks().size() + " blocks"));
 			}
 
 			new ChatPaginator()
@@ -266,7 +266,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 		if (this.isPlayer() && this.args.length > 2 && "-list".equals(this.args[2]))
 			this.getPlayer().performCommand(this.getLabel() + " " + this.getSublabel() + " " + Param.LIST);
 
-		Messenger.info(this.audience, SimpleComponent.fromMini(message)
+		Messenger.info(this.audience, SimpleComponent.fromMiniAmpersand(message)
 				.appendPlain(" Click here to open its menu.")
 				.onHoverLegacy("&7Click to open region menu.")
 				.onClickRunCmd("/" + SimpleSettings.MAIN_COMMAND_ALIASES.get(0) + " region menu " + region.getFileName()));
@@ -398,7 +398,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 				final String suggestable = "/" + command.getLabel() + " " + command.getSublabel() + " " + param.label;
 
 				usages.add(SimpleComponent
-						.fromMini(" " + suggestable + (!usage.isEmpty() ? " " + usage : "") + " - " + param.description)
+						.fromMiniAmpersand(" " + suggestable + (!usage.isEmpty() ? " " + usage : "") + " - " + param.description)
 						.onHoverLegacy("Click to copy.")
 						.onClickSuggestCmd(suggestable));
 			}

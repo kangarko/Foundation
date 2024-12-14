@@ -139,7 +139,7 @@ public class ButtonRemove extends Button {
 			else
 				player.closeInventory();
 
-			Messenger.success(player, Lang.componentVars("menu-item-deleted", "item", (!ButtonRemove.this.toRemoveType.isEmpty() ? ButtonRemove.this.toRemoveType + " " : "") + ButtonRemove.this.toRemoveName));
+			Messenger.success(player, Lang.component("menu-item-deleted", "item", (!ButtonRemove.this.toRemoveType.isEmpty() ? ButtonRemove.this.toRemoveType + " " : "") + ButtonRemove.this.toRemoveName));
 		}
 	}
 

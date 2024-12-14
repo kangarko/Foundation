@@ -27,7 +27,7 @@ public final class Messenger {
 	 *
 	 * This can be changed in your lang/xx_XX.json file under 'prefix-success'.
 	 *
-	 * @see Lang#component(String)
+	 * @see Lang#component(String, Object...)
 	 * @return
 	 */
 	public static SimpleComponent getSuccessPrefix() {
@@ -39,7 +39,7 @@ public final class Messenger {
 	 *
 	 * This can be changed in your lang/xx_XX.json file under 'prefix-info'.
 	 *
-	 * @see Lang#component(String)
+	 * @see Lang#component(String, Object...)
 	 * @return
 	 */
 	public static SimpleComponent getInfoPrefix() {
@@ -51,7 +51,7 @@ public final class Messenger {
 	 *
 	 * This can be changed in your lang/xx_XX.json file under 'prefix-warn'.
 	 *
-	 * @see Lang#component(String)
+	 * @see Lang#component(String, Object...)
 	 * @return
 	 */
 	public static SimpleComponent getWarnPrefix() {
@@ -63,7 +63,7 @@ public final class Messenger {
 	 *
 	 * This can be changed in your lang/xx_XX.json file under 'prefix-error'.
 	 *
-	 * @see Lang#component(String)
+	 * @see Lang#component(String, Object...)
 	 * @return
 	 */
 	public static SimpleComponent getErrorPrefix() {
@@ -75,7 +75,7 @@ public final class Messenger {
 	 *
 	 * This can be changed in your lang/xx_XX.json file under 'prefix-question'.
 	 *
-	 * @see Lang#component(String)
+	 * @see Lang#component(String, Object...)
 	 * @return
 	 */
 	public static SimpleComponent getQuestionPrefix() {
@@ -87,7 +87,7 @@ public final class Messenger {
 	 *
 	 * This can be changed in your lang/xx_XX.json file under 'prefix-announce'.
 	 *
-	 * @see Lang#component(String)
+	 * @see Lang#component(String, Object...)
 	 * @return
 	 */
 	public static SimpleComponent getAnnouncePrefix() {
@@ -590,7 +590,7 @@ public final class Messenger {
 	 * Send a message to the player with the given prefix.
 	 */
 	private static void tell(final FoundationPlayer audience, final SimpleComponent prefix, @NonNull String message) {
-		tell(audience, prefix, SimpleComponent.fromMini(message));
+		tell(audience, prefix, SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/*

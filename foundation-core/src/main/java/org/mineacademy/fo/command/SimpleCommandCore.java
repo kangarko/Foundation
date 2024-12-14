@@ -342,17 +342,17 @@ public abstract class SimpleCommandCore {
 					this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
 
 				if (this.getDescription() != null)
-					this.tellNoPrefix(Lang.componentVars("command-label-description", "description", this.getDescription()));
+					this.tellNoPrefix(Lang.component("command-label-description", "description", this.getDescription()));
 
 				if (legacyUsage != null || newUsage != null || this.getUsage() != null) {
-					this.tellNoPrefix(Lang.componentVars("command-label-usage", "usage", SimpleComponent.fromPlain(this.getEffectiveCommand() + " ").append(CommonCore.getOrDefault(this.getUsage(), SimpleComponent.empty()))));
+					this.tellNoPrefix(Lang.component("command-label-usage", "usage", SimpleComponent.fromPlain(this.getEffectiveCommand() + " ").append(CommonCore.getOrDefault(this.getUsage(), SimpleComponent.empty()))));
 
 					if (legacyUsage != null || newUsage != null) {
 						this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
 
 						if (legacyUsage != null)
 							for (final String legacyLine : legacyUsage)
-								audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMini(legacyLine))));
+								audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMiniAmpersand(legacyLine))));
 
 						else if (newUsage != null)
 							audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(newUsage)));
@@ -381,7 +381,7 @@ public abstract class SimpleCommandCore {
 	 */
 	private void handleCommandError(Throwable throwable) {
 		if (throwable instanceof InvalidCommandArgException)
-			this.tellError(Lang.componentVars("command-invalid-argument",
+			this.tellError(Lang.component("command-invalid-argument",
 					"arguments", ((InvalidCommandArgException) throwable).getInvalidArgument(),
 					"help_command", SimpleComponent.fromPlain(this.getEffectiveCommand() + " ?").onHoverLegacy("Click to execute.").onClickRunCmd(this.getEffectiveCommand() + " ?")));
 		else if (throwable instanceof CommandException)
@@ -488,7 +488,7 @@ public abstract class SimpleCommandCore {
 	 * @throws CommandException
 	 */
 	protected final void checkArgs(final int minimumLength, final String falseMessage) throws CommandException {
-		this.checkArgs(minimumLength, SimpleComponent.fromMini(falseMessage));
+		this.checkArgs(minimumLength, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -511,7 +511,7 @@ public abstract class SimpleCommandCore {
 	 * @throws CommandException
 	 */
 	protected final void checkBoolean(final boolean value, final String falseMessage) throws CommandException {
-		this.checkBoolean(value, SimpleComponent.fromMini(falseMessage));
+		this.checkBoolean(value, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -535,7 +535,7 @@ public abstract class SimpleCommandCore {
 	protected final void checkServerVersion(V minimumVersion) {
 		ValidCore.checkBoolean(MinecraftVersion.hasVersion(), "Cannot check server version on this platform!");
 
-		this.checkBoolean(MinecraftVersion.atLeast(minimumVersion), Lang.componentVars("command-incompatible", "version", minimumVersion.toString()));
+		this.checkBoolean(MinecraftVersion.atLeast(minimumVersion), Lang.component("command-incompatible", "version", minimumVersion.toString()));
 	}
 
 	/**
@@ -547,7 +547,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void checkUsage(final boolean value) throws CommandException {
 		if (!value)
-			this.returnTell(Lang.componentVars("command-invalid-usage", "usage", this.usage));
+			this.returnTell(Lang.component("command-invalid-usage", "usage", this.usage));
 	}
 
 	/**
@@ -558,7 +558,7 @@ public abstract class SimpleCommandCore {
 	 * @throws CommandException
 	 */
 	protected final void checkNotNull(final Object value, final String messageIfNull) throws CommandException {
-		this.checkNotNull(value, SimpleComponent.fromMini(messageIfNull));
+		this.checkNotNull(value, SimpleComponent.fromMiniAmpersand(messageIfNull));
 	}
 
 	/**
@@ -585,7 +585,7 @@ public abstract class SimpleCommandCore {
 			return SimpleTime.fromString(raw);
 
 		} catch (final IllegalArgumentException ex) {
-			this.returnTell(Lang.componentVars("command-invalid-time", "input", raw));
+			this.returnTell(Lang.component("command-invalid-time", "input", raw));
 
 			return null;
 		}
@@ -602,7 +602,7 @@ public abstract class SimpleCommandCore {
 			return TimeUtil.toMilliseconds(text);
 
 		} catch (final IllegalArgumentException ex) {
-			throw new CommandException(Lang.componentVars("command-invalid-time-token", "input", text));
+			throw new CommandException(Lang.component("command-invalid-time-token", "input", text));
 		}
 	}
 
@@ -657,7 +657,7 @@ public abstract class SimpleCommandCore {
 	 * @throws CommandException
 	 */
 	protected final <T> T findEnum(final Class<T> enumType, final String enumValue, final String falseMessage) throws CommandException {
-		return this.findEnum(enumType, enumValue, null, SimpleComponent.fromMini(falseMessage));
+		return this.findEnum(enumType, enumValue, null, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -756,7 +756,7 @@ public abstract class SimpleCommandCore {
 	 * @throws CommandException
 	 */
 	protected final <T> void checkNoSuchType(final Object nonNullValue, final String type, final String value, final Object[] available) throws CommandException {
-		this.checkNotNull(nonNullValue, Lang.componentVars("command-invalid-type",
+		this.checkNotNull(nonNullValue, Lang.component("command-invalid-type",
 				"type", type,
 				"value", value,
 				"available", CommonCore.join(available, constant -> CommonCore.simplify(constant).toLowerCase())));
@@ -770,7 +770,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final int findNumber(final int index, final String falseMessage) {
-		return this.findNumber(index, SimpleComponent.fromMini(falseMessage));
+		return this.findNumber(index, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -795,7 +795,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final int findNumber(final int index, final int min, final int max, final String falseMessage) {
-		return this.findNumber(index, min, max, SimpleComponent.fromMini(falseMessage));
+		return this.findNumber(index, min, max, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -859,7 +859,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final boolean findBoolean(final int index, final String invalidMessage) {
-		return this.findBoolean(index, SimpleComponent.fromMini(invalidMessage));
+		return this.findBoolean(index, SimpleComponent.fromMiniAmpersand(invalidMessage));
 	}
 
 	/**
@@ -902,7 +902,7 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	protected final UUID findUUID(final int index, final String invalidMessage) {
-		return this.findUUID(index, SimpleComponent.fromMini(invalidMessage));
+		return this.findUUID(index, SimpleComponent.fromMiniAmpersand(invalidMessage));
 	}
 
 	/**
@@ -1000,7 +1000,7 @@ public abstract class SimpleCommandCore {
 	 * @param message
 	 */
 	protected final void tell(String message) {
-		this.tell(SimpleComponent.fromMini(message));
+		this.tell(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -1025,7 +1025,7 @@ public abstract class SimpleCommandCore {
 	 * @param message
 	 */
 	protected final void tellSuccess(String message) {
-		this.tellSuccess(SimpleComponent.fromMini(message));
+		this.tellSuccess(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -1048,7 +1048,7 @@ public abstract class SimpleCommandCore {
 	 */
 	// PSA: Needs to be public because of shared interface
 	public final void tellInfo(String message) {
-		this.tellInfo(SimpleComponent.fromMini(message));
+		this.tellInfo(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -1071,7 +1071,7 @@ public abstract class SimpleCommandCore {
 	 * @param message
 	 */
 	protected final void tellWarn(String message) {
-		this.tellWarn(SimpleComponent.fromMini(message));
+		this.tellWarn(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -1094,7 +1094,7 @@ public abstract class SimpleCommandCore {
 	 * @param message
 	 */
 	protected final void tellError(String message) {
-		this.tellError(SimpleComponent.fromMini(message));
+		this.tellError(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -1116,7 +1116,7 @@ public abstract class SimpleCommandCore {
 	 * @param message
 	 */
 	protected final void tellQuestion(String message) {
-		this.tellQuestion(SimpleComponent.fromMini(message));
+		this.tellQuestion(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -1151,7 +1151,7 @@ public abstract class SimpleCommandCore {
 		final List<SimpleComponent> components = new ArrayList<>();
 
 		for (final String message : messages)
-			components.add(this.replacePlaceholders(SimpleComponent.fromMini(message)));
+			components.add(this.replacePlaceholders(SimpleComponent.fromMiniAmpersand(message)));
 
 		throw new CommandException(components.toArray(new SimpleComponent[components.size()]));
 	}
@@ -1389,7 +1389,7 @@ public abstract class SimpleCommandCore {
 	 * @param tellPrefix
 	 */
 	protected final void setTellPrefix(final String tellPrefix) {
-		this.setTellPrefix(SimpleComponent.fromMini(tellPrefix));
+		this.setTellPrefix(SimpleComponent.fromMiniAmpersand(tellPrefix));
 	}
 
 	/**
@@ -1467,7 +1467,7 @@ public abstract class SimpleCommandCore {
 	 * @param cooldownMessage
 	 */
 	protected final void setCooldownMessage(final String cooldownMessage) {
-		this.cooldownMessage = SimpleComponent.fromMini(cooldownMessage);
+		this.cooldownMessage = SimpleComponent.fromMiniAmpersand(cooldownMessage);
 	}
 
 	/**
@@ -1628,7 +1628,7 @@ public abstract class SimpleCommandCore {
 	 * @param usage
 	 */
 	protected final void setUsage(String usage) {
-		this.usage = usage == null || usage.isEmpty() ? null : SimpleComponent.fromMini(usage);
+		this.usage = usage == null || usage.isEmpty() ? null : SimpleComponent.fromMiniAmpersand(usage);
 	}
 
 	/**
@@ -1657,7 +1657,7 @@ public abstract class SimpleCommandCore {
 	 * @param description
 	 */
 	protected final void setDescription(String description) {
-		this.description = description == null || description.isEmpty() ? null : SimpleComponent.fromMini(description);
+		this.description = description == null || description.isEmpty() ? null : SimpleComponent.fromMiniAmpersand(description);
 	}
 
 	/**

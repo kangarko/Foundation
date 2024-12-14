@@ -332,7 +332,7 @@ public final class Variables {
 					replacedValue = SimpleComponent.fromSection(CommonCore.joinAnd(Arrays.asList((Object[]) rawValue)));
 
 				else
-					replacedValue = SimpleComponent.fromMini(rawValue.toString());
+					replacedValue = SimpleComponent.fromMiniSection(rawValue.toString());
 
 				break;
 			}
@@ -354,7 +354,7 @@ public final class Variables {
 				final String value = expansion.replacePlaceholders(this.audience, variable);
 
 				if (value != null) {
-					replacedValue = SimpleComponent.fromMini(value);
+					replacedValue = SimpleComponent.fromMiniSection(value);
 
 					break;
 				}
@@ -455,7 +455,7 @@ public final class Variables {
 
 					} else {
 						if (this.toLegacyMode == ToLegacyMode.PLAIN)
-							value = SimpleComponent.fromMini(value).toPlain();
+							value = SimpleComponent.fromMiniAmpersand(value).toPlain();
 
 						else
 							value = CompChatColor.convertMiniToLegacy(value); // No gradient support, they will simply be lost

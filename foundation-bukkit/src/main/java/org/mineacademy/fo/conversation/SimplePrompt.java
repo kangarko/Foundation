@@ -179,7 +179,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final Conversable conversable, String message) {
-		Platform.toPlayer(conversable).sendMessage(SimpleComponent.fromMini(this.getCustomPrefix() != null ? this.getCustomPrefix() + message : message));
+		Platform.toPlayer(conversable).sendMessage(SimpleComponent.fromMiniAmpersand(this.getCustomPrefix() != null ? this.getCustomPrefix() + message : message));
 	}
 
 	/**
@@ -189,7 +189,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 	 * @param message
 	 */
 	protected final void tell(final Conversable conversable, SimpleComponent message) {
-		Platform.toPlayer(conversable).sendMessage(SimpleComponent.fromMini(this.getCustomPrefix() != null ? this.getCustomPrefix() : "").append(message));
+		Platform.toPlayer(conversable).sendMessage(SimpleComponent.fromMiniAmpersand(this.getCustomPrefix() != null ? this.getCustomPrefix() : "").append(message));
 	}
 
 	/**
@@ -217,7 +217,7 @@ public abstract class SimplePrompt extends ValidatingPrompt {
 				final String failPrompt = this.getFailedValidationText(context, input);
 
 				if (failPrompt != null && !failPrompt.isEmpty() && !failPrompt.equals("none"))
-					Common.tellLater(0, player, Variables.builder().audience(player).replaceComponent(Messenger.getErrorPrefix().appendMini(" " + failPrompt)));
+					Common.tellLater(0, player, Variables.builder().audience(player).replaceComponent(Messenger.getErrorPrefix().appendMiniAmpersand(" " + failPrompt)));
 
 				// Redisplay this prompt to the user to re-collect input
 				return this;

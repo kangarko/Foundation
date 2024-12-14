@@ -69,7 +69,7 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 
 		final String name = this.args[argsIndex];
 		final ProxiedPlayer player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isConnected(), Lang.componentVars("player-not-online", "player", name));
+		this.checkBoolean(player != null && player.isConnected(), Lang.component("player-not-online", "player", name));
 
 		return player;
 	}
