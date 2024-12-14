@@ -880,6 +880,10 @@ public final class SimpleComponent implements ConfigSerializable {
 		Component mini;
 
 		try {
+			// Correct MiniMessage potentially dangerous behavior where multiple backslashes will
+			// make the variable parse so we slash it to one.
+			message = message.replaceAll("(\\\\){2,}(?=<)", "\\\\");
+
 			mini = MINIMESSAGE_PARSER.deserialize(message.replace("\\n", "\n"));
 
 		} catch (final Throwable t) {
