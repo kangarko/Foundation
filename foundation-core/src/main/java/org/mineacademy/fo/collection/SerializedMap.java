@@ -2,6 +2,7 @@ package org.mineacademy.fo.collection;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,6 +18,7 @@ import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Tuple;
@@ -882,29 +884,21 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	}
 
 	/**
-	 * Convert the key pairs into formatted string such as {
-	 * 	"key" = "value"
-	 *  "another" = "value2"
-	 *  ...
-	 * }
+	 * Convert the key pairs into formatted string. Includes legacy color formatting.
 	 *
 	 * @return
 	 */
 	public String toStringFormatted() {
-		final List<String> lines = new ArrayList<>();
+		final Map<String, Object> mapWithoutEmptyValues = new HashMap<>();
 
-		lines.add("{");
-
-		for (final Map.Entry<?, ?> entry : this.map.entrySet()) {
+		for (final Map.Entry<String, Object> entry : this.map.entrySet()) {
 			final Object value = entry.getValue();
 
 			if (value != null && !value.toString().equals("[]") && !value.toString().equals("{}") && !value.toString().isEmpty() && !value.toString().equals("0.0") && !value.toString().equals("false"))
-				lines.add("\t'" + entry.getKey() + "' = '" + entry.getValue() + "'");
+				mapWithoutEmptyValues.put(entry.getKey(), SerializeUtilCore.serialize(Language.YAML, entry.getValue()));
 		}
 
-		lines.add("}");
-
-		return String.join("\n", lines);
+		return CommonCore.GSON_PRETTY.toJson(mapWithoutEmptyValues).replace("\"", CompChatColor.GRAY + "\"" + CompChatColor.RESET);
 	}
 
 	/**
