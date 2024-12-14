@@ -58,7 +58,7 @@ public abstract class CommonCore {
 	/**
 	 * The Google Json instance
 	 */
-	public final static Gson GSON = new Gson();
+	public final static Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
 	/**
 	 * The Google Json instance with pretty printing
