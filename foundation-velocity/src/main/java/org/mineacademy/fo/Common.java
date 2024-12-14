@@ -27,7 +27,7 @@ public final class Common extends CommonCore {
 		final FoundationPlayer audience = Platform.toPlayer(player);
 
 		for (final String message : messages)
-			audience.sendMessage(SimpleComponent.fromMini(message));
+			audience.sendMessage(SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**

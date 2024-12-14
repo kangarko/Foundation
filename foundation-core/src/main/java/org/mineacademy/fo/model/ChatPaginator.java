@@ -94,7 +94,7 @@ public final class ChatPaginator {
 	 */
 	public ChatPaginator setHeader(String... messages) {
 		for (final String message : messages)
-			this.header.add(SimpleComponent.fromMini(message));
+			this.header.add(SimpleComponent.fromMiniAmpersand(message));
 
 		return this;
 	}
@@ -109,7 +109,7 @@ public final class ChatPaginator {
 		final List<SimpleComponent> pages = new ArrayList<>();
 
 		for (final String message : messages)
-			pages.add(SimpleComponent.fromMini(message));
+			pages.add(SimpleComponent.fromMiniAmpersand(message));
 
 		return this.setPages(pages.toArray(new SimpleComponent[pages.size()]));
 	}
@@ -148,7 +148,7 @@ public final class ChatPaginator {
 	 */
 	public ChatPaginator setFooter(String... messages) {
 		for (final String message : messages)
-			this.footer.add(SimpleComponent.fromMini(message));
+			this.footer.add(SimpleComponent.fromMiniAmpersand(message));
 
 		return this;
 	}

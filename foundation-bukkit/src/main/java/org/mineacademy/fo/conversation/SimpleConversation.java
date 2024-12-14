@@ -259,7 +259,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 	 * @param message
 	 */
 	protected static final void tell(final Conversable conversable, String message) {
-		tell(conversable, SimpleComponent.fromMini(message));
+		tell(conversable, SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**
@@ -399,7 +399,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 						final String prefix = this.prefix.getPrefix(this.context);
 
 						if (!prefix.isEmpty())
-							component = component.appendMini(prefix);
+							component = component.appendMiniAmpersand(prefix);
 						else
 							component = component.append(Lang.component("prefix-question"));
 					}
@@ -409,7 +409,7 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 						component = component.appendPlain(" ");
 
 					// Add question itself
-					component = component.appendMini(question);
+					component = component.appendMiniAmpersand(question);
 
 					this.context.setSessionData("Asked_" + promptClass, askedQuestions);
 					tell(this.context.getForWhom(), component);

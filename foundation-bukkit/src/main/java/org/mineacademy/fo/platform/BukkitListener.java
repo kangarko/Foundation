@@ -79,7 +79,7 @@ final class BukkitListener implements Listener {
 				page = Integer.parseInt(numberRaw) - 1;
 
 			} catch (final NumberFormatException ex) {
-				audience.sendMessage(Lang.componentVars("page-invalid-page", "input", numberRaw));
+				audience.sendMessage(Lang.component("page-invalid-page", "input", numberRaw));
 
 				event.setCancelled(true);
 				return;
@@ -134,31 +134,31 @@ final class BukkitListener implements Listener {
 				final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
 
 				SimpleComponent component = SimpleComponent
-						.fromMini("&8&m" + CommonCore.duplicate("-", multiply) + "&r");
+						.fromMiniAmpersand("&8&m" + CommonCore.duplicate("-", multiply) + "&r");
 
 				if (page == 0)
-					component = component.appendMini(" &7« ");
+					component = component.appendMiniAmpersand(" &7« ");
 				else
 					component = component
-							.appendMini(" &6« ")
-							.onHover(Lang.componentVars("page-go-to-page", "page", String.valueOf(page)))
+							.appendMiniAmpersand(" &6« ")
+							.onHover(Lang.component("page-go-to-page", "page", String.valueOf(page)))
 							.onClickRunCmd("/#flp " + page);
 
 				component = component
-						.appendMini("&f" + (page + 1)).onHover(Lang.component("page-go-to-first-page")).onClickRunCmd("/#flp 1")
-						.appendMini("&7/").onHover(Lang.component("page-tooltip"))
-						.appendMini("&f" + pages.size() + "").onHover(Lang.component("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
+						.appendMiniAmpersand("&f" + (page + 1)).onHover(Lang.component("page-go-to-first-page")).onClickRunCmd("/#flp 1")
+						.appendMiniAmpersand("&7/").onHover(Lang.component("page-tooltip"))
+						.appendMiniAmpersand("&f" + pages.size() + "").onHover(Lang.component("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
 
 				if (page + 1 >= pages.size())
-					component = component.appendMini(" &7» ");
+					component = component.appendMiniAmpersand(" &7» ");
 				else
 					component = component
-							.appendMini(" &6» ")
-							.onHover(Lang.componentVars("page-go-to-page", "page", String.valueOf(page + 2)))
+							.appendMiniAmpersand(" &6» ")
+							.onHover(Lang.component("page-go-to-page", "page", String.valueOf(page + 2)))
 							.onClickRunCmd("/#flp " + (page + 2));
 
 				audience.sendMessage(component
-						.appendMini("&8&m" + CommonCore.duplicate("-", multiply)));
+						.appendMiniAmpersand("&8&m" + CommonCore.duplicate("-", multiply)));
 			}
 
 			// Prevent "Unknown command message"

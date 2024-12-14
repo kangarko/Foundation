@@ -69,7 +69,7 @@ public abstract class SimpleSubCommand extends SimpleSubCommandCore implements S
 
 		final String name = this.args[argsIndex];
 		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline(), Lang.componentVars("player-not-online", "player", name));
+		this.checkBoolean(player != null && player.isOnline(), Lang.component("player-not-online", "player", name));
 
 		return player;
 	}

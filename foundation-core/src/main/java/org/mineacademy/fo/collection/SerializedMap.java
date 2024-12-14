@@ -447,7 +447,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 		if (this.containsKey(path)) {
 			final String string = this.getString(path);
 
-			return string != null ? SimpleComponent.fromMini(string) : def;
+			return string != null ? SimpleComponent.fromMiniAmpersand(string) : def;
 		}
 
 		return def;
@@ -898,7 +898,11 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 				mapWithoutEmptyValues.put(entry.getKey(), SerializeUtilCore.serialize(Language.YAML, entry.getValue()));
 		}
 
-		return CommonCore.GSON_PRETTY.toJson(mapWithoutEmptyValues).replace("\"", CompChatColor.GRAY + "\"" + CompChatColor.RESET);
+		return CommonCore.GSON_PRETTY.toJson(mapWithoutEmptyValues)
+				.replace(":", CompChatColor.GRAY + ":" + CompChatColor.RESET)
+				.replace("[", CompChatColor.DARK_GREEN + "[" + CompChatColor.RESET)
+				.replace("]", CompChatColor.DARK_GREEN + "]" + CompChatColor.RESET)
+				.replace("\"", CompChatColor.GRAY + "\"" + CompChatColor.RESET);
 	}
 
 	/**

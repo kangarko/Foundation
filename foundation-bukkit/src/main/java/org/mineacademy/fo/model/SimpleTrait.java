@@ -136,7 +136,7 @@ public abstract class SimpleTrait extends Trait {
 	 * @param messages
 	 */
 	protected final void cancel(String message) {
-		throw new EventHandledException(true, SimpleComponent.fromMini(message));
+		throw new EventHandledException(true, SimpleComponent.fromMiniAmpersand(message));
 	}
 
 	/**

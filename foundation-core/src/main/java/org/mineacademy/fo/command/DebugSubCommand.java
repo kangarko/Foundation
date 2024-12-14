@@ -98,7 +98,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 		// Zip the folder
 		this.zipAndRemoveFolder(debugFolder);
 
-		this.tellSuccess(Lang.componentVars("command-debug-success", "amount", String.valueOf(files.size())));
+		this.tellSuccess(Lang.component("command-debug-success", "amount", String.valueOf(files.size())));
 	}
 
 	/*
@@ -153,7 +153,7 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 			} catch (final Exception ex) {
 				ex.printStackTrace();
 
-				this.returnTell(Lang.componentVars("command-debug-copy-fail", "file", file.getName()));
+				this.returnTell(Lang.component("command-debug-copy-fail", "file", file.getName()));
 			}
 	}
 

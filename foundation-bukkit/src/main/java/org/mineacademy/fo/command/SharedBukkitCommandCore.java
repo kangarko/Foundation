@@ -38,7 +38,7 @@ public interface SharedBukkitCommandCore {
 	 * @throws CommandException
 	 */
 	default CompMaterial findMaterial(final String name, final String falseMessage) throws CommandException {
-		return this.findMaterial(name, SimpleComponent.fromMini(falseMessage));
+		return this.findMaterial(name, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -92,7 +92,7 @@ public interface SharedBukkitCommandCore {
 				uuid = UUID.fromString(name);
 
 			} catch (final IllegalArgumentException ex) {
-				this.returnTell(Lang.componentVars("command-invalid-uuid", "uuid", name));
+				this.returnTell(Lang.component("command-invalid-uuid", "uuid", name));
 			}
 
 			this.findOfflinePlayer(uuid, syncCallback);
@@ -100,7 +100,7 @@ public interface SharedBukkitCommandCore {
 		} else
 			this.runTaskAsync(() -> {
 				final OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(name);
-				this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), Lang.componentVars("player-not-played-before", "player", name));
+				this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), Lang.component("player-not-played-before", "player", name));
 
 				this.runTask(() -> syncCallback.accept(targetPlayer));
 			});
@@ -116,7 +116,7 @@ public interface SharedBukkitCommandCore {
 	default void findOfflinePlayer(final UUID uniqueId, final Consumer<OfflinePlayer> syncCallback) throws CommandException {
 		this.runTaskAsync(() -> {
 			final OfflinePlayer targetPlayer = Remain.getOfflinePlayerByUniqueId(uniqueId);
-			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), Lang.componentVars("player-invalid-uuid", "uuid", uniqueId.toString()));
+			this.checkBoolean(targetPlayer != null && (targetPlayer.isOnline() || targetPlayer.hasPlayedBefore()), Lang.component("player-invalid-uuid", "uuid", uniqueId.toString()));
 
 			this.runTask(() -> syncCallback.accept(targetPlayer));
 		});
@@ -177,7 +177,7 @@ public interface SharedBukkitCommandCore {
 		}
 
 		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline(), Lang.componentVars("player-not-online", "player", name));
+		this.checkBoolean(player != null && player.isOnline(), Lang.component("player-not-online", "player", name));
 
 		return player;
 	}
@@ -197,7 +197,7 @@ public interface SharedBukkitCommandCore {
 		}
 
 		final World world = Bukkit.getWorld(name);
-		this.checkBoolean(world != null, Lang.componentVars("command-invalid-world",
+		this.checkBoolean(world != null, Lang.component("command-invalid-world",
 				"world", name,
 				"available", CommonCore.join(Bukkit.getWorlds(), Common::simplify)));
 

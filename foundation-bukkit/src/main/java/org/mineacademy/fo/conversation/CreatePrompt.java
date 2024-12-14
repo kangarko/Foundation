@@ -91,7 +91,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	 */
 	@Override
 	protected final String getPrompt(ConversationContext context) {
-		return Lang.legacyVars("conversation-create-prompt", "object", this.objectName);
+		return Lang.legacy("conversation-create-prompt", "object", this.objectName);
 	}
 
 	/**

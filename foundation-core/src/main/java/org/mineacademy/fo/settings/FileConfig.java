@@ -739,7 +739,7 @@ public abstract class FileConfig extends ConfigSection {
 	public final SimpleComponent getComponent(final String path, final SimpleComponent def) {
 		final String string = this.getString(path);
 
-		return string != null ? SimpleComponent.fromMini(string) : def;
+		return string != null ? SimpleComponent.fromMiniAmpersand(string) : def;
 	}
 
 	/**

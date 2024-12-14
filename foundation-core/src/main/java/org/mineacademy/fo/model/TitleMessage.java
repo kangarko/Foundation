@@ -56,7 +56,9 @@ public final class TitleMessage implements ConfigSerializable {
 	 * @param variablesReplacer
 	 */
 	public void displayTo(FoundationPlayer audience, Function<SimpleComponent, SimpleComponent> variablesReplacer) {
-		audience.showTitle(this.fadeIn, this.stay, this.fadeOut, variablesReplacer.apply(SimpleComponent.fromMini(this.titleMessage)), variablesReplacer.apply(SimpleComponent.fromMini(this.subtitleMessage)));
+		audience.showTitle(this.fadeIn, this.stay, this.fadeOut,
+				variablesReplacer.apply(SimpleComponent.fromMiniAmpersand(this.titleMessage)),
+				variablesReplacer.apply(SimpleComponent.fromMiniAmpersand(this.subtitleMessage)));
 	}
 
 	/**

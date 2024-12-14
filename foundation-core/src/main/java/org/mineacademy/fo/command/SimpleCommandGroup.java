@@ -341,7 +341,7 @@ public abstract class SimpleCommandGroup {
 			// Print a special message on no arguments
 			if (this.args.length == 0) {
 				for (final String component : SimpleCommandGroup.this.getNoParamsHeader())
-					this.audience.sendMessage(SimpleComponent.fromMini(component));
+					this.audience.sendMessage(SimpleComponent.fromMiniAmpersand(component));
 
 				return;
 			}
@@ -382,27 +382,27 @@ public abstract class SimpleCommandGroup {
 				final List<SimpleComponent> hover = new ArrayList<>();
 
 				if (subcommand.getDescription() != null)
-					hover.add(Lang.componentVars("command-help-tooltip-description", "description", subcommand.getDescription()));
+					hover.add(Lang.component("command-help-tooltip-description", "description", subcommand.getDescription()));
 
 				if (subcommand.getPermission() != null)
-					hover.add(Lang.componentVars("command-help-tooltip-permission", "permission", subcommand.getPermission()));
+					hover.add(Lang.component("command-help-tooltip-permission", "permission", subcommand.getPermission()));
 
 				final String[] legacyUsage = subcommand.getMultilineUsageMessage();
 				final SimpleComponent newUsage = subcommand.getMultilineUsage();
 
 				if (legacyUsage != null || newUsage != null || subcommand.getUsage() != null)
-					hover.add(Lang.componentVars("command-help-tooltip-usage", "usage", legacyUsage != null || newUsage != null ? SimpleComponent.empty() : CommonCore.getOrDefault(this.colorizeUsage(subcommand.getUsage()), SimpleComponent.empty())));
+					hover.add(Lang.component("command-help-tooltip-usage", "usage", legacyUsage != null || newUsage != null ? SimpleComponent.empty() : CommonCore.getOrDefault(this.colorizeUsage(subcommand.getUsage()), SimpleComponent.empty())));
 
 				if (legacyUsage != null)
 					for (final String line : legacyUsage)
-						hover.add(subcommand.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMini(line))));
+						hover.add(subcommand.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMiniAmpersand(line))));
 
 				else if (newUsage != null)
 					hover.add(subcommand.replacePlaceholders(this.colorizeUsage(newUsage)));
 
 				SimpleComponent component = SimpleComponent
 						.fromPlain("  /" + this.getLabel())
-						.appendMini(" &n" + subcommand.getSublabel() + "&r ")
+						.appendMiniAmpersand(" &n" + subcommand.getSublabel() + "&r ")
 						.onClickSuggestCmd("/" + this.getLabel() + " " + subcommand.getSublabel())
 						.onHover(hover);
 

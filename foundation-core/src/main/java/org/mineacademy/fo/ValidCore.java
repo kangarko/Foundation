@@ -127,7 +127,7 @@ public abstract class ValidCore {
 	 */
 	public static boolean checkPermission(final FoundationPlayer audience, final String permission) {
 		if (!audience.hasPermission(permission)) {
-			audience.sendMessage(Lang.componentVars("no-permission", "permission", SimpleComponent.fromPlain(permission)));
+			audience.sendMessage(Lang.component("no-permission", "permission", SimpleComponent.fromPlain(permission)));
 
 			return false;
 		}

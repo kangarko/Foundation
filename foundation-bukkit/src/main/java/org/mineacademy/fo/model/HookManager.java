@@ -1980,15 +1980,15 @@ class EssentialsHook {
 		final User user = this.getUser(uniqueId);
 
 		if (user != null) {
-			final SimpleComponent nickComponent = SimpleComponent.fromMini(nick);
-			final boolean isEmpty = nick == null || nickComponent.toPlain(null).replace(" ", "").isEmpty();
+			final SimpleComponent nickComponent = SimpleComponent.fromMiniSection(nick);
+			final boolean isEmpty = nick == null || nickComponent.toPlain().replace(" ", "").isEmpty();
 
-			user.setNickname(isEmpty ? null : nickComponent.toLegacy(null));
+			user.setNickname(isEmpty ? null : nick.trim());
 		}
 	}
 
 	String getNameFromNick(String maybeNick) {
-		maybeNick = SimpleComponent.fromMini(maybeNick).toPlain(null).toLowerCase();
+		maybeNick = SimpleComponent.fromMiniAmpersand(maybeNick).toPlain(null).toLowerCase();
 
 		final UserMap users = this.ess.getUserMap();
 

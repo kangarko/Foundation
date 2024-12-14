@@ -352,7 +352,7 @@ public abstract class MenuPaged<T> extends Menu {
 						.fromMaterial(this.canGo ? MenuPaged.getActivePageButton() : MenuPaged.getInactivePageButton())
 						.name(previousPage == 0
 								? Lang.legacy("menu-page-first")
-								: Lang.legacyVars("menu-page-previous", "page", String.valueOf(previousPage)))
+								: Lang.legacy("menu-page-previous", "page", String.valueOf(previousPage)))
 						.make();
 
 			}
@@ -383,7 +383,7 @@ public abstract class MenuPaged<T> extends Menu {
 						.fromMaterial(this.canGo ? MenuPaged.getActivePageButton() : MenuPaged.getInactivePageButton())
 						.name(lastPage
 								? Lang.legacy("menu-page-last")
-								: Lang.legacyVars("menu-page-next", "page", String.valueOf(MenuPaged.this.getCurrentPage() + 1)))
+								: Lang.legacy("menu-page-next", "page", String.valueOf(MenuPaged.this.getCurrentPage() + 1)))
 						.make();
 			}
 		};

@@ -194,7 +194,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			// Receiver conditions will be lost
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMini("<gray>" + legacy).toLegacy(null) /* remove unsupported mini tags such as hover */, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMiniAmpersand("<gray>" + legacy).toLegacy(null) /* remove unsupported mini tags such as hover */, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 			else
 				legacy = CompChatColor.convertMiniToLegacy("<gray>" + legacy);
 
@@ -542,13 +542,33 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Append text with &, § or MiniMessage tags to the component.
+	 * Append text with &, section or MiniMessage tags to the component.
 	 *
 	 * @param text
 	 * @return
 	 */
-	public SimpleComponent appendMini(String text) {
-		return this.append(fromMini(text));
+	public SimpleComponent appendMiniAmpersand(String text) {
+		return this.append(fromMiniLegacy(text, true));
+	}
+
+	/**
+	 * Append text section or MiniMessage tags to the component.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public SimpleComponent appendMiniSection(String text) {
+		return this.append(fromMiniLegacy(text, false));
+	}
+
+	/**
+	 * Append text MiniMessage tags to the component.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public SimpleComponent appendMiniNative(String text) {
+		return this.append(fromMiniNative(text));
 	}
 
 	/**
@@ -859,12 +879,31 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * Create a new component from the given message.
 	 *
-	 * Replaces & color codes and MiniMessage tags.
+	 * Replaces & and section color codes and MiniMessage tags.
 	 *
 	 * @param message
 	 * @return
 	 */
-	public static SimpleComponent fromMini(String message) {
+	public static SimpleComponent fromMiniAmpersand(String message) {
+		return fromMiniLegacy(message, true);
+	}
+
+	/**
+	 * Create a new component from the given message.
+	 *
+	 * Replaces section color codes and MiniMessage tags.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static SimpleComponent fromMiniSection(String message) {
+		return fromMiniLegacy(message, false);
+	}
+
+	/*
+	 * Create a new component from the given message.
+	 */
+	private static SimpleComponent fromMiniLegacy(String message, boolean ampersand) {
 		if (message == null)
 			return SimpleComponent.empty();
 
@@ -875,7 +914,23 @@ public final class SimpleComponent implements ConfigSerializable {
 			message = ChatUtil.center(message.replace("<center>", "").trim());
 
 		// Replace legacy & color codes
-		message = CompChatColor.convertLegacyToMini(message, true);
+		message = CompChatColor.convertLegacyToMini(message, ampersand);
+
+		return fromMiniNative(message);
+	}
+
+	/**
+	 * Create a new component from the given message. This will throw error if legacsy tags are found.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static SimpleComponent fromMiniNative(String message) {
+		if (message == null)
+			return SimpleComponent.empty();
+
+		if (" ".equals(message))
+			return fromPlain(" ");
 
 		Component mini;
 

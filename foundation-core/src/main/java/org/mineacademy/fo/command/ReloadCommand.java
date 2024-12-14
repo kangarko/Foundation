@@ -51,17 +51,17 @@ public final class ReloadCommand extends SimpleCommandCore {
 				}
 
 			if (!erroredFiles.isEmpty()) {
-				command.tellError(Lang.componentVars("command-reload-file-load-error", "files", String.join(", ", erroredFiles)));
+				command.tellError(Lang.component("command-reload-file-load-error", "files", String.join(", ", erroredFiles)));
 
 				return;
 			}
 
 			Platform.getPlugin().reload();
 
-			command.tellSuccess(Lang.componentVars("command-reload-success"));
+			command.tellSuccess(Lang.component("command-reload-success"));
 
 		} catch (final Throwable t) {
-			command.tellError(Lang.componentVars("command-reload-fail", "error", t.getMessage() != null ? t.getMessage() : "unknown"));
+			command.tellError(Lang.component("command-reload-fail", "error", t.getMessage() != null ? t.getMessage() : "unknown"));
 
 			t.printStackTrace();
 		}

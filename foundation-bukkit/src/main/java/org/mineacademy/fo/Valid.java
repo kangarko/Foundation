@@ -29,7 +29,7 @@ public final class Valid extends ValidCore {
 	 */
 	public static boolean checkPermission(final CommandSender sender, final String permission) {
 		if (!sender.hasPermission(permission)) {
-			Common.tell(sender, Lang.componentVars("no-permission", "permission", permission));
+			Common.tell(sender, Lang.component("no-permission", "permission", permission));
 
 			return false;
 		}
