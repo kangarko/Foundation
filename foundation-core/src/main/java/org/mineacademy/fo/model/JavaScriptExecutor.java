@@ -197,8 +197,16 @@ public final class JavaScriptExecutor {
 			javascript = String.join("\n", replaced);
 		}
 
-		if (audience != null && audience.isPlayer())
-			placeholders.put("player", audience.getPlayer());
+		if (audience != null) {
+			placeholders.put("audience", audience);
+			placeholders.put("sender", audience.getSender());
+
+			if (audience.isDiscord())
+				placeholders.put("discord", audience.getSender());
+
+			if (audience.isPlayer())
+				placeholders.put("player", audience.getPlayer());
+		}
 
 		return run(javascript, placeholders);
 	}
