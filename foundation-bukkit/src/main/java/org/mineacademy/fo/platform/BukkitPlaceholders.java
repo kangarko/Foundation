@@ -72,6 +72,9 @@ final class BukkitPlaceholders extends SimpleExpansion {
 			return player == null ? "" : String.valueOf(Remain.getPing(player));
 
 		else if ("player_health".equals(identifier))
+			return player == null ? "" : String.valueOf(Remain.getHealth(player));
+
+		else if ("player_health_colorized".equals(identifier))
 			return player == null ? "" : formatHealth(player);
 
 		else if ("player_location".equals(identifier))
