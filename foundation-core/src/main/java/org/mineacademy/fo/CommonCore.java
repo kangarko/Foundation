@@ -420,8 +420,15 @@ public abstract class CommonCore {
 		if (throwable instanceof HandledException)
 			return;
 
+		final String message = throwable.getMessage();
+		boolean sentry = true;
+
+		// Certain edge cases: Do not report to sentry since it's used-caused and must be solved on his end
+		if (message.contains("The database file has been moved since it was opened"))
+			sentry = false;
+
 		if (!(throwable instanceof FoException))
-			Debugger.saveError(throwable, messages);
+			Debugger.saveError(sentry, throwable, messages);
 
 		logFramed(replaceErrorVariable(throwable, messages));
 		Debugger.printStackTrace(throwable);
