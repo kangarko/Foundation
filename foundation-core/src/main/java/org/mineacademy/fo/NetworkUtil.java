@@ -1,6 +1,7 @@
 package org.mineacademy.fo;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -200,7 +201,7 @@ public final class NetworkUtil {
 				return responseBuilder.toString();
 			}
 
-		} catch (final SocketException | UnknownHostException ex) {
+		} catch (final EOFException | SocketException | UnknownHostException ex) {
 			throw new IllegalStateException("Error issuing a 'get' request to '" + rawEndpoint + "', network is unreachable", ex);
 
 		} catch (final Exception ex) {
