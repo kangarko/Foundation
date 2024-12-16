@@ -849,7 +849,7 @@ public abstract class FoundationPlayer implements Audience {
 	 */
 	@Override
 	public String toString() {
-		return "FoundationPlayer{player=" + this.isPlayer() + ",name=" + this.getName() + "}";
+		return "FoundationPlayer{source=" + this.getSender().getClass().getSimpleName() + ", name=" + this.getName() + "}";
 	}
 
 }
