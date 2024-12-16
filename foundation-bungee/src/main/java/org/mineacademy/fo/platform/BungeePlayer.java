@@ -170,7 +170,7 @@ final class BungeePlayer extends FoundationPlayer {
 	public void kick(final SimpleComponent reason) {
 		ValidCore.checkBoolean(this.isPlayer, "Cannot kick a non-player: " + this.sender);
 
-		this.player.disconnect(reason.toLegacy(this));
+		this.player.disconnect(reason.toLegacySection(this));
 	}
 
 	@Override

@@ -1904,7 +1904,7 @@ public final class Remain {
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
-			final String colorized = SimpleComponent.fromMiniAmpersand(message).toLegacy().replace("|", "\n");
+			final String colorized = SimpleComponent.fromMiniAmpersand(message).toLegacySection().replace("|", "\n");
 
 			if (!colorized.isEmpty())
 				if (hasAdvancements)
@@ -2139,7 +2139,7 @@ public final class Remain {
 				meta.spigot().setPages(spigotPages);
 
 			} catch (final NoSuchMethodError iLikeDinosaursError) {
-				meta.setPages(CommonCore.convertArrayToList(pages, SimpleComponent::toLegacy));
+				meta.setPages(CommonCore.convertArrayToList(pages, SimpleComponent::toLegacySection));
 			}
 		}
 	}

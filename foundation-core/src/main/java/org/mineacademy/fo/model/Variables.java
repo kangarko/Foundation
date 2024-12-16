@@ -431,7 +431,7 @@ public final class Variables {
 						replacedValue = component.toPlain(this.audience);
 
 					else
-						replacedValue = component.toLegacy(this.audience);
+						replacedValue = component.toLegacySection(this.audience);
 
 				} else if (rawValue instanceof Component) {
 					final Component component = (Component) rawValue;
