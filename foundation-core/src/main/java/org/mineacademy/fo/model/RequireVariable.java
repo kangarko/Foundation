@@ -67,7 +67,7 @@ public final class RequireVariable implements ConfigStringSerializable {
 	 * @param line
 	 * @return
 	 */
-	public static RequireVariable deserialize(final String line) {
+	public static RequireVariable fromLine(final String line) {
 		final String[] split = line.split(" ");
 
 		if (split.length != 1 && split.length != 2)

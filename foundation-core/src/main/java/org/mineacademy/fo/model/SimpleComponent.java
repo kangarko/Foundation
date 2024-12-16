@@ -1127,7 +1127,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			part.viewPermission = map.getString("Permission");
 			part.viewCondition = map.getString("Condition");
-			part.viewVariable = map.containsKey("Variable") ? RequireVariable.deserialize(map.getString("Variable")) : null;
+			part.viewVariable = map.containsKey("Variable") ? RequireVariable.fromLine(map.getString("Variable")) : null;
 
 			return part;
 		}
