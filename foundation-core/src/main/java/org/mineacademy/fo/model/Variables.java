@@ -65,7 +65,7 @@ public final class Variables {
 	/**
 	 * Stores cache for legacy variables by audience's name.
 	 */
-	private static final Map<ToLegacyMode, Map<String, Map<String, String>>> legacyCache = ExpiringMap.builder().expiration(100, TimeUnit.MILLISECONDS).build();
+	private final Map<ToLegacyMode, Map<String, Map<String, String>>> legacyCache = ExpiringMap.builder().expiration(500, TimeUnit.MILLISECONDS).build();
 
 	/**
 	 * Whether we should replace JavaScript variables in replace() methods.
@@ -90,6 +90,11 @@ public final class Variables {
 	 * Whether to convert the component to legacy text, plain text or mini message in replaceLegacy() methods.
 	 */
 	private ToLegacyMode toLegacyMode = ToLegacyMode.MINI;
+
+	/**
+	 * Whether to cache the result of the legacy conversion for 500ms. Defaults to false.
+	 */
+	private boolean cache = false;
 
 	/**
 	 * Set the audience for whom we are replacing variables.
@@ -177,6 +182,18 @@ public final class Variables {
 	}
 
 	/**
+	 * Set whether to cache the result of the legacy conversion for 500ms.
+	 *
+	 * @param cache
+	 * @return
+	 */
+	public Variables cache(final boolean cache) {
+		this.cache = cache;
+
+		return this;
+	}
+
+	/**
 	 * Replace variables in the given list.
 	 *
 	 * @see #replaceLegacy(String)
@@ -231,7 +248,7 @@ public final class Variables {
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
 
-		final Map<String, String> cache = this.audience != null ? legacyCache.getOrDefault(this.toLegacyMode, new HashMap<>()).getOrDefault(this.audience.getName(), new HashMap<>()) : null;
+		final Map<String, String> cache = this.cache && this.audience != null ? legacyCache.getOrDefault(this.toLegacyMode, new HashMap<>()).getOrDefault(this.audience.getName(), new HashMap<>()) : null;
 
 		while (matcher.find()) {
 			final String variable = matcher.group(1);
@@ -250,14 +267,14 @@ public final class Variables {
 
 				result.append(value);
 
-				if (cache != null)
+				if (this.cache && cache != null)
 					cache.put(variable, value);
 			}
 
 			lastMatchEnd = matcher.end();
 		}
 
-		if (cache != null)
+		if (this.cache && cache != null)
 			legacyCache.computeIfAbsent(this.toLegacyMode, key -> new HashMap<>()).put(this.audience.getName(), cache);
 
 		result.append(message.substring(lastMatchEnd));
