@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -342,11 +341,11 @@ public final class Variables {
 				else if (rawValue instanceof Component)
 					replacedValue = SimpleComponent.fromAdventure((Component) rawValue);
 
-				else if (rawValue instanceof Collection)
-					replacedValue = SimpleComponent.fromSection(CommonCore.joinAnd((Collection<?>) rawValue));
+				else if (rawValue instanceof Boolean)
+					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
 
-				else if (rawValue.getClass().isArray())
-					replacedValue = SimpleComponent.fromSection(CommonCore.joinAnd(Arrays.asList((Object[]) rawValue)));
+				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
+					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
 				else
 					replacedValue = SimpleComponent.fromMiniSection(rawValue.toString());
@@ -447,8 +446,8 @@ public final class Variables {
 						replacedValue = LegacyComponentSerializer.legacySection().serialize(component);
 				}
 
-				else if (rawValue instanceof List)
-					replacedValue = CommonCore.join((List<?>) rawValue);
+				else if (rawValue instanceof Collection)
+					replacedValue = CommonCore.join((Collection<?>) rawValue);
 
 				else if (rawValue instanceof Boolean)
 					replacedValue = rawValue.toString();
