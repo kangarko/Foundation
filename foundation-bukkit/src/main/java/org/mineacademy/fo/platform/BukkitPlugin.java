@@ -15,6 +15,7 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ProxyUtil;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.SimpleCommandGroup;
@@ -370,8 +371,11 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			// Scan for @AutoRegister annotations
 			AutoRegisterScanner.scanAndRegister();
 
-			if (SimpleSettings.REGISTER_REGIONS)
+			if (SimpleSettings.REGISTER_REGIONS) {
+				Valid.checkBoolean(DiskRegion.hasCreatedPlayerRegionGetter(), "Alert author of " + this.getName() + " to call DiskRegion#setCreatedPlayerRegionGetter in onPluginLoad()");
+
 				DiskRegion.loadRegions();
+			}
 
 			this.onPluginStart();
 
