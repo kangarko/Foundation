@@ -7,11 +7,13 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.Remain;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a simple toast message
  */
+@Getter
 @RequiredArgsConstructor
 public final class ToastMessage implements ConfigSerializable {
 
