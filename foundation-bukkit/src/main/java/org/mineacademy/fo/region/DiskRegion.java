@@ -56,7 +56,7 @@ public final class DiskRegion extends YamlConfig {
 	 * Example: DiskRegion.setRegionGetter(player -> PlayerCache.from(player).getCreatedRegion());
 	 */
 	@Setter
-	private static Function<Player, VisualizedRegion> regionGetter;
+	private static Function<Player, VisualizedRegion> createdPlayerRegionGetter;
 
 	/**
 	 * The region object
@@ -276,12 +276,21 @@ public final class DiskRegion extends YamlConfig {
 	 * @return
 	 */
 	public static VisualizedRegion getCreatedRegion(final Player player) {
-		ValidCore.checkNotNull(regionGetter, "Please call DiskRegion#setRegionGetter before getting the region for player!");
+		ValidCore.checkNotNull(createdPlayerRegionGetter, "Please call DiskRegion#setCreatedPlayerRegionGetter before getting the region for player!");
 
-		final VisualizedRegion region = regionGetter.apply(player);
-		ValidCore.checkNotNull(region, "Wrong implementation! Player " + player.getName() + " has null region! Always return a non-empty region in DiskRegion#setRegionGetter");
+		final VisualizedRegion region = createdPlayerRegionGetter.apply(player);
+		ValidCore.checkNotNull(region, "Wrong implementation! Player " + player.getName() + " has null region! Always return a non-empty region in DiskRegion#setCreatedPlayerRegionGetter");
 
 		return region;
+	}
+
+	/**
+	 * Return if the region getter is set.
+	 *
+	 * @return
+	 */
+	public static boolean hasCreatedPlayerRegionGetter() {
+		return createdPlayerRegionGetter != null;
 	}
 
 	/**
