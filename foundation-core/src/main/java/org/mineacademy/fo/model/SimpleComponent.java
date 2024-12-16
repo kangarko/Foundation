@@ -747,6 +747,17 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public String toAdventureJson(final FoundationPlayer receiver, final boolean legacy) {
 		return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
+		try {
+			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
+
+		} catch (final IllegalArgumentException ex) {
+			CommonCore.log(
+					"Adventure failed to convert component to JSON. Will return legacy!",
+					"Mini: " + this.toMini(receiver));
+
+			ex.printStackTrace(); // do not report to sentry, likely not our fault
+			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
+		}
 	}
 
 	/**
