@@ -13,7 +13,6 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.filter.Filter;
-import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.model.Variables;
@@ -102,10 +101,6 @@ public abstract class FoundationPlatform {
 				command = Variables.builder(playerReplacement).replaceLegacy(command);
 			else
 				command = command.replace("{player}", "");
-
-			// Workaround for JSON in tellraw getting HEX colors replaced
-			if (!command.startsWith("tellraw"))
-				command = CompChatColor.translateColorCodes(command);
 
 			this.dispatchConsoleCommand0(command);
 		}
