@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public final class RequireVariable {
+public final class RequireVariable implements ConfigStringSerializable {
 
 	/**
 	 * The variable to check
@@ -56,13 +56,18 @@ public final class RequireVariable {
 		return true;
 	}
 
+	@Override
+	public String serialize() {
+		return this.variable + " " + (this.negated ? "!" : "") + this.requiredValue;
+	}
+
 	/**
 	 * Parse the given line into a new RequireVariable
 	 *
 	 * @param line
 	 * @return
 	 */
-	public static RequireVariable parse(final String line) {
+	public static RequireVariable deserialize(final String line) {
 		final String[] split = line.split(" ");
 
 		if (split.length != 1 && split.length != 2)
