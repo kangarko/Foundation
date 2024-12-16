@@ -312,15 +312,11 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	@Override
 	public final void reload() {
 		try {
-			this.proxy.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
-
 			this.onPluginPreReload();
 
 			AutoRegisterScanner.reloadSettings();
 
 			this.onPluginReload();
-
-			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
