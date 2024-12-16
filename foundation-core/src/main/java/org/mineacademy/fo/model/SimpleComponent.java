@@ -192,11 +192,11 @@ public final class SimpleComponent implements ConfigSerializable {
 			String legacy = messages[i];
 			ValidCore.checkBoolean(!legacy.contains("\n"), "onHoverLegacy cannot contain new lines in the array");
 
-			// Receiver conditions will be lost
+			legacy = CompChatColor.convertMiniToLegacy("<gray>" + CompChatColor.translateColorCodes(legacy));
+
+			// Receiver conditions and hover/click (unsupported) tags will be lost
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(SimpleComponent.fromMiniAmpersand("<gray>" + legacy).toLegacy(null) /* remove unsupported mini tags such as hover */, LEGACY_HOVER_LINE_LENGTH_LIMIT));
-			else
-				legacy = CompChatColor.convertMiniToLegacy("<gray>" + legacy);
+				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
 			// This is up to 1.5-2x faster
 			joined = joined.append(Component.text(legacy));
@@ -1127,7 +1127,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			part.viewPermission = map.getString("Permission");
 			part.viewCondition = map.getString("Condition");
-			part.viewVariable = map.containsKey("Variable") ? RequireVariable.parse(map.getString("Variable")) : null;
+			part.viewVariable = map.containsKey("Variable") ? RequireVariable.deserialize(map.getString("Variable")) : null;
 
 			return part;
 		}
