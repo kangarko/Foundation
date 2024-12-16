@@ -90,7 +90,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * The empty component
 	 */
-	public static final SimpleComponent EMPTY = new SimpleComponent(ConditionalComponent.fromAdventure(Component.empty()), Style.empty());
+	private static final SimpleComponent EMPTY = new SimpleComponent(ConditionalComponent.fromAdventure(Component.empty()), Style.empty());
 
 	/**
 	 * The limit of characters per line for hover events in legacy versions
@@ -151,7 +151,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 		for (int i = 0; i < components.length; i++) {
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13)) {
-				String legacy = components[i].toLegacy(receiver);
+				String legacy = components[i].toLegacySection(receiver);
 
 				if (legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 					legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
@@ -642,23 +642,54 @@ public final class SimpleComponent implements ConfigSerializable {
 
 	/**
 	 * Return the plain colorized message combining all components into one
-	 * without click/hover events.
+	 * without click/hover events. Using section & codes.
 	 *
 	 * @return
 	 */
-	public String toLegacy() {
-		return this.toLegacy(null);
+	public String toLegacyAmpersand() {
+		return this.toLegacyAmpersand(null);
 	}
 
 	/**
 	 * Return the plain colorized message combining all components into one
-	 * without click/hover events for the given receiver.
+	 * without click/hover events for the given receiver. Using & color codes.
 	 *
 	 * @param receiver
+	 *
 	 * @return
 	 */
-	public String toLegacy(final FoundationPlayer receiver) {
-		final StringBuilder result = new StringBuilder(LegacyComponentSerializer.legacySection().serialize(this.toAdventure(receiver)));
+	public String toLegacyAmpersand(final FoundationPlayer receiver) {
+		return this.toLegacy(receiver, LegacyComponentSerializer.legacyAmpersand());
+	}
+
+	/**
+	 * Return the plain colorized message combining all components into one
+	 * without click/hover events. Using section color codes.
+	 *
+	 * @return
+	 */
+	public String toLegacySection() {
+		return this.toLegacySection(null);
+	}
+
+	/**
+	 * Return the plain colorized message combining all components into one
+	 * without click/hover events for the given receiver. Using section color codes.
+	 *
+	 * @param receiver
+	 *
+	 * @return
+	 */
+	public String toLegacySection(final FoundationPlayer receiver) {
+		return this.toLegacy(receiver, LegacyComponentSerializer.legacySection());
+	}
+
+	/*
+	 * Return the plain colorized message combining all components into one
+	 * without click/hover events for the given receiver.
+	 */
+	private String toLegacy(final FoundationPlayer receiver, LegacyComponentSerializer serializer) {
+		final StringBuilder result = new StringBuilder(serializer.serialize(this.toAdventure(receiver)));
 
 		if (this.lastStyle != null) {
 			if (this.lastStyle.color() != null) {
@@ -674,7 +705,6 @@ public final class SimpleComponent implements ConfigSerializable {
 		}
 
 		return result.toString();
-
 	}
 
 	/**
@@ -746,7 +776,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public String toAdventureJson(final FoundationPlayer receiver, final boolean legacy) {
-		return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 		try {
 			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 

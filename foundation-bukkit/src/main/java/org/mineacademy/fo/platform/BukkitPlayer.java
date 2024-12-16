@@ -152,7 +152,7 @@ final class BukkitPlayer extends FoundationPlayer {
 		if (Remain.isCommandSenderAudience())
 			this.player.kick(reason.toAdventure(this));
 		else
-			this.player.kickPlayer(reason.toLegacy(this));
+			this.player.kickPlayer(reason.toLegacySection(this));
 	}
 
 	@Override
@@ -224,14 +224,14 @@ final class BukkitPlayer extends FoundationPlayer {
 		}
 
 		if (!this.isPlayer || MinecraftVersion.olderThan(V.v1_8))
-			this.sender.sendMessage(component.toLegacy(this));
+			this.sender.sendMessage(component.toLegacySection(this));
 
 		else
 			try {
 				this.player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component.toBungee(this, !this.hasHexColorSupport()));
 
 			} catch (final NoSuchMethodError err) {
-				Remain.sendActionBarLegacyPacket(this.player, component.toLegacy(this));
+				Remain.sendActionBarLegacyPacket(this.player, component.toLegacySection(this));
 			}
 	}
 
@@ -242,10 +242,10 @@ final class BukkitPlayer extends FoundationPlayer {
 
 		else if (this.isPlayer && MinecraftVersion.atLeast(V.v1_8))
 			try {
-				this.player.setPlayerListHeaderFooter(header.toLegacy(this), footer.toLegacy(this));
+				this.player.setPlayerListHeaderFooter(header.toLegacySection(this), footer.toLegacySection(this));
 
 			} catch (final NoSuchMethodError ex) {
-				Remain.sendTablistLegacyPacket(this.player, header.toLegacy(this), footer.toLegacy(this));
+				Remain.sendTablistLegacyPacket(this.player, header.toLegacySection(this), footer.toLegacySection(this));
 			}
 	}
 
@@ -274,7 +274,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	@Override
 	public void sendToast(final SimpleComponent component, final CompToastStyle style) {
 		if (this.isPlayer)
-			Remain.sendToast(this.player, component.toLegacy(this), style);
+			Remain.sendToast(this.player, component.toLegacySection(this), style);
 		else
 			this.sendMessage(component);
 	}

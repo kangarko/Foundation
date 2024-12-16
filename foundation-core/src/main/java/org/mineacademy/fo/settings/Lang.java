@@ -471,7 +471,7 @@ public final class Lang {
 
 					plainCache.put(key, string);
 					componentCache.put(key, component);
-					legacyCache.put(key, component.toLegacy(null));
+					legacyCache.put(key, component.toLegacySection(null));
 				}
 
 				// else if it it is array, join with \n
@@ -489,7 +489,7 @@ public final class Lang {
 
 							plainList.add(string);
 							componentList.add(component);
-							legacyList.add(component.toLegacy(null));
+							legacyList.add(component.toLegacySection(null));
 
 						} else {
 							ValidCore.checkBoolean(element != null && !element.isJsonNull(), "Missing element in array for lang key " + key + "! Make sure to remove ',' at the end of the list");

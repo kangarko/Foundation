@@ -1064,7 +1064,6 @@ public final class HookManager {
 	 * @param playerId the player whose nickname you want to set.
 	 * @param nick     the nickname to set.
 	 */
-	public static void setNick(@NonNull final UUID playerId, @Nullable final String nick) {
 	public static void setNick(@NonNull final UUID playerId, @Nullable String nick) {
 		nick = SimpleComponent.fromMiniSection(nick).toLegacyAmpersand();
 
@@ -2696,7 +2695,7 @@ final class PlaceholderAPIHook {
 						"Player one: " + firstAudience,
 						"Player two: " + secondAudience,
 						"Variable: " + matcher.group(),
-						"Component: " + component.toLegacy(null),
+						"Component: " + component.toLegacySection(null),
 						"Error: {error}");
 			}
 
