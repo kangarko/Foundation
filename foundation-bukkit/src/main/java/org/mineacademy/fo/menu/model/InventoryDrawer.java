@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 
@@ -33,7 +34,7 @@ public final class InventoryDrawer {
 	/**
 	 * The items in this inventory
 	 */
-	private final ItemStack[] content;
+	private ItemStack[] content;
 
 	/**
 	 * Create a new inventory drawer
@@ -100,6 +101,8 @@ public final class InventoryDrawer {
 	 * @param item
 	 */
 	public void setItem(final int slot, final ItemStack item) {
+		Valid.checkBoolean(slot < this.content.length, "Cannot set item to slot " + slot + " as inventore has only a size of " + this.size + "! Item: " + item);
+
 		this.content[slot] = item;
 	}
 
@@ -111,6 +114,9 @@ public final class InventoryDrawer {
 	 * @param newContent the new content
 	 */
 	public void setContent(final ItemStack[] newContent) {
+		if (this.content.length < newContent.length)
+			this.content = new ItemStack[newContent.length];
+
 		for (int i = 0; i < this.content.length; i++)
 			this.content[i] = i < newContent.length ? newContent[i] : new ItemStack(CompMaterial.AIR.getMaterial());
 	}
