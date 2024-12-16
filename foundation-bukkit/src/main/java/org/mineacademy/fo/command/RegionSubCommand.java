@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.exception.FoException;
@@ -42,18 +43,6 @@ public class RegionSubCommand extends SimpleSubCommand {
 	}
 
 	/**
-	 * Create a new sub-command with the given label registered in your
-	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
-	 *
-	 * @param label
-	 */
-	public RegionSubCommand(final String label) {
-		super(label);
-
-		this.setProperties();
-	}
-
-	/**
 	 * Create a new sub-command with the "region" and "rg" aliases registered in the given command group.
 	 *
 	 * @param group
@@ -70,6 +59,18 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 */
 	public RegionSubCommand(final SimpleCommandGroup group, final String label) {
 		super(group, label);
+
+		this.setProperties();
+	}
+
+	/**
+	 * Create a new sub-command with the given label registered in your
+	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
+	 *
+	 * @param label
+	 */
+	public RegionSubCommand(final String label) {
+		super(label);
 
 		this.setProperties();
 	}
@@ -194,6 +195,16 @@ public class RegionSubCommand extends SimpleSubCommand {
 			RegionTool.getInstance().simulateClick(this.getPlayer(), param == Param.PRIMARY, this.getPlayer().getLocation());
 
 			return;
+
+		} else if (param == Param.FIND) {
+			this.checkConsole();
+
+			final Location location = this.getPlayer().getLocation();
+			final List<String> regionNames = DiskRegion.findRegionNames(location);
+
+			this.tellSuccess("Regions at " + Common.simplify(location) + ": " + (regionNames.isEmpty() ? "&o" + Lang.plain("part-none") : Common.joinAnd(regionNames)));
+
+			return;
 		}
 
 		else if (param == Param.MENU) {
@@ -262,7 +273,6 @@ public class RegionSubCommand extends SimpleSubCommand {
 	 * We automatically will invoke /{label} region list before showing this message.
 	 */
 	private void tellAndList(final DiskRegion region, final String message) {
-
 		if (this.isPlayer() && this.args.length > 2 && "-list".equals(this.args[2]))
 			this.getPlayer().performCommand(this.getLabel() + " " + this.getSublabel() + " " + Param.LIST);
 
@@ -274,7 +284,6 @@ public class RegionSubCommand extends SimpleSubCommand {
 
 	@Override
 	public List<String> tabComplete() {
-
 		final Param param = this.args.length > 0 ? Param.find(this.args[0]) : null;
 
 		switch (this.args.length) {
@@ -295,34 +304,9 @@ public class RegionSubCommand extends SimpleSubCommand {
 	private enum Param {
 
 		/**
-		 * Create a new region.
+		 * Find regions at sender's location.
 		 */
-		NEW("new", "n", "<name>", "Create a new region."),
-
-		/**
-		 * Get the region creation tool.
-		 */
-		TOOL("tool", "t", "", "Get the region creation tool."),
-
-		/**
-		 * Remove a region.
-		 */
-		REMOVE("rem", "rm", "<name>", "Delete a region."),
-
-		/**
-		 * Show particles around region.
-		 */
-		VIEW("view", "v", "[name]", "Visualize region border if center is less than 100 blocks from you."),
-
-		/**
-		 * Teleport to a region.
-		 */
-		TELEPORT("tp", null, "<name>", "Teleport to a region's center."),
-
-		/**
-		 * Show region menu.
-		 */
-		MENU("menu", null, "[name]", "Show region menu."),
+		FIND("find", "f", "", "Find regions at your location."),
 
 		/**
 		 * List installed regions.
@@ -330,14 +314,44 @@ public class RegionSubCommand extends SimpleSubCommand {
 		LIST("list", "l", "", "Browse available regions."),
 
 		/**
+		 * Show region menu.
+		 */
+		MENU("menu", null, "[name]", "Show region menu."),
+
+		/**
+		 * Create a new region.
+		 */
+		NEW("new", "n", "<name>", "Create a new region."),
+
+		/**
 		 * Set created region's primary location.
 		 */
 		PRIMARY("primary", "p", "", "Set your feet to created region's primary location."),
 
 		/**
+		 * Remove a region.
+		 */
+		REMOVE("rem", "rm", "<name>", "Delete a region."),
+
+		/**
 		 * Set created region's secondary location.
 		 */
-		SECONDARY("secondary", "s", "", "Set your feet to to created region's secondary location.");
+		SECONDARY("secondary", "s", "", "Set your feet to to created region's secondary location."),
+
+		/**
+		 * Teleport to a region.
+		 */
+		TELEPORT("tp", null, "<name>", "Teleport to a region's center."),
+
+		/**
+		 * Get the region creation tool.
+		 */
+		TOOL("tool", "t", "", "Get the region creation tool."),
+
+		/**
+		 * Show particles around region.
+		 */
+		VIEW("view", "v", "[name]", "Visualize region border if center is less than 100 blocks from you.");
 
 		/**
 		 * The label for this command arg.
@@ -358,6 +372,14 @@ public class RegionSubCommand extends SimpleSubCommand {
 		 * The param's description.
 		 */
 		private final String description;
+
+		/**
+		 * @see java.lang.Enum#toString()
+		 */
+		@Override
+		public String toString() {
+			return this.label;
+		}
 
 		/**
 		 * Return a parameter from the string, or null.
@@ -404,14 +426,6 @@ public class RegionSubCommand extends SimpleSubCommand {
 			}
 
 			return SimpleComponent.join(usages);
-		}
-
-		/**
-		 * @see java.lang.Enum#toString()
-		 */
-		@Override
-		public String toString() {
-			return this.label;
 		}
 	}
 }
