@@ -450,6 +450,9 @@ public final class Variables {
 				else if (rawValue instanceof List)
 					replacedValue = CommonCore.join((List<?>) rawValue);
 
+				else if (rawValue instanceof Boolean)
+					replacedValue = rawValue.toString();
+
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
