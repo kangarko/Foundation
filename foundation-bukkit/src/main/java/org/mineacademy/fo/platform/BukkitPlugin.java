@@ -724,10 +724,10 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	@Override
 	public final void reload() {
 		try {
+			this.onPluginPreReload();
+
 			if (CompMetadata.isLegacy() && CompMetadata.MetadataFile.getInstance().getFile() != null)
 				CompMetadata.MetadataFile.getInstance().save();
-
-			this.onPluginPreReload();
 
 			AutoRegisterScanner.reloadSettings();
 
@@ -735,8 +735,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 			if (SimpleSettings.REGISTER_REGIONS)
 				DiskRegion.loadRegions();
-
-			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());

@@ -265,15 +265,11 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	@Override
 	public final void reload() {
 		try {
-			getServer().getScheduler().cancel(this);
-
 			this.onPluginPreReload();
 
 			AutoRegisterScanner.reloadSettings();
 
 			this.onPluginReload();
-
-			this.internalPostEnable();
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error reloading " + this.getName() + " " + this.getVersion());
