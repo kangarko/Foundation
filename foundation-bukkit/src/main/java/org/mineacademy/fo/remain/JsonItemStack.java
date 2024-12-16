@@ -206,17 +206,20 @@ public class JsonItemStack {
 
 					if (potionDataClass != null) {
 						final Object potionData = ReflectionUtil.invoke("getBasePotionData", pmeta);
-						final PotionType type = ReflectionUtil.invoke("getType", potionData);
-						final boolean isExtended = ReflectionUtil.invoke("isExtended", potionData);
-						final boolean isUpgraded = ReflectionUtil.invoke("isUpgraded", potionData);
 
-						if (type != null) {
-							final JsonObject baseEffect = new JsonObject();
+						if (potionData != null) {
+							final PotionType type = ReflectionUtil.invoke("getType", potionData);
+							final boolean isExtended = ReflectionUtil.invoke("isExtended", potionData);
+							final boolean isUpgraded = ReflectionUtil.invoke("isUpgraded", potionData);
 
-							baseEffect.addProperty("type", type.name());
-							baseEffect.addProperty("isExtended", isExtended);
-							baseEffect.addProperty("isUpgraded", isUpgraded);
-							extraMeta.add("base-effect", baseEffect);
+							if (type != null) {
+								final JsonObject baseEffect = new JsonObject();
+
+								baseEffect.addProperty("type", type.name());
+								baseEffect.addProperty("isExtended", isExtended);
+								baseEffect.addProperty("isUpgraded", isUpgraded);
+								extraMeta.add("base-effect", baseEffect);
+							}
 						}
 					}
 				}
