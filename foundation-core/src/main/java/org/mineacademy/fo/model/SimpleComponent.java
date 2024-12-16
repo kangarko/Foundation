@@ -195,7 +195,7 @@ public final class SimpleComponent implements ConfigSerializable {
 			legacy = CompChatColor.convertMiniToLegacy("<gray>" + CompChatColor.translateColorCodes(legacy));
 
 			// Receiver conditions and hover/click (unsupported) tags will be lost
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && legacy.length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && MiniMessage.miniMessage().stripTags(legacy).length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
 			// This is up to 1.5-2x faster
