@@ -22,6 +22,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.MenuCloseEvent;
 import org.mineacademy.fo.event.MenuOpenEvent;
@@ -677,6 +678,7 @@ public abstract class Menu {
 			if (item != null && CompMaterial.isAir(item))
 				item = null;
 
+			Valid.checkBoolean(slot >= 0 && slot < this.size, "The getItemAt() method returned item with slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Item: " + item);
 			items.put(slot, item);
 		}
 
@@ -685,9 +687,13 @@ public abstract class Menu {
 			final Button button = entry.getKey();
 			final Position position = entry.getValue();
 
-			if (button.getSlot() != -1)
-				items.put(button.getSlot(), button.getItem());
-			else if (position != null) {
+			if (button.getSlot() != -1) {
+				final int slot = button.getSlot();
+
+				Valid.checkBoolean(slot >= 0 && slot < this.size, "Button's getSlot() returned slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Button: " + button + ", item: " + button.getItem());
+				items.put(slot, button.getItem());
+
+			} else if (position != null) {
 				int slot = position.value();
 				final StartPosition startPosition = position.start();
 
@@ -709,6 +715,8 @@ public abstract class Menu {
 					throw new FoException("Does not know how to implement button position's Slot." + startPosition);
 
 				this.registeredButtonPositions.put(slot, button);
+
+				Valid.checkBoolean(slot >= 0 && slot < this.size, "@Position annotation returned slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Annotation: " + position + ", button: " + button + ", item: " + button.getItem());
 				items.put(slot, button.getItem());
 			}
 		}
