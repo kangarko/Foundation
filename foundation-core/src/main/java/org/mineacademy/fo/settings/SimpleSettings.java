@@ -86,7 +86,7 @@ public class SimpleSettings extends YamlStaticConfig {
 	 * You still need to register the subcommand RegionSubCommand manually
 	 * by calling {@link Platform#registerDefaultPlatformSubcommands(SimpleCommandGroup)}
 	 */
-	public static Boolean REGISTER_REGIONS = true;
+	public static Boolean REGISTER_REGIONS = false;
 
 	/**
 	 * Should we listen for our GUI player inventory click event?
