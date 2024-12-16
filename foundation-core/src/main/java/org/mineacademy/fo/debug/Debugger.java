@@ -13,7 +13,6 @@ import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
-import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -90,6 +89,35 @@ public final class Debugger {
 	 * <p>File is written to the server's base directory.</p>
 	 */
 	public static void saveError(Throwable throwable, final String... messages) {
+		saveError(true, throwable, messages);
+	}
+
+	/**
+	 * Save an error and relevant information to an `error.log` file.
+	 *
+	 * <p>This method stores the error details, additional messages, system information,
+	 * and the stack trace of the error for debugging purposes.</p>
+	 *
+	 * @param sentry
+	 * @param throwable The exception or error that occurred. The stack trace will be logged, and its causes will be chained.
+	 * @param messages  Optional additional information that may help identify or explain the issue.
+	 *
+	 * <p><b>Example Usage:</b></p>
+	 * <pre>{@code
+	 * try {
+	 *   // Some code that might throw an error
+	 * } catch (Throwable t) {
+	 *   saveError(t, "Something went wrong while executing this operation.");
+	 * }
+	 * }</pre>
+	 *
+	 * <p>The method also logs a message to the server console, informing the user to check the `error.log`.</p>
+	 *
+	 * <p>In case another error occurs while saving the log, it will attempt to log that error to the system.</p>
+	 *
+	 * <p>File is written to the server's base directory.</p>
+	 */
+	public static void saveError(boolean sentry, Throwable throwable, final String... messages) {
 
 		// Log to sentry if enabled.
 		final FoundationPlugin plugin = Platform.getPlugin();
@@ -103,7 +131,7 @@ public final class Debugger {
 			}
 
 		// Do not report errors from outdated plugin versions
-		if (plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY && !BuiltByBitUpdateCheck.isNewVersionAvailable()) {
+		if (sentry && plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
 			final Throwable finalThrowable = throwable;
 
 			// Prevent duplicated reporting
@@ -112,7 +140,7 @@ public final class Debugger {
 			if (!reportedExceptions.contains(key)) {
 
 				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
-					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-beta.2");
+					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-rc.2");
 
 				Platform.runTaskAsync(() -> {
 
