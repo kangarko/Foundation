@@ -139,8 +139,11 @@ final class BukkitPlatform extends FoundationPlatform {
 			else if (object instanceof ItemStack)
 				return CommonCore.simplify(((ItemStack) object).getType());
 
-			else if (object instanceof Location)
-				return SerializeUtil.serializeLocation((Location) object);
+			else if (object instanceof Location) {
+				final Location loc = (Location) object;
+
+				return loc.getWorld().getName() + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ();
+			}
 
 			else if (object instanceof Vector) {
 				final Vector vec = (Vector) object;
