@@ -52,7 +52,7 @@ abstract class Message {
 		final Class<?> clazz = content[this.head];
 		final String operation = this instanceof OutgoingMessage ? "write" : "read";
 
-		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Cannot " + operation + " " + givenType.getSimpleName() + " at position " + this.head + " because " + this.getMessage().name() + " requires " + clazz.getSimpleName());
+		ValidCore.checkBoolean(givenType.isAssignableFrom(clazz), "Cannot " + operation + " " + givenType + " at position " + this.head + " because " + this.getMessage().name() + " requires " + clazz.getSimpleName());
 		ValidCore.checkBoolean(this.head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;
