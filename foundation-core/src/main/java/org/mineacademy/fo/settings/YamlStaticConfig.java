@@ -328,6 +328,16 @@ public abstract class YamlStaticConfig {
 	}
 
 	/**
+	 * @see YamlConfig#getInteger(String)
+	 *
+	 * @param path
+	 * @return
+	 */
+	protected static final Long getLong(final String path) {
+		return TEMPORARY_INSTANCE.getLong(path);
+	}
+
+	/**
 	 * @see YamlConfig#getIsInList(String, Class)
 	 *
 	 * @param <E>
