@@ -13,6 +13,8 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.EventHandledException;
@@ -223,7 +225,7 @@ public final class JavaScriptExecutor {
 	 * @return
 	 * @throws FoScriptException
 	 */
-	public static Object run(@NonNull final String javascript, Map<String, Object> placeholders) throws FoScriptException {
+	public static Object run(@NonNull String javascript, Map<String, Object> placeholders) throws FoScriptException {
 		if (engine == null) {
 			CommonCore.warning("Not running JavaScript code because nashorn-core library is missing (see earlier logs for details). Ignoring code: " + javascript);
 
@@ -256,6 +258,17 @@ public final class JavaScriptExecutor {
 			}
 
 			try {
+				if (MinecraftVersion.hasVersion()) {
+					if (javascript.contains("PLAY_ONE_MINUTE")) {
+						if (MinecraftVersion.olderThan(V.v1_13))
+							javascript = javascript.replace("PLAY_ONE_MINUTE", "PLAY_ONE_TICK");
+
+					} else if (javascript.contains("PLAY_ONE_TICK")) {
+						if (MinecraftVersion.atLeast(V.v1_13))
+							javascript = javascript.replace("PLAY_ONE_TICK", "PLAY_ONE_MINUTE");
+					}
+				}
+
 				final Object result = engine.eval(javascript);
 
 				if (result instanceof String) {
