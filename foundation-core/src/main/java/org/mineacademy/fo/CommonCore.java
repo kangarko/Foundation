@@ -72,7 +72,7 @@ public abstract class CommonCore {
 	 *
 	 * This cache holds the last times when we sent that message.
 	 */
-	private static final Map<SimpleComponent, Long> TIMED_TELL_CACHE = new LinkedHashMap<>();
+	private static final Map<String, Long> TIMED_TELL_CACHE = new LinkedHashMap<>();
 
 	/**
 	 * See {@link #TIMED_TELL_CACHE}, but this is for sending messages to the console.
@@ -245,22 +245,15 @@ public abstract class CommonCore {
 	 *
 	 * @param delaySeconds
 	 * @param audience
-	 * @param message
+	 * @param component
 	 */
-	public static final void tellTimed(final int delaySeconds, final FoundationPlayer audience, final SimpleComponent message) {
+	public static final void tellTimed(final int delaySeconds, final FoundationPlayer audience, final SimpleComponent component) {
+		final String legacy = component.toLegacySection(null);
 
-		// No previous message stored, just tell the player now
-		if (!TIMED_TELL_CACHE.containsKey(message)) {
-			audience.sendMessage(message);
+		if (!TIMED_TELL_CACHE.containsKey(legacy) || TimeUtil.getCurrentTimeSeconds() - TIMED_TELL_CACHE.get(legacy) > delaySeconds) {
+			audience.sendMessage(component);
 
-			TIMED_TELL_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
-			return;
-		}
-
-		if (TimeUtil.getCurrentTimeSeconds() - TIMED_TELL_CACHE.get(message) > delaySeconds) {
-			audience.sendMessage(message);
-
-			TIMED_TELL_CACHE.put(message, TimeUtil.getCurrentTimeSeconds());
+			TIMED_TELL_CACHE.put(legacy, TimeUtil.getCurrentTimeSeconds());
 		}
 	}
 
