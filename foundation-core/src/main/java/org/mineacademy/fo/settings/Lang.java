@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 /**
  * Represents a localization system for your plugin. All localization keys
@@ -171,6 +172,32 @@ public final class Lang {
 	}
 
 	/**
+	 * Return a legacy key from the given path in the language file.
+	 *
+	 * Throws an error if the key is missing.
+	 *
+	 * Variables are supported, where key must be a string and value either a string or
+	 * SimpleComponent, or a list of either.
+	 *
+	 * Example: legacyVars("my-locale-path", "arena", arena.getName()) translates {arena}
+	 * key from the locale path.
+	 *
+	 * MiniMessage tags and & legacy colors are translated to §.
+	 *
+	 * @param path
+	 * @param placeholders
+	 * @return
+	 */
+	public static String legacy(final String path, @NonNull final Map<String, Object> placeholders) {
+		final String value = instance.getLegacy(path);
+		final Variables variables = Variables.builder();
+
+		variables.placeholders(placeholders);
+
+		return variables.replaceLegacy(value);
+	}
+
+	/**
 	 * Return a component from the given path in the language file.
 	 *
 	 * Throws an error if the key is missing.
@@ -191,6 +218,30 @@ public final class Lang {
 
 		if (placeholders != null && placeholders.length > 0)
 			variables.placeholderArray(placeholders);
+
+		return variables.replaceComponent(component);
+	}
+
+	/**
+	 * Return a component from the given path in the language file.
+	 *
+	 * Throws an error if the key is missing.
+	 *
+	 * Variables are supported, where key must be a string and value either a string or
+	 * SimpleComponent, or a list of either.
+	 *
+	 * Example: componentVars("my-locale-path", "arena", arena.getName()) translates {arena}
+	 * key from the locale path.
+	 *
+	 * @param path
+	 * @param placeholders
+	 * @return
+	 */
+	public static SimpleComponent component(final String path, @NonNull final Map<String, Object> placeholders) {
+		final SimpleComponent component = instance.getComponent(path);
+		final Variables variables = Variables.builder();
+
+		variables.placeholders(placeholders);
 
 		return variables.replaceComponent(component);
 	}
