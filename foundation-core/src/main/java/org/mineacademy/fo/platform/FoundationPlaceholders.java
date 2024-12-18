@@ -116,7 +116,7 @@ final class FoundationPlaceholders extends SimpleExpansion {
 		else if ("chat_line_smooth".equals(identifier))
 			return CommonCore.chatLineSmooth();
 
-		else if ("label".equals(identifier)) {
+		else if ("label_main".equals(identifier)) {
 			final SimpleCommandGroup defaultGroup = Platform.getPlugin().getDefaultCommandGroup();
 
 			if (defaultGroup != null)
