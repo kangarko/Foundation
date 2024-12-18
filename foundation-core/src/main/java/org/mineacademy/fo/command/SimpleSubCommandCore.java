@@ -1,9 +1,9 @@
 package org.mineacademy.fo.command;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 
@@ -73,16 +73,16 @@ public abstract class SimpleSubCommandCore extends SimpleCommandCore {
 	}
 
 	/**
-	 * @see SimpleCommandCore#replacePlaceholders(SimpleComponent)
+	 * @see SimpleCommandCore#preparePlaceholders()
 	 *
-	 * @param component
 	 * @return
 	 */
 	@Override
-	protected SimpleComponent replacePlaceholders(SimpleComponent component) {
-		component = component.replaceBracket(null, "sublabel", this.getSublabel());
+	protected Map<String, Object> preparePlaceholders() {
+		final Map<String, Object> map = super.preparePlaceholders();
+		map.put("sublabel", this.getSublabel());
 
-		return super.replacePlaceholders(component);
+		return map;
 	}
 
 	/**

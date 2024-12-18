@@ -33,6 +33,7 @@ import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleTime;
 import org.mineacademy.fo.model.Task;
 import org.mineacademy.fo.model.Tuple;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
@@ -110,7 +111,7 @@ public abstract class SimpleCommandCore {
 	 * The {@link CommonCore#getTellPrefix()} custom prefix only used for sending messages in {@link #onCommand()} method
 	 * for this command, null to use the one in Common#getTellPrefix or empty to force no prefix.
 	 */
-	private SimpleComponent tellPrefix = null;
+	private String tellPrefix = null;
 
 	/**
 	 * Minimum arguments required to run this command.
@@ -336,7 +337,10 @@ public abstract class SimpleCommandCore {
 
 			if (args.length < this.getMinArguments() || this.autoHandleHelp && args.length == 1 && ("help".equals(args[0]) || "?".equals(args[0]))) {
 				final String[] legacyUsage = this.getMultilineUsageMessage();
-				final SimpleComponent newUsage = this.getMultilineUsage();
+				SimpleComponent newUsage = this.getMultilineUsage();
+
+				if (newUsage != null)
+					newUsage = SimpleComponent.fromMiniNative("").append(newUsage);
 
 				if (legacyUsage != null || newUsage != null)
 					this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
@@ -350,12 +354,16 @@ public abstract class SimpleCommandCore {
 					if (legacyUsage != null || newUsage != null) {
 						this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
 
+						final Variables variables = Variables.builder(this.audience);
+
+						variables.placeholders(this.preparePlaceholders());
+
 						if (legacyUsage != null)
 							for (final String legacyLine : legacyUsage)
-								audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMiniAmpersand(legacyLine))));
+								audience.sendMessage(SimpleComponent.fromMiniAmpersand(variables.replaceLegacy(this.colorizeUsage(legacyLine))));
 
 						else if (newUsage != null)
-							audience.sendMessage(this.replacePlaceholders(this.colorizeUsage(newUsage)));
+							audience.sendMessage(variables.replaceComponent(this.colorizeUsage(newUsage)));
 
 						this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
 					}
@@ -848,7 +856,13 @@ public abstract class SimpleCommandCore {
 				ex.printStackTrace();
 		}
 
-		throw new CommandException(this.replacePlaceholders(falseMessage.replaceBracket(null, "value", this.args[index])));
+		final Variables variables = Variables.builder(this.audience);
+
+		variables.placeholders(this.preparePlaceholders());
+		variables.placeholder("value", this.args[index]);
+
+		throw new CommandException(variables.replaceComponent(falseMessage));
+
 	}
 
 	/**
@@ -961,13 +975,10 @@ public abstract class SimpleCommandCore {
 	 * @param messages
 	 */
 	protected final void tellNoPrefix(final String... messages) {
-		final SimpleComponent oldLocalPrefix = this.tellPrefix;
+		final String oldLocalPrefix = this.tellPrefix;
 
 		this.tellPrefix = null;
-
-		for (final String message : messages)
-			this.tell(message);
-
+		this.tell(messages);
 		this.tellPrefix = oldLocalPrefix;
 	}
 
@@ -981,12 +992,10 @@ public abstract class SimpleCommandCore {
 	 * @param components
 	 */
 	protected final void tellNoPrefix(final SimpleComponent... components) {
-		final SimpleComponent oldLocalPrefix = this.tellPrefix;
+		final String oldLocalPrefix = this.tellPrefix;
 
 		this.tellPrefix = null;
-
 		this.tell(components);
-
 		this.tellPrefix = oldLocalPrefix;
 	}
 
@@ -997,10 +1006,17 @@ public abstract class SimpleCommandCore {
 	 *
 	 * @see FoundationPlayer#sendMessage(SimpleComponent)
 	 *
-	 * @param message
+	 * @param messages
 	 */
-	protected final void tell(final String message) {
-		this.tell(SimpleComponent.fromMiniAmpersand(message));
+	protected final void tell(final String... messages) {
+		for (String message : messages) {
+			message = Variables
+					.builder(this.audience)
+					.placeholders(this.preparePlaceholders())
+					.replaceLegacy(this.tellPrefix != null && !"".equals(tellPrefix) ? this.tellPrefix + message : message);
+
+			this.audience.sendMessage(SimpleComponent.fromMiniAmpersand(message));
+		}
 	}
 
 	/**
@@ -1011,9 +1027,12 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void tell(final SimpleComponent... components) {
 		for (SimpleComponent component : components) {
-			component = this.replacePlaceholders(component);
+			component = Variables
+					.builder(this.audience)
+					.placeholders(this.preparePlaceholders())
+					.replaceComponent(this.tellPrefix != null && !"".equals(tellPrefix) ? SimpleComponent.fromMiniAmpersand(this.tellPrefix).append(component) : component);
 
-			this.audience.sendMessage(this.tellPrefix != null ? this.tellPrefix.append(component) : component);
+			this.audience.sendMessage(component);
 		}
 	}
 
@@ -1036,7 +1055,8 @@ public abstract class SimpleCommandCore {
 	 * @param component
 	 */
 	protected final void tellSuccess(final SimpleComponent component) {
-		Messenger.success(this.audience, this.replacePlaceholders(component));
+		if (component != null)
+			Messenger.success(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
 	}
 
 	/**
@@ -1060,7 +1080,8 @@ public abstract class SimpleCommandCore {
 	 */
 	// PSA: Needs to be public because of shared interface
 	public final void tellInfo(final SimpleComponent component) {
-		Messenger.info(this.audience, this.replacePlaceholders(component));
+		if (component != null)
+			Messenger.info(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
 	}
 
 	/**
@@ -1083,7 +1104,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void tellWarn(final SimpleComponent component) {
 		if (component != null)
-			Messenger.warn(this.audience, this.replacePlaceholders(component));
+			Messenger.warn(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
 	}
 
 	/**
@@ -1105,7 +1126,8 @@ public abstract class SimpleCommandCore {
 	 * @param component
 	 */
 	protected final void tellError(final SimpleComponent component) {
-		Messenger.error(this.audience, this.replacePlaceholders(component));
+		if (component != null)
+			Messenger.error(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
 	}
 
 	/**
@@ -1127,7 +1149,8 @@ public abstract class SimpleCommandCore {
 	 * @param component
 	 */
 	protected final void tellQuestion(final SimpleComponent component) {
-		Messenger.question(this.audience, this.replacePlaceholders(component));
+		if (component != null)
+			Messenger.question(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
 	}
 
 	/**
@@ -1151,7 +1174,7 @@ public abstract class SimpleCommandCore {
 		final List<SimpleComponent> components = new ArrayList<>();
 
 		for (final String message : messages)
-			components.add(this.replacePlaceholders(SimpleComponent.fromMiniAmpersand(message)));
+			components.add(SimpleComponent.fromMiniAmpersand(Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceLegacy(message)));
 
 		throw new CommandException(components.toArray(new SimpleComponent[components.size()]));
 	}
@@ -1166,7 +1189,7 @@ public abstract class SimpleCommandCore {
 	 */
 	// PSA: Needs to be public because of shared interface
 	public final void returnTell(final SimpleComponent component) throws CommandException {
-		throw new CommandException(this.replacePlaceholders(component));
+		throw new CommandException(Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
 	}
 
 	// ----------------------------------------------------------------------
@@ -1181,17 +1204,16 @@ public abstract class SimpleCommandCore {
 	 * @param component
 	 * @return
 	 */
-	protected SimpleComponent replacePlaceholders(SimpleComponent component) {
-		component = component
-				.replaceBracket(null, "plugin_name", Platform.getPlugin().getName())
-				.replaceBracket(null, "plugin_version", Platform.getPlugin().getVersion())
-				.replaceBracket(null, "label", this.label)
-				.replaceBracket(null, "player", this.audience.getName());
+	protected Map<String, Object> preparePlaceholders() {
+		final Map<String, Object> map = new HashMap<>();
+
+		map.put("label", this.label);
+		map.put("player", this.audience.getName());
 
 		for (int i = 0; i < this.args.length; i++)
-			component = component.replaceBracket(null, String.valueOf(i), this.args[i]);
+			map.put(String.valueOf(i), this.args[i]);
 
-		return component;
+		return map;
 	}
 
 	/**
@@ -1384,20 +1406,11 @@ public abstract class SimpleCommandCore {
 	/**
 	 * Sets a custom prefix used in tell messages for this command.
 	 *
-	 * Legacy and MiniMessage tags will be replaced.
+	 * Legacy and MiniMessage tags are supported.
 	 *
 	 * @param tellPrefix
 	 */
 	protected final void setTellPrefix(final String tellPrefix) {
-		this.setTellPrefix(SimpleComponent.fromMiniAmpersand(tellPrefix));
-	}
-
-	/**
-	 * Sets a custom prefix used in tell messages for this command.
-	 *
-	 * @param tellPrefix
-	 */
-	protected final void setTellPrefix(final SimpleComponent tellPrefix) {
 		this.tellPrefix = tellPrefix;
 	}
 
@@ -1639,7 +1652,25 @@ public abstract class SimpleCommandCore {
 	 * @return
 	 */
 	final SimpleComponent colorizeUsage(final SimpleComponent usage) {
-		return usage.replaceMatch(PATTERN_TABLE, (match, result) -> result.color(NamedTextColor.GOLD)).replaceMatch(PATTERN_FILTER, (match, result) -> result.color(NamedTextColor.DARK_GREEN)).replaceMatch(PATTERN_DASH, (match, result) -> result.color(NamedTextColor.GRAY));
+		return usage
+				.replaceMatch(PATTERN_TABLE, (match, result) -> result.color(NamedTextColor.GOLD))
+				.replaceMatch(PATTERN_FILTER, (match, result) -> result.color(NamedTextColor.DARK_GREEN))
+				.replaceMatch(PATTERN_DASH, (match, result) -> result.color(NamedTextColor.GRAY));
+	}
+
+	/**
+	 * Replace <> and [] with appropriate color codes, you can return the given string
+	 * without modification to disable this functionality.
+	 *
+	 * @param usage
+	 * @return
+	 */
+	final String colorizeUsage(String usage) {
+		usage = PATTERN_TABLE.matcher(usage).replaceAll("<gold>$0</gold>");
+		usage = PATTERN_FILTER.matcher(usage).replaceAll("<dark_green>$0</dark_green>");
+		usage = PATTERN_DASH.matcher(usage).replaceAll("<gray>$0</gray>");
+
+		return usage;
 	}
 
 	/**
