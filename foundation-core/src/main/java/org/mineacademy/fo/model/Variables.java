@@ -344,6 +344,9 @@ public final class Variables {
 				else if (rawValue instanceof Boolean)
 					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
 
+				else if (rawValue instanceof Collection)
+					replacedValue = SimpleComponent.fromMiniAmpersand(CommonCore.join((Collection<?>) rawValue));
+
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
