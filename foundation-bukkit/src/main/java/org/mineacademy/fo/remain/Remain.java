@@ -1833,7 +1833,7 @@ public final class Remain {
 						final String colorized = CompChatColor.translateColorCodes(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), style);
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized.replace("|", "\n"), icon.toString().toLowerCase(), style);
 							final Player playerReceiver = receiver.getPlayer();
 
 							if (playerReceiver.isOnline())
@@ -2890,10 +2890,14 @@ public final class Remain {
 			BukkitTask task;
 
 			if (runnable instanceof BukkitRunnable)
-				task = ((BukkitRunnable) runnable).runTaskLaterAsynchronously(BukkitPlugin.getInstance(), delayTicks);
+				task = delayTicks == 0
+						? ((BukkitRunnable) runnable).runTaskAsynchronously(BukkitPlugin.getInstance())
+						: ((BukkitRunnable) runnable).runTaskLaterAsynchronously(BukkitPlugin.getInstance(), delayTicks);
 
 			else
-				task = Bukkit.getScheduler().runTaskLaterAsynchronously(BukkitPlugin.getInstance(), runnable, delayTicks);
+				task = delayTicks == 0
+						? Bukkit.getScheduler().runTaskAsynchronously(BukkitPlugin.getInstance(), runnable)
+						: Bukkit.getScheduler().runTaskLaterAsynchronously(BukkitPlugin.getInstance(), runnable, delayTicks);
 
 			final SimpleBukkitTask simpleTask = SimpleBukkitTask.fromBukkit(task);
 
