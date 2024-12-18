@@ -3601,12 +3601,12 @@ class DiscordSRVHook {
 			return false;
 		}
 
-		message = CompChatColor.stripColorCodes(message);
+		Platform.runTaskAsync(() -> {
+			final String finalMessage = SimpleComponent.fromMiniAmpersand(message).toPlain();
 
-		if (message.replace(" ", "").isEmpty())
-			return false;
-
-		textChannel.sendMessage(message).complete();
+			if (!finalMessage.replace(" ", "").isEmpty())
+				textChannel.sendMessage(finalMessage).complete();
+		});
 
 		return true;
 	}
