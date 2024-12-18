@@ -949,9 +949,6 @@ public final class SimpleComponent implements ConfigSerializable {
 		if (" ".equals(message))
 			return fromPlain(" ");
 
-		if (message.startsWith("<center>"))
-			message = ChatUtil.center(message.replace("<center>", "").trim());
-
 		// Replace legacy & color codes
 		message = CompChatColor.convertLegacyToMini(message, ampersand);
 
