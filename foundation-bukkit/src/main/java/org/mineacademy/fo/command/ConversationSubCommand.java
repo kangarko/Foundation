@@ -22,7 +22,7 @@ public final class ConversationSubCommand extends SimpleSubCommand {
 	 * {@link FoundationPlugin#getDefaultCommandGroup()} command group.
 	 */
 	public ConversationSubCommand() {
-		this("conversation|convo");
+		this("conversation|conv");
 	}
 
 	/**
