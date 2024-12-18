@@ -69,7 +69,7 @@ public interface SharedBukkitCommandCore {
 	default CompMaterial findMaterial(final String name, final SimpleComponent falseMessage) throws CommandException {
 		final CompMaterial found = CompMaterial.fromString(name);
 
-		this.checkBoolean(found != null, falseMessage.replaceBracket(null, "material", name));
+		this.checkBoolean(found != null, falseMessage.replaceBracket("material", name));
 
 		return found;
 	}
@@ -131,7 +131,7 @@ public interface SharedBukkitCommandCore {
 	 * @throws CommandException
 	 */
 	default Player findPlayer(final String name) throws CommandException {
-		return this.findPlayer(name, Lang.component("player-not-online"));
+		return this.findPlayer(name, Lang.component("player-not-online", "player", name));
 	}
 
 	/**
@@ -144,7 +144,7 @@ public interface SharedBukkitCommandCore {
 	 */
 	default Player findPlayer(final String name, final SimpleComponent falseMessage) throws CommandException {
 		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isOnline() && !PlayerUtil.isVanished(player), falseMessage.replaceBracket(null, "player", name));
+		this.checkBoolean(player != null && player.isOnline() && !PlayerUtil.isVanished(player), falseMessage.replaceBracket("player", name));
 
 		return player;
 	}

@@ -39,7 +39,7 @@ public interface SharedBungeeCommandCore {
 	 */
 	default ProxiedPlayer findPlayer(final String name, final SimpleComponent falseMessage) throws CommandException {
 		final ProxiedPlayer player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isConnected() && !PlayerUtil.isVanished(player), falseMessage.replaceBracket(null, "player", name));
+		this.checkBoolean(player != null && player.isConnected() && !PlayerUtil.isVanished(player), falseMessage.replaceBracket("player", name));
 
 		return player;
 	}
