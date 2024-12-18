@@ -13,7 +13,6 @@ import java.util.function.UnaryOperator;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -1089,17 +1088,39 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * Join multiple components into one by appending them and adding new lines.
 	 *
+	 * @param separator
+	 * @param components
+	 * @return
+	 */
+	public static SimpleComponent join(final SimpleComponent separator, final Collection<SimpleComponent> components) {
+		return join(separator, components.toArray(new SimpleComponent[components.size()]));
+	}
+
+	/**
+	 * Join multiple components into one by appending them and adding new lines.
+	 *
 	 * @param components
 	 * @return
 	 */
 	public static SimpleComponent join(final SimpleComponent... components) {
+		return join(SimpleComponent.fromMiniNative("<br><reset><white>"), components);
+	}
+
+	/**
+	 * Join multiple components into one by appending them and adding new lines.
+	 *
+	 * @param separator
+	 * @param components
+	 * @return
+	 */
+	public static SimpleComponent join(SimpleComponent separator, final SimpleComponent... components) {
 		SimpleComponent main = empty();
 
 		for (int i = 0; i < components.length; i++) {
 			main = main.append(components[i]);
 
 			if (i < components.length - 1)
-				main = main.appendNewLine();
+				main = main.append(separator);
 		}
 
 		return main;
