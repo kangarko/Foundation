@@ -13,6 +13,7 @@ import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.SimpleComponent;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
@@ -390,15 +391,17 @@ public abstract class SimpleCommandGroup {
 				final String[] legacyUsage = subcommand.getMultilineUsageMessage();
 				final SimpleComponent newUsage = subcommand.getMultilineUsage();
 
+				final Variables variables = Variables.builder(this.audience).placeholders(subcommand.preparePlaceholders());
+
 				if (legacyUsage != null || newUsage != null || subcommand.getUsage() != null)
 					hover.add(Lang.component("command-help-tooltip-usage", "usage", legacyUsage != null || newUsage != null ? SimpleComponent.empty() : CommonCore.getOrDefault(this.colorizeUsage(subcommand.getUsage()), SimpleComponent.empty())));
 
 				if (legacyUsage != null)
 					for (final String line : legacyUsage)
-						hover.add(subcommand.replacePlaceholders(this.colorizeUsage(SimpleComponent.fromMiniAmpersand(line))));
+						hover.add(SimpleComponent.fromMiniAmpersand(variables.replaceLegacy(this.colorizeUsage(line))));
 
 				else if (newUsage != null)
-					hover.add(subcommand.replacePlaceholders(this.colorizeUsage(newUsage)));
+					hover.add(variables.replaceComponent(this.colorizeUsage(newUsage)));
 
 				SimpleComponent component = SimpleComponent
 						.fromPlain("  /" + this.getLabel())
