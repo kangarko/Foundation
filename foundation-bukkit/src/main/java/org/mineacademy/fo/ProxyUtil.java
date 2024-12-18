@@ -25,6 +25,8 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProxyUtil {
 
+	private static final Object LOCK = new Object();
+
 	/**
 	 * Sends message via a channel to proxy.
 	 *
@@ -118,7 +120,7 @@ public final class ProxyUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessage(@Nullable Player sender, final String channel, final ProxyMessage message, final T... dataArray) {
-		synchronized (BukkitPlugin.getInstance()) {
+		synchronized (LOCK) {
 			if (sender == null)
 				sender = findFirstPlayer();
 
@@ -161,7 +163,7 @@ public final class ProxyUtil {
 	 * @param data  the data
 	 */
 	public static void sendBungeeMessage(@NonNull final Player sender, final Object... data) {
-		synchronized (BukkitPlugin.getInstance()) {
+		synchronized (LOCK) {
 			ValidCore.checkBoolean(data != null && data.length >= 1, "");
 
 			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
