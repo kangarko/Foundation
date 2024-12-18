@@ -1661,7 +1661,7 @@ public final class Remain {
 	 */
 	public static void registerCommand(final Command command) {
 		final CommandMap commandMap = getCommandMap();
-		commandMap.register(command.getLabel(), command);
+		commandMap.register(command.getLabel(), BukkitPlugin.getInstance().getName().toLowerCase(), command);
 
 		ValidCore.checkBoolean(command.isRegistered(), "Command /" + command.getLabel() + " could not have been registered properly!");
 	}
