@@ -492,8 +492,14 @@ public class SimpleDatabase {
 					else if (value instanceof String)
 						preparedStatement.setString(index++, (String) value);
 
-					else
-						preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
+					else {
+						final Object converted = SerializeUtilCore.serialize(Language.JSON, value);
+
+						if (!(converted instanceof String) && !(converted instanceof Boolean) && !(converted instanceof Number) && !converted.getClass().isPrimitive())
+							throw new SQLException("Cannot store " + converted.getClass() + " in database, must be a primitive type, number or a string. Got: " + converted);
+
+						preparedStatement.setObject(index++, converted);
+					}
 				}
 
 				Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
@@ -504,6 +510,8 @@ public class SimpleDatabase {
 				CommonCore.error(ex,
 						"Error inserting into database",
 						"Table: " + tableName,
+						"Unique column: " + uniqueColumn,
+						"Columns and values: " + columnsAndValues,
 						"Query: " + sql);
 			}
 		}
