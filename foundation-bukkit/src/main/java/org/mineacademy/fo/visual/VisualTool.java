@@ -195,7 +195,7 @@ public abstract class VisualTool extends BlockTool {
 	/*
 	 * Visualize the region and points if exist.
 	 */
-	private void visualize(@NonNull final Player player) {
+	protected final void visualize(@NonNull final Player player) {
 		final VisualizedRegion region = this.getVisualizedRegion(player);
 
 		if (region != null && region.isWhole())
@@ -216,7 +216,7 @@ public abstract class VisualTool extends BlockTool {
 	/*
 	 * Stop visualizing region and points if they were so before
 	 */
-	private void stopVisualizing(@NonNull final Player player) {
+	protected final void stopVisualizing(@NonNull final Player player) {
 		final VisualizedRegion region = this.getVisualizedRegion(player);
 
 		if (region != null && region.canSeeParticles(player))

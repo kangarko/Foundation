@@ -121,6 +121,15 @@ public final class RegionTool extends VisualTool {
 	}
 
 	/**
+	 * Stops the visualization if going on
+	 *
+	 * @param player
+	 */
+	public void stopVisualizingRegion(final Player player) {
+		super.stopVisualizing(player);
+	}
+
+	/**
 	 * @see org.mineacademy.fo.visual.VisualTool#handleBlockClick(org.bukkit.entity.Player, org.bukkit.event.inventory.ClickType, org.bukkit.block.Block)
 	 */
 	@Override
