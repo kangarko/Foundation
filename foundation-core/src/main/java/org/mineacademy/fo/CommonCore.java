@@ -199,7 +199,7 @@ public abstract class CommonCore {
 				audience.sendMessage(SimpleComponent.empty());
 
 			for (final SimpleComponent message : messages)
-				audience.sendMessage(message.replaceBracket(audience, "player", audience.getName()));
+				audience.sendMessage(message.replaceBracket("player", audience.getName()));
 
 			for (int i = 0; i < (length == 1 || length == 2 ? 2 : length == 3 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());

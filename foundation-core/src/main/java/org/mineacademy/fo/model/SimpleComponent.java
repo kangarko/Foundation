@@ -341,20 +341,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replaceBracket(final String variable, final String value) {
-		return this.replaceBracket(null, variable, fromPlain(value));
-	}
-
-	/**
-	 * Quickly replaces an object in all parts of this component, adding
-	 * {} around it.
-	 *
-	 * @param receiver
-	 * @param variable the bracket variable
-	 * @param value
-	 * @return
-	 */
-	public SimpleComponent replaceBracket(final FoundationPlayer receiver, final String variable, final String value) {
-		return this.replaceBracket(receiver, variable, fromPlain(value));
+		return this.replaceBracket(variable, fromPlain(value));
 	}
 
 	/**
@@ -366,20 +353,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replaceBracket(final String variable, final SimpleComponent value) {
-		return this.replaceLiteral(null, "{" + variable + "}", value);
-	}
-
-	/**
-	 * Quickly replaces an object in all parts of this component, adding
-	 * {} around it.
-	 *
-	 * @param receiver
-	 * @param variable the bracket variable
-	 * @param value
-	 * @return
-	 */
-	public SimpleComponent replaceBracket(final FoundationPlayer receiver, final String variable, final SimpleComponent value) {
-		return this.replaceLiteral(receiver, "{" + variable + "}", value);
+		return this.replaceLiteral("{" + variable + "}", value);
 	}
 
 	/**
@@ -390,19 +364,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replaceLiteral(final String variable, final String value) {
-		return this.replaceLiteral(null, variable, fromPlain(value));
-	}
-
-	/**
-	 * Quickly replaces the literal in all parts of this component.
-	 *
-	 * @param receiver
-	 * @param variable the bracket variable
-	 * @param value
-	 * @return
-	 */
-	public SimpleComponent replaceLiteral(final FoundationPlayer receiver, final String variable, final String value) {
-		return this.replaceLiteral(receiver, variable, fromPlain(value));
+		return this.replaceLiteral(variable, fromPlain(value));
 	}
 
 	/**
@@ -413,22 +375,10 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replaceLiteral(final String variable, final SimpleComponent value) {
-		return this.replaceLiteral(null, variable, value);
-	}
-
-	/**
-	 * Quickly replaces the literal in all parts of this component.
-	 *
-	 * @param receiver
-	 * @param variable the bracket variable
-	 * @param value
-	 * @return
-	 */
-	public SimpleComponent replaceLiteral(final FoundationPlayer receiver, final String variable, final SimpleComponent value) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.matchLiteral(variable).replacement(value.toAdventure(receiver)));
+			final Component innerComponent = component.getComponent().replaceText(b -> b.matchLiteral(variable).replacement(value.toAdventure(null)));
 
 			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
@@ -480,16 +430,15 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * Quickly replaces a pattern in all parts of this component
 	 * with the given replacement function.
 	 *
-	 * @param receiver
 	 * @param pattern
 	 * @param replacement
 	 * @return
 	 */
-	public SimpleComponent replaceMatch(final FoundationPlayer receiver, final Pattern pattern, final SimpleComponent replacement) {
+	public SimpleComponent replaceMatch(final Pattern pattern, final SimpleComponent replacement) {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement.toAdventure(receiver)));
+			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement.toAdventure(null)));
 
 			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
