@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
@@ -537,7 +538,12 @@ public final class Lang {
 
 					for (final JsonElement element : array)
 						if (element.isJsonPrimitive()) {
-							final String string = element.getAsString();
+							String string = element.getAsString();
+
+							// Need to do this now because components merge using \n and it wont work in sending them
+							if (string.startsWith("<center>"))
+								string = ChatUtil.center(string.substring(8).trim());
+
 							final SimpleComponent component = SimpleComponent.fromMiniAmpersand(string);
 
 							plainList.add(string);
