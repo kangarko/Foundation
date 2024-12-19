@@ -105,14 +105,18 @@ public final class SimpleBook implements ConfigSerializable {
 	 * Opens the book for the player
 	 */
 	private void open(final FoundationPlayer audience, boolean translateColors) {
-		final Component title = (translateColors ? SimpleComponent.fromMiniSection(this.title) : SimpleComponent.fromPlain(this.title)).toAdventure(audience);
-		final Component author = (translateColors ? SimpleComponent.fromMiniSection(this.author) : SimpleComponent.fromPlain(this.author)).toAdventure(audience);
+		final String safeTitle = CommonCore.getOrEmpty(this.title);
+		final String safeAuthor = CommonCore.getOrEmpty(this.author);
+
+		final Component title = (translateColors ? SimpleComponent.fromMiniSection(safeTitle) : SimpleComponent.fromPlain(safeTitle)).toAdventure(audience);
+		final Component author = (translateColors ? SimpleComponent.fromMiniSection(safeAuthor) : SimpleComponent.fromPlain(safeAuthor)).toAdventure(audience);
 		final List<Component> pages = new ArrayList<>();
 
 		final Variables variables = Variables.builder(audience);
 
-		for (final String page : this.pages)
-			pages.add((translateColors ? SimpleComponent.fromMiniSection(variables.replaceLegacy(page)) : SimpleComponent.fromPlain(page)).toAdventure(audience));
+		if (this.pages != null)
+			for (final String page : this.pages)
+				pages.add((translateColors ? SimpleComponent.fromMiniSection(variables.replaceLegacy(page)).toAdventure(audience) : Component.text(page.replace(CompChatColor.COLOR_CHAR + "", "&"))));
 
 		audience.openBook(Book.book(title, author, pages));
 	}
