@@ -1786,7 +1786,7 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static boolean runIfDisabled(@NonNull final Runnable run) {
-		if (!Platform.getPlugin().isEnabled()) {
+		if (!Platform.getPlugin().isPluginEnabled()) {
 			run.run();
 
 			return true;

@@ -424,7 +424,7 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	 * @return
 	 */
 	@Override
-	public final boolean isEnabled() {
+	public final boolean isPluginEnabled() {
 		return this.enabled;
 	}
 

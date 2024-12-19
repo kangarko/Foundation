@@ -260,7 +260,7 @@ public interface FoundationPlugin {
 	 *
 	 * @return
 	 */
-	boolean isEnabled();
+	boolean isPluginEnabled();
 
 	/**
 	 * Return true if the plugin has not yet reached onPluginStart() method.
