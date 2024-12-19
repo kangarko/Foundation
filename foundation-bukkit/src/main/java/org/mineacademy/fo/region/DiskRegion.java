@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -57,6 +58,12 @@ public final class DiskRegion extends YamlConfig {
 	 */
 	@Setter
 	private static Function<Player, VisualizedRegion> createdPlayerRegionGetter;
+
+	/**
+	 * See {@link #createdPlayerRegionGetter}
+	 */
+	@Setter
+	private static Consumer<Player> createdPlayerRegionResetter;
 
 	/**
 	 * The region object
@@ -291,6 +298,26 @@ public final class DiskRegion extends YamlConfig {
 	 */
 	public static boolean hasCreatedPlayerRegionGetter() {
 		return createdPlayerRegionGetter != null;
+	}
+
+	/**
+	 * Reset the region the player is currently creating
+	 *
+	 * @param player
+	 */
+	public static void resetCreatedRegion(final Player player) {
+		ValidCore.checkNotNull(createdPlayerRegionResetter, "Please call DiskRegion#setCreatedPlayerRegionResetter before resetting the region for player!");
+
+		createdPlayerRegionResetter.accept(player);
+	}
+
+	/**
+	 * Return if the region resetter is set.
+	 *
+	 * @return
+	 */
+	public static boolean hasCreatedPlayerRegionResetter() {
+		return createdPlayerRegionResetter != null;
 	}
 
 	/**

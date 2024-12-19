@@ -179,6 +179,9 @@ public class RegionSubCommand extends SimpleSubCommand {
 			if (this.getPlayer().isConversing())
 				this.getPlayer().acceptConversationInput("exit");
 
+			RegionTool.getInstance().stopVisualizingRegion(this.getPlayer());
+			DiskRegion.resetCreatedRegion(this.getPlayer());
+
 			this.tellSuccess("Region '&2" + regionName + "&7' has been created.");
 			return;
 
