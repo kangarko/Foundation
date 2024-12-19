@@ -30,12 +30,6 @@ final class BukkitPlaceholders extends SimpleExpansion {
 		final Player player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
 		final String fallbackName = audience != null ? audience.getName() : "Unknown";
 
-		if ("plugin_name".equals(identifier))
-			return Platform.getPlugin().getName();
-
-		else if ("plugin_version".equals(identifier))
-			return Platform.getPlugin().getVersion();
-
 		if (player != null && !player.isOnline())
 			return null;
 
