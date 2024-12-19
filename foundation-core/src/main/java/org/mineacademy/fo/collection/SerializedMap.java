@@ -854,6 +854,13 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	}
 
 	/**
+	 * Clear the map
+	 */
+	public void clear() {
+		this.map.clear();
+	}
+
+	/**
 	 * @see Map#isEmpty()
 	 *
 	 * @return
