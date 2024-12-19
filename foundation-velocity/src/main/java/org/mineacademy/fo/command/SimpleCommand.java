@@ -1,9 +1,12 @@
 package org.mineacademy.fo.command;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 
 import com.velocitypowered.api.proxy.Player;
@@ -49,7 +52,16 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedV
 	 */
 	@Override
 	protected final List<String> completeLastWordPlayerNames() {
-		return this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames(true);
+		return CommonCore.tabComplete(this.getLastArg(), this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames(true));
+	}
+
+	/**
+	 * Convenience method for completing all server names.
+	 *
+	 * @return
+	 */
+	protected final List<String> completeLastWordServerNames() {
+		return CommonCore.tabComplete(this.getLastArg(), Remain.getServers().stream().map(server -> server.getServerInfo().getName()).collect(Collectors.toList()));
 	}
 
 	/**
