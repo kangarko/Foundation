@@ -26,8 +26,10 @@ public final class TestAudienceCommand extends SimpleCommandCore {
 
 	/**
 	 * Create a new instance of this command
+	 *
+	 * @param permission
 	 */
-	public TestAudienceCommand() {
+	public TestAudienceCommand(String permission) {
 		super(getPlatformCommandLabel());
 
 		this.setPermission(null);
