@@ -17,6 +17,7 @@ import org.mineacademy.fo.settings.YamlConfig;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
 
 /**
@@ -82,12 +83,38 @@ public final class SimpleBook implements ConfigSerializable {
 	}
 
 	/**
-	 * Opens the book for the player, rendering pages in chat for MC 1.7.10 and older
+	 * Opens the book for the player
+	 * MiniMessage tags, legacy colors, and placeholders are translated.
 	 *
 	 * @param audience
 	 */
-	public void open(final FoundationPlayer audience) {
-		audience.openBook(this.title, this.author, CommonCore.toArray(Variables.builder(audience).replaceLegacyList(this.pages)));
+	public void openColorized(final FoundationPlayer audience) {
+		this.open(audience, true);
+	}
+
+	/**
+	 * Opens the book for the player
+	 *
+	 * @param audience
+	 */
+	public void openPlain(final FoundationPlayer audience) {
+		this.open(audience, false);
+	}
+
+	/**
+	 * Opens the book for the player
+	 */
+	private void open(final FoundationPlayer audience, boolean translateColors) {
+		final Component title = (translateColors ? SimpleComponent.fromMiniSection(this.title) : SimpleComponent.fromPlain(this.title)).toAdventure(audience);
+		final Component author = (translateColors ? SimpleComponent.fromMiniSection(this.author) : SimpleComponent.fromPlain(this.author)).toAdventure(audience);
+		final List<Component> pages = new ArrayList<>();
+
+		final Variables variables = Variables.builder(audience);
+
+		for (final String page : this.pages)
+			pages.add((translateColors ? SimpleComponent.fromMiniSection(variables.replaceLegacy(page)) : SimpleComponent.fromPlain(page)).toAdventure(audience));
+
+		audience.openBook(Book.book(title, author, pages));
 	}
 
 	/**
@@ -126,7 +153,7 @@ public final class SimpleBook implements ConfigSerializable {
 	 */
 	@Override
 	public String toString() {
-		return "Book " + this.serialize().toStringFormatted();
+		return "Book " + this.serialize();
 	}
 
 	/* ------------------------------------------------------------------------------- */
