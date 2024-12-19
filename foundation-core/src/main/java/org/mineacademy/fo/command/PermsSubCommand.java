@@ -99,7 +99,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 	protected void onCommand() {
 		final String phrase = this.args.length > 0 ? this.joinArgs(0) : null;
 
-		new ChatPaginator(15)
+		new ChatPaginator(17)
 				.setFoundationHeader(Lang.legacy("command-perms-header"))
 				.setPages(this.list(phrase))
 				.send(this.audience);
