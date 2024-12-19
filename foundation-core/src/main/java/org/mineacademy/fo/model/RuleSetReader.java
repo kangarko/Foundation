@@ -59,19 +59,16 @@ public abstract class RuleSetReader<T extends Rule> {
 			final String line = lines.get(i);
 
 			// Found our rule
-			if (line.equals(this.newKeyword + " " + rule.getUniqueName()))
+			if (line.equals(this.newKeyword + " " + rule.getUniqueName())) {
 				found = true;
 
-			// Found something else
-			else if (line.charAt(0) == '#' || line.isEmpty() || line.startsWith("match ")) {
-				if (found && i > 0 && disabled) {
-					lines.add(i, "disabled");
+				if (disabled) {
+					lines.add(i + 1, "disabled");
 
 					break;
 				}
 			}
 
-			// Found the disabled operator
 			else if (line.equals("disabled"))
 				if (found && !disabled) {
 					lines.remove(i);
