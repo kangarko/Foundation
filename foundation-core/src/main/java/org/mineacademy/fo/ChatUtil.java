@@ -32,6 +32,16 @@ public final class ChatUtil {
 	private final static Pattern DOMAIN_PATTERN = Pattern.compile("(https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s]{2,}|www\\.[^\\s]+\\.[^\\s]{2,})");
 
 	/**
+	 * The pattern to match a domain to make it clickable.
+	 *
+	 * This regex strictly matches URLs with an optional protocol,
+	 * a more structured domain, and an optional path.
+	 *
+	 * It's designed to enforce a more logical structure for parsed URLs.
+	 */
+	private static final Pattern CLICKABLE_DOMAIN_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
+
+	/**
 	 * Centers a message in chat.
 	 *
 	 * @see #center(String, char, int)
@@ -505,6 +515,34 @@ public final class ChatUtil {
 	 */
 	public static boolean isDomain(final String message) {
 		return DOMAIN_PATTERN.matcher(message).find();
+	}
+
+	/**
+	 * Appends minimessage tags for URLs in the message to
+	 * make them clickable.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String addMiniMessageUrlTags(final String message) {
+		final StringBuilder result = new StringBuilder();
+		final String[] words = message.split("\\s+");
+
+		for (final String word : words) {
+			final Matcher matcher = CLICKABLE_DOMAIN_PATTERN.matcher(word);
+			if (matcher.matches()) {
+				final String protocol = matcher.group(1) != null ? matcher.group(1) : "https";
+				final String domain = matcher.group(2);
+				final String path = matcher.group(3) != null ? matcher.group(3) : "";
+				final String fullUrl = protocol + "://" + domain + path;
+
+				result.append(String.format("<click:open_url:'%s'>%s</click> ", fullUrl, word));
+			} else {
+				result.append(word).append(" ");
+			}
+		}
+
+		return result.toString().trim();
 	}
 
 	/**
