@@ -29,6 +29,7 @@ import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.Platform;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -493,7 +494,10 @@ public class SimpleDatabase {
 						preparedStatement.setString(index++, (String) value);
 
 					else {
-						final Object converted = SerializeUtilCore.serialize(Language.JSON, value);
+						Object converted = SerializeUtilCore.serialize(Language.JSON, value);
+
+						if (converted instanceof JsonElement)
+							converted = ((JsonElement) converted).toString();
 
 						if (!(converted instanceof String) && !(converted instanceof Boolean) && !(converted instanceof Number) && !converted.getClass().isPrimitive())
 							throw new SQLException("Cannot store " + converted.getClass() + " in database, must be a primitive type, number or a string. Got: " + converted);
@@ -1103,17 +1107,21 @@ public class SimpleDatabase {
 
 		@Override
 		public void run() {
+			final Map<Table, List<SerializedMap>> copy = new HashMap<>();
+
 			synchronized (instance) {
-				for (final Iterator<Map.Entry<Table, List<SerializedMap>>> it = this.queue.entrySet().iterator(); it.hasNext();) {
-					final Map.Entry<Table, List<SerializedMap>> entry = it.next();
-
-					final Table table = entry.getKey();
-					final List<SerializedMap> maps = entry.getValue();
-
-					table.getDatabase().insertBatch(table, maps);
-				}
+				copy.putAll(this.queue);
 
 				this.queue.clear();
+			}
+
+			for (final Iterator<Map.Entry<Table, List<SerializedMap>>> it = copy.entrySet().iterator(); it.hasNext();) {
+				final Map.Entry<Table, List<SerializedMap>> entry = it.next();
+
+				final Table table = entry.getKey();
+				final List<SerializedMap> maps = entry.getValue();
+
+				table.getDatabase().insertBatch(table, maps);
 			}
 		}
 
