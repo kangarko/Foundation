@@ -348,6 +348,9 @@ public final class Variables {
 				else if (rawValue instanceof Collection)
 					replacedValue = SimpleComponent.fromMiniAmpersand(CommonCore.join((Collection<?>) rawValue));
 
+				else if (rawValue instanceof Enum[])
+					replacedValue = SimpleComponent.fromMiniAmpersand(CommonCore.join((Enum[]) rawValue));
+
 				else if (rawValue instanceof UUID)
 					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
 
@@ -455,6 +458,9 @@ public final class Variables {
 
 				else if (rawValue instanceof Collection)
 					replacedValue = CommonCore.join((Collection<?>) rawValue);
+
+				else if (rawValue instanceof Enum[])
+					replacedValue = CommonCore.join((Enum[]) rawValue);
 
 				else if (rawValue instanceof Boolean)
 					replacedValue = rawValue.toString();
