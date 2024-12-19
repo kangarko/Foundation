@@ -545,10 +545,10 @@ public abstract class FoundationPlayer implements Audience {
 			component = prefix.appendPlain(" ").append(component);
 
 		if (plainMessage.startsWith("<actionbar>"))
-			this.sendActionBar(component.replaceLiteral(this, "<actionbar>", ""));
+			this.sendActionBar(component.replaceLiteral( "<actionbar>", ""));
 
 		else if (plainMessage.startsWith("<toast>"))
-			this.sendToast(component.replaceLiteral(this, "<toast>", ""));
+			this.sendToast(component.replaceLiteral( "<toast>", ""));
 
 		else if (plainMessage.startsWith("<title>")) {
 			final String stripped = component.toLegacySection(this).replace("<title>", "").trim();
@@ -562,7 +562,7 @@ public abstract class FoundationPlayer implements Audience {
 			}
 
 		} else if (plainMessage.startsWith("<bossbar>"))
-			this.showBossbarTimed(component.replaceLiteral(this, "<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
+			this.showBossbarTimed(component.replaceLiteral( "<bossbar>", ""), 10, 1F, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
 
 		else if (plainMessage.startsWith("<center>")) {
 			final String centeredLegacyMessage = ChatUtil.center(component.toLegacySection(this).replaceAll("\\<center\\>(\\s|)", ""));
