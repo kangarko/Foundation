@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -347,6 +348,9 @@ public final class Variables {
 				else if (rawValue instanceof Collection)
 					replacedValue = SimpleComponent.fromMiniAmpersand(CommonCore.join((Collection<?>) rawValue));
 
+				else if (rawValue instanceof UUID)
+					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
+
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
@@ -453,6 +457,9 @@ public final class Variables {
 					replacedValue = CommonCore.join((Collection<?>) rawValue);
 
 				else if (rawValue instanceof Boolean)
+					replacedValue = rawValue.toString();
+
+				else if (rawValue instanceof UUID)
 					replacedValue = rawValue.toString();
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
