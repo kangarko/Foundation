@@ -319,7 +319,7 @@ public abstract class SimpleCommandCore {
 	 */
 	@Deprecated
 	final boolean delegateExecute(final FoundationPlayer audience, final String label, final String[] args) {
-		if (!Platform.getPlugin().isEnabled()) {
+		if (!Platform.getPlugin().isPluginEnabled()) {
 			audience.sendMessage(Lang.component("command-cannot-use-while-plugin-disabled"));
 
 			return true;

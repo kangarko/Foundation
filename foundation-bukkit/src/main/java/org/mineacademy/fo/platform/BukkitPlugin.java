@@ -123,6 +123,14 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 */
 	private boolean loadingFailed = false;
 
+	/**
+	 * Bukkit has an inconsistency where if we disable the plugin through plugin manager
+	 * it will still report as loaded, so we will continue registering events which will crash.
+	 * This flag mitigates that issue.
+	 */
+	private boolean starting = false;
+	private boolean platformEnabled = true;
+
 	// ----------------------------------------------------------------------------------------
 	// Main methods
 	// ----------------------------------------------------------------------------------------
@@ -227,6 +235,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		}
 
 		try {
+			this.starting = true;
+
 			if (this.getStartupLogo() != null)
 				CommonCore.log(this.getStartupLogo());
 
@@ -368,6 +378,9 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 			this.onPluginPreStart();
 
+			if (!this.isEnabled() || !this.platformEnabled)
+				return;
+
 			// Scan for @AutoRegister annotations
 			AutoRegisterScanner.scanAndRegister();
 
@@ -378,15 +391,14 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				DiskRegion.loadRegions();
 			}
 
+			if (!this.isEnabled() || !this.platformEnabled)
+				return;
+
 			this.onPluginStart();
 
 			// Freeze enchant registry - must be called after onPluginStart
 			if (Remain.isEnchantRegistryUnfrozen())
 				Remain.freezeEnchantRegistry();
-
-			// Return if plugin start indicated a fatal problem
-			if (!this.isEnabled())
-				return;
 
 			// Register our listeners
 			this.registerEvents(this);
@@ -421,6 +433,9 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 		} catch (final Throwable t) {
 			this.displayError(t);
+
+		} finally {
+			this.starting = false;
 		}
 	}
 
@@ -428,77 +443,77 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		for (final CompAttribute comp : CompAttribute.values())
 			try {
 				CompAttribute.valueOf(comp.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				if (comp.getNmsName() != null)
 					Common.log("Invalid CompAttribute " + comp.name());
 			}
-	
+
 		for (final CompColor comp : CompColor.values())
 			try {
 				if (comp.getDye() == null)
 					throw new IllegalArgumentException();
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompColor " + comp.getName());
 			}
-	
+
 		for (final CompItemFlag comp : CompItemFlag.values())
 			try {
 				ItemFlag.valueOf(comp.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompItemFlag " + comp);
 			}
-	
+
 		for (final CompMaterial comp : CompMaterial.values())
 			try {
 				if (comp.toItem() == null)
 					throw new IllegalArgumentException();
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompMaterial " + comp);
 			}
-	
+
 		for (final CompParticle comp : CompParticle.values())
 			try {
 				Particle.valueOf(comp.name());
-	
+
 			} catch (final NoClassDefFoundError err) {
 				// Skip
-	
+
 			} catch (final IllegalArgumentException ex) {
 				if (!comp.isRemoved())
 					Common.log("Invalid CompParticle " + comp);
 			}
-	
+
 		if (MinecraftVersion.atLeast(V.v1_21))
 			for (final CompSound comp : CompSound.values())
 				try {
 					Sound.valueOf(comp.name());
-	
+
 				} catch (final IllegalArgumentException ex) {
 					Common.log("Invalid CompSound " + comp.name());
 				}
-	
+
 		for (final CompVillagerProfession comp : CompVillagerProfession.values())
 			try {
 				comp.toBukkit();
-	
+
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-	
+
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerProfession " + comp);
 			}
-	
+
 		for (final CompVillagerType comp : CompVillagerType.values())
 			try {
 				comp.toBukkit();
-	
+
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-	
+
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
@@ -508,80 +523,80 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
-	
+
 		for (final DyeColor bukkit : DyeColor.values())
 			try {
 				CompColor.fromDye(bukkit);
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompColor for Bukkit's " + bukkit.name());
 			}
-	
+
 		for (final Enchantment bukkit : Enchantment.values())
 			try {
 				if (CompEnchantment.getByName(bukkit.getKey().toString()) == null)
 					throw new IllegalArgumentException();
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompEnchantment for Bukkit's " + bukkit);
 			}
-	
+
 		for (final ItemFlag bukkit : ItemFlag.values())
 			try {
 				CompItemFlag.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompItemFlag for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Material bukkit : Material.values())
 			try {
 				CompMaterial.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompMaterial for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Particle bukkit : Particle.values())
 			try {
 				CompParticle.fromName(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompParticle for Bukkit's " + bukkit);
 			}
-	
+
 		for (final PotionEffectType bukkit : PotionEffectType.values())
 			try {
 				CompPotionEffectType.getByName(bukkit.getKey().toString());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompPotionEffectType for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Sound bukkit : Sound.values())
 			try {
 				CompSound.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompSound for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Villager.Profession bukkit : Villager.Profession.values())
 			try {
 				CompVillagerProfession.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerProfession for Bukkit's " + bukkit);
 			}
-	
+
 		for (final Villager.Type bukkit : Villager.Type.values())
 			try {
 				CompVillagerType.valueOf(bukkit.name());
-	
+
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerType for Bukkit's " + bukkit);
 			}
@@ -753,7 +768,10 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 */
 	@Override
 	public final void disable() {
-		this.getServer().getPluginManager().disablePlugin(this);
+		if (!this.starting)
+			this.getServer().getPluginManager().disablePlugin(this);
+
+		this.platformEnabled = false;
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -766,7 +784,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 * @param listener
 	 */
 	public final void registerEvents(final SimpleListener<? extends Event> listener) {
-		listener.register();
+		if (this.isEnabled() && this.platformEnabled)
+			listener.register();
 	}
 
 	// ----------------------------------------------------------------------------------------
@@ -843,6 +862,11 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	@Override
 	public boolean isInitializing() {
 		return this.initializing;
+	}
+
+	@Override
+	public final boolean isPluginEnabled() {
+		return this.platformEnabled && this.isEnabled();
 	}
 
 	// ----------------------------------------------------------------------------------------

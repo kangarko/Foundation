@@ -922,6 +922,8 @@ public class SimpleDatabase {
 	 * @throws SQLException
 	 */
 	protected final boolean doesColumnExist(final Table table, final String column) throws SQLException {
+		this.ensureConnected();
+
 		synchronized (this.connection) {
 			final String tableName = table.getName();
 

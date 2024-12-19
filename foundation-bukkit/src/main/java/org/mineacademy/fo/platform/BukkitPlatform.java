@@ -34,11 +34,13 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -666,7 +668,15 @@ final class BukkitPlatform extends FoundationPlatform {
 	public void registerEvents(final Object listener) {
 		ValidCore.checkBoolean(listener instanceof Listener, "Listener must extend Bukkit's Listener, not " + listener.getClass());
 
-		Bukkit.getPluginManager().registerEvents((Listener) listener, BukkitPlugin.getInstance());
+		try {
+			Bukkit.getPluginManager().registerEvents((Listener) listener, BukkitPlugin.getInstance());
+
+		} catch (final IllegalPluginAccessException ex) {
+			if (ex.getMessage().startsWith("Plugin attempted to register") && ex.getMessage().endsWith("while not enabled")) {
+				// ignore
+			} else
+				Common.error(ex, "Error registering " + listener.getClass().getSimpleName());
+		}
 	}
 
 	@Override

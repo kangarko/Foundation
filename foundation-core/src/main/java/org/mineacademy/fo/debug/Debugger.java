@@ -143,38 +143,45 @@ public final class Debugger {
 					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-rc.2");
 
 				Platform.runTaskAsync(() -> {
+					try {
+						// Need to address the bug where a globally included sentry has the DSN of the first plugin
+						Sentry.init(options -> {
 
-					// Need to address the bug where a globally included sentry has the DSN of the first plugin
-					Sentry.init(options -> {
+							// Prevent exceptions from other plugins from being caught
+							options.setEnableUncaughtExceptionHandler(false);
 
-						// Prevent exceptions from other plugins from being caught
-						options.setEnableUncaughtExceptionHandler(false);
+							options.setDsn(plugin.getSentryDsn());
+							options.setTracesSampleRate(0.0);
 
-						options.setDsn(plugin.getSentryDsn());
-						options.setTracesSampleRate(0.0);
+							// Add plugin name and version to Sentry context
+							options.setBeforeSend((event, hint) -> {
+								event.setRelease(plugin.getVersion());
+								event.setServerName(null);
+								event.setDist(Platform.getPlatformVersion());
+								event.setTag("plugin_name", plugin.getName());
+								event.setTag("plugin_version", plugin.getVersion());
+								event.setTag("server_version", Platform.getPlatformVersion());
+								event.setTag("server_distro", Platform.getPlatformName());
 
-						// Add plugin name and version to Sentry context
-						options.setBeforeSend((event, hint) -> {
-							event.setRelease(plugin.getVersion());
-							event.setServerName(null);
-							event.setDist(Platform.getPlatformVersion());
-							event.setTag("plugin_name", plugin.getName());
-							event.setTag("plugin_version", plugin.getVersion());
-							event.setTag("server_version", Platform.getPlatformVersion());
-							event.setTag("server_distro", Platform.getPlatformName());
+								if ("%%__BUILTBYBIT__%%".equals("true")) {
+									event.setTag("bbb_user_id", "%%__USER__%%");
+									event.setTag("bbb_user_name", "%%__USERNAME__%%");
+									event.setTag("bbb_user_name", "%%__USERNAME__%%");
+									event.setTag("bbb_nonce", "%%__NONCE__%%");
+								}
 
-							if ("%%__BUILTBYBIT__%%".equals("true")) {
-								event.setTag("bbb_user_id", "%%__USER__%%");
-								event.setTag("bbb_user_name", "%%__USERNAME__%%");
-								event.setTag("bbb_user_name", "%%__USERNAME__%%");
-								event.setTag("bbb_nonce", "%%__NONCE__%%");
-							}
-
-							return event;
+								return event;
+							});
 						});
-					});
 
-					Sentry.captureException(finalThrowable);
+						Sentry.captureException(finalThrowable);
+
+					} catch (final Throwable t) {
+
+						// Catch here to prevent a dead loop because platform wraps runnables
+						if (!t.getMessage().equals("zip file closed"))
+							t.printStackTrace();
+					}
 				});
 
 				reportedExceptions.add(key);

@@ -149,7 +149,8 @@ final class AutoRegisterScanner {
 								CommonCore.warning("Your Minecraft version does not have DragonFireball class, we suggest replacing it with a Fireball instead in: " + clazz);
 							else
 								CommonCore.warning("Your Minecraft version does not have " + error + " class you call in: " + clazz);
-						} else
+
+						} else if (t.getMessage() == null || !t.getMessage().equals("zip file closed"))
 							CommonCore.error(t, "Failed to auto register class " + clazz);
 					}
 				}

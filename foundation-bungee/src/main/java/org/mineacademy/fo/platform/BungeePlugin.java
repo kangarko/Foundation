@@ -365,7 +365,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	 * @return
 	 */
 	@Override
-	public final boolean isEnabled() {
+	public final boolean isPluginEnabled() {
 		return this.enabled;
 	}
 
