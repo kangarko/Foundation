@@ -30,11 +30,6 @@ import org.mineacademy.fo.proxy.ProxyMessage;
 public final class OutgoingMessage extends Message {
 
 	/**
-	 * The default channel name. We broadcast on BungeeCord by default.
-	 */
-	public static final String DEFAULT_CHANNEL = "BungeeCord";
-
-	/**
 	 * The pending queue to write the message.
 	 */
 	private final List<Object> queue = new ArrayList<>();
@@ -308,35 +303,6 @@ public final class OutgoingMessage extends Message {
 	}
 
 	/**
-	 * Writes a compressed string to the output.
-	 *
-	 * @param out
-	 * @param data
-	 */
-	private void writeCompressedString(final DataOutput out, final String data) {
-		final byte[] compressed = CommonCore.compress(data);
-
-		try {
-			out.writeInt(compressed.length);
-			out.write(compressed);
-
-		} catch (final Exception ex) {
-			throw new FoException("Failed to write compressed String: " + data, ex);
-		}
-	}
-
-	/**
-	 * Get the channel for this message.
-	 *
-	 * @return
-	 */
-	public String getChannel() {
-		ValidCore.checkNotNull(this.getListener(), "Listener cannot be null for " + this);
-
-		return this.getListener().getChannel();
-	}
-
-	/**
 	 * Forwards this message to another server
 	 *
 	 * @param fromServer
@@ -413,6 +379,24 @@ public final class OutgoingMessage extends Message {
 				if (!isSpammyPacket)
 					Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
 			}
+		}
+	}
+
+	/**
+	 * Writes a compressed string to the output.
+	 *
+	 * @param out
+	 * @param data
+	 */
+	private void writeCompressedString(final DataOutput out, final String data) {
+		final byte[] compressed = CommonCore.compress(data);
+
+		try {
+			out.writeInt(compressed.length);
+			out.write(compressed);
+
+		} catch (final Exception ex) {
+			throw new FoException("Failed to write compressed String: " + data, ex);
 		}
 	}
 }

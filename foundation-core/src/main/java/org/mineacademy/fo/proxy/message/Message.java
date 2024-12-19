@@ -16,6 +16,11 @@ import lombok.RequiredArgsConstructor;
 abstract class Message {
 
 	/**
+	 * The default channel name. We broadcast on BungeeCord by default.
+	 */
+	public static final String DEFAULT_CHANNEL = "BungeeCord";
+
+	/**
 	 * Represents the largest size that an individual plugin message may be.
 	 */
 	public static final int MAX_MESSAGE_SIZE = 1048576;
@@ -56,6 +61,17 @@ abstract class Message {
 		ValidCore.checkBoolean(this.head < content.length, "Head out of bounds! Max data size for " + this.getMessage().name() + " is " + content.length);
 
 		this.head++;
+	}
+
+	/**
+	 * Get the channel for this message.
+	 *
+	 * @return
+	 */
+	public String getChannel() {
+		ValidCore.checkNotNull(this.listener, "Listener cannot be null for " + this);
+
+		return this.listener.getChannel();
 	}
 
 	/**
