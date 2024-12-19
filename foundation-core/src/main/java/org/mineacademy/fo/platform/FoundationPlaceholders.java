@@ -41,9 +41,6 @@ final class FoundationPlaceholders extends SimpleExpansion {
 		else if ("player_server".equals(identifier))
 			return audience == null || !audience.isPlayer() ? "" : audience.getServer().getName();
 
-		else if ("player_ip".equals(identifier))
-			return audience == null || !audience.isPlayer() ? "" : audience.getAddress().getAddress().toString().split("\\:")[0];
-
 		else if ("player_is_discord".equals(identifier) || "sender_is_discord".equals(identifier))
 			return audience != null && audience.isDiscord() ? "true" : "false";
 
