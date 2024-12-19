@@ -49,7 +49,7 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 	 */
 	@Override
 	protected List<String> completeLastWordPlayerNames() {
-		return this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames();
+		return CommonCore.tabComplete(this.getLastArg(), this.isPlayer() ? Common.getPlayerNames(false) : Common.getPlayerNames());
 	}
 
 	/**
