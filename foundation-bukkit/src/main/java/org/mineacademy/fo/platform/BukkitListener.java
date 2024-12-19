@@ -109,18 +109,20 @@ final class BukkitListener implements Listener {
 				int count = 1;
 
 				for (final SimpleComponent component : messagesOnPage)
-					audience.sendMessage(component.replaceBracket( "count", String.valueOf(page + count++)));
+					audience.sendMessage(component.replaceBracket("count", String.valueOf(page + count++)));
 
 				int whiteLines = chatPages.getLinesPerPage();
 
-				if (whiteLines == 15 && pages.size() == 1)
-					if (messagesOnPage.size() < 17)
-						whiteLines = 7;
-					else
-						whiteLines += 2;
+				if (pages.size() > 1) {
+					if (whiteLines == 15 && pages.size() == 1)
+						if (messagesOnPage.size() < 17)
+							whiteLines = 7;
+						else
+							whiteLines += 2;
 
-				for (int i = messagesOnPage.size(); i < whiteLines; i++)
-					audience.sendMessage(SimpleComponent.fromPlain(" "));
+					for (int i = messagesOnPage.size(); i < whiteLines; i++)
+						audience.sendMessage(SimpleComponent.fromPlain(" "));
+				}
 
 				for (final SimpleComponent component : chatPages.getFooter())
 					audience.sendMessage(component);
