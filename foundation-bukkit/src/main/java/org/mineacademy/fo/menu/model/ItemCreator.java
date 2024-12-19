@@ -188,6 +188,11 @@ public final class ItemCreator {
 	private List<String> bookPages = null;
 
 	/**
+	 * Replace mini and legacy color codes in books?
+	 */
+	private boolean colorizeBook = true;
+
+	/**
 	 * If this a book, you can set its author here.
 	 */
 	@Nullable
@@ -528,6 +533,18 @@ public final class ItemCreator {
 	}
 
 	/**
+	 * Replace mini and legacy color codes in books?
+	 *
+	 * @param colorizeBook
+	 * @return
+	 */
+	public ItemCreator colorizeBook(final boolean colorizeBook) {
+		this.colorizeBook = colorizeBook;
+
+		return this;
+	}
+
+	/**
 	 * If this is a book, set its pages.
 	 *
 	 * @param pages
@@ -754,7 +771,7 @@ public final class ItemCreator {
 				final List<String> colorizedPages = new ArrayList<>();
 
 				for (final String page : this.bookPages)
-					colorizedPages.add(CompChatColor.translateColorCodes(page));
+					colorizedPages.add(this.colorizeBook ? CompChatColor.translateColorCodes(page) : page);
 
 				bookMeta.setPages(colorizedPages);
 			}
@@ -762,8 +779,11 @@ public final class ItemCreator {
 			if (this.bookAuthor != null)
 				bookMeta.setAuthor(CommonCore.getOrEmpty(this.bookAuthor));
 
-			if (this.bookTitle != null)
-				bookMeta.setTitle(CommonCore.getOrEmpty(this.bookTitle));
+			if (this.bookTitle != null) {
+				final String title = CommonCore.getOrEmpty(this.bookTitle);
+
+				bookMeta.setTitle(this.colorizeBook ? CompChatColor.translateColorCodes(title) : title);
+			}
 
 			// Fix "Corrupted NBT tag" error when any of these fields are not set
 			if (bookMeta.getPages() == null)
@@ -1090,8 +1110,27 @@ public final class ItemCreator {
 	 * @param editable
 	 * @return
 	 */
-	public static ItemCreator fromBook(final SimpleBook book, final boolean editable) {
+	public static ItemCreator fromBookPlain(final SimpleBook book, final boolean editable) {
+		return fromBook(book, editable, false);
+	}
+
+	/**
+	 * Creates a book
+	 *
+	 * @param book
+	 * @param editable
+	 * @return
+	 */
+	public static ItemCreator fromBookColorized(final SimpleBook book, final boolean editable) {
+		return fromBook(book, editable, true);
+	}
+
+	/**
+	 * Creates a book
+	 */
+	private static ItemCreator fromBook(final SimpleBook book, final boolean editable, final boolean translateColors) {
 		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
+				.colorizeBook(translateColors)
 				.bookTitle(CommonCore.getOrDefault(book.getTitle(), "Blank"))
 				.bookAuthor(CommonCore.getOrDefault(book.getAuthor(), "Blank"))
 				.bookPages(book.getPages())
