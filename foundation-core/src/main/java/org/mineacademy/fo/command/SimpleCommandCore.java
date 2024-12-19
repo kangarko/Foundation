@@ -1009,14 +1009,15 @@ public abstract class SimpleCommandCore {
 	 * @param messages
 	 */
 	protected final void tell(final String... messages) {
-		for (String message : messages) {
-			message = Variables
-					.builder(this.audience)
-					.placeholders(this.preparePlaceholders())
-					.replaceLegacy(this.tellPrefix != null && !"".equals(tellPrefix) ? this.tellPrefix + message : message);
+		for (final String message : messages)
+			for (String part : message.split("\n")) {
+				part = Variables
+						.builder(this.audience)
+						.placeholders(this.preparePlaceholders())
+						.replaceLegacy(this.tellPrefix != null && !"".equals(tellPrefix) ? this.tellPrefix + part : part);
 
-			this.audience.sendMessage(SimpleComponent.fromMiniAmpersand(message));
-		}
+				this.audience.sendMessage(SimpleComponent.fromMiniAmpersand(part));
+			}
 	}
 
 	/**
@@ -1174,7 +1175,8 @@ public abstract class SimpleCommandCore {
 		final List<SimpleComponent> components = new ArrayList<>();
 
 		for (final String message : messages)
-			components.add(SimpleComponent.fromMiniAmpersand(Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceLegacy(message)));
+			for (final String part : message.split("\n"))
+				components.add(SimpleComponent.fromMiniAmpersand(Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceLegacy(part)));
 
 		throw new CommandException(components.toArray(new SimpleComponent[components.size()]));
 	}
