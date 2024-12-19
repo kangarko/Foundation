@@ -28,6 +28,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 	@Override
 	protected String onReplace(final FoundationPlayer audience, final String identifier) {
 		final Player player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
+		final String fallbackName = audience != null ? audience.getName() : "Unknown";
 
 		if ("plugin_name".equals(identifier))
 			return Platform.getPlugin().getName();
@@ -39,13 +40,13 @@ final class BukkitPlaceholders extends SimpleExpansion {
 			return null;
 
 		if ("player_tab_name".equals(identifier))
-			return player == null ? audience.getName() : player.getPlayerListName();
+			return player == null ? fallbackName : player.getPlayerListName();
 
 		else if ("player_display_name".equals(identifier))
-			return player == null ? audience.getName() : player.getDisplayName();
+			return player == null ? fallbackName : player.getDisplayName();
 
 		else if ("player_nick".equals(identifier))
-			return player == null ? audience.getName() : CommonCore.getOrDefault(HookManager.getNickOrNullColored(player), audience.getName());
+			return player == null ? fallbackName : CommonCore.getOrDefault(HookManager.getNickOrNullColored(player), fallbackName);
 
 		else if ("player_prefix".equals(identifier))
 			return player == null ? "" : HookManager.getPlayerPrefix(player);
