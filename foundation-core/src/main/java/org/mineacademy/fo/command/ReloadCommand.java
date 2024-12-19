@@ -20,7 +20,20 @@ public final class ReloadCommand extends SimpleCommandCore {
 	 * @param label
 	 */
 	public ReloadCommand(final String label) {
+		this(label, null);
+	}
+
+	/**
+	 * Create a new sub-command with the given label registered in the given command group.
+	 *
+	 * @param label
+	 * @param permission
+	 */
+	public ReloadCommand(final String label, final String permission) {
 		super(label);
+
+		if (permission != null)
+			this.setPermission(permission);
 
 		this.setMaxArguments(0);
 		this.setDescription(Lang.component("command-reload-description"));
