@@ -320,6 +320,15 @@ public enum CompParticle {
 	}
 
 	/**
+	 * Return the Bukkit particle or null if this particle is not supported on this server
+	 *
+	 * @return
+	 */
+	public Particle getParticle() {
+		return (Particle) bukkitEnumParticle;
+	}
+
+	/**
 	 * Spawns this particle with the given color, only works for {@link #REDSTONE}
 	 * The particle size requires MC 1.13+
 	 *
@@ -509,11 +518,18 @@ public enum CompParticle {
 			return;
 
 		// Minecraft 1.12 and up
-		if (this.bukkitEnumParticle != null && this != REDSTONE)
-			player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
+		if (this.bukkitEnumParticle != null && this != REDSTONE) {
+			if (data == null)
+				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
+			else
+				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 
-		else if (this.packetConstructor != null)
-			Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
+		} else if (this.packetConstructor != null) {
+			if (data == null)
+				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra));
+			else
+				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
+		}
 	}
 
 	/*
