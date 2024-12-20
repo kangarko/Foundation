@@ -1974,7 +1974,7 @@ class EssentialsHook {
 			return player;
 
 		final String nick = user.getNickname();
-		return nick == null || !nick.isEmpty() ? null : nick;
+		return nick == null || nick.isEmpty() ? null : nick;
 	}
 
 	void setNick(final UUID uniqueId, final String nick) {
