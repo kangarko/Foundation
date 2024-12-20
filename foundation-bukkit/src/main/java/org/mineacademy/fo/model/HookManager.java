@@ -1065,7 +1065,7 @@ public final class HookManager {
 	 * @param nick     the nickname to set.
 	 */
 	public static void setNick(@NonNull final UUID playerId, @Nullable String nick) {
-		nick = SimpleComponent.fromMiniSection(nick).toLegacyAmpersand();
+		nick = SimpleComponent.fromMiniAmpersand(nick).toPlain();
 
 		if (isEssentialsLoaded())
 			essentialsHook.setNick(playerId, nick);
