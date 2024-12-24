@@ -105,7 +105,7 @@ public enum CompBiome {
 			return 27;
 		}
 	},
-	BIRCH_FOREST_HILLS(OLD_GROWTH_BIRCH_FOREST, "BIRCH_FOREST_HILLS") {
+	BIRCH_FOREST_HILLS(OLD_GROWTH_BIRCH_FOREST, "BIRCH_FOREST_HILLS", "BIRCH_FOREST_HILLS_MOUNTAINS") {
 		@Override
 		public int getId() {
 			return 28;
