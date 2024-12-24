@@ -138,124 +138,141 @@ public final class Debugger {
 			final String key = Arrays.toString(throwable.getStackTrace());
 
 			if (!reportedExceptions.contains(key)) {
+				boolean hasSentry = false;
 
 				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
-					plugin.loadLibrary("io.sentry", "sentry", "8.0.0-rc.2");
-
-				Platform.runTaskAsync(() -> {
 					try {
-						// Need to address the bug where a globally included sentry has the DSN of the first plugin
-						Sentry.init(options -> {
+						plugin.loadLibrary("io.sentry", "sentry", "8.0.0-rc.3");
 
-							// Prevent exceptions from other plugins from being caught
-							options.setEnableUncaughtExceptionHandler(false);
-
-							options.setDsn(plugin.getSentryDsn());
-							options.setTracesSampleRate(0.0);
-
-							// Add plugin name and version to Sentry context
-							options.setBeforeSend((event, hint) -> {
-								event.setRelease(plugin.getVersion());
-								event.setServerName(null);
-								event.setDist(Platform.getPlatformVersion());
-								event.setTag("plugin_name", plugin.getName());
-								event.setTag("plugin_version", plugin.getVersion());
-								event.setTag("server_version", Platform.getPlatformVersion());
-								event.setTag("server_distro", Platform.getPlatformName());
-
-								if ("%%__BUILTBYBIT__%%".equals("true")) {
-									event.setTag("bbb_user_id", "%%__USER__%%");
-									event.setTag("bbb_user_name", "%%__USERNAME__%%");
-									event.setTag("bbb_user_name", "%%__USERNAME__%%");
-									event.setTag("bbb_nonce", "%%__NONCE__%%");
-								}
-
-								return event;
-							});
-						});
-
-						Sentry.captureException(finalThrowable);
+						hasSentry = true;
 
 					} catch (final Throwable t) {
+						CommonCore.log("Failed to load error reporting library Sentry:.");
+						t.printStackTrace();
 
-						// Catch here to prevent a dead loop because platform wraps runnables
-						if (!t.getMessage().equals("zip file closed"))
-							t.printStackTrace();
+						CommonCore.log("Saving error locally due to missing sentry:");
+						saveErrorLocally(throwable, messages);
 					}
-				});
+
+				if (hasSentry) {
+					Platform.runTaskAsync(() -> {
+						try {
+							// Need to address the bug where a globally included sentry has the DSN of the first plugin
+							Sentry.init(options -> {
+
+								// Prevent exceptions from other plugins from being caught
+								options.setEnableUncaughtExceptionHandler(false);
+
+								options.setDsn(plugin.getSentryDsn());
+								options.setTracesSampleRate(0.0);
+
+								// Add plugin name and version to Sentry context
+								options.setBeforeSend((event, hint) -> {
+									event.setRelease(plugin.getVersion());
+									event.setServerName(null);
+									event.setDist(Platform.getPlatformVersion());
+									event.setTag("plugin_name", plugin.getName());
+									event.setTag("plugin_version", plugin.getVersion());
+									event.setTag("server_version", Platform.getPlatformVersion());
+									event.setTag("server_distro", Platform.getPlatformName());
+
+									if ("%%__BUILTBYBIT__%%".equals("true")) {
+										event.setTag("bbb_user_id", "%%__USER__%%");
+										event.setTag("bbb_user_name", "%%__USERNAME__%%");
+										event.setTag("bbb_user_name", "%%__USERNAME__%%");
+										event.setTag("bbb_nonce", "%%__NONCE__%%");
+									}
+
+									return event;
+								});
+							});
+
+							Sentry.captureException(finalThrowable);
+
+						} catch (final Throwable t) {
+
+							// Catch here to prevent a dead loop because platform wraps runnables
+							if (!t.getMessage().equals("zip file closed"))
+								t.printStackTrace();
+						}
+					});
+				}
 
 				reportedExceptions.add(key);
 			}
 		}
 
 		// Else, only log locally.
-		else {
-			final String systemInfo = "Running " + Platform.getPlatformName() + " " + Platform.getPlatformVersion() + " and Java " + System.getProperty("java.version");
+		else
+			saveErrorLocally(throwable, messages);
+	}
 
-			try {
-				final List<String> lines = new ArrayList<>();
-				final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + throwable.getClass().getSimpleName();
-				final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static void saveErrorLocally(Throwable throwable, final String... messages) {
+		final String systemInfo = "Running " + Platform.getPlatformName() + " " + Platform.getPlatformVersion() + " and Java " + System.getProperty("java.version");
 
-				// Write out header and server info
-				fill(lines,
-						"------------------------------------[ " + date.format(new Date()) + " ]-----------------------------------",
-						header,
-						systemInfo,
-						"Plugins: " + CommonCore.join(Platform.getPlugins()),
-						"----------------------------------------------------------------------------------------------");
+		try {
+			final List<String> lines = new ArrayList<>();
+			final String header = Platform.getPlugin().getName() + " " + Platform.getPlugin().getVersion() + " encountered " + throwable.getClass().getSimpleName();
+			final SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-				// Write additional data
-				if (messages != null && !String.join("", messages).isEmpty()) {
-					fill(lines, "\nMore Information: ");
-					fill(lines, messages);
-				}
+			// Write out header and server info
+			fill(lines,
+					"------------------------------------[ " + date.format(new Date()) + " ]-----------------------------------",
+					header,
+					systemInfo,
+					"Plugins: " + CommonCore.join(Platform.getPlugins()),
+					"----------------------------------------------------------------------------------------------");
 
-				// Write the stack trace
-				do {
-					// Write the error header
-					fill(lines, throwable == null ? "Unknown error" : throwable.getClass().getSimpleName() + " " + CommonCore.getOrDefault(throwable.getMessage(), "(Unknown cause)"));
-
-					int count = 0;
-
-					for (final StackTraceElement el : throwable.getStackTrace()) {
-						count++;
-
-						final String trace = el.toString();
-
-						if (trace.contains("sun.reflect"))
-							continue;
-
-						if (count > 6 && trace.startsWith("net.minecraft.server"))
-							break;
-
-						fill(lines, "\t at " + el.toString());
-					}
-				} while ((throwable = throwable.getCause()) != null);
-
-				fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
-
-				// Log to the console
-				CommonCore.log(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
-
-				// Finally, save the error file
-				FileUtil.write("error.log", lines);
-
-			} catch (final Throwable secondError) {
-
-				// Use system in case CommonCore#log threw the error
-				log(CommonCore.configLine());
-				log("Got error when saving another error!");
-				log("Original error that is not saved:");
-				log(CommonCore.configLine());
-				throwable.printStackTrace();
-
-				log(CommonCore.configLine());
-				log("New error:");
-				log(CommonCore.configLine());
-				secondError.printStackTrace();
-				log(CommonCore.configLine());
+			// Write additional data
+			if (messages != null && !String.join("", messages).isEmpty()) {
+				fill(lines, "\nMore Information: ");
+				fill(lines, messages);
 			}
+
+			// Write the stack trace
+			do {
+				// Write the error header
+				fill(lines, throwable == null ? "Unknown error" : throwable.getClass().getSimpleName() + " " + CommonCore.getOrDefault(throwable.getMessage(), "(Unknown cause)"));
+
+				int count = 0;
+
+				for (final StackTraceElement el : throwable.getStackTrace()) {
+					count++;
+
+					final String trace = el.toString();
+
+					if (trace.contains("sun.reflect"))
+						continue;
+
+					if (count > 6 && trace.startsWith("net.minecraft.server"))
+						break;
+
+					fill(lines, "\t at " + el.toString());
+				}
+			} while ((throwable = throwable.getCause()) != null);
+
+			fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
+
+			// Log to the console
+			CommonCore.log(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
+
+			// Finally, save the error file
+			FileUtil.write("error.log", lines);
+
+		} catch (final Throwable secondError) {
+
+			// Use system in case CommonCore#log threw the error
+			log(CommonCore.configLine());
+			log("Got error when saving another error!");
+			log("Original error that is not saved:");
+			log(CommonCore.configLine());
+			throwable.printStackTrace();
+
+			log(CommonCore.configLine());
+			log("New error:");
+			log(CommonCore.configLine());
+			secondError.printStackTrace();
+			log(CommonCore.configLine());
 		}
 	}
 
