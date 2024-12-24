@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -554,7 +555,7 @@ public final class SimpleComponent implements ConfigSerializable {
 			final ConditionalComponent subcomponent = component.subcomponents.get(i);
 			Component adventure = subcomponent.getComponent();
 
-			if (this.lastStyle != null) {
+			if (this.lastStyle != null && !component.toPlain().startsWith("<reset>")) {
 				if (this.lastStyle.color() != null && adventure.color() == null)
 					adventure = adventure.color(this.lastStyle.color());
 
@@ -1237,8 +1238,6 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * Parse the given message.
 		 */
 		private void parseMessage(final String message) {
-
-			// Reset parsing state
 			this.message = message;
 			this.lastColor = null;
 			this.lastDecorations.clear();
@@ -1256,28 +1255,56 @@ public final class SimpleComponent implements ConfigSerializable {
 					currentTag.setLength(0);
 
 				} else if (ch == '>' && insideTag) {
-					final String tag = "<" + currentTag.toString() + ">";
+					// Tag content without < and >
+					final String tagContent = currentTag.toString();
 
-					if (tag.equals("<reset>") || tag.equals("<r>")) {
+					if (tagContent.equalsIgnoreCase("reset") || tagContent.equalsIgnoreCase("r")) {
 						this.lastColor = null;
 						this.lastDecorations.clear();
 
-					} else if (CompChatColor.MINI_TO_COLOR.containsKey(tag))
-						this.lastColor = CompChatColor.MINI_TO_COLOR.get(tag);
+					} else if (tagContent.startsWith("/")) {
+						// It's a closing tag, remove the '/'
+						String closingTagName = tagContent.substring(1);
 
-					else if (CompChatColor.MINI_TO_DECORATION.containsKey(tag))
-						this.lastDecorations.add(CompChatColor.MINI_TO_DECORATION.get(tag));
+						closingTagName = closingTagName.toLowerCase(Locale.ROOT);
+						closingTagName = "<" + closingTagName + ">";
 
-					else if (RGB_PATTERN.matcher(tag).matches())
-						this.lastColor = TextColor.fromHexString(tag.substring(1, 8));
+						if (CompChatColor.MINI_TO_COLOR.containsKey(closingTagName) || RGB_PATTERN.matcher(closingTagName).matches())
+							// Closing a color tag
+							this.lastColor = null;
+
+						else if (CompChatColor.MINI_TO_DECORATION.containsKey(closingTagName))
+							// Closing a decoration tag
+							this.lastDecorations.remove(CompChatColor.MINI_TO_DECORATION.get(closingTagName));
+
+						// else ignore unknown closing tags
+
+					} else {
+						// Handle opening tags
+						String openingTagName = tagContent.toLowerCase(Locale.ROOT);
+						openingTagName = "<" + openingTagName + ">";
+
+						if (CompChatColor.MINI_TO_COLOR.containsKey(openingTagName))
+							this.lastColor = CompChatColor.MINI_TO_COLOR.get(openingTagName);
+
+						else if (CompChatColor.MINI_TO_DECORATION.containsKey(openingTagName))
+							this.lastDecorations.add(CompChatColor.MINI_TO_DECORATION.get(openingTagName));
+
+						else if (RGB_PATTERN.matcher(openingTagName).matches())
+							this.lastColor = TextColor.fromHexString(openingTagName.substring(1, openingTagName.length() - 1));
+
+						// else ignore unknown tags
+					}
 
 					insideTag = false;
 
 				} else if (insideTag)
+
 					// Building tag content
 					currentTag.append(ch);
 
 				else
+
 					// Normal text
 					cleanedMessage.append(ch);
 			}
@@ -1288,7 +1315,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		/**
 		 * Parse the last message style from the given message.
 		 *
-		 * @param message
+		 * @param message the message to parse
 		 * @return the last message style
 		 */
 		public static Style parseStyle(final String message) {
