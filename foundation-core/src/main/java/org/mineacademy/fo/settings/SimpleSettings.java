@@ -133,12 +133,8 @@ public class SimpleSettings extends YamlStaticConfig {
 	private static void init() {
 		setPathPrefix(null);
 
-		if (isSetDefault("Server_Name")) {
-			final String serverName = getString("Server_Name");
-			ValidCore.checkBoolean(serverName.length() < 64, "Server_Name cannot be longer than 64 characters!");
-
-			Platform.setCustomServerName(serverName.isEmpty() ? "server" : serverName);
-		}
+		if (isSetDefault("Server_Name"))
+			Platform.setCustomServerName(getString("Server_Name"));
 
 		if (isSetDefault("Command_Aliases"))
 			MAIN_COMMAND_ALIASES = getCommandList("Command_Aliases");
