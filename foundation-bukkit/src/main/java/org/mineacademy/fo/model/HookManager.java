@@ -2365,10 +2365,13 @@ class VaultHook {
 			return this.permissions.playerHas((World) null, player.getName(), permission);
 
 		} catch (final Throwable t) {
-			CommonCore.logTimed(900,
-					"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has '" + permission + "' permission, returning false. "
-							+ "This error only shows every 15 minutes. "
-							+ "Run /vault-info and check if your permissions plugin is running correctly.");
+
+			// Ignore non player entities and those disconnected
+			if (player.isOnline())
+				CommonCore.logTimed(60 * 60,
+						"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has '" + permission + "' permission, returning false. "
+								+ "This error only shows every 60 minutes. "
+								+ "Run /vault-info and check if your permissions plugin is running correctly.");
 
 			return false;
 		}
@@ -2379,10 +2382,13 @@ class VaultHook {
 			return this.permissions != null ? perm != null ? this.permissions.playerHas((String) null, player, perm) : true : null;
 
 		} catch (final Throwable t) {
-			CommonCore.logTimed(900,
-					"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has " + perm + " permission, returning false. "
-							+ "This error only shows every 15 minutes. "
-							+ "Run /vault-info and check if your permissions plugin is running correctly.");
+
+			// Ignore non player entities and those disconnected
+			if (player.isOnline())
+				CommonCore.logTimed(60 * 60,
+						"SEVERE: Unable to ask Vault plugin if " + player.getName() + " has " + perm + " permission, returning false. "
+								+ "This error only shows every 60 minutes. "
+								+ "Run /vault-info and check if your permissions plugin is running correctly.");
 
 			return false;
 		}
