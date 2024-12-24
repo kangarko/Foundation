@@ -27,6 +27,7 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
+import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.mineacademy.fo.model.CaseNumberFormat;
 import org.mineacademy.fo.model.ConfigSerializable;
@@ -407,7 +408,15 @@ public abstract class FileConfig extends ConfigSection {
 		if (typeOf.isInstance(object))
 			return typeOf.cast(object);
 
-		return SerializeUtilCore.deserialize(Language.YAML, typeOf, object);
+		try {
+			return SerializeUtilCore.deserialize(Language.YAML, typeOf, object);
+
+		} catch (final MissingEnumException ex) {
+			CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of type " + typeOf.getSimpleName() + " because the value '" + object + "' is invalid or not compatible with your server version. Returning null.");
+			ex.printStackTrace();
+
+			return null;
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -771,9 +780,17 @@ public abstract class FileConfig extends ConfigSection {
 	 * @return
 	 */
 	public final SimpleTime getTime(final String path, final SimpleTime def) {
-		final SimpleTime time = this.get(path, SimpleTime.class);
+		try {
+			final SimpleTime time = this.get(path, SimpleTime.class);
 
-		return time != null ? time : def;
+			return time != null ? time : def;
+
+		} catch (final IllegalArgumentException ex) {
+			CommonCore.log("[" + this.getFileName() + "] Wrong time value in '" + path + "'. Expected a human readable format like '20 seconds', got: " + this.getObject(path));
+			ex.printStackTrace();
+
+			return def;
+		}
 	}
 
 	/**
@@ -992,7 +1009,17 @@ public abstract class FileConfig extends ConfigSection {
 		// Load key-value pairs from config to our map
 		if (section != null)
 			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(section).entrySet()) {
-				final Key key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
+				final Key key;
+
+				try {
+					key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
+				} catch (final MissingEnumException ex) {
+					CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of type " + keyType.getSimpleName() + " because the key '" + keyType.getSimpleName() + "' is invalid or not compatible with your server version. Skipping key.");
+					ex.printStackTrace();
+
+					continue;
+				}
+
 				final List<Value> value = SerializeUtilCore.deserialize(Language.YAML, List.class, entry.getValue(), setDeserializeParameters);
 
 				// Ensure the pair values are valid for the given parameters
@@ -1066,7 +1093,12 @@ public abstract class FileConfig extends ConfigSection {
 					list.add(typeOf.cast(object));
 
 				else {
-					object = object != null ? SerializeUtilCore.deserialize(Language.YAML, typeOf, object, deserializeParameters) : null;
+					try {
+						object = object != null ? SerializeUtilCore.deserialize(Language.YAML, typeOf, object, deserializeParameters) : null;
+					} catch (final MissingEnumException ex) {
+						CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of List<" + typeOf.getSimpleName() + "> because one of the list elements should be of '" + typeOf.getSimpleName() + "' but is invalid or not compatible with your server version. Skipping it.");
+						ex.printStackTrace();
+					}
 
 					if (object != null)
 						list.add((T) object);
@@ -1177,8 +1209,27 @@ public abstract class FileConfig extends ConfigSection {
 
 		if (savedKeys != null)
 			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(savedKeys)) {
-				final Key key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
-				final Value value = SerializeUtilCore.deserialize(Language.YAML, valueType, entry.getValue(), valueDeserializeParams);
+				final Key key;
+
+				try {
+					key = SerializeUtilCore.deserialize(Language.YAML, keyType, entry.getKey());
+				} catch (final MissingEnumException ex) {
+					CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of type " + keyType.getSimpleName() + " because the key '" + keyType.getSimpleName() + "' is invalid or not compatible with your server version. Skipping key.");
+					ex.printStackTrace();
+
+					continue;
+				}
+
+				final Value value;
+
+				try {
+					value = SerializeUtilCore.deserialize(Language.YAML, valueType, entry.getValue(), valueDeserializeParams);
+				} catch (final MissingEnumException ex) {
+					CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of type " + keyType.getSimpleName() + " because the value '" + entry.getValue() + "' is invalid or not compatible with your server version. Skipping key.");
+					ex.printStackTrace();
+
+					continue;
+				}
 
 				this.checkAssignable(path, key, keyType);
 				this.checkAssignable(path, value, valueType);
