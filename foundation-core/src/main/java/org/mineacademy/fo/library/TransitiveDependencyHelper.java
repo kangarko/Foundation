@@ -184,11 +184,13 @@ final class TransitiveDependencyHelper {
 
 				transitiveLibraries.add(libraryBuilder.build());
 			}
-		} catch (ReflectiveOperationException ex) {
-			while (ex.getCause() != null)
-				ex = (ReflectiveOperationException) ex.getCause();
+		} catch (final ReflectiveOperationException ex) {
+			Throwable cause = ex;
 
-			CommonCore.sneaky(ex);
+			while (cause.getCause() != null)
+				cause = cause.getCause();
+
+			CommonCore.sneaky(cause);
 		}
 
 		return Collections.unmodifiableCollection(transitiveLibraries);
