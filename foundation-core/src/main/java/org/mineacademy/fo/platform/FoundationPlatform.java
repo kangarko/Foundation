@@ -182,7 +182,10 @@ public abstract class FoundationPlatform {
 	public abstract void sendPluginMessage(UUID senderUid, String channel, byte[] array);
 
 	public final void setCustomServerName(@NonNull final String serverName) {
-		this.customServerName = serverName;
+		ValidCore.checkBoolean(serverName.length() < 64, "Server name cannot be longer than 64 characters!");
+		ValidCore.checkBoolean(serverName.matches("[a-zA-Z0-9_-]+"), "Server name can only contains alphanumeric characters, '_' and '-'.");
+
+		this.customServerName = serverName.isEmpty() ? "server" : serverName;
 	}
 
 	public abstract FoundationPlayer toPlayer(Object sender);
