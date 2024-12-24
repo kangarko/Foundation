@@ -52,6 +52,12 @@ public final class Variables {
 	public static final Pattern BRACKET_REL_VARIABLE_PATTERN = Pattern.compile("[({)](rel_)([^}]+)[(})]");
 
 	/**
+	 * The patterns used for conversion of hex colors to mini.
+	 */
+	private static final Pattern HEX_WITH_AMP = Pattern.compile("(?<!<)&?#([a-fA-F0-9]{6})");
+	private static final Pattern HEX_LITERAL = Pattern.compile("(?<!<)#([a-fA-F0-9]{6})");
+
+	/**
 	 * Variables added to Foundation by you or other plugins
 	 *
 	 * This is used to dynamically replace the variable based on its content, like
@@ -75,6 +81,23 @@ public final class Variables {
 	@Getter(value = AccessLevel.PACKAGE)
 	@Setter(value = AccessLevel.PACKAGE)
 	private static boolean replaceScript = true;
+
+	/**
+	 * Set if we should support variables in variables? 
+	 * I.e. {luckperms_prefix} that returns itemsadder variable.
+	 * 
+	 * Effectivelly halfs the performance of d plugin.
+	 */
+	@Getter
+	@Setter
+	private static boolean doubleParse = false;
+
+	/**
+	 * Convert &#123456 and #123456 to <#123456>? Defaults to false.
+	 */
+	@Getter
+	@Setter
+	private static boolean convertHexToMini = false;
 
 	/**
 	 * The audience for whom we are replacing variables.
@@ -243,7 +266,19 @@ public final class Variables {
 	 * @param message
 	 * @return
 	 */
-	public String replaceLegacy(@NonNull final String message) {
+	public String replaceLegacy(@NonNull String message) {
+		message = this.replaceLegacy0(message);
+
+		if (doubleParse)
+			message = this.replaceLegacy0(message);
+
+		return message;
+	}
+
+	/*
+	 * Implementation for replacing variables.
+	 */
+	private String replaceLegacy0(@NonNull final String message) {
 		final Matcher matcher = BRACKET_VARIABLE_PATTERN.matcher(message);
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
@@ -264,6 +299,15 @@ public final class Variables {
 
 				if (value == null)
 					value = matcher.group();
+				else {
+					if (convertHexToMini) {
+						final Matcher ampMatcher = HEX_WITH_AMP.matcher(value);
+						value = ampMatcher.replaceAll("<#$1>");
+
+						final Matcher literalMatcher = HEX_LITERAL.matcher(value);
+						value = literalMatcher.replaceAll("<#$1>");
+					}
+				}
 
 				result.append(value);
 
@@ -297,10 +341,32 @@ public final class Variables {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent replaceComponent(@NonNull final SimpleComponent component) {
+	public SimpleComponent replaceComponent(@NonNull SimpleComponent component) {
+		component = this.replaceComponent0(component);
+
+		if (doubleParse)
+			component = this.replaceComponent0(component);
+
+		return component;
+	}
+
+	/*
+	 * Implementation for replacing variables.
+	 */
+	private SimpleComponent replaceComponent0(@NonNull final SimpleComponent component) {
 		return component.replaceMatch(BRACKET_VARIABLE_PATTERN, (result, input) -> {
 			final String variable = result.group(1);
-			final SimpleComponent value = this.replaceVariable(variable);
+			SimpleComponent value = this.replaceVariable(variable);
+
+			if (value != null && convertHexToMini) {
+				value = value.replaceMatch(HEX_WITH_AMP, (result2, builder) -> {
+					return Component.text("<#" + result2.group(1) + ">");
+				});
+
+				value = value.replaceMatch(HEX_LITERAL, (result2, builder) -> {
+					return Component.text("<#" + result2.group(1) + ">");
+				});
+			}
 
 			return value == null ? PlainTextComponentSerializer.plainText().deserialize(result.group()) : value.toAdventure(this.audience);
 		});
@@ -530,7 +596,19 @@ public final class Variables {
 	 * @param component
 	 * @return
 	 */
-	public SimpleComponent replaceMessageVariables(final SimpleComponent component) {
+	public SimpleComponent replaceMessageVariables(SimpleComponent component) {
+		component = this.replaceMessageVariables0(component);
+
+		if (doubleParse)
+			component = this.replaceMessageVariables0(component);
+
+		return component;
+	}
+
+	/*
+	 * Implementation for replacing [item] and the like variables.
+	 */
+	private SimpleComponent replaceMessageVariables0(final SimpleComponent component) {
 		return component.replaceMatch(Variables.MESSAGE_VARIABLE_PATTERN, (match, input) -> {
 			final String key = match.group(1);
 			final Variable variable = Variable.findVariableByKey(key, Variable.Type.MESSAGE);
