@@ -193,7 +193,7 @@ public abstract class CommonCore {
 		final int length = messages.length;
 
 		Platform.runTask(2, () -> {
-			audience.sendMessage(SimpleComponent.fromMiniNative("<dark_gray>" + CommonCore.chatLineSmooth()));
+			audience.sendMessage(SimpleComponent.fromMiniAmpersand("<dark_gray>" + CommonCore.chatLineSmooth()));
 
 			for (int i = 0; i < (length == 1 ? 2 : length == 2 || length == 3 || length == 4 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
@@ -204,7 +204,7 @@ public abstract class CommonCore {
 			for (int i = 0; i < (length == 1 || length == 2 ? 2 : length == 3 ? 1 : 0); i++)
 				audience.sendMessage(SimpleComponent.empty());
 
-			audience.sendMessage(SimpleComponent.fromMiniNative("<dark_gray>" + CommonCore.chatLineSmooth()));
+			audience.sendMessage(SimpleComponent.fromMiniAmpersand("<dark_gray>" + CommonCore.chatLineSmooth()));
 		});
 	}
 
