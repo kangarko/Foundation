@@ -872,13 +872,27 @@ public class SimpleDatabase {
 	 * @param timestamp The timestamp limit. Rows with 'Date' earlier than this will be deleted.
 	 */
 	protected final void deleteOlderThan(final Table table, @NonNull final Timestamp timestamp) {
+		this.deleteOlderThan(table, "Date", timestamp);
+	}
+
+	/**
+	 * Deletes rows from the given table where the given column is less than the provided timestamp.
+	 *
+	 * @param table The table from which to delete rows.
+	 * @param columnName The column name to compare the timestamp against.
+	 * @param timestamp The timestamp limit. Rows with 'Date' earlier than this will be deleted.
+	 */
+	protected final void deleteOlderThan(final Table table, final String columnName, @NonNull final Timestamp timestamp) {
 		synchronized (this.connection) {
-			final String sql = "DELETE FROM " + table.getName() + " WHERE Date < ?";
+			final String sql = "DELETE FROM " + table.getName() + " WHERE " + columnName + " < ?";
 
 			try (PreparedStatement preparedStatement = this.prepareStatement(sql)) {
-				preparedStatement.setTimestamp(1, timestamp);
+				if (this.isSQLite)
+					preparedStatement.setString(1, timestamp.toString());
+				else
+					preparedStatement.setTimestamp(1, timestamp);
 
-				Debugger.debug("mysql", "[delete older than] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+				Debugger.debug("mysql", "[delete older than] Running SQL: " + sql.replace("?", timestamp.toString()));
 
 				preparedStatement.executeUpdate();
 
