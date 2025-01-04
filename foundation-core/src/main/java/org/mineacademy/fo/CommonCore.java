@@ -31,8 +31,10 @@ import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.ConfigStringSerializable;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlayer;
+import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
+import org.mineacademy.fo.settings.SimpleSettings;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -432,12 +434,36 @@ public abstract class CommonCore {
 	 *
 	 * Use the {error} variable to replace it with the actual error message.
 	 *
+	 * This saves the error to sentry.io if {@link SimpleSettings#SENTRY} and {@link FoundationPlugin#getSentryDsn()} are set.
+	 *
 	 * @see #logFramed(String...)
 	 *
 	 * @param throwable
 	 * @param messages
 	 */
 	public static final void throwError(final Throwable throwable, final String... messages) {
+		throwError0(true, throwable, messages);
+	}
+
+	/**
+	 * Save the root error to error.log file and log the given message in a frame,
+	 * then throws the exception as unchecked.
+	 *
+	 * Use the {error} variable to replace it with the actual error message.
+	 *
+	 * @see #logFramed(String...)
+	 *
+	 * @param throwable
+	 * @param messages
+	 */
+	public static final void throwErrorUnreported(final Throwable throwable, final String... messages) {
+		throwError0(false, throwable, messages);
+	}
+
+	/*
+	 * Processes the error message
+	 */
+	private static final void throwError0(final boolean report, final Throwable throwable, final String... messages) {
 		if (throwable instanceof FoException)
 			throw (FoException) throwable;
 
@@ -456,7 +482,9 @@ public abstract class CommonCore {
 		if (messages != null)
 			logFramed(false, replaceErrorVariable(throwable, messages));
 
-		Debugger.saveError(throwable, messages);
+		if (report)
+			Debugger.saveError(throwable, messages);
+
 		Debugger.printStackTrace(throwable);
 
 		throw new HandledException(throwable);

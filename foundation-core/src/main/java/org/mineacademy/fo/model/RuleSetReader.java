@@ -164,10 +164,9 @@ public abstract class RuleSetReader<T extends Rule> {
 							ex.printStackTrace();
 
 						} catch (final Throwable t) {
-							CommonCore.throwError(t,
-									"Error parsing rule operator from line (" + (i + 1) + "): " + line,
-									"File: " + file,
-									"Error: {error}");
+							CommonCore.warning("Skipping invalid rule operator in " + file + " from line (" + (i + 1) + "): " + line);
+
+							t.printStackTrace();
 						}
 				}
 
