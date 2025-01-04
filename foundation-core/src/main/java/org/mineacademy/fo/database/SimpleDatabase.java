@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -186,11 +187,23 @@ public class SimpleDatabase {
 			}
 
 		} catch (final Exception ex) {
-			CommonCore.throwError(ex,
-					"Failed to connect to a database",
-					"URL: " + url,
-					"User: " + user,
-					"Error: " + ex.getMessage());
+			if (ex instanceof SQLNonTransientConnectionException && ex.getMessage().equals("Too many connections")) {
+				CommonCore.throwErrorUnreported(ex,
+						"Too many connections to the database!",
+						"URL: " + url,
+						"User: " + user,
+						"",
+						"If increasing `max_connections` in your database config (not in our plugin)",
+						"is not possible, run these two SQL queries and report results to us:",
+						"SHOW STATUS WHERE `variable_name` = 'Threads_connected';",
+						"and:",
+						"SHOW PROCESSLIST;");
+			} else
+				CommonCore.throwError(ex,
+						"Failed to connect to a database",
+						"URL: " + url,
+						"User: " + user,
+						"Error: " + ex.getMessage());
 		}
 	}
 
