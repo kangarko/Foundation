@@ -1156,6 +1156,9 @@ public abstract class FileConfig extends ConfigSection {
 		else if (ValidCore.isPrimitiveWrapper(obj))
 			obj = Arrays.asList(obj.toString());
 
+		else if (obj.getClass().isArray())
+			obj = Arrays.asList((Object[]) obj);
+
 		ValidCore.checkBoolean(obj instanceof Collection, "Expected a list at " + path + " in " + this.file + ", got " + obj.getClass().getSimpleName() + " instead!");
 		return new ArrayList<>((Collection<?>) obj);
 	}
