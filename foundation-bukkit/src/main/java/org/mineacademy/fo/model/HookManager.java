@@ -2624,7 +2624,8 @@ final class PlaceholderAPIHook {
 						"when replacing '" + params + "' for player " + player,
 						"",
 						"Alert their developers to fix it, as in most",
-						"cases this is not caused by " + Platform.getPlugin().getName() + ".",
+						"cases this is not caused by " + Platform.getPlugin().getName(),
+						"but by the placeholder extension itself.",
 						"Printing the error below and returning",
 						"empty value.");
 
