@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
@@ -32,6 +34,20 @@ public final class Debugger {
 	 * Used to prevent duplicated reporting to sentry
 	 */
 	private static final Set<String> reportedExceptions = new HashSet<>();
+
+	/**
+	 * Tags to be added to the Sentry error reporting.
+	 */
+	private static final List<Supplier<Map<String, String>>> sentryTags = new ArrayList<>();
+
+	/**
+	 * Add a tag to the Sentry error reporting.
+	 *
+	 * @param tag
+	 */
+	public static void addSentryTag(Supplier<Map<String, String>> tag) {
+		sentryTags.add(tag);
+	}
 
 	/**
 	 * Logs a message to the console if the section name is within {@link SimpleSettings#DEBUG_SECTIONS}
@@ -135,9 +151,10 @@ public final class Debugger {
 			final Throwable finalThrowable = throwable;
 
 			// Prevent duplicated reporting
-			final String key = Arrays.toString(throwable.getStackTrace());
+			final StackTraceElement[] elements = finalThrowable.getStackTrace();
+			final String key = Arrays.toString(elements);
 
-			if (!reportedExceptions.contains(key)) {
+			if (!reportedExceptions.contains(key) && elements.length > 0) {
 				boolean hasSentry = false;
 
 				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
@@ -175,12 +192,21 @@ public final class Debugger {
 									event.setTag("plugin_version", plugin.getVersion());
 									event.setTag("server_version", Platform.getPlatformVersion());
 									event.setTag("server_distro", Platform.getPlatformName());
+									event.setTag("server_player_count", String.valueOf(Platform.getOnlinePlayers().size()));
 
 									if ("%%__BUILTBYBIT__%%".equals("true")) {
 										event.setTag("bbb_user_id", "%%__USER__%%");
 										event.setTag("bbb_user_name", "%%__USERNAME__%%");
 										event.setTag("bbb_user_name", "%%__USERNAME__%%");
 										event.setTag("bbb_nonce", "%%__NONCE__%%");
+									}
+
+									for (final Supplier<Map<String, String>> supplier : sentryTags) {
+										final Map<String, String> map = supplier.get();
+
+										if (map != null)
+											for (final Map.Entry<String, String> entry : map.entrySet())
+												event.setTag(entry.getKey(), entry.getValue());
 									}
 
 									return event;
