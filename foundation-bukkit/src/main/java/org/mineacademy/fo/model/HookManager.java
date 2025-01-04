@@ -3936,10 +3936,21 @@ class LiteBansHook {
 				return false;
 			}
 
-			this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
-			this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
+			// This will always return false that the player is not muted but there is no solution unless we'd work with futures
+			if (Platform.isAsync())
+				Platform.runTask(() -> {
+					this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
+					this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
 
-			this.downloadData(null);
+					this.downloadData(null);
+				});
+
+			else {
+				this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
+				this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
+
+				this.downloadData(null);
+			}
 
 			// LiteBans throws an artificial exception when run on main thread on Bukkit, so we store all data in memory
 			// for maximum performance, cached every 5 seconds, see
