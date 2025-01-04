@@ -33,6 +33,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
@@ -2596,7 +2597,34 @@ final class PlaceholderAPIHook {
 	}
 
 	private String getValue(final Object placeholderExpansion, final OfflinePlayer player, final String params) {
-		return ((PlaceholderExpansion) placeholderExpansion).onRequest(player, params);
+		try {
+			return ((PlaceholderExpansion) placeholderExpansion).onRequest(player, params);
+
+		} catch (final Throwable throwable) {
+			final String message = throwable.getMessage();
+
+			if (throwable instanceof NullPointerException && message != null && message.contains("Cannot invoke") && message.contains("OfflinePlayer")) {
+				Common.logFramed(
+						"Faulty extension " + placeholderExpansion.getClass(),
+						"failed to replace '" + params + "'",
+						"",
+						"Alert their developers to account for null",
+						"offline player as specified in PlaceholderAPI",
+						"standards. Printing the error below and",
+						"returning empty value.");
+			} else
+				Common.logFramed(
+						"Error in extension " + placeholderExpansion.getClass(),
+						"when replacing '" + params + "' for player " + player,
+						"",
+						"Alert their developers to fix it, as in most",
+						"cases this is not caused by " + Platform.getPlugin().getName() + ".",
+						"Printing the error below and returning",
+						"empty value.");
+
+			throwable.printStackTrace();
+			return "";
+		}
 	}
 
 	String getValue(final OfflinePlayer player, final String variable) {
@@ -2780,12 +2808,8 @@ final class PlaceholderAPIHook {
 		 * is provided.
 		 */
 		@Override
-		public String onRequest(final OfflinePlayer offlinePlayer, @NonNull String identifier) {
-			final Player player = offlinePlayer != null ? offlinePlayer.getPlayer() : null;
-
-			if (player == null || !player.isOnline())
-				return null;
-
+		public String onRequest(@Nullable final OfflinePlayer offlinePlayer, @NonNull String identifier) {
+			final FoundationPlayer audience = offlinePlayer != null && offlinePlayer.isOnline() ? Platform.toPlayer(offlinePlayer.getPlayer()) : null;
 			final boolean frontSpace = identifier.startsWith("+");
 			final boolean backSpace = identifier.endsWith("+");
 
@@ -2794,7 +2818,7 @@ final class PlaceholderAPIHook {
 
 			try {
 				for (final SimpleExpansion expansion : Variables.getExpansions()) {
-					final String value = expansion.replacePlaceholders(Platform.toPlayer(player), identifier);
+					final String value = expansion.replacePlaceholders(audience, identifier);
 
 					if (value != null) {
 						final boolean emptyColorless = CompChatColor.stripColorCodes(value).isEmpty();
@@ -2807,7 +2831,7 @@ final class PlaceholderAPIHook {
 				CommonCore.error(ex,
 						"Error replacing PlaceholderAPI variables",
 						"Identifier: " + identifier,
-						"Player: " + player.getName());
+						"Player: " + offlinePlayer);
 			}
 
 			return null;
