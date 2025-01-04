@@ -16,6 +16,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.InvalidWorldException;
+import org.mineacademy.fo.exception.YamlSyntaxError;
 
 import lombok.NonNull;
 
@@ -269,7 +270,7 @@ public final class ConfigItems<T extends YamlConfig> {
 
 		// Create a new instance of our item
 		T item = null;
-		boolean knownError = false;
+		boolean errorHandled = false;
 
 		try {
 
@@ -308,18 +309,26 @@ public final class ConfigItems<T extends YamlConfig> {
 						item = constructor.newInstance();
 
 				} catch (final Throwable t) {
-					Throwable root = t;
+					if (t instanceof YamlSyntaxError) {
+						CommonCore.log(t.getMessage());
 
-					while (root.getCause() != null)
-						root = root.getCause();
+						t.printStackTrace();
+						errorHandled = true;
 
-					if (root instanceof InvalidWorldException) {
-						CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
+					} else {
+						Throwable root = t;
 
-						knownError = true;
+						while (root.getCause() != null)
+							root = root.getCause();
 
-					} else
-						CommonCore.throwError(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor);
+						if (root instanceof InvalidWorldException) {
+							CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
+
+							errorHandled = true;
+
+						} else
+							CommonCore.throwError(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor);
+					}
 				}
 			}
 
@@ -340,7 +349,7 @@ public final class ConfigItems<T extends YamlConfig> {
 			CommonCore.throwError(t, "Failed to load" + name + (this.singleFile ? "" : " from " + this.folder));
 		}
 
-		if (!knownError)
+		if (!errorHandled)
 			ValidCore.checkNotNull(item, "Failed to initialiaze " + name + " from " + this.folder);
 
 		return item;
