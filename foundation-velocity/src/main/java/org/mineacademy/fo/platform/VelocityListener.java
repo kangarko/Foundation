@@ -175,6 +175,15 @@ public final class VelocityListener {
 				out.writeUTF("GetServer");
 				out.writeUTF(connection.getServerInfo().getName());
 
+			} else if (subChannel.equals("GetPlayerServer")) {
+				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
+					player.getCurrentServer().ifPresent(server -> {
+						out.writeUTF("GetPlayerServer");
+						out.writeUTF(player.getUsername());
+						out.writeUTF(server.getServerInfo().getName());
+					});
+				});
+
 			} else if (subChannel.equals("UUID")) {
 				out.writeUTF("UUID");
 				out.writeUTF(UuidUtils.toUndashed(connection.getPlayer().getUniqueId()));
