@@ -12,6 +12,8 @@ import java.util.Set;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.exception.HandledException;
+import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.mineacademy.fo.model.CaseNumberFormat;
 import org.mineacademy.fo.model.IsInList;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -67,8 +69,13 @@ public abstract class YamlStaticConfig {
 			TEMPORARY_INSTANCE.save();
 			TEMPORARY_INSTANCE = null;
 
-		} catch (final Throwable t) {
-			CommonCore.throwError(t, "Failed to load static settings " + clazz);
+		} catch (final Throwable throwable) {
+			if (throwable instanceof YamlSyntaxError) {
+				throwable.printStackTrace();
+
+				throw new HandledException(throwable);
+			} else
+				CommonCore.throwError(throwable, "Failed to load static settings " + clazz);
 		}
 	}
 
