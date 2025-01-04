@@ -187,7 +187,9 @@ public class SimpleDatabase {
 			}
 
 		} catch (final Exception ex) {
-			if (ex instanceof SQLNonTransientConnectionException && ex.getMessage().equals("Too many connections")) {
+			final String message = CommonCore.getOrEmpty(ex.getMessage());
+
+			if (ex instanceof SQLNonTransientConnectionException && message.equals("Too many connections")) {
 				CommonCore.throwErrorUnreported(ex,
 						"Too many connections to the database!",
 						"URL: " + url,
@@ -198,13 +200,24 @@ public class SimpleDatabase {
 						"SHOW STATUS WHERE `variable_name` = 'Threads_connected';",
 						"and:",
 						"SHOW PROCESSLIST;");
-			} else
+			}
+
+			// Mostly user-caused errors, do not report to sentry
+			else if (message.contains("Access denied for user") || message.contains("Could not create connection to database server"))
+				CommonCore.throwErrorUnreported(ex,
+						"Failed to connect to a database",
+						"URL: " + url,
+						"User: " + user,
+						"Error: " + ex.getMessage());
+
+			else
 				CommonCore.throwError(ex,
 						"Failed to connect to a database",
 						"URL: " + url,
 						"User: " + user,
 						"Error: " + ex.getMessage());
 		}
+
 	}
 
 	/**

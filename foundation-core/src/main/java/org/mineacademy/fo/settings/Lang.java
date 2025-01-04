@@ -24,6 +24,7 @@ import org.mineacademy.fo.platform.Platform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -488,6 +489,7 @@ public final class Lang {
 
 					if (content != null)
 						putToDictionary(dictionary, content);
+
 					else
 						CommonCore.warning("No such localization: " + SimpleSettings.LOCALE + ", reverting to the default one.");
 				}
@@ -497,11 +499,23 @@ public final class Lang {
 			{
 				// Start with base locale as overlay
 				content = FileUtil.readLinesFromFile("lang/" + englishLangTag + ".json");
-				putToDictionary(dictionary, content);
+
+				if (content != null)
+					try {
+						putToDictionary(dictionary, content);
+					} catch (final JsonSyntaxException ex) {
+						CommonCore.warning("Invalid syntax in localization file " + englishLangTag + ". Use services like https://jsonformatter.org/ to correct it. Error: " + ex.getMessage());
+					}
 
 				if (!isEnglish) {
 					content = FileUtil.readLinesFromFile("lang/" + SimpleSettings.LOCALE + ".json");
-					putToDictionary(dictionary, content);
+
+					if (content != null)
+						try {
+							putToDictionary(dictionary, content);
+						} catch (final JsonSyntaxException ex) {
+							CommonCore.warning("Invalid syntax in localization file " + SimpleSettings.LOCALE + ". Use services like https://jsonformatter.org/ to correct it. Error: " + ex.getMessage());
+						}
 				}
 			}
 

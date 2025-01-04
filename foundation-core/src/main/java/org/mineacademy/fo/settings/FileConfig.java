@@ -101,12 +101,12 @@ public abstract class FileConfig extends ConfigSection {
 			final List<String> defaultContent = FileUtil.readLinesFromInternalPath(from);
 			ValidCore.checkNotNull(defaultContent, "Inbuilt " + from + " not found! Did you reload?");
 
-			// Load main
-			this.loadFromFile(FileUtil.extract(defaultContent, to));
-
-			// Load defaults
+			// Load defaults first so they can be used when save is invoked
 			this.defaults = new YamlConfig();
 			this.defaults.loadFromString(String.join("\n", defaultContent));
+
+			// Load main
+			this.loadFromFile(FileUtil.extract(defaultContent, to));
 
 		} else
 			this.loadFromFile(FileUtil.createIfNotExists(to));
@@ -621,7 +621,7 @@ public abstract class FileConfig extends ConfigSection {
 		else if (object instanceof String)
 			return (String) object;
 
-		throw new FoException("Excepted String at '" + path + "' in, got (" + object.getClass() + "): " + object);
+		throw new FoException("Excepted String at '" + path + "' in, got (" + object.getClass() + "): " + object + " - If you used {} brackets or colors in it, put quotes '' around the key!", false);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -780,8 +780,10 @@ public abstract class FileConfig extends ConfigSection {
 	 * @return
 	 */
 	public final SimpleTime getTime(final String path, final SimpleTime def) {
+		final String value = this.getString(path);
+
 		try {
-			final SimpleTime time = this.get(path, SimpleTime.class);
+			final SimpleTime time = value != null ? SimpleTime.fromString(value) : null;
 
 			return time != null ? time : def;
 
@@ -826,10 +828,20 @@ public abstract class FileConfig extends ConfigSection {
 
 		if (object != null) {
 			final String raw = object.toString();
-			ValidCore.checkBoolean(raw.endsWith("%"), "Your " + path + " key in " + this.getPathPrefix() + "." + path + " must end with %! Got: " + raw);
+
+			if (!raw.endsWith("%")) {
+				CommonCore.warning("Your " + path + " key in " + this.getPathPrefix() + "." + path + " must end with %! Got: " + raw);
+
+				return def;
+			}
 
 			final String rawNumber = raw.substring(0, raw.length() - 1);
-			ValidCore.checkInteger(rawNumber, "Your " + path + " key in " + this.getPathPrefix() + "." + path + " must be a whole number! Got: " + raw);
+
+			if (!ValidCore.isInteger(rawNumber)) {
+				CommonCore.warning("Your " + path + " key in " + this.getPathPrefix() + "." + path + " must be a whole number! Got: " + raw);
+
+				return def;
+			}
 
 			return Integer.parseInt(rawNumber) / 100D;
 		}
