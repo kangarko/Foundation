@@ -22,7 +22,6 @@ import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.command.SimpleCommandGroup;
-import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.ConfigItems;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -112,22 +111,7 @@ public final class DiskRegion extends YamlConfig {
 			return;
 		}
 
-		final SerializedMap map = SerializedMap.fromObject(this);
-
-		try {
-			this.border = VisualizedRegion.deserialize(map);
-
-		} catch (Throwable ex) {
-
-			while (ex.getCause() != null)
-				ex = ex.getCause();
-
-			if (ex instanceof InvalidWorldException)
-				CommonCore.log("Skipping region with invalid world. Region data: " + map);
-
-			else
-				CommonCore.error(ex, "Failed to load region from map: " + map);
-		}
+		this.border = VisualizedRegion.deserialize(SerializedMap.fromObject(this));
 	}
 
 	@Override
