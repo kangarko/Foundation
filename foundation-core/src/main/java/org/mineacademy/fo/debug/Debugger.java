@@ -147,7 +147,7 @@ public final class Debugger {
 			}
 
 		// Do not report errors from outdated plugin versions
-		if (sentry && plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY) {
+		if (sentry && plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY && !(throwable instanceof OutOfMemoryError)) {
 			final Throwable finalThrowable = throwable;
 
 			// Prevent duplicated reporting
