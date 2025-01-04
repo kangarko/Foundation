@@ -485,9 +485,11 @@ public final class Lang {
 					ValidCore.checkNotNull(content, "When using non-English locale (" + SimpleSettings.LOCALE + "), the base overlay en_US.json must exists in " + Platform.getPlugin().getName());
 
 					content = FileUtil.readLinesFromInternalPath("lang/" + SimpleSettings.LOCALE + ".json");
-					ValidCore.checkNotNull(content, "No such localization: " + SimpleSettings.LOCALE);
 
-					putToDictionary(dictionary, content);
+					if (content != null)
+						putToDictionary(dictionary, content);
+					else
+						CommonCore.warning("No such localization: " + SimpleSettings.LOCALE + ", reverting to the default one.");
 				}
 			}
 
