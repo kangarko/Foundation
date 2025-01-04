@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -30,6 +31,7 @@ import org.snakeyaml.engine.v2.api.lowlevel.Compose;
 import org.snakeyaml.engine.v2.comments.CommentLine;
 import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.FlowStyle;
+import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.constructor.ConstructScalar;
 import org.snakeyaml.engine.v2.constructor.StandardConstructor;
 import org.snakeyaml.engine.v2.exceptions.ParserException;
@@ -634,6 +636,36 @@ public class YamlConfig extends FileConfig {
 
 			// We use our own custom enum serializer
 			this.parentClassRepresenters.remove(Enum.class);
+		}
+
+		@Override
+		protected Node representScalar(Tag tag, String value, ScalarStyle style) {
+
+			// If we have a multiline string, we want to use the literal style to save as |- instead of \n
+			if (value.contains("\n")) {
+
+				// Trim each line to avoid issues with trailing whitespace
+				final String sanitizedValue = value.replaceAll(" +\n", "\n");
+
+				return new ScalarNode(tag, sanitizedValue, ScalarStyle.LITERAL);
+			}
+
+			if (value.contains("'") && !value.contains("\""))
+				return new ScalarNode(tag, value, ScalarStyle.DOUBLE_QUOTED);
+
+			if (value.contains("\"") && !value.contains("'"))
+				return new ScalarNode(tag, value, ScalarStyle.SINGLE_QUOTED);
+
+			return super.representScalar(tag, value, style);
+		}
+
+		@Override
+		protected NodeTuple representMappingEntry(Entry<?, ?> entry) {
+			final Object key = entry.getKey();
+			final Object value = entry.getValue();
+
+			// Ensure the values selectively quoted
+			return new NodeTuple(this.represent(key), (value instanceof String) ? super.representScalar(Tag.STR, (String) value, ScalarStyle.DOUBLE_QUOTED) : this.represent(value));
 		}
 	}
 

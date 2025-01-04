@@ -112,18 +112,6 @@ public final class Variable extends YamlConfig {
 	private Variable(final String file) {
 		final String prototypePath = PROTOTYPE_PATH.apply(file);
 
-		this.setHeader(
-				CommonCore.configLine(),
-				Platform.getPlugin().getName() + " supports dynamic, high performance JavaScript variables! They will",
-				"automatically be used when calling Variables#replace for your messages.",
-				"",
-				"Because variables return a JavaScript value, you can sneak in code to play sounds or spawn",
-				"monsters directly in your variable instead of it just displaying text!",
-				"",
-				"For example of how variables can be used, see our plugin ChatControl's wikipedia article:",
-				"https://github.com/kangarko/ChatControl-Red/wiki/JavaScript-Variables",
-				CommonCore.configLine());
-
 		this.loadAndExtract(prototypePath, "variables/" + file + ".yml");
 	}
 
@@ -143,33 +131,24 @@ public final class Variable extends YamlConfig {
 		this.senderPermission = this.getString("Sender_Permission");
 
 		// Correct common mistakes
-		if (this.type == null) {
+		if (this.type == null)
 			this.type = Type.FORMAT;
-
-			this.save();
-		}
 
 		// Check for known mistakes
 		if (this.key == null || this.key.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Key' as variable name in " + this.getFile());
+			throw new NullPointerException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Key' as variable name in " + this.getFile());
 
 		if (this.value == null)
-			throw new NullPointerException("(DO NOT REPORT, PLEASE FIX YOURSELF) Please set 'Value' key as what the variable shows in " + this.getFile() + " (this can be a JavaScript code)");
+			throw new NullPointerException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Value' key as what the variable shows in " + this.getFile() + " (this must be a valid JavaScript code, if unsure put a string there and surround with '' quotes)");
 
 		final char startChar = this.key.charAt(0);
 		final char endChar = this.key.charAt(this.key.length() - 1);
 
-		if (startChar == '{' || startChar == '[') {
+		if (startChar == '{' || startChar == '[')
 			this.key = this.key.substring(1);
 
-			this.save();
-		}
-
-		if (endChar == '}' || endChar == ']') {
+		if (endChar == '}' || endChar == ']')
 			this.key = this.key.substring(0, this.key.length() - 1);
-
-			this.save();
-		}
 
 		if (this.type == Type.MESSAGE) {
 			this.hoverText = this.getStringList("Hover");
@@ -179,9 +158,15 @@ public final class Variable extends YamlConfig {
 			this.runCommand = this.getString("Run_Command");
 		}
 
+		if (this.isSet("Receiver_Condition") || this.isSet("Receiver_Permission"))
+			CommonCore.warning("The 'Receiver_Condition' and 'Receiver_Permission' keys are no longer supported in variables and will be removed from " + this.getFile());
+
 		// Test for key validity
 		if (!VALID_KEY_PATTERN.matcher(this.key).matches())
-			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there!");
+			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there! Got: '" + this.key + "'");
+
+		// Always save to update keys
+		this.save();
 	}
 
 	@Override
@@ -190,12 +175,14 @@ public final class Variable extends YamlConfig {
 		this.set("Key", this.key);
 		this.set("Value", this.value);
 		this.set("Sender_Condition", this.senderCondition);
+		this.set("Sender_Permission", this.senderPermission);
 		this.set("Hover", this.hoverText);
 		this.set("Hover_Item", this.hoverItem);
 		this.set("Open_Url", this.openUrl);
 		this.set("Suggest_Command", this.suggestCommand);
 		this.set("Run_Command", this.runCommand);
-		this.set("Sender_Permission", this.senderPermission);
+		this.set("Receiver_Condition", null);
+		this.set("Receiver_Permission", null);
 	}
 
 	// ----------------------------------------------------------------------------------
