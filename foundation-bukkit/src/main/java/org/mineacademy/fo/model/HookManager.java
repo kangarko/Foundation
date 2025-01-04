@@ -169,7 +169,13 @@ public final class HookManager {
 			bossHook = new BossHook();
 
 		if (Platform.isPluginInstalled("Citizens"))
-			citizensHook = new CitizensHook();
+			try {
+				Class.forName("net.citizensnpcs.api.ai.Goal");
+
+				citizensHook = new CitizensHook();
+			} catch (final ClassNotFoundException ex) {
+				CommonCore.warning(BukkitPlugin.getInstance().getName() + " failed to hook into Citizens because the plugin is did not start properly, or our hook is outdated. Check your console for earlier errors.");
+			}
 
 		if (Platform.isPluginInstalled("CMI"))
 			CMIHook = new CMIHook();
