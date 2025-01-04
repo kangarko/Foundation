@@ -74,7 +74,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/**
 	 * Matches legacy ampersand and section color codes.
 	 */
-	private static final Pattern LEGACY_COLOR_MATCH = Pattern.compile("(§|&)([0-9a-fk-or])");
+	private static final Pattern LEGACY_COLOR_MATCH = Pattern.compile("(&|" + COLOR_CHAR + ")([0-9a-fk-or])");
 
 	/**
 	 * Represents colors we can use for MC before 1.16
