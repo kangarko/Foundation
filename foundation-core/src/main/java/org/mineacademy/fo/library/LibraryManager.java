@@ -327,7 +327,6 @@ public abstract class LibraryManager {
 	 * provided inputStream
 	 * @throws IOException If any IO errors occur
 	 */
-
 	protected String getURLFromMetadata(final InputStream inputStream, final Library library) throws IOException {
 		requireNonNull(inputStream, "inputStream");
 		requireNonNull(library, "library");
@@ -474,7 +473,6 @@ public abstract class LibraryManager {
 	 * @see #loadLibrary(Library)
 	 * @see #relocate(Path, String, Collection)
 	 */
-
 	public Path downloadLibrary(final Library library) {
 		Path file = this.saveDirectory.resolve(requireNonNull(library, "library").getPath());
 
@@ -562,7 +560,6 @@ public abstract class LibraryManager {
 	 * @param relocations relocations to apply
 	 * @return the relocated file
 	 */
-
 	public Path relocate(final Path in, final String out, final Collection<Relocation> relocations) {
 		return this.relocate(in, this.saveDirectory.resolve(out), relocations);
 	}
@@ -576,7 +573,6 @@ public abstract class LibraryManager {
 	 * @param relocations relocations to apply
 	 * @return the relocated file
 	 */
-
 	public Path relocate(final Path in, final Path file, final Collection<Relocation> relocations) {
 		requireNonNull(in, "in");
 		requireNonNull(file, "file");
