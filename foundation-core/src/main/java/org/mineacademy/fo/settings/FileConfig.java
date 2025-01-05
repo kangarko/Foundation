@@ -621,7 +621,7 @@ public abstract class FileConfig extends ConfigSection {
 		else if (object instanceof String)
 			return (String) object;
 
-		throw new FoException("Excepted String at '" + path + "' in, got (" + object.getClass() + "): " + object + " - If you used {} brackets or colors in it, put quotes '' around the key!", false);
+		throw new FoException("Excepted String at '" + this.buildPathPrefix(path) + "' in, got (" + object.getClass() + "): " + object + " - If you used {} brackets or colors in it, put quotes '' around the key!", false);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1096,7 +1096,7 @@ public abstract class FileConfig extends ConfigSection {
 		final List<Object> objects = this.getList(path);
 
 		if (typeOf == Map.class && deserializeParameters != null & deserializeParameters.length > 0 && deserializeParameters[0] != String.class)
-			throw new FoException("getList('" + path + "') that returns Map must have String.class as key, not " + deserializeParameters[0]);
+			throw new FoException("getList('" + this.buildPathPrefix(path) + "') that returns Map must have String.class as key, not " + deserializeParameters[0]);
 
 		if (objects != null)
 			for (Object object : objects) {
@@ -1398,7 +1398,7 @@ public abstract class FileConfig extends ConfigSection {
 			if (ConfigSerializable.class.isAssignableFrom(type) && object instanceof ConfigSection)
 				return;
 
-			throw new FoException("Malformed configuration! Key '" + path + "' in " + this.getFile() + " must be " + type.getSimpleName() + " but got " + object.getClass().getSimpleName() + ": '" + object + "'");
+			throw new FoException("Malformed configuration! Key '" + this.buildPathPrefix(path) + "' in " + this.getFile() + " must be " + type.getSimpleName() + " but got " + object.getClass().getSimpleName() + ": '" + object + "'");
 		}
 	}
 
