@@ -137,7 +137,7 @@ public class SimpleDatabase {
 				this.isSQLite = true;
 			}
 
-			else if (url.startsWith("jdbc:mysql://")) {
+			else if (url.startsWith("jdbc:mysql://") || url.startsWith("jdbc:mariadb://")) {
 				try {
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.1.0");
 
@@ -151,7 +151,7 @@ public class SimpleDatabase {
 				}
 
 			} else
-				throw new FoException("Unknown database driver '" + url + "'. Only SQLite and MySQL (which supports MariaDB automatically) are supported at this time.");
+				throw new FoException("Unknown database driver '" + url + "'. Only SQLite, MySQL and MariaDB (which supports MariaDB automatically) are supported at this time.");
 
 			this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
 
