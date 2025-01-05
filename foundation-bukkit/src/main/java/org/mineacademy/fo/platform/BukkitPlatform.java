@@ -702,9 +702,9 @@ final class BukkitPlatform extends FoundationPlatform {
 	@Override
 	public void sendPluginMessage(final UUID senderUid, final String channel, final byte[] array) {
 		final Player player = Remain.getPlayerByUUID(senderUid);
-		ValidCore.checkNotNull(player, "Unable to find player by UUID: " + senderUid);
 
-		player.sendPluginMessage(BukkitPlugin.getInstance(), channel, array);
+		if (player != null && player.isOnline())
+			player.sendPluginMessage(BukkitPlugin.getInstance(), channel, array);
 	}
 
 	@Override
