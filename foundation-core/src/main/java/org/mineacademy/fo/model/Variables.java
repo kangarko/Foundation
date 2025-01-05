@@ -300,14 +300,18 @@ public final class Variables {
 
 				if (value == null)
 					value = matcher.group();
+
 				else {
-					if (convertHexToMini) {
+
+					// Probably there is a better way to do this...
+					if (convertHexToMini && !variable.equals("message")) {
 						final Matcher ampMatcher = HEX_WITH_AMP_PATTERN.matcher(value);
 						value = ampMatcher.replaceAll("<#$1>");
 
 						final Matcher literalMatcher = HEX_LITERAL_PATTERN.matcher(value);
 						value = literalMatcher.replaceAll("<#$1>");
 
+						// Translate super long §x string to hex
 						{
 							final Matcher md5Matcher = MD5_PATTERN.matcher(value);
 							final StringBuffer buffer = new StringBuffer();
