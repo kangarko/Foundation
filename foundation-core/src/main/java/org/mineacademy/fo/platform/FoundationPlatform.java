@@ -182,13 +182,17 @@ public abstract class FoundationPlatform {
 	public abstract void sendPluginMessage(UUID senderUid, String channel, byte[] array);
 
 	public final void setCustomServerName(@NonNull final String serverName) {
-		if (serverName.length() > 64)
-			throw new IllegalArgumentException("Server name cannot be longer than 64 characters!");
+		if (!serverName.isEmpty()) {
+			if (serverName.length() > 64)
+				throw new IllegalArgumentException("Server name cannot be longer than 64 characters! Got: " + serverName);
 
-		if (!serverName.matches("[a-zA-Z0-9_-]+"))
-			throw new IllegalArgumentException("Server name can only contains alphanumeric characters, '_' and '-'.");
+			if (!serverName.matches("[a-zA-Z0-9_-]+"))
+				throw new IllegalArgumentException("Server name can only contains alphanumeric characters, '_' and '-'. Got: " + serverName);
 
-		this.customServerName = serverName.isEmpty() ? "server" : serverName;
+			this.customServerName = serverName;
+
+		} else
+			this.customServerName = "server";
 	}
 
 	public abstract FoundationPlayer toPlayer(Object sender);
