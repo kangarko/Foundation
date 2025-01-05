@@ -44,7 +44,7 @@ public final class Variables {
 	/**
 	 * The pattern to find {syntax} variables.
 	 */
-	public static final Pattern BRACKET_VARIABLE_PATTERN = Pattern.compile("[{]([^{}]+)[}]");
+	public static final Pattern BRACKET_VARIABLE_PATTERN = Pattern.compile("\\{((?:[^{}]+|(?:\\{[^{}]*\\}))*)\\}");
 
 	/**
 	 * The pattern to find simple {syntax} placeholders starting with {rel_} (used for PlaceholderAPI)
@@ -54,8 +54,9 @@ public final class Variables {
 	/**
 	 * The patterns used for conversion of hex colors to mini.
 	 */
-	private static final Pattern HEX_WITH_AMP = Pattern.compile("(?<!<)&?#([a-fA-F0-9]{6})");
-	private static final Pattern HEX_LITERAL = Pattern.compile("(?<!<)#([a-fA-F0-9]{6})");
+	private static final Pattern HEX_WITH_AMP_PATTERN = Pattern.compile("(?<!<)&?#([a-fA-F0-9]{6})");
+	private static final Pattern HEX_LITERAL_PATTERN = Pattern.compile("(?<!<)#([a-fA-F0-9]{6})");
+	private static final Pattern MD5_PATTERN = Pattern.compile("[" + CompChatColor.COLOR_CHAR + "]x([" + CompChatColor.COLOR_CHAR + "][0-9a-fA-F]){6}");
 
 	/**
 	 * Variables added to Foundation by you or other plugins
@@ -83,9 +84,9 @@ public final class Variables {
 	private static boolean replaceScript = true;
 
 	/**
-	 * Set if we should support variables in variables? 
+	 * Set if we should support variables in variables?
 	 * I.e. {luckperms_prefix} that returns itemsadder variable.
-	 * 
+	 *
 	 * Effectivelly halfs the performance of d plugin.
 	 */
 	@Getter
@@ -301,11 +302,26 @@ public final class Variables {
 					value = matcher.group();
 				else {
 					if (convertHexToMini) {
-						final Matcher ampMatcher = HEX_WITH_AMP.matcher(value);
+						final Matcher ampMatcher = HEX_WITH_AMP_PATTERN.matcher(value);
 						value = ampMatcher.replaceAll("<#$1>");
 
-						final Matcher literalMatcher = HEX_LITERAL.matcher(value);
+						final Matcher literalMatcher = HEX_LITERAL_PATTERN.matcher(value);
 						value = literalMatcher.replaceAll("<#$1>");
+
+						{
+							final Matcher md5Matcher = MD5_PATTERN.matcher(value);
+							final StringBuffer buffer = new StringBuffer();
+
+							while (md5Matcher.find()) {
+								final String legacyFormat = md5Matcher.group();
+								final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "").substring(1);
+
+								md5Matcher.appendReplacement(buffer, "<#" + hexColor + ">");
+							}
+
+							md5Matcher.appendTail(buffer);
+							value = buffer.toString();
+						}
 					}
 				}
 
@@ -359,12 +375,19 @@ public final class Variables {
 			SimpleComponent value = this.replaceVariable(variable);
 
 			if (value != null && convertHexToMini) {
-				value = value.replaceMatch(HEX_WITH_AMP, (result2, builder) -> {
+				value = value.replaceMatch(HEX_WITH_AMP_PATTERN, (result2, builder) -> {
 					return Component.text("<#" + result2.group(1) + ">");
 				});
 
-				value = value.replaceMatch(HEX_LITERAL, (result2, builder) -> {
+				value = value.replaceMatch(HEX_LITERAL_PATTERN, (result2, builder) -> {
 					return Component.text("<#" + result2.group(1) + ">");
+				});
+
+				value = value.replaceMatch(MD5_PATTERN, (result2, builder) -> {
+					final String legacyFormat = result2.group();
+					final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "").substring(1);
+
+					return Component.text("<#" + hexColor + ">");
 				});
 			}
 
