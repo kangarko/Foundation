@@ -31,7 +31,7 @@ public final class Messenger {
 	 * @return
 	 */
 	public static SimpleComponent getSuccessPrefix() {
-		return Lang.component("prefix-success");
+		return Lang.prefixOrEmpty("prefix-success");
 	}
 
 	/**
@@ -43,7 +43,7 @@ public final class Messenger {
 	 * @return
 	 */
 	public static SimpleComponent getInfoPrefix() {
-		return Lang.component("prefix-info");
+		return Lang.prefixOrEmpty("prefix-info");
 	}
 
 	/**
@@ -55,7 +55,7 @@ public final class Messenger {
 	 * @return
 	 */
 	public static SimpleComponent getWarnPrefix() {
-		return Lang.component("prefix-warn");
+		return Lang.prefixOrEmpty("prefix-warn");
 	}
 
 	/**
@@ -67,7 +67,7 @@ public final class Messenger {
 	 * @return
 	 */
 	public static SimpleComponent getErrorPrefix() {
-		return Lang.component("prefix-error");
+		return Lang.prefixOrEmpty("prefix-error");
 	}
 
 	/**
@@ -79,7 +79,7 @@ public final class Messenger {
 	 * @return
 	 */
 	public static SimpleComponent getQuestionPrefix() {
-		return Lang.component("prefix-question");
+		return Lang.prefixOrEmpty("prefix-question");
 	}
 
 	/**
@@ -91,7 +91,7 @@ public final class Messenger {
 	 * @return
 	 */
 	public static SimpleComponent getAnnouncePrefix() {
-		return Lang.component("prefix-announce");
+		return Lang.prefixOrEmpty("prefix-announce");
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ public final class Messenger {
 	 * @param message
 	 */
 	public static void info(final FoundationPlayer audience, final String message) {
-		tell(audience, getInfoPrefix(), message);
+		tell(audience, Lang.prefix("prefix-info"), message);
 	}
 
 	/**
@@ -453,7 +453,7 @@ public final class Messenger {
 	 * @param component
 	 */
 	public static void info(final FoundationPlayer audience, final SimpleComponent component) {
-		tell(audience, getInfoPrefix(), component);
+		tell(audience, Lang.prefix("prefix-info"), component);
 	}
 
 	/**
@@ -467,7 +467,7 @@ public final class Messenger {
 	 * @param message
 	 */
 	public static void success(final FoundationPlayer audience, final String message) {
-		tell(audience, getSuccessPrefix(), message);
+		tell(audience, Lang.prefix("prefix-success"), message);
 	}
 
 	/**
@@ -479,7 +479,7 @@ public final class Messenger {
 	 * @param component
 	 */
 	public static void success(final FoundationPlayer audience, final SimpleComponent component) {
-		tell(audience, getSuccessPrefix(), component);
+		tell(audience, Lang.prefix("prefix-success"), component);
 	}
 
 	/**
@@ -493,7 +493,7 @@ public final class Messenger {
 	 * @param message
 	 */
 	public static void warn(final FoundationPlayer audience, final String message) {
-		tell(audience, getWarnPrefix(), message);
+		tell(audience, Lang.prefix("prefix-warn"), message);
 	}
 
 	/**
@@ -505,7 +505,7 @@ public final class Messenger {
 	 * @param component
 	 */
 	public static void warn(final FoundationPlayer audience, final SimpleComponent component) {
-		tell(audience, getWarnPrefix(), component);
+		tell(audience, Lang.prefix("prefix-warn"), component);
 	}
 
 	/**
@@ -519,7 +519,7 @@ public final class Messenger {
 	 * @param message
 	 */
 	public static void error(final FoundationPlayer audience, final String message) {
-		tell(audience, getErrorPrefix(), message);
+		tell(audience, Lang.prefix("prefix-error"), message);
 	}
 
 	/**
@@ -531,7 +531,7 @@ public final class Messenger {
 	 * @param component
 	 */
 	public static void error(final FoundationPlayer audience, final SimpleComponent component) {
-		tell(audience, getErrorPrefix(), component);
+		tell(audience, Lang.prefix("prefix-error"), component);
 	}
 
 	/**
@@ -545,7 +545,7 @@ public final class Messenger {
 	 * @param message
 	 */
 	public static void question(final FoundationPlayer audience, final String message) {
-		tell(audience, getQuestionPrefix(), message);
+		tell(audience, Lang.prefix("prefix-question"), message);
 	}
 
 	/**
@@ -557,7 +557,7 @@ public final class Messenger {
 	 * @param component
 	 */
 	public static void question(final FoundationPlayer audience, final SimpleComponent component) {
-		tell(audience, getQuestionPrefix(), component);
+		tell(audience, Lang.prefix("prefix-question"), component);
 	}
 
 	/**
@@ -571,7 +571,7 @@ public final class Messenger {
 	 * @param message
 	 */
 	public static void announce(final FoundationPlayer audience, final String message) {
-		tell(audience, getAnnouncePrefix(), message);
+		tell(audience, Lang.prefix("prefix-announce"), message);
 	}
 
 	/**
@@ -583,7 +583,7 @@ public final class Messenger {
 	 * @param component
 	 */
 	public static void announce(final FoundationPlayer audience, final SimpleComponent component) {
-		tell(audience, getAnnouncePrefix(), component);
+		tell(audience, Lang.prefix("prefix-announce"), component);
 	}
 
 	/*

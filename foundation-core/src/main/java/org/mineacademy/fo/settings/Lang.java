@@ -215,13 +215,58 @@ public final class Lang {
 	 * @return
 	 */
 	public static SimpleComponent component(final String path, final Object... placeholders) {
+		return component(Variables.builder(), path, placeholders);
+	}
+
+	/**
+	 * Return a component from the given path in the language file.
+	 *
+	 * Throws an error if the key is missing.
+	 *
+	 * Variables are supported, where key must be a string and value either a string or
+	 * SimpleComponent, or a list of either.
+	 *
+	 * Example: componentVars("my-locale-path", "arena", arena.getName()) translates {arena}
+	 * key from the locale path.
+	 *
+	 * @param variables
+	 * @param path
+	 * @param placeholders
+	 * @return
+	 */
+	public static SimpleComponent component(final Variables variables, final String path, final Object... placeholders) {
 		final SimpleComponent component = instance.getComponent(path);
-		final Variables variables = Variables.builder();
 
 		if (placeholders != null && placeholders.length > 0)
 			variables.placeholderArray(placeholders);
 
 		return variables.replaceComponent(component);
+	}
+
+	/**
+	 * Return a prefix or null if set to none
+	 *
+	 * @param path
+	 * @return the prefix or null
+	 *
+	 * @deprecated internal use only
+	 */
+	@Deprecated
+	public static SimpleComponent prefix(final String path) {
+		return instance.componentCache.get(path);
+	}
+
+	/**
+	 * Return a prefix or null if set to none
+	 *
+	 * @param path
+	 * @return the prefix or null
+	 *
+	 * @deprecated internal use only
+	 */
+	@Deprecated
+	public static SimpleComponent prefixOrEmpty(final String path) {
+		return instance.componentCache.getOrDefault(path, SimpleComponent.empty());
 	}
 
 	/**
@@ -532,16 +577,17 @@ public final class Lang {
 				final JsonElement value = dictionary.get(key);
 
 				if (value.isJsonPrimitive()) {
-					String string = value.getAsString();
+					final String string = value.getAsString();
 
-					if (string.isEmpty())
-						string = "none";
+					if (key.startsWith("prefix-") && ("none".equals(string) || string.isEmpty())) {
+						// ignore
+					} else {
+						final SimpleComponent component = SimpleComponent.fromMiniAmpersand(string);
 
-					final SimpleComponent component = SimpleComponent.fromMiniAmpersand(string);
-
-					plainCache.put(key, string);
-					componentCache.put(key, component);
-					legacyCache.put(key, component.toLegacySection(null));
+						plainCache.put(key, string);
+						componentCache.put(key, component);
+						legacyCache.put(key, component.toLegacySection(null));
+					}
 				}
 
 				// else if it it is array, join with \n
