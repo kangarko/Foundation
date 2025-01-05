@@ -778,7 +778,14 @@ public final class SimpleComponent implements ConfigSerializable {
 		final List<Component> children = new ArrayList<>();
 
 		for (final ConditionalComponent part : this.subcomponents) {
-			final Component builtPart = part.build(receiver);
+			Component builtPart = null;
+
+			try {
+				builtPart = part.build(receiver);
+
+			} catch (final FoScriptException ex) {
+				ex.printStackTrace();
+			}
 
 			// If sender condition or permission does not match, we return null
 			if (builtPart != null)
