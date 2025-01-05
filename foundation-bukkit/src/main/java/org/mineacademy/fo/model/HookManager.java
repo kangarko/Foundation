@@ -2554,7 +2554,7 @@ final class PlaceholderAPIHook {
 		for (final PlaceholderExpansion expansion : PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions())
 
 			// Ignore our internal expansion
-			if (!expansion.getVersion().equals("foundation-internal"))
+			if (expansion != null && !expansion.getVersion().equals("foundation-internal"))
 				this.hooks.put(expansion.getIdentifier().toLowerCase(), expansion);
 	}
 
