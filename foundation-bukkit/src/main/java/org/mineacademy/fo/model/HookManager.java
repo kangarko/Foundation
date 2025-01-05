@@ -3938,8 +3938,8 @@ class LiteBansHook {
 			}
 
 			// This will always return false that the player is not muted but there is no solution unless we'd work with futures
-			if (Platform.isAsync())
-				Platform.runTask(() -> {
+			if (!Platform.isAsync())
+				Platform.runTaskAsync(() -> {
 					this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
 					this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
 
