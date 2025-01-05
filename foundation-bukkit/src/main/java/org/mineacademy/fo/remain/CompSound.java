@@ -2,7 +2,6 @@ package org.mineacademy.fo.remain;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.annotation.Nullable;
 
@@ -1723,11 +1722,11 @@ public enum CompSound {
 	private final boolean modern;
 
 	CompSound(final String... legacyNames) {
-		Sound bukkitSound = Data.BUKKIT_NAMES.get(this.name());
+		Sound bukkitSound = ReflectionUtil.lookupEnumSilent(Sound.class, this.name());
 
 		if (bukkitSound == null)
-			for (final String legacy : legacyNames) {
-				bukkitSound = Data.BUKKIT_NAMES.get(legacy);
+			for (final String legacyName : legacyNames) {
+				bukkitSound = ReflectionUtil.lookupEnumSilent(Sound.class, legacyName);
 
 				if (bukkitSound != null)
 					break;
@@ -2015,12 +2014,5 @@ public enum CompSound {
  * Bukkit to legacy and back names translation.
  */
 class Data {
-
-	static final Map<String, Sound> BUKKIT_NAMES = new WeakHashMap<>();
 	static final Map<String, CompSound> NAMES = new HashMap<>();
-
-	static {
-		for (final Sound sound : ReflectionUtil.getEnumValues(Sound.class))
-			BUKKIT_NAMES.put(ReflectionUtil.getEnumName(sound), sound);
-	}
 }
