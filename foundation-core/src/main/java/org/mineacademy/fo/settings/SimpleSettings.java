@@ -134,7 +134,13 @@ public class SimpleSettings extends YamlStaticConfig {
 		setPathPrefix(null);
 
 		if (isSetDefault("Server_Name"))
-			Platform.setCustomServerName(getString("Server_Name"));
+			try {
+				Platform.setCustomServerName(getString("Server_Name"));
+			} catch (final IllegalArgumentException ex) {
+				CommonCore.logFramed(true, ex.getMessage());
+
+				ex.printStackTrace();
+			}
 
 		if (isSetDefault("Command_Aliases"))
 			MAIN_COMMAND_ALIASES = getCommandList("Command_Aliases");
