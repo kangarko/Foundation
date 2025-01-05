@@ -587,7 +587,7 @@ public final class BlockUtil {
 			if (!CompMaterial.isAir(block) && !block.getType().toString().equals("BARRIER")) {
 
 				if (block.getType() == CompMaterial.SNOW_BLOCK.getMaterial())
-					return -1;
+					return y + 1;
 
 				if (block.getType() == CompMaterial.SNOW.getMaterial())
 					continue;
