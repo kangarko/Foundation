@@ -1196,7 +1196,14 @@ public abstract class FileConfig extends ConfigSection {
 	public final SerializedMap getMap(final String path) {
 		final Object object = this.getObject(path);
 
-		return object != null ? SerializedMap.fromObject(object) : new SerializedMap();
+		if (object == null)
+			return new SerializedMap();
+
+		if (object.toString().equals("false")) {
+			throw new FoException("The map at '" + this.buildPathPrefix(path) + "' in " + this.file + " is set to 'false', which is invalid. Set it to {} to disable it.", false);
+		}
+
+		return SerializedMap.fromObject(object);
 	}
 
 	/**
