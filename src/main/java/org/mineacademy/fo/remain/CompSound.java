@@ -1,10 +1,7 @@
 package org.mineacademy.fo.remain;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -1386,7 +1383,7 @@ public enum CompSound {
 	ENTITY_VILLAGER_DEATH("VILLAGER_DEATH"),
 	ENTITY_VILLAGER_HURT("VILLAGER_HIT"),
 	ENTITY_VILLAGER_NO("VILLAGER_NO"),
-	ENTITY_VILLAGER_TRADE("VILLAGER_HAGGLE", "ENTITY_VILLAGER_TRADING"),
+	ENTITY_VILLAGER_TRADE("VILLAGER_HAGGLE", "ENTITY_VILLAGER_TRADING", "VILLAGER_TRADE"),
 	ENTITY_VILLAGER_WORK_ARMORER,
 	ENTITY_VILLAGER_WORK_BUTCHER,
 	ENTITY_VILLAGER_WORK_CARTOGRAPHER,
@@ -1723,12 +1720,12 @@ public enum CompSound {
 	@Getter
 	private final boolean modern;
 
-	CompSound(String... legacyNames) {
-		Sound bukkitSound = Data.BUKKIT_NAMES.get(this.name());
+	CompSound(final String... legacyNames) {
+		Sound bukkitSound = ReflectionUtil.lookupEnumSilent(Sound.class, this.name());
 
 		if (bukkitSound == null)
-			for (final String legacy : legacyNames) {
-				bukkitSound = Data.BUKKIT_NAMES.get(legacy);
+			for (final String legacyName : legacyNames) {
+				bukkitSound = ReflectionUtil.lookupEnumSilent(Sound.class, legacyName);
 
 				if (bukkitSound != null)
 					break;
@@ -1749,7 +1746,7 @@ public enum CompSound {
 	 *
 	 * @param location the location to play the sound in.
 	 */
-	public void play(Location location) {
+	public void play(final Location location) {
 		this.play(location, DEFAULT_VOLUME, DEFAULT_PITCH);
 	}
 
@@ -1760,7 +1757,7 @@ public enum CompSound {
 	 *
 	 * @since 1.0.0
 	 */
-	public void play(Entity entity) {
+	public void play(final Entity entity) {
 		this.play(entity, DEFAULT_VOLUME, DEFAULT_PITCH);
 	}
 
@@ -1771,14 +1768,14 @@ public enum CompSound {
 	 * @param volume   the volume of the sound, 1 is normal.
 	 * @param pitch    the pitch of the sound, 0 is normal.
 	 */
-	public void play(@NonNull Location location, float volume, float pitch) {
+	public void play(@NonNull final Location location, final float volume, final float pitch) {
 		if (Bukkit.isPrimaryThread())
 			this.play0(location, volume, pitch);
 		else
 			Common.runLater(() -> this.play0(location, volume, pitch));
 	}
 
-	private void play0(@NonNull Location location, float volume, float pitch) {
+	private void play0(@NonNull final Location location, final float volume, final float pitch) {
 		final Sound sound = this.getSound();
 
 		if (sound != null)
@@ -1792,14 +1789,14 @@ public enum CompSound {
 	 * @param volume the volume of the sound, 1 is normal.
 	 * @param pitch  the pitch of the sound, 0 is normal.
 	 */
-	public void play(@NonNull Entity entity, float volume, float pitch) {
+	public void play(@NonNull final Entity entity, final float volume, final float pitch) {
 		if (Bukkit.isPrimaryThread())
 			this.play0(entity, volume, pitch);
 		else
 			Common.runLater(() -> this.play0(entity, volume, pitch));
 	}
 
-	private void play0(@NonNull Entity entity, float volume, float pitch) {
+	private void play0(@NonNull final Entity entity, final float volume, final float pitch) {
 		if (entity instanceof Player) {
 			final Sound sound = this.getSound();
 
@@ -1822,7 +1819,7 @@ public enum CompSound {
 	 * @return the async task handling this operation.
 	 * @see #play(Location, float, float)
 	 */
-	public BukkitTask playRepeatedly(@NonNull Entity entity, float volume, float pitch, int repeat, int delay) {
+	public BukkitTask playRepeatedly(@NonNull final Entity entity, final float volume, final float pitch, final int repeat, final int delay) {
 		if (repeat <= 0)
 			throw new IllegalArgumentException("Cannot repeat playing sound " + repeat + " times");
 
@@ -1848,14 +1845,14 @@ public enum CompSound {
 	 *
 	 * @see #stopMusic(Player)
 	 */
-	public void stopSound(@NonNull Player player) {
+	public void stopSound(@NonNull final Player player) {
 		if (Bukkit.isPrimaryThread())
-			stopSound0(player);
+			this.stopSound0(player);
 		else
-			Common.runLater(() -> stopSound0(player));
+			Common.runLater(() -> this.stopSound0(player));
 	}
 
-	private void stopSound0(@NonNull Player player) {
+	private void stopSound0(@NonNull final Player player) {
 		final Sound sound = this.getSound();
 
 		if (sound != null)
@@ -1883,9 +1880,7 @@ public enum CompSound {
 	 */
 	@Override
 	public String toString() {
-		return Arrays.stream(this.name().split("_"))
-				.map(t -> t.charAt(0) + t.substring(1).toLowerCase())
-				.collect(Collectors.joining(" "));
+		return this.name().toLowerCase();
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1899,7 +1894,7 @@ public enum CompSound {
 	 *
 	 * @return a matched sound.
 	 */
-	public static CompSound fromSound(@NonNull Sound sound) {
+	public static CompSound fromSound(@NonNull final Sound sound) {
 		return Data.NAMES.get(ReflectionUtil.getEnumName(sound));
 	}
 
@@ -1911,7 +1906,7 @@ public enum CompSound {
 	 * @return a matched CompSound.
 	 */
 	@Nullable
-	public static CompSound fromName(@NonNull String soundName) {
+	public static CompSound fromName(@NonNull final String soundName) {
 		final int len = soundName.length();
 		final char[] chs = new char[len];
 		int count = 0;
@@ -1955,7 +1950,7 @@ public enum CompSound {
 	 *
 	 * @see #stopSound(Player)
 	 */
-	public static void stopMusic(@NonNull Player player) {
+	public static void stopMusic(@NonNull final Player player) {
 
 		// We don't need to cache because it's rarely used.
 		final CompSound[] musics = {
@@ -1991,7 +1986,7 @@ public enum CompSound {
 	 *
 	 * @return the async task handling the operation.
 	 */
-	public static BukkitTask playAscendingNote(@NonNull Player player, @NonNull Entity playTo, Instrument instrument, int ascendLevel, int delay) {
+	public static BukkitTask playAscendingNote(@NonNull final Player player, @NonNull final Entity playTo, final Instrument instrument, final int ascendLevel, final int delay) {
 
 		if (ascendLevel <= 0)
 			throw new IllegalArgumentException("Note ascend level cannot be lower than 1");
@@ -2018,12 +2013,5 @@ public enum CompSound {
  * Bukkit to legacy and back names translation.
  */
 class Data {
-
-	static final Map<String, Sound> BUKKIT_NAMES = new WeakHashMap<>();
 	static final Map<String, CompSound> NAMES = new HashMap<>();
-
-	static {
-		for (final Sound sound : ReflectionUtil.getEnumValues(Sound.class))
-			BUKKIT_NAMES.put(ReflectionUtil.getEnumName(sound), sound);
-	}
 }
