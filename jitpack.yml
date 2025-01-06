@@ -1,5 +1,5 @@
 jdk:
-  - openjdk23
+  - openjdk21
 before_install:
   - sdk install maven
 install:
