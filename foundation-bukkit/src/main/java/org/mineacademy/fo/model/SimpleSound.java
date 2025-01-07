@@ -146,7 +146,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 * @return
 	 */
 	public static SimpleSound fromString(final String line) {
-		if ("none".equals(line))
+		if ("none".equals(line) || "".equals(line))
 			return new SimpleSound(CompSound.UI_BUTTON_CLICK, 0.0F, 1.0F, false, false);
 
 		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
