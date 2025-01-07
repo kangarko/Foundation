@@ -1904,7 +1904,7 @@ public final class Remain {
 	 */
 	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
-			final String colorized = SimpleComponent.fromMiniAmpersand(message).toLegacySection().replace("|", "\n");
+			final String colorized = SimpleComponent.fromMiniAmpersand(message).toLegacySection(Platform.toPlayer(receiver)).replace("|", "\n");
 
 			if (!colorized.isEmpty())
 				if (hasAdvancements)
