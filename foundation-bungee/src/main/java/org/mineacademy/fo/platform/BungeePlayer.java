@@ -157,6 +157,11 @@ final class BungeePlayer extends FoundationPlayer {
 	}
 
 	@Override
+	public boolean isDynmap() {
+		return false;
+	}
+
+	@Override
 	public boolean isPlayer() {
 		return this.isPlayer;
 	}

@@ -34,6 +34,7 @@ import org.mineacademy.fo.menu.tool.ToolsListener;
 import org.mineacademy.fo.model.BStatsBukkit;
 import org.mineacademy.fo.model.DiscordListener;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.LitebanTask;
 import org.mineacademy.fo.model.PacketListener;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.Tuple;
@@ -425,6 +426,9 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 				this.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
+
+			if (HookManager.isLiteBansLoaded())
+				Platform.runTaskTimerAsync(20 * 2, LitebanTask.getInstance());
 
 			if (this.getBStatsPluginId() != -1)
 				new BStatsBukkit(this, this.getBStatsPluginId());
