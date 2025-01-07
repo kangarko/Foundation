@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.debug.Debugger;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
@@ -136,10 +137,10 @@ public final class Variable extends YamlConfig {
 
 		// Check for known mistakes
 		if (this.key == null || this.key.isEmpty())
-			throw new NullPointerException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Key' as variable name in " + this.getFile());
+			throw new FoException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Key' as variable name in " + this.getFile(), false);
 
 		if (this.value == null)
-			throw new NullPointerException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Value' key as what the variable shows in " + this.getFile() + " (this must be a valid JavaScript code, if unsure put a string there and surround with '' quotes)");
+			throw new FoException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Value' key as what the variable shows in " + this.getFile() + " (this must be a valid JavaScript code, if unsure put a string there and surround with '' quotes)", false);
 
 		final char startChar = this.key.charAt(0);
 		final char endChar = this.key.charAt(this.key.length() - 1);
@@ -163,7 +164,7 @@ public final class Variable extends YamlConfig {
 
 		// Test for key validity
 		if (!VALID_KEY_PATTERN.matcher(this.key).matches())
-			throw new IllegalArgumentException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there! Got: '" + this.key + "'");
+			throw new FoException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there! Got: '" + this.key + "'", false);
 
 		// Always save to update keys
 		this.save();
