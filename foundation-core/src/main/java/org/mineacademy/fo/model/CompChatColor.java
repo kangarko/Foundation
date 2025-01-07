@@ -465,7 +465,10 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @param string
 	 * @return
 	 */
-	public static CompChatColor fromString(@NonNull final String string) {
+	public static CompChatColor fromString(@NonNull String string) {
+		if (string.charAt(0) == '<' && string.charAt(string.length() - 1) == '>')
+			string = string.substring(1, string.length() - 1);
+
 		if (string.charAt(0) == '#' && string.length() == 7) {
 			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_16)) {
 				final Color color = getColorFromHex(string);
