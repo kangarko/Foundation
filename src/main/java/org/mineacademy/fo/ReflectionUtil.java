@@ -893,6 +893,16 @@ public final class ReflectionUtil {
 				} catch (final Throwable t) {
 				}
 
+			if (method == null)
+				try {
+					method = enumClass.getDeclaredMethod("valueOf", String.class);
+
+					if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers()))
+						hasKey = true;
+
+				} catch (final NoSuchMethodException t) {
+				}
+
 			if (hasKey)
 				return (E) method.invoke(null, name);
 
@@ -1223,16 +1233,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-		
+
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-		
+
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-		
+
 			cacheMethod(method);
-		
+
 			return method;
 		}*/
 
