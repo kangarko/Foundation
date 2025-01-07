@@ -78,8 +78,6 @@ public final class LitebanTask extends BukkitRunnable {
 
 			this.cancel();
 		}
-
-		System.out.println("Muted players: " + this.mutedPlayersByUniqueId);
 	}
 
 	public boolean isMuted(UUID uuid) {
