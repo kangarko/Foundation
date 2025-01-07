@@ -311,7 +311,7 @@ public final class OutgoingMessage extends Message {
 	public void sendToServer(final String fromServer, final FoundationServer server) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
-			final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, fromServer);
+			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
 			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
 
 			if (server.isEmpty()) {
@@ -366,7 +366,7 @@ public final class OutgoingMessage extends Message {
 					continue;
 				}
 
-				final byte[] byteArray = this.toByteArray(CommonCore.CONSOLE_UID, otherServer.getName());
+				final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, otherServer.getName());
 
 				if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
 					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");

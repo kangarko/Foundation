@@ -53,9 +53,9 @@ import lombok.NonNull;
 public abstract class CommonCore {
 
 	/**
-	 * The UUID of the console
+	 * The UUID of the console consisting of all zeros.
 	 */
-	public static final UUID CONSOLE_UID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+	public static final UUID ZERO_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
 	/**
 	 * The Google Json instance
