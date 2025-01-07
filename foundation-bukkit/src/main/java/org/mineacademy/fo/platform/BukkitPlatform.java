@@ -709,11 +709,11 @@ final class BukkitPlatform extends FoundationPlatform {
 
 	@Override
 	public FoundationPlayer toPlayer(final Object sender) {
-		if (sender instanceof FoundationPlayer)
-			return (FoundationPlayer) sender;
-
 		if (sender == null)
 			throw new FoException("Cannot convert null sender to FoundationPlayer!");
+
+		if (sender instanceof FoundationPlayer)
+			return (FoundationPlayer) sender;
 
 		if (!(sender instanceof CommandSender))
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);

@@ -287,6 +287,13 @@ public abstract class FoundationPlayer implements Audience {
 	public abstract boolean isDiscord();
 
 	/**
+	 * Returns true if the player is a DynMap sender.
+	 *
+	 * @return
+	 */
+	public abstract boolean isDynmap();
+
+	/**
 	 * Returns true if the player is a player, false if console or command sender.
 	 *
 	 * @return

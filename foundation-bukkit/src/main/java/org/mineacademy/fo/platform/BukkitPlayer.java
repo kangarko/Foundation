@@ -19,6 +19,7 @@ import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.DiscordSender;
+import org.mineacademy.fo.model.DynmapSender;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.model.Variables;
@@ -87,9 +88,19 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	public UUID getUniqueId() {
-		ValidCore.checkBoolean(this.isPlayer, "Cannot get UUID for a non-player" + this.getName());
+		if (this.isPlayer)
+			return this.player.getUniqueId();
 
-		return this.player.getUniqueId();
+		else if (this.isConsole())
+			return CommonCore.ZERO_UUID;
+
+		else if (this.isDiscord())
+			return ((DiscordSender) this.sender).getUniqueId();
+
+		else if (this.isDynmap())
+			return ((DynmapSender) this.sender).getUniqueId();
+
+		throw new UnsupportedOperationException("Getting UUID of " + this.sender.getClass().getSimpleName() + " " + this.sender + " is unsupported");
 	}
 
 	@Override
@@ -126,6 +137,11 @@ final class BukkitPlayer extends FoundationPlayer {
 	@Override
 	public boolean isDiscord() {
 		return this.sender instanceof DiscordSender;
+	}
+
+	@Override
+	public boolean isDynmap() {
+		return this.sender instanceof DynmapSender;
 	}
 
 	@Override

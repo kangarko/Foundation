@@ -2,9 +2,6 @@ package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +29,6 @@ import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
@@ -123,7 +119,6 @@ public final class HookManager {
 	private static FactionsHook factionsHook;
 	private static ItemsAdderHook itemsAdderHook;
 	private static LandsHook landsHook;
-	private static LiteBansHook liteBansHook;
 	private static LocketteProHook locketteProHook;
 	private static LWCHook lwcHook;
 	private static MultiverseHook multiverseHook;
@@ -140,6 +135,7 @@ public final class HookManager {
 	private static WorldEditHook worldeditHook;
 	private static WorldGuardHook worldguardHook;
 
+	private static boolean liteBansDummyHook = false;
 	private static boolean nbtAPIDummyHook = false;
 	private static boolean nuVotifierDummyHook = false;
 	private static boolean townyChatDummyHook = false;
@@ -228,7 +224,7 @@ public final class HookManager {
 			landsHook = new LandsHook();
 
 		if (Platform.isPluginInstalled("LiteBans"))
-			liteBansHook = new LiteBansHook();
+			liteBansDummyHook = true;
 
 		if (Platform.isPluginInstalled("Lockette"))
 			locketteProHook = new LocketteProHook();
@@ -446,7 +442,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static boolean isLiteBansLoaded() {
-		return liteBansHook != null;
+		return liteBansDummyHook;
 	}
 
 	/**
@@ -893,23 +889,62 @@ public final class HookManager {
 	 * Return true if the player is muted in BanManager, CMI, EssentialsX
 	 * or LiteBans, or false if none of these plugins are present.
 	 *
-	 * @param player the player to check.
+	 * @param uniqueId the player's unique id to check.
 	 * @return
 	 */
-	public static boolean isMuted(final Player player) {
-		if (isEssentialsLoaded() && essentialsHook.isMuted(player.getName()))
+	public static boolean isMuted(final UUID uniqueId) {
+		if (isEssentialsLoaded() && essentialsHook.isMuted(uniqueId))
 			return true;
 
-		if (isCMILoaded() && CMIHook.isMuted(player))
+		if (isCMILoaded() && CMIHook.isMuted(uniqueId))
 			return true;
 
-		if (isBanManagerLoaded() && banManagerHook.isMuted(player))
+		if (isBanManagerLoaded() && banManagerHook.isMuted(uniqueId))
 			return true;
 
-		if (isLiteBansLoaded() && liteBansHook.isMuted(player))
+		if (isLiteBansLoaded() && LitebanTask.getInstance().isMuted(uniqueId))
 			return true;
 
 		return false;
+	}
+
+	/**
+	 * Attempts to get the unmute time for the given player.
+	 *
+	 * The key in the tuple indicates if the player is muted,
+	 * and the value is the unmute time.
+	 *
+	 * NOTE that the player can be muted and the unmute time can be 0
+	 * for plugins who do not report such value.
+	 *
+	 * Supported plugins for mute: Essentials, CMI, BanManager, LiteBans.
+	 * Whereof only CMI and LiteBans report the unmute time as well.
+	 *
+	 * @param uniqueId
+	 * @return
+	 */
+	public static Tuple<Boolean, Long> getUnmuteTime(final UUID uniqueId) {
+		if (isEssentialsLoaded() && essentialsHook.isMuted(uniqueId))
+			return new Tuple<>(true, 0L);
+
+		if (isCMILoaded()) {
+			final long unmuteTime = CMIHook.getUnmuteTime(uniqueId);
+
+			if (unmuteTime != 0)
+				return new Tuple<>(true, unmuteTime);
+		}
+
+		if (isBanManagerLoaded() && banManagerHook.isMuted(uniqueId))
+			return new Tuple<>(true, 0L);
+
+		if (isLiteBansLoaded()) {
+			final long unmuteTime = LitebanTask.getInstance().getUnmuteTime(uniqueId);
+
+			if (unmuteTime != 0)
+				return new Tuple<>(true, unmuteTime);
+		}
+
+		return new Tuple<>(false, 0L);
 	}
 
 	/**
@@ -1915,14 +1950,14 @@ class EssentialsHook {
 		}
 	}
 
-	boolean isAfk(final String pl) {
-		final IUser user = this.getUser(pl);
+	boolean isAfk(final String playerName) {
+		final IUser user = this.getUser(playerName);
 
 		return user != null ? user.isAfk() : false;
 	}
 
-	boolean isVanished(final String pl) {
-		final IUser user = this.getUser(pl);
+	boolean isVanished(final String playerName) {
+		final IUser user = this.getUser(playerName);
 
 		return user != null ? user.isVanished() : false;
 	}
@@ -1934,8 +1969,14 @@ class EssentialsHook {
 			user.setVanished(false);
 	}
 
-	boolean isMuted(final String pl) {
-		final com.earth2me.essentials.User user = this.getUser(pl);
+	boolean isMuted(final String playerName) {
+		final com.earth2me.essentials.User user = this.getUser(playerName);
+
+		return user != null ? user.isMuted() : false;
+	}
+
+	boolean isMuted(final UUID uniqueId) {
+		final com.earth2me.essentials.User user = this.getUser(uniqueId);
 
 		return user != null ? user.isMuted() : false;
 	}
@@ -3444,14 +3485,25 @@ class CMIHook {
 		return user != null && user.isAfk();
 	}
 
-	boolean isMuted(final Player player) {
-		final CMIUser user = this.getUser(player);
+	boolean isMuted(final UUID uniqueId) {
+		final CMIUser user = this.getUser(uniqueId);
 
 		try {
 			return user != null && user.getMutedUntil() != 0 && user.getMutedUntil() != null && user.getMutedUntil() > System.currentTimeMillis();
 
 		} catch (final Exception ex) {
 			return false;
+		}
+	}
+
+	long getUnmuteTime(final UUID uniqueId) {
+		final CMIUser user = this.getUser(uniqueId);
+
+		try {
+			return user != null && user.getMutedUntil() != null && user.getMutedUntil() > System.currentTimeMillis() ? user.getMutedUntil() : 0L;
+
+		} catch (final Exception ex) {
+			return 0L;
 		}
 	}
 
@@ -3692,16 +3744,16 @@ class BanManagerHook {
 	/*
 	 * Return true if the given player is muted.
 	 */
-	boolean isMuted(final Player player) {
+	boolean isMuted(final UUID uniqueId) {
 		try {
 			final Class<?> api = ReflectionUtil.lookupClass("me.confuser.banmanager.common.api.BmAPI");
 			final Method isMuted = ReflectionUtil.getMethod(api, "isMuted", UUID.class);
 
-			return ReflectionUtil.invoke(isMuted, null, player.getUniqueId());
+			return ReflectionUtil.invoke(isMuted, null, uniqueId);
 
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class"))
-				CommonCore.log("Unable to check if " + player.getName() + " is muted at BanManager. Is the API hook outdated? Got: " + t);
+				CommonCore.log("Unable to check if " + uniqueId + " is muted at BanManager. Is the API hook outdated? Got: " + t);
 
 			return false;
 		}
@@ -3909,101 +3961,6 @@ class LandsHook {
 		}
 
 		return playersAtLocation;
-	}
-}
-
-class LiteBansHook {
-
-	private final Set<String> mutedPlayerUids = new HashSet<>();
-	private Object instance;
-	private Method methodPrepareStatement;
-
-	LiteBansHook() {
-	}
-
-	/*
-	 * Return true if the given player is muted.
-	 */
-	boolean isMuted(final Player player) {
-		if (this.instance == null) {
-			final Class<?> classDatabase;
-
-			try {
-				classDatabase = Class.forName("litebans.api.Database");
-
-			} catch (final ClassNotFoundException ex) {
-				CommonCore.logTimed(60 * 60, "LiteBans API not found, skipping integration.");
-
-				return false;
-			}
-
-			// This will always return false that the player is not muted but there is no solution unless we'd work with futures
-			if (!Platform.isAsync())
-				Platform.runTaskAsync(() -> {
-					this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
-					this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
-
-					this.downloadData(null);
-				});
-
-			else {
-				this.instance = ReflectionUtil.invokeStatic(classDatabase, "get");
-				this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
-
-				this.downloadData(null);
-			}
-
-			// LiteBans throws an artificial exception when run on main thread on Bukkit, so we store all data in memory
-			// for maximum performance, cached every 5 seconds, see
-			// https://gitlab.com/ruany/LiteBansAPI/-/blob/master/src/main/java/litebans/api/Database.java
-			Platform.runTaskTimerAsync(20 * 5, new BukkitRunnable() {
-
-				@Override
-				public void run() {
-					if (LiteBansHook.this.methodPrepareStatement == null) {
-						this.cancel();
-
-						return;
-					}
-
-					LiteBansHook.this.downloadData(this);
-				}
-			});
-		}
-
-		return this.mutedPlayerUids.contains(player.getUniqueId().toString());
-	}
-
-	private void downloadData(final BukkitRunnable task) {
-		LiteBansHook.this.mutedPlayerUids.clear();
-
-		try (PreparedStatement statement = ReflectionUtil.invoke(LiteBansHook.this.methodPrepareStatement, LiteBansHook.this.instance, "SELECT * FROM {mutes}")) {
-			statement.execute();
-
-			final ResultSet resultSet = statement.getResultSet();
-
-			while (resultSet.next()) {
-				final String uuid = resultSet.getString("UUID");
-				final boolean active = resultSet.getBoolean("ACTIVE");
-				final long until = resultSet.getLong("UNTIL");
-
-				if (active) {
-					if (until != 0 && until < System.currentTimeMillis())
-						continue;
-
-					LiteBansHook.this.mutedPlayerUids.add(uuid);
-				}
-			}
-
-		} catch (final SQLException ex) {
-			// Ignore
-
-		} catch (final Throwable t) {
-			CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
-
-			if (task != null)
-				task.cancel();
-		}
 	}
 }
 
