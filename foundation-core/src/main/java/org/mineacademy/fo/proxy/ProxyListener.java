@@ -3,6 +3,7 @@ package org.mineacademy.fo.proxy;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
@@ -86,6 +87,17 @@ public abstract class ProxyListener {
 	 * @param message
 	 */
 	public abstract void onMessageReceived(IncomingMessage message);
+
+	/**
+	 * Called when an invalid message is received
+	 *
+	 * @param senderUid
+	 * @param serverName
+	 * @param actionName
+	 */
+	public void onInvalidMessageReceived(UUID senderUid, String serverName, String actionName) {
+		new NullPointerException("Unknown plugin action '" + actionName + "' from server " + serverName + ". ALL SERVERS NEED TO HAVE THE SAME VERSION.").printStackTrace();
+	}
 
 	/**
 	 * @deprecated internal use only
