@@ -577,9 +577,12 @@ public final class Lang {
 				final JsonElement value = dictionary.get(key);
 
 				if (value.isJsonPrimitive()) {
-					final String string = value.getAsString();
+					String string = value.getAsString();
 
-					if (key.startsWith("prefix-") && ("none".equals(string) || string.isEmpty())) {
+					if (string.isEmpty())
+						string = "none";
+
+					if (key.startsWith("prefix-") && "none".equals(string)) {
 						// ignore
 					} else {
 						final SimpleComponent component = SimpleComponent.fromMiniAmpersand(string);
