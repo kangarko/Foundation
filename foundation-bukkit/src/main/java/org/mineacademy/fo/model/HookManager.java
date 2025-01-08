@@ -2650,15 +2650,19 @@ final class PlaceholderAPIHook {
 		} catch (final Throwable throwable) {
 			final String message = throwable.getMessage();
 
-			if (throwable instanceof NullPointerException && message != null && message.contains("Cannot invoke") && message.contains("OfflinePlayer")) {
+			if (throwable instanceof NullPointerException && message != null && message.contains("Cannot invoke") && message.contains("is null")) {
 				Common.logFramed(
 						"Faulty extension " + placeholderExpansion.getClass(),
 						"failed to replace '" + params + "'",
 						"",
+						"THIS IS NOT CAUSED BY US, BUT RATHER BY THE",
+						"PLACEHOLDERAPI EXTENSION WHICH DOES NOT",
+						"FOLLOW THE PARENT METHOD'S NULLABILITY.",
+						"",
 						"Alert their developers to account for null",
-						"offline player as specified in PlaceholderAPI",
-						"standards. Printing the error below and",
-						"returning empty value.");
+						"OfflinePlayer parameter as specified in",
+						"PlaceholderAPI API docs. Printing the error",
+						"below and returning empty value.");
 			} else
 				Common.logFramed(
 						"Error in extension " + placeholderExpansion.getClass(),
