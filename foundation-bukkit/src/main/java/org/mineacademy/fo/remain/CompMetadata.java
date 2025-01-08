@@ -15,10 +15,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -406,7 +402,7 @@ public final class CompMetadata {
 	 * we store them manually.
 	 */
 	@Getter
-	public static final class MetadataFile extends YamlConfig implements Listener {
+	public static final class MetadataFile extends YamlConfig {
 
 		@Getter
 		private static final MetadataFile instance = new MetadataFile();
@@ -483,17 +479,8 @@ public final class CompMetadata {
 				this.set("Initialized", null);
 		}
 
-		@EventHandler
-		public void onEntityDeath(final EntityDeathEvent event) {
-			final Entity entity = event.getEntity();
-
-			if (!(entity instanceof Player)) {
-				final UUID uniqueId = entity.getUniqueId();
-
-				this.entityMetadata.remove(uniqueId);
-
-				//this.save(); -> handled in onPluginStop()
-			}
+		public void onEntityRemove(UUID uniqueId) {
+			this.entityMetadata.remove(uniqueId);
 		}
 
 		private void loadEntities() {
@@ -535,18 +522,6 @@ public final class CompMetadata {
 			}
 
 			Platform.runTask(4, () -> {
-				for (final Iterator<UUID> iterator = this.entityMetadata.keySet().iterator(); iterator.hasNext();) {
-					final UUID uniqueId = iterator.next();
-					final Entity entity = Remain.getLoadedEntity(uniqueId);
-
-					if (entity == null) {
-						if (Remain.getOfflinePlayerByUniqueId(uniqueId).hasPlayedBefore())
-							continue;
-
-						iterator.remove();
-					}
-				}
-
 				if (!this.entityMetadata.isEmpty())
 					this.set("Initialized", true);
 			});

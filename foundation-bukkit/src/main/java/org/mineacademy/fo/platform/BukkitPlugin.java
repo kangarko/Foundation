@@ -411,9 +411,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			if (SimpleSettings.REGISTER_TOOLS)
 				this.registerEvents(new ToolsListener());
 
-			if (CompMetadata.isLegacy())
-				this.registerEvents(CompMetadata.MetadataFile.getInstance());
-
 			if (HookManager.isPlaceholderAPILoaded())
 				this.registerEvents(new PlaceholderHookListener());
 

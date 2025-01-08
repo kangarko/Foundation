@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -42,6 +44,19 @@ final class BukkitListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onServiceRegister(final ServiceRegisterEvent event) {
 		HookManager.updateVaultIntegration();
+	}
+
+	/**
+	 * Delegates removing legacy metadata for dead entities.
+	 *
+	 * @param event
+	 */
+	@EventHandler
+	public void onEntityDeath(final EntityDeathEvent event) {
+		final Entity entity = event.getEntity();
+
+		if (!(entity instanceof Player) && CompMetadata.isLegacy())
+			CompMetadata.MetadataFile.getInstance().onEntityRemove(entity.getUniqueId());
 	}
 
 	/**
