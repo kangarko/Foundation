@@ -94,8 +94,11 @@ public final class VelocityListener {
 			boolean found = true;
 
 			if (subChannel.equals("ForwardToPlayer")) {
-				proxy.getPlayer(in.readUTF())
-						.ifPresent(player -> player.sendPluginMessage(event.getIdentifier(), this.prepareForwardMessage(in)));
+				final String name = in.readUTF();
+				final Player target = proxy.getPlayer(name).orElse(null);
+
+				if (target != null)
+					target.getCurrentServer().get().sendPluginMessage(event.getIdentifier(), this.prepareForwardMessage(in));
 
 			} else if (subChannel.equals("Forward")) {
 				final String target = in.readUTF();
