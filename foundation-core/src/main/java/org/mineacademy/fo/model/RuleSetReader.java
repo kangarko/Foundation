@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
@@ -140,12 +141,20 @@ public abstract class RuleSetReader<T extends Rule> {
 						match = line.replace(this.newKeyword + " ", "");
 						rule = this.createRule(file, match);
 
+					} catch (final PatternSyntaxException ex) {
+						CommonCore.throwErrorUnreported(ex,
+								"You have a syntax error in regular expression on line (" + (i + 1) + ")",
+								"File: " + file,
+								"Use services like https://regex101.com/ or ChatGPT to fix your filter.",
+								"Printing error below and aborting processing.");
+
+						return rules;
+
 					} catch (final Throwable t) {
 						CommonCore.throwError(t,
 								"Error creating rule from line (" + (i + 1) + "): " + line,
 								"File: " + file,
-								"Error: {error}",
-								"Processing aborted.");
+								"Printing error below and aborting processing.");
 
 						return rules;
 					}

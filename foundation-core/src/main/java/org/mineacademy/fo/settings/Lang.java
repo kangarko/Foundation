@@ -16,6 +16,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CaseNumberFormat;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.Variables;
@@ -446,7 +447,14 @@ public final class Lang {
 					return localFile;
 			}
 
-			JsonObject localJson = CommonCore.GSON.fromJson(String.join("\n", FileUtil.readLinesFromFile(localFile)), JsonObject.class);
+			JsonObject localJson;
+
+			try {
+				localJson = CommonCore.GSON.fromJson(String.join("\n", FileUtil.readLinesFromFile(localFile)), JsonObject.class);
+
+			} catch (final JsonSyntaxException ex) {
+				throw new FoException("Invalid JSON in " + localFile + " file. Use services like https://jsonformatter.org/ to correct it. Error: " + ex.getMessage(), false);
+			}
 
 			if (localJson == null)
 				localJson = new JsonObject();
