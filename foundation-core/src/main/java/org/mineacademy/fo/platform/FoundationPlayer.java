@@ -121,6 +121,8 @@ public abstract class FoundationPlayer implements Audience {
 			Messenger.success(this, command.replace("@success ", ""));
 
 		else {
+			command = command.charAt(0) == '/' && command.charAt(1) != '/' ? command.substring(1) : command;
+
 			if (this.isPlayer())
 				this.performPlayerCommand0(command.replace("§", "&"));
 			else
