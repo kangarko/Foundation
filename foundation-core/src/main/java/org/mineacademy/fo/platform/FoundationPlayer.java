@@ -14,12 +14,10 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleComponent.LastMessageStyleParser;
 import org.mineacademy.fo.model.SimpleLocation;
-import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.BossBarTask.TimedBar;
 import org.mineacademy.fo.settings.Lang;
 
@@ -87,7 +85,7 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	/**
-	 * Runs the given command (without /) as the player, replacing {player} with his name.
+	 * Runs the given command (without /) as the player, replacing {player} and {player_name} with his name.
 	 *
 	 * You can prefix the command with @(announce|warn|error|info|question|success) to send a formatted
 	 * message to playerReplacement directly.
@@ -97,6 +95,12 @@ public abstract class FoundationPlayer implements Audience {
 	public final void dispatchCommand(String command) {
 		if (command.isEmpty() || command.equalsIgnoreCase("none"))
 			return;
+
+		// Only offer bare minimum variable support for best performance
+		// Plugins are expected to parse variables on their own
+		command = command
+				.replace("{player_name}", this.getName())
+				.replace("{player}", this.getName());
 
 		if (command.startsWith("@announce "))
 			Messenger.announce(this, command.replace("@announce ", ""));
@@ -117,12 +121,6 @@ public abstract class FoundationPlayer implements Audience {
 			Messenger.success(this, command.replace("@success ", ""));
 
 		else {
-			command = Variables.builder(this).replaceLegacy(command.charAt(0) == '/' && command.charAt(1) != '/' ? command.substring(1) : command);
-
-			// Workaround for JSON in tellraw getting HEX colors replaced
-			if (!command.startsWith("tellraw"))
-				command = CompChatColor.translateColorCodes(command);
-
 			if (this.isPlayer())
 				this.performPlayerCommand0(command.replace("§", "&"));
 			else
