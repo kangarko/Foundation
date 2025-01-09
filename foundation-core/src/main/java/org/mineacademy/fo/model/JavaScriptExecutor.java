@@ -304,8 +304,12 @@ public final class JavaScriptExecutor {
 					final String[] errorMessageSplit = cause.contains("event handled: ") ? cause.split("event handled\\: ") : new String[0];
 					final Object sender = placeholders.get("player");
 
-					if (errorMessageSplit.length == 2 && sender != null)
-						Platform.toPlayer(sender).sendMessage(SimpleComponent.fromMiniAmpersand(errorMessageSplit[1]));
+					if (errorMessageSplit.length == 2 && sender != null) {
+						final FoundationPlayer audience = Platform.toPlayer(sender);
+						final String message = Variables.builder(audience).replaceLegacy(errorMessageSplit[1]);
+
+						audience.sendMessage(SimpleComponent.fromMiniAmpersand(message));
+					}
 
 					throw new EventHandledException(true);
 				}
