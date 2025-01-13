@@ -102,12 +102,6 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 	// Main methods
 	// ----------------------------------------------------------------------------------------
 
-	static {
-
-		// Add console filters early - no reload support
-		FoundationFilter.inject();
-	}
-
 	@Override
 	public final void onLoad() {
 		instance = this;

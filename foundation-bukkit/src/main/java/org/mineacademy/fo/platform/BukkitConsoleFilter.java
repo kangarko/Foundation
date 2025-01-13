@@ -23,7 +23,7 @@ import lombok.Setter;
 /**
  * Represents the console filtering module
  */
-final class FoundationFilter {
+final class BukkitConsoleFilter {
 
 	/**
 	 * The pattern to remove legacy colors
@@ -140,7 +140,7 @@ class FilterJava implements java.util.logging.Filter {
 	public boolean isLoggable(final LogRecord record) {
 		final String message = record.getMessage();
 
-		return !FoundationFilter.isFiltered(message);
+		return !BukkitConsoleFilter.isFiltered(message);
 	}
 }
 
@@ -155,13 +155,13 @@ class FilterSystemOut extends PrintStream {
 
 	@Override
 	public void println(final Object x) {
-		if (x != null && !FoundationFilter.isFiltered(x.toString()))
+		if (x != null && !BukkitConsoleFilter.isFiltered(x.toString()))
 			super.println(x);
 	}
 
 	@Override
 	public void println(final String x) {
-		if (x != null && !FoundationFilter.isFiltered(x))
+		if (x != null && !BukkitConsoleFilter.isFiltered(x))
 			super.println(x);
 	}
 }
@@ -208,7 +208,7 @@ class FilterLog4j implements org.apache.logging.log4j.core.Filter {
 	 * Return if the message should be filtered
 	 */
 	private final Result checkMessage(final String message) {
-		return FoundationFilter.isFiltered(message) ? Result.DENY : Result.NEUTRAL;
+		return BukkitConsoleFilter.isFiltered(message) ? Result.DENY : Result.NEUTRAL;
 	}
 
 	/* ------------------------------------------------------------ */

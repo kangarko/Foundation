@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.mineacademy.fo.CommonCore;
@@ -139,12 +138,13 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	static {
 
 		// Add console filters early - no reload support
-		FoundationFilter.inject(filter -> {
+		// TODO Temporarily disabled, investigating https://github.com/kangarko/ChatControl-Red/issues/3005
+		/*BukkitConsoleFilter.inject(filter -> {
 			for (final Plugin plugin : Bukkit.getPluginManager().getPlugins())
 				plugin.getLogger().setFilter(filter);
-
+		
 			Bukkit.getLogger().setFilter(filter);
-		});
+		});*/
 	}
 
 	@Override
