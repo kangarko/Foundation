@@ -150,7 +150,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			ValidCore.checkBoolean(split.length > 1, "Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
 			bungeeVersion = split[2];
 		} else
-			throw new FoException("Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
+			throw new FoException("Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion, false);
 
 		final String versionString = bungeeVersion.split("\\-")[0]; // 1.22.1
 		final String[] versions = versionString.split("\\.");
