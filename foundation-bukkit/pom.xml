@@ -35,6 +35,15 @@
 			<version>7.0.0</version>
 			<scope>compile</scope>
 		</dependency>
+		
+		<!-- NOT used anywhere in Foundation, only here to prevent compile
+		errors from missing the log4j dependency that is shipped in the server jar -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.24.3</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- Adventure platform -->
 		<dependency>

@@ -149,12 +149,6 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	// Main methods
 	// ----------------------------------------------------------------------------------------
 
-	static {
-
-		// Add console filters early - no reload support
-		FoundationFilter.inject();
-	}
-
 	public VelocityPlugin(final ProxyServer proxy, final Logger logger, @DataDirectory final Path dataDirectory) {
 		instance = this;
 
