@@ -135,6 +135,15 @@ public final class Debugger {
 	 */
 	public static void saveError(boolean sentry, Throwable throwable, final String... messages) {
 
+		if (!Platform.hasPlatform()) {
+			System.out.println("Fatal error saving error, platform not set yet.");
+			System.out.println("This is typically caused by a previous error, check console.");
+
+			throwable.printStackTrace();
+
+			return;
+		}
+
 		// Log to sentry if enabled.
 		final FoundationPlugin plugin = Platform.getPlugin();
 
@@ -147,7 +156,7 @@ public final class Debugger {
 			}
 
 		// Do not report errors from outdated plugin versions
-		if (sentry && plugin != null && plugin.getSentryDsn() != null && SimpleSettings.SENTRY && !(throwable instanceof OutOfMemoryError)) {
+		if (sentry && plugin.getSentryDsn() != null && SimpleSettings.SENTRY && !(throwable instanceof OutOfMemoryError)) {
 			final Throwable finalThrowable = throwable;
 
 			// Prevent duplicated reporting
