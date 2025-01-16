@@ -70,7 +70,7 @@ public final class LitebanTask extends BukkitRunnable {
 				}
 			}
 
-		} catch (final SQLException ex) {
+		} catch (final IllegalStateException | SQLException ex) {
 			// Ignore
 
 		} catch (final Throwable t) {
