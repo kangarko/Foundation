@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +69,13 @@ public final class Variables {
 	 * all variables when called from there.
 	 */
 	private static final List<SimpleExpansion> expansions = new ArrayList<>();
+
+	/**
+	 * @deprecated internal use only, the full PlaceholderAPI parser
+	 */
+	@Deprecated
+	@Setter
+	private static BiFunction<FoundationPlayer, String, String> legacyPlaceholderAPIparser;
 
 	/**
 	 * Stores cache for legacy variables by audience's name.
@@ -270,8 +278,15 @@ public final class Variables {
 	public String replaceLegacy(@NonNull String message) {
 		message = this.replaceLegacy0(message);
 
-		if (doubleParse)
+		if (legacyPlaceholderAPIparser != null)
+			message = legacyPlaceholderAPIparser.apply(this.audience, message);
+
+		if (doubleParse) {
 			message = this.replaceLegacy0(message);
+
+			if (legacyPlaceholderAPIparser != null)
+				message = legacyPlaceholderAPIparser.apply(this.audience, message);
+		}
 
 		return message;
 	}
