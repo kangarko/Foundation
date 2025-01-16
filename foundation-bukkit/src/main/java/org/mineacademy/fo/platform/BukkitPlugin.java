@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Objects;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -37,6 +38,7 @@ import org.mineacademy.fo.model.LitebanTask;
 import org.mineacademy.fo.model.PacketListener;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.model.Tuple;
+import org.mineacademy.fo.model.Variables;
 import org.mineacademy.fo.platform.AutoRegisterScanner.AutoRegisterHandler;
 import org.mineacademy.fo.platform.AutoRegisterScanner.FindInstance;
 import org.mineacademy.fo.proxy.ProxyListener;
@@ -46,6 +48,7 @@ import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 
 /**
@@ -423,6 +426,16 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 				this.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
+
+			if (HookManager.isPlaceholderAPILoaded() && this.useFullPlaceholderAPIParser())
+				Variables.setLegacyPlaceholderAPIparser((audience, message) -> {
+					final OfflinePlayer player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
+
+					message = PlaceholderAPI.setPlaceholders(player, message);
+					message = PlaceholderAPI.setBracketPlaceholders(player, message);
+
+					return message;
+				});
 
 			if (HookManager.isLiteBansLoaded())
 				Platform.runTaskTimerAsync(20 * 2, LitebanTask.getInstance());
@@ -868,6 +881,16 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	@Override
 	public final boolean isPluginEnabled() {
 		return this.platformEnabled && this.isEnabled();
+	}
+
+	/**
+	 * Should we parse PlaceholderAPI variables in the given message using their
+	 * native method? Performance decreases.
+	 *
+	 * @return
+	 */
+	protected boolean useFullPlaceholderAPIParser() {
+		return false;
 	}
 
 	// ----------------------------------------------------------------------------------------
