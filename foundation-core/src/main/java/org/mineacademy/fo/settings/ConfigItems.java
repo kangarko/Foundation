@@ -237,6 +237,9 @@ public final class ConfigItems<T extends YamlConfig> {
 					try {
 						this.loadOrCreateItem(name);
 
+					} catch (final YamlSyntaxError ex) {
+						ex.printStackTrace();
+
 					} catch (final Throwable t) {
 						CommonCore.error(t, "Error loading " + file);
 					}
