@@ -608,7 +608,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public String toLegacyAmpersand(final FoundationPlayer receiver) {
-		return this.toLegacy(receiver, LegacyComponentSerializer.legacyAmpersand());
+		return this.toLegacy(receiver, LegacyComponentSerializer.legacyAmpersand(), true);
 	}
 
 	/**
@@ -630,17 +630,30 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public String toLegacySection(final FoundationPlayer receiver) {
-		return this.toLegacy(receiver, LegacyComponentSerializer.legacySection());
+		return this.toLegacy(receiver, LegacyComponentSerializer.legacySection(), true);
+	}
+
+	/**
+	 * Return the plain colorized message combining all components into one
+	 * without click/hover events for the given receiver. Using section color codes.
+	 *
+	 * @param receiver
+	 * @param appendLastStyle true - for example {@literal <red>hello} converts to §chello§c, false excludes the color appending at the end
+	 *
+	 * @return
+	 */
+	public String toLegacySection(final FoundationPlayer receiver, boolean appendLastStyle) {
+		return this.toLegacy(receiver, LegacyComponentSerializer.legacySection(), appendLastStyle);
 	}
 
 	/*
 	 * Return the plain colorized message combining all components into one
 	 * without click/hover events for the given receiver.
 	 */
-	private String toLegacy(final FoundationPlayer receiver, LegacyComponentSerializer serializer) {
+	private String toLegacy(final FoundationPlayer receiver, LegacyComponentSerializer serializer, boolean appendLastStyle) {
 		final StringBuilder result = new StringBuilder(serializer.serialize(this.toAdventure(receiver)));
 
-		if (this.lastStyle != null) {
+		if (this.lastStyle != null && appendLastStyle) {
 			if (this.lastStyle.color() != null) {
 				final CompChatColor comp = CompChatColor.fromTextColor(this.lastStyle.color());
 
