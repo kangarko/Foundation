@@ -485,7 +485,7 @@ public class JsonItemStack {
 									.filter(dyeColor -> ReflectionUtil.getEnumName(dyeColor).equalsIgnoreCase(splitPattern[0]))
 									.findFirst();
 
-							final PatternType patternType = PatternType.getByIdentifier(splitPattern[1]);
+							final PatternType patternType = ReflectionUtil.invokeStatic(PatternType.class, "getByIdentifier", splitPattern[1]);
 
 							if (color.isPresent() && patternType != null)
 								bukkitPatterns.add(new Pattern(color.get(), patternType));
