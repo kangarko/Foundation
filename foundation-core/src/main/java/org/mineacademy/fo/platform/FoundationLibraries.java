@@ -18,7 +18,7 @@ final class FoundationLibraries {
 		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.8");
 
 		if (CommonCore.getJavaVersion() >= 15 && !ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
-			plugin.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.4");
+			plugin.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.6");
 
 		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
 			plugin.loadLibrary("com.google.code.gson", "gson", "2.11.0");
