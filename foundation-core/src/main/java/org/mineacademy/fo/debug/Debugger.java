@@ -456,6 +456,6 @@ public final class Debugger {
 	 * Helper method to log the message.
 	 */
 	private static void log(final String message) {
-		System.out.println(message);
+		Platform.log(message);
 	}
 }
