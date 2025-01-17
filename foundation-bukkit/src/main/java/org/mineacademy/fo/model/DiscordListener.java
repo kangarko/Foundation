@@ -498,7 +498,7 @@ public abstract class DiscordListener implements Listener {
 		/**
 		 * Register plugin hook
 		 *
-		 * https://github.com/kangarko/ChatControl-Red/issues/703
+		 * https://github.com/kangarko/ChatControl/issues/703
 		 */
 		public void registerHook() {
 			try {

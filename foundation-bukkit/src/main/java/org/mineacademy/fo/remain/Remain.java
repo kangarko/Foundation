@@ -133,7 +133,7 @@ public final class Remain {
 	private final static Map<UUID /*Player*/, Map<Material, Integer>> cooldowns = new HashMap<>();
 
 	/**
-	 * Must manually unfreeze in your plugin, resolves https://github.com/kangarko/ChatControl-Red/issues/2662
+	 * Must manually unfreeze in your plugin, resolves https://github.com/kangarko/ChatControl/issues/2662
 	 */
 	@Getter
 	private static boolean enchantRegistryUnfrozen = false;

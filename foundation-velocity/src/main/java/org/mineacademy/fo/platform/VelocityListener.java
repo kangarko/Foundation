@@ -88,7 +88,7 @@ public final class VelocityListener {
 			// Credits: https://github.com/VelocityPowered/BungeeQuack/blob/master/src/main/java/com/velocitypowered/bungeequack/BungeeQuack.java
 			// The reason for this ugly patch is that the above listener is ignored completely when velocity handles bungee commands :/
 			//
-			// https://github.com/kangarko/ChatControl-Red/issues/2673
+			// https://github.com/kangarko/ChatControl/issues/2673
 			final ProxyServer proxy = VelocityPlugin.getServer();
 			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			boolean found = true;
