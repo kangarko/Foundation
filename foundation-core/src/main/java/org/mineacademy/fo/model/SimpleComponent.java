@@ -742,12 +742,20 @@ public final class SimpleComponent implements ConfigSerializable {
 			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 
 		} catch (final IllegalArgumentException ex) {
+			final String mini = this.toMini(receiver);
+			final String stripped = mini.replaceAll("(<hover:show_item:[^:>]+):[^>]*?'>", "$1'>");
+
 			CommonCore.log(
-					"Adventure failed to convert component to JSON. Will return legacy!",
-					"Mini: " + this.toMini(receiver));
+					"Adventure failed to convert component to JSON. Will return stripped!",
+					"Please nag Paper about this at https://github.com/PaperMC/Paper/issues/11768",
+					"",
+					"Mini: " + this.toMini(receiver),
+					"Stripped: " + stripped);
 
 			ex.printStackTrace(); // do not report to sentry, likely not our fault
-			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
+			CommonCore.log("(Do not report the above stacktrace to us, read the log above and report to the respective developers)");
+
+			return fromMiniNative(stripped).toAdventureJson(receiver, legacy);
 		}
 	}
 
@@ -1171,8 +1179,10 @@ public final class SimpleComponent implements ConfigSerializable {
 				if (receiver == null)
 					return null;
 
+				final String replacedCondition = Variables.builder(receiver).replaceLegacy(this.viewCondition);
+
 				try {
-					final Object result = JavaScriptExecutor.run(Variables.builder(receiver).replaceLegacy(this.viewCondition), receiver);
+					final Object result = JavaScriptExecutor.run(replacedCondition, receiver);
 
 					if (result != null) {
 						ValidCore.checkBoolean(result instanceof Boolean, "View condition must return Boolean not " + (result == null ? "null" : result.getClass()) + " for component: " + this);
@@ -1186,7 +1196,8 @@ public final class SimpleComponent implements ConfigSerializable {
 							"Failed parsing view condition for component!",
 							"",
 							"The view condition must be a JavaScript code that returns a boolean!",
-							"Component: " + this,
+							"Raw code: " + this.viewCondition,
+							"Evaluated code: " + replacedCondition,
 							"Line: " + ex.getErrorLine(),
 							"Error: " + ex.getMessage());
 
