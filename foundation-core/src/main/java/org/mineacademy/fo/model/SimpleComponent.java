@@ -1158,7 +1158,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * @return
 		 */
 		public static ConditionalComponent deserialize(final SerializedMap map) {
-			final Component component = SimpleComponent.MINIMESSAGE_PARSER.deserialize(map.getString("Component"));
+			final Component component = SimpleComponent.MINIMESSAGE_PARSER.deserialize(CompChatColor.convertLegacyToMini(map.getString("Component"), false));
 			final ConditionalComponent part = new ConditionalComponent(component);
 
 			part.viewPermission = map.getString("Permission");
