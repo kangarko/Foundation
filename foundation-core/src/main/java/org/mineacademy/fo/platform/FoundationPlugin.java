@@ -14,6 +14,7 @@ import org.mineacademy.fo.command.SimpleSubCommandCore;
 import org.mineacademy.fo.database.SimpleDatabase;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.HandledException;
+import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
@@ -247,6 +248,8 @@ public interface FoundationPlugin {
 				localizationFolder.renameTo(new File(unusedFolder, "localization"));
 			}
 		}
+
+		ValidCore.checkNotEmpty(Filter.getFilters(), "Failed to load filters, this is a bug!");
 
 		Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
 		Platform.runTaskTimerAsync(20, BossBarTask.getInstance());

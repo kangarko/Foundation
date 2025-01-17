@@ -185,7 +185,7 @@ public abstract class SimpleCommandGroup {
 	 * @param parentClass
 	 */
 	public final void registerSubcommand(final Class<? extends SimpleSubCommandCore> parentClass) {
-		for (final Class<? extends SimpleSubCommandCore> clazz : ReflectionUtil.getClasses(Platform.getPlugin().getFile(), parentClass))
+		for (final Class<? extends SimpleSubCommandCore> clazz : ReflectionUtil.getClasses(Platform.getPlugin(), parentClass))
 			if (!Modifier.isAbstract(clazz.getModifiers())) {
 				ValidCore.checkBoolean(Modifier.isFinal(clazz.getModifiers()), "Make child of " + parentClass.getSimpleName() + " class " + clazz.getSimpleName() + " final to auto register it!");
 

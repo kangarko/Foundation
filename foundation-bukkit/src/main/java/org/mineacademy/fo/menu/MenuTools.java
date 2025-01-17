@@ -76,7 +76,7 @@ public abstract class MenuTools extends Menu {
 	protected Object[] lookupTools(final Class<? extends Tool> extendingClass) {
 		final List<Object> instances = new ArrayList<>();
 
-		for (final Class<?> clazz : ReflectionUtil.getClasses(BukkitPlugin.getInstance().getFile(), extendingClass))
+		for (final Class<?> clazz : ReflectionUtil.getClasses(BukkitPlugin.getInstance(), extendingClass))
 			try {
 				final Object instance = ReflectionUtil.getStaticFieldContent(clazz, "instance");
 

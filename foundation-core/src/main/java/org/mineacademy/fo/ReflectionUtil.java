@@ -20,9 +20,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 import org.mineacademy.fo.exception.ReflectionException;
-import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.platform.FoundationPlugin;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -771,13 +772,28 @@ public final class ReflectionUtil {
 	 * Get all classes in the plugin file.
 	 *
 	 * @param <T>
-	 * @param pluginFile
+	 * @param plugin
 	 * @param extendingClass
+	 *
 	 * @return
 	 */
 	@SneakyThrows
-	public static <T> TreeSet<Class<T>> getClasses(@NonNull final File pluginFile, final Class<T> extendingClass) {
+	public static <T> TreeSet<Class<T>> getClasses(@NonNull final FoundationPlugin plugin, final Class<T> extendingClass) {
+		return getClasses(plugin.getFile(), extendingClass, plugin.getPluginClassLoader());
+	}
 
+	/**
+	 * Get all classes in the plugin file.
+	 *
+	 * @param <T>
+	 * @param pluginFile
+	 * @param extendingClass
+	 * @param classLoader
+	 *
+	 * @return
+	 */
+	@SneakyThrows
+	public static <T> TreeSet<Class<T>> getClasses(@NonNull final File pluginFile, final Class<T> extendingClass, final ClassLoader classLoader) {
 		final TreeSet<Class<T>> classes = new TreeSet<>(Comparator.comparing(Class::toString));
 
 		try (final JarFile jarFile = new JarFile(pluginFile)) {
@@ -792,12 +808,14 @@ public final class ReflectionUtil {
 					Class<?> clazz = null;
 
 					try {
-						clazz = Class.forName(name, false, Platform.getPlugin().getPluginClassLoader());
+						clazz = Class.forName(name, false, classLoader);
 
 						if (extendingClass == null || (extendingClass.isAssignableFrom(clazz) && clazz != extendingClass))
 							classes.add((Class<T>) clazz);
 
 					} catch (final Throwable throwable) {
+						if (throwable instanceof FoException)
+							throwable.printStackTrace();
 
 						if (extendingClass != null && (clazz != null && extendingClass.isAssignableFrom(clazz)) && clazz != extendingClass)
 							CommonCore.log("Unable to load class '" + name + "' due to error: " + throwable);
