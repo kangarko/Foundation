@@ -53,11 +53,15 @@ public class CommandException extends RuntimeException {
 	 */
 	public final void sendErrorMessage(final FoundationPlayer audience) {
 		if (this.components != null)
-			if (this.components.length == 1)
-				Messenger.error(audience, this.components[0]);
-			else
+			if (this.components.length == 1) {
+				final SimpleComponent error = this.components[0];
+
+				if (!error.isEmpty())
+					Messenger.error(audience, this.components[0]);
+			} else
 				for (final SimpleComponent component : this.components)
-					audience.sendMessage(component.color(CompChatColor.RED));
+					if (!component.isEmpty())
+						audience.sendMessage(component.color(CompChatColor.RED));
 	}
 
 	/**
