@@ -31,7 +31,7 @@ public abstract class FoundationPlatform {
 	protected FoundationPlatform() {
 
 		// Dynamically load filters
-		for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getPlugin().getFile(), Filter.class))
+		for (final Class<? extends Filter> filterClass : ReflectionUtil.getClasses(this.getPlugin().getFile(), Filter.class, this.getPlugin().getPluginClassLoader()))
 			try {
 				final Constructor<? extends Filter> constructor = ReflectionUtil.getConstructor(filterClass);
 				ValidCore.checkBoolean(constructor.getParameterCount() == 0, "Filter class " + filterClass + " must have a public no args constructor!");
