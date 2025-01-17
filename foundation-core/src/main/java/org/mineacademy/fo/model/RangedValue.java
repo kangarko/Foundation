@@ -37,7 +37,8 @@ public final class RangedValue implements ConfigStringSerializable {
 	 * @param max the maximum value
 	 */
 	public RangedValue(final Number min, final Number max) {
-		ValidCore.checkBoolean(min.longValue() <= max.longValue(), "Minimum must be lower or equal maximum");
+		if (min.longValue() > max.longValue())
+			throw new IllegalArgumentException("Minimum must be lower or equal maximum");
 
 		this.min = min;
 		this.max = max;
@@ -180,29 +181,29 @@ public final class RangedValue implements ConfigStringSerializable {
 		else
 			parts = new String[] { (firstNegative ? "-" : "") + split[0], (secondNegative ? "-" + split[2] : split[1]) };
 
-		ValidCore.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed value " + line);
+		if (!(parts.length == 1 || parts.length == 2))
+			throw new IllegalArgumentException("Malformed value " + line);
 
 		final String first = parts[0].trim();
 		final String second = parts.length == 2 ? parts[1].trim() : first;
 
 		// Check if valid numbers
-		ValidCore.checkBoolean(ValidCore.isNumber(first),
-				"Invalid ranged value 1. input: '" + first + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
+		if (!ValidCore.isNumber(first))
+			throw new IllegalArgumentException("Invalid ranged value 1. input: '" + first + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
 
-		ValidCore.checkBoolean(ValidCore.isNumber(second),
-				"Invalid ranged value 2. input: '" + second + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
+		if (!ValidCore.isNumber(second))
+			throw new IllegalArgumentException("Invalid ranged value 2. input: '" + second + "' from line: '" + line + "'. RangedValue no longer accepts human natural format, for this, use RangedSimpleTime instead.");
 
 		final Number firstNumber = first.contains(".") ? Double.parseDouble(first) : Long.parseLong(first);
 		final Number secondNumber = second.contains(".") ? Double.parseDouble(second) : Long.parseLong(second);
 
 		// Check if 1<2
 		if (first.contains("."))
-			ValidCore.checkBoolean(firstNumber.longValue() <= secondNumber.longValue(),
-					"First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
+			if (firstNumber.longValue() > secondNumber.longValue())
+				throw new IllegalArgumentException("First number cannot be greater than second: " + firstNumber.longValue() + " vs " + secondNumber.longValue() + " in " + line);
 
-		else
-			ValidCore.checkBoolean(firstNumber.doubleValue() <= secondNumber.doubleValue(),
-					"First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
+			else if (firstNumber.doubleValue() > secondNumber.doubleValue())
+				throw new IllegalArgumentException("First number cannot be greater than second: " + firstNumber.doubleValue() + " vs " + secondNumber.doubleValue() + " in " + line);
 
 		return new RangedValue(firstNumber, secondNumber);
 	}
