@@ -3,6 +3,7 @@ package org.mineacademy.fo.platform;
 import java.io.File;
 import java.util.Objects;
 
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -11,7 +12,6 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.library.BungeeLibraryManager;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.model.BStatsBungee;
@@ -143,19 +143,20 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 
 			ValidCore.checkBoolean(split.length > 1, "Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
 			bungeeVersion = split[2];
+
+			final String versionString = bungeeVersion.split("\\-")[0]; // 1.22.1
+			final String[] versions = versionString.split("\\.");
+			ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bungee version '" + bungeeVersion + "', expected '-' and a version number");
+
+			final int version = Integer.parseInt(versions[1]); // 20
+
+			final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
+			final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
+
+			MinecraftVersion.setVersion(current, subversion);
+
 		} else
-			throw new FoException("Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion, false);
-
-		final String versionString = bungeeVersion.split("\\-")[0]; // 1.22.1
-		final String[] versions = versionString.split("\\.");
-		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bungee version '" + bungeeVersion + "', expected '-' and a version number");
-
-		final int version = Integer.parseInt(versions[1]); // 20
-
-		final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
-		final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
-
-		MinecraftVersion.setVersion(current, subversion);
+			Common.warning("Unsupported platform '" + bungeeVersion + "'. Only BungeeCord or Waterfall are officially supported. If issues arise we will not be able to provide support.");
 	}
 
 	@Override
