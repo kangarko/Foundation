@@ -334,10 +334,17 @@ public class JsonItemStack {
 
 					if (bannerMeta.numberOfPatterns() > 0) {
 						final JsonArray patterns = new JsonArray();
+
 						bannerMeta.getPatterns()
 								.stream()
-								.map(pattern -> ReflectionUtil.getEnumName(pattern.getColor()) + ":" + pattern.getPattern().getIdentifier())
+								.map(pattern -> {
+									final String color = ReflectionUtil.getEnumName(pattern.getColor());
+									final String identifier = ReflectionUtil.invoke("getIdentifier", pattern.getPattern());
+
+									return color + ":" + identifier;
+								})
 								.forEach(str -> patterns.add(new JsonPrimitive(str)));
+
 						extraMeta.add("patterns", patterns);
 					}
 
@@ -485,7 +492,8 @@ public class JsonItemStack {
 									.filter(dyeColor -> ReflectionUtil.getEnumName(dyeColor).equalsIgnoreCase(splitPattern[0]))
 									.findFirst();
 
-							final PatternType patternType = ReflectionUtil.invokeStatic(PatternType.class, "getByIdentifier", splitPattern[1]);
+							final Method getByIdentifier = ReflectionUtil.getMethod(PatternType.class, "getByIdentifier", String.class);
+							final PatternType patternType = ReflectionUtil.invokeStatic(getByIdentifier, splitPattern[1]);
 
 							if (color.isPresent() && patternType != null)
 								bukkitPatterns.add(new Pattern(color.get(), patternType));
