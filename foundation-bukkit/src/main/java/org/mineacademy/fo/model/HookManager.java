@@ -2690,6 +2690,8 @@ final class PlaceholderAPIHook {
 						"empty value.");
 
 			throwable.printStackTrace();
+			Common.log("(Please report the above error to the other plugin developers, see the above message for details.)");
+
 			return "";
 		}
 	}
