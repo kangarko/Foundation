@@ -9,6 +9,7 @@ import java.util.regex.PatternSyntaxException;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.UnrecognizedRuleOperatorException;
 
 /**
@@ -163,7 +164,8 @@ public abstract class RuleSetReader<T extends Rule> {
 				// If something is being created then attempt to parse operators.
 				else {
 					if (!this.onNoMatchLineParse(file, line))
-						ValidCore.checkNotNull(match, "Cannot define operator when no rule is being created! File: '" + file + "' Line (" + (i + 1) + "): '" + line + "'");
+						if (match == null)
+							throw new FoException("Cannot define operator when no rule is being created! File: '" + file + "' Line (" + (i + 1) + "): '" + line + "'", false);
 
 					if (rule != null)
 						try {
