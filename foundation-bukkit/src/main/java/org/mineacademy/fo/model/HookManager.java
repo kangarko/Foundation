@@ -2593,10 +2593,25 @@ final class PlaceholderAPIHook {
 
 		// MineAcademy edit: Case insensitive
 		for (final PlaceholderExpansion expansion : PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions())
+			try {
+				// Ignore our internal expansion and poorly coded ones
+				if (expansion != null) {
+					if (expansion.getVersion() != null && expansion.getVersion().equals("foundation-internal"))
+						continue;
 
-			// Ignore our internal expansion
-			if (expansion != null && !expansion.getVersion().equals("foundation-internal"))
-				this.hooks.put(expansion.getIdentifier().toLowerCase(), expansion);
+					if (expansion.getIdentifier() == null) {
+						Common.warning("The PlaceholderAPI expansion " + expansion + " is wrongly coded as it's missing an identifier! Skipping...");
+
+						continue;
+					}
+
+					// Sigh for a few extensions that don't follow the API
+					this.hooks.put(expansion.getIdentifier().toLowerCase(), expansion);
+				}
+
+			} catch (final Throwable t) {
+				Common.error(t, "Failed to register PlaceholderAPI extension " + expansion);
+			}
 	}
 
 	private String setPlaceholders(final OfflinePlayer player, final String text) {
