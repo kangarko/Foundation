@@ -393,7 +393,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				Valid.checkBoolean(DiskRegion.hasCreatedPlayerRegionGetter(), "Alert author of " + this.getName() + " to call DiskRegion#setCreatedPlayerRegionGetter in onPluginLoad()");
 				Valid.checkBoolean(DiskRegion.hasCreatedPlayerRegionResetter(), "Alert author of " + this.getName() + " to call DiskRegion#sasCreatedPlayerRegionResetter in onPluginLoad()");
 
-				DiskRegion.loadRegions();
+				// Load delayed to fix issues with multiverse plugins
+				Platform.runTask(DiskRegion::loadRegions);
 			}
 
 			if (!this.isEnabled() || !this.platformEnabled)
