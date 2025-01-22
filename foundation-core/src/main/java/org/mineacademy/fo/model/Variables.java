@@ -311,7 +311,7 @@ public final class Variables {
 				result.append(cached);
 
 			else {
-				String value = this.replaceVariableLegacy(variable);
+				String value = variable.isEmpty() ? matcher.group() : this.replaceVariableLegacy(variable);
 
 				if (value == null)
 					value = matcher.group();
