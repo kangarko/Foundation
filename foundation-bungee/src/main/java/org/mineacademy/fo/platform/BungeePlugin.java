@@ -3,7 +3,6 @@ package org.mineacademy.fo.platform;
 import java.io.File;
 import java.util.Objects;
 
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -156,7 +155,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			MinecraftVersion.setVersion(current, subversion);
 
 		} else
-			Common.warning("Unsupported platform '" + bungeeVersion + "'. Only BungeeCord or Waterfall are officially supported. If issues arise we will not be able to provide support.");
+			this.getLogger().warning("Unsupported platform '" + bungeeVersion + "'. Only BungeeCord or Waterfall are officially supported. If issues arise we will not be able to provide support.");
 	}
 
 	@Override
