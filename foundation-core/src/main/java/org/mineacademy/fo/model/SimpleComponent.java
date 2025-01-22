@@ -747,15 +747,15 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			CommonCore.log(
 					"Adventure failed to convert component to JSON. Will return stripped!",
-					"Please nag Paper about this at https://github.com/PaperMC/Paper/issues/11768",
+					"Please update your Paper build as this is a server bug which is already fixed.",
 					"",
-					"Mini: " + this.toMini(receiver),
+					"Mini: " + mini,
 					"Stripped: " + stripped);
 
 			ex.printStackTrace(); // do not report to sentry, likely not our fault
 			CommonCore.log("(Do not report the above stacktrace to us, read the log above and report to the respective developers)");
 
-			return fromMiniNative(stripped).toAdventureJson(receiver, legacy);
+			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
 		}
 	}
 
