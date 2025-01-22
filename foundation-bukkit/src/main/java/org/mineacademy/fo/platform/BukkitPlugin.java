@@ -10,6 +10,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -431,8 +432,23 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				Variables.setLegacyPlaceholderAPIparser((audience, message) -> {
 					final OfflinePlayer player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
 
-					message = PlaceholderAPI.setPlaceholders(player, message);
-					message = PlaceholderAPI.setBracketPlaceholders(player, message);
+					try {
+						message = PlaceholderAPI.setPlaceholders(player, message);
+						message = PlaceholderAPI.setBracketPlaceholders(player, message);
+
+					} catch (final Throwable t) {
+						Common.logFramed(
+								"PlaceholderAPI failed to replace variables!",
+								"Message: '" + message + "'",
+								"Player: " + audience,
+								"",
+								"THIS IS IN 99% CASES NOT OUR FAULT. Alert their",
+								"their developers to fix it first, as in most",
+								"cases they need to properly account for null",
+								"player sender or fix their own errors first");
+
+						t.printStackTrace();
+					}
 
 					return message;
 				});
