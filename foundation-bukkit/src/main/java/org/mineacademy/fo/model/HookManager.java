@@ -179,6 +179,7 @@ public final class HookManager {
 		if (Platform.isPluginInstalled("DiscordSRV"))
 			try {
 				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
+				Class.forName("github.scarsz.discordsrv.util.DiscordUtil");
 
 				discordSRVHook = new DiscordSRVHook();
 
