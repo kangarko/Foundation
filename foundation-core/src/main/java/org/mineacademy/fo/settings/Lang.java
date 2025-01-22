@@ -29,7 +29,6 @@ import com.google.gson.JsonSyntaxException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 /**
  * Represents a localization system for your plugin. All localization keys
@@ -191,11 +190,12 @@ public final class Lang {
 	 * @param placeholders
 	 * @return
 	 */
-	public static String legacy(final String path, @NonNull final Map<String, Object> placeholders) {
+	public static String legacy(final String path, final Map<String, Object> placeholders) {
 		final String value = instance.getLegacy(path);
 		final Variables variables = Variables.builder();
 
-		variables.placeholders(placeholders);
+		if (placeholders != null)
+			variables.placeholders(placeholders);
 
 		return variables.replaceLegacy(value);
 	}
@@ -285,11 +285,12 @@ public final class Lang {
 	 * @param placeholders
 	 * @return
 	 */
-	public static SimpleComponent component(final String path, @NonNull final Map<String, Object> placeholders) {
+	public static SimpleComponent component(final String path, final Map<String, Object> placeholders) {
 		final SimpleComponent component = instance.getComponent(path);
 		final Variables variables = Variables.builder();
 
-		variables.placeholders(placeholders);
+		if (placeholders != null)
+			variables.placeholders(placeholders);
 
 		return variables.replaceComponent(component);
 	}
