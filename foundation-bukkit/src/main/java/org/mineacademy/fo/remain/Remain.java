@@ -2641,16 +2641,16 @@ public final class Remain {
 			}
 
 			// Delete command + aliases from server's command map.
-			final Field f = SimpleCommandMap.class.getDeclaredField("knownCommands");
-			f.setAccessible(true);
+			final Field knownCommandsFields = SimpleCommandMap.class.getDeclaredField("knownCommands");
+			knownCommandsFields.setAccessible(true);
 
-			final Map<String, Command> cmdMap = (Map<String, Command>) f.get(getCommandMap());
+			final Map<String, Command> knownCommands = (Map<String, Command>) knownCommandsFields.get(getCommandMap());
 
-			cmdMap.remove(label);
+			knownCommands.remove(label);
 
 			if (command != null && removeAliases)
 				for (final String alias : command.getAliases())
-					cmdMap.remove(alias);
+					knownCommands.remove(alias);
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Failed to unregister command /" + label);
