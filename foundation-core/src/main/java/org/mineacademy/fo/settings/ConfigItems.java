@@ -15,6 +15,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.InvalidWorldException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 
@@ -330,7 +331,7 @@ public final class ConfigItems<T extends YamlConfig> {
 							errorHandled = true;
 
 						} else
-							CommonCore.throwError(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor);
+							throw new FoException(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor, false);
 					}
 				}
 			}
