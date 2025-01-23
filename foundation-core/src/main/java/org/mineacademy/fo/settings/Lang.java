@@ -528,7 +528,7 @@ public final class Lang {
 
 			}
 
-			// Plugin-specific
+			// Plugin-specific, in jar
 			{
 				// Optional
 				content = FileUtil.readLinesFromInternalPath("lang/" + englishLangTag + ".json");
@@ -545,7 +545,7 @@ public final class Lang {
 						putToDictionary(dictionary, content);
 
 					else
-						CommonCore.warning("No such localization: " + SimpleSettings.LOCALE + ", reverting to the default one.");
+						CommonCore.warning("No such localization: " + SimpleSettings.LOCALE + " in plugin's jar, using keys from the disk file or from the default English locale for keys that are missing.");
 				}
 			}
 
@@ -567,6 +567,7 @@ public final class Lang {
 					if (content != null)
 						try {
 							putToDictionary(dictionary, content);
+
 						} catch (final JsonSyntaxException ex) {
 							CommonCore.warning("Invalid syntax in localization file " + SimpleSettings.LOCALE + ". Use services like https://jsonformatter.org/ to correct it. Error: " + ex.getMessage());
 						}
