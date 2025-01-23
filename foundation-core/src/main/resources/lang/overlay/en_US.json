@@ -132,6 +132,8 @@
     "<#ffdc7b>Yours: {plugin_version} New: {new_version} Released: {release_date}",
     "<#ffdc7b>Link: <click:open_url:'{url}'>{url}</click>"
   ],
+  "chat-line": "*---------------------------------------------------*",
+  "chat-line-smooth": "<st>-----------------------------------------------------</st>",
   "prefix-announce": "<light_purple><dark_gray>[<bold><dark_purple>!<reset><dark_gray>]<gray>",
   "prefix-error": "<red><dark_gray>[<bold><dark_red>✕<reset><dark_gray>]<red>",
   "prefix-info": "<gray><dark_gray>[<bold><blue>i<reset><dark_gray>]<gray>",
