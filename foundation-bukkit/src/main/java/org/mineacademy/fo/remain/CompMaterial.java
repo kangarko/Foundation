@@ -2065,6 +2065,15 @@ public enum CompMaterial {
 	}
 
 	/**
+	 * Returns if the given material is air
+	 * @param material
+	 * @return
+	 */
+	public static boolean isAir(final CompMaterial material) {
+		return material == null || material == AIR || material == CAVE_AIR || material == VOID_AIR;
+	}
+
+	/**
 	 * Returns true if the given material is a bed block (any color) or a bed item.
 	 *
 	 * @param block
