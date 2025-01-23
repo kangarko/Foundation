@@ -91,14 +91,14 @@ final class BukkitPlayer extends FoundationPlayer {
 		if (this.isPlayer)
 			return this.player.getUniqueId();
 
-		else if (this.isConsole())
-			return CommonCore.ZERO_UUID;
-
 		else if (this.isDiscord())
 			return ((DiscordSender) this.sender).getUniqueId();
 
 		else if (this.isDynmap())
 			return ((DynmapSender) this.sender).getUniqueId();
+
+		else if (this.isConsole() || this.sender instanceof CommandSender) // Fix FeedbackForwardingSender
+			return CommonCore.ZERO_UUID;
 
 		throw new UnsupportedOperationException("Getting UUID of " + this.sender.getClass().getSimpleName() + " " + this.sender + " is unsupported");
 	}
