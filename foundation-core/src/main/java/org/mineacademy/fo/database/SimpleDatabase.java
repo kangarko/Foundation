@@ -118,6 +118,8 @@ public class SimpleDatabase {
 	 * @param password
 	 */
 	public final void connect(final String url, final String user, final String password) {
+		this.isSQLite = false;
+
 		try {
 			if (url.startsWith("jdbc:sqlite")) {
 				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.47.1.0");
