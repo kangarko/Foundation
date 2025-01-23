@@ -560,7 +560,7 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static final String chatLine() {
-		return "*---------------------------------------------------*";
+		return Lang.plain("chat-line");
 	}
 
 	/**
@@ -570,7 +570,7 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static final String chatLineSmooth() {
-		return CompChatColor.STRIKETHROUGH + "-----------------------------------------------------";
+		return Lang.plain("chat-line-smooth");
 	}
 
 	/**
