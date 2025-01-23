@@ -1821,7 +1821,9 @@ public final class Remain {
 	 * @param icon
 	 * @param style
 	 */
-	public static void sendToastToAudience(final List<FoundationPlayer> receivers, final Function<FoundationPlayer, String> message, final CompMaterial icon, final CompToastStyle style) {
+	public static void sendToastToAudience(@NonNull final List<FoundationPlayer> receivers, @NonNull final Function<FoundationPlayer, String> message, @NonNull final CompMaterial icon, @NonNull final CompToastStyle style) {
+		Valid.checkBoolean(!CompMaterial.isAir(icon), "Toast icon cannot be air!");
+
 		if (hasAdvancements)
 			Platform.runTaskAsync(() -> {
 				for (final FoundationPlayer receiver : receivers) {
