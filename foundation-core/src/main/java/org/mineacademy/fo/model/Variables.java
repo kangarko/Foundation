@@ -57,6 +57,7 @@ public final class Variables {
 	 */
 	public static final Pattern HEX_AMPERSAND_PATTERN = Pattern.compile("(?<!<|:)&#([a-fA-F0-9]{6})(?!>)");
 	public static final Pattern HEX_LITERAL_PATTERN = Pattern.compile("(?<!<|:|&)#([a-fA-F0-9]{6})(?!>)");
+	public static final Pattern HEX_BRACKET_PATTERN = Pattern.compile("\\{#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\}");
 	public static final Pattern HEX_MD5_PATTERN = Pattern.compile("[" + CompChatColor.COLOR_CHAR + "]x([" + CompChatColor.COLOR_CHAR + "][0-9a-fA-F]){6}");
 
 	/**
@@ -336,6 +337,28 @@ public final class Variables {
 							}
 
 							md5Matcher.appendTail(buffer);
+							value = buffer.toString();
+						}
+
+						// Translate {#132456} to hey
+						{
+							// Match both 3-digit and 6-digit hex codes inside {#} brackets
+							final Matcher bracketMatcher = HEX_BRACKET_PATTERN.matcher(value);
+							final StringBuffer buffer = new StringBuffer();
+
+							while (bracketMatcher.find()) {
+								String hex = bracketMatcher.group(1);
+
+								// Expand 3-digit hex codes to 6 digits (e.g., #F00 → FF0000)
+								if (hex.length() == 3)
+									hex = hex.replaceAll("(.)", "$1$1");
+
+								// Convert to MiniMessage color format while preserving case sensitivity
+								final String replacement = "<#" + hex + ">";
+								bracketMatcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
+							}
+
+							bracketMatcher.appendTail(buffer);
 							value = buffer.toString();
 						}
 					}
