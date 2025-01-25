@@ -823,6 +823,29 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		final StringBuilder result = new StringBuilder();
 
 		for (int i = 0; i < message.length(); i++) {
+			if (i + 13 < message.length() && message.charAt(i) == '§' && message.charAt(i + 1) == 'x') {
+				final StringBuilder hex = new StringBuilder("#");
+				boolean isValidHexSequence = true;
+
+				for (int j = 2; j <= 12; j += 2) {
+					if (message.charAt(i + j) == '§')
+						hex.append(message.charAt(i + j + 1));
+
+					else {
+						isValidHexSequence = false;
+
+						break;
+					}
+				}
+
+				if (isValidHexSequence) {
+					result.append('<').append(hex).append('>');
+					i += 13; // Skip the entire §x§R§R§G§G§B§B sequence
+
+					continue;
+				}
+			}
+
 			if (i + 1 < message.length() && ((message.charAt(i) == '&' && supportAmpersand) || message.charAt(i) == '§')) {
 				final String code = message.substring(i, i + 2);
 
