@@ -14,6 +14,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.CompToastStyle;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleComponent.LastMessageStyleParser;
@@ -469,7 +470,8 @@ public abstract class FoundationPlayer implements Audience {
 						lastStyle = LastMessageStyleParser.parseStyle(line);
 					}
 
-					final String newMiniHover = String.join("\n", oldLines);
+					String newMiniHover = String.join("\n", oldLines);
+					newMiniHover = CompChatColor.convertLegacyToMini(newMiniHover, false);
 
 					adventure = adventure.hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize(newMiniHover)));
 				}
