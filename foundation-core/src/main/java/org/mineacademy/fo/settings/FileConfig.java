@@ -3,6 +3,7 @@ package org.mineacademy.fo.settings;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -224,6 +225,9 @@ public abstract class FileConfig extends ConfigSection {
 					writer.write(data);
 				}
 			}
+
+		} catch (final FileNotFoundException ex) {
+			throw new FoException(ex, "Unable to access " + this.file + ", did you delete it or used PlugMan?", false);
 
 		} catch (final IOException ex) {
 			CommonCore.throwError(ex, "Error saving " + this.file);
