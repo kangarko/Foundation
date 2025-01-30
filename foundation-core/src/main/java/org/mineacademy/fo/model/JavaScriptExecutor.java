@@ -117,8 +117,9 @@ public final class JavaScriptExecutor {
 				if (CommonCore.getJavaVersion() >= 15)
 					warningMessage.addAll(Arrays.asList(
 							"",
-							"To fix this, install the NashornPlus",
-							"plugin from mineacademy.org/nashorn"));
+							"To fix this, alert the plugin developer",
+							"to shade or load nashorn-core library in",
+							"this plugin."));
 				else
 					warningMessage.addAll(Arrays.asList(
 							"",
