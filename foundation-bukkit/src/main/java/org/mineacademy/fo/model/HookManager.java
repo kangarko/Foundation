@@ -1514,7 +1514,7 @@ public final class HookManager {
 	 *
 	 * @return the value or null if not found or PAPI not installed
 	 */
-	public static String getPlaceholderAPIValue(final Player player, final String variable) {
+	public static String getPlaceholderAPIValue(final OfflinePlayer player, final String variable) {
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.getValue(player, variable) : null;
 	}
 
