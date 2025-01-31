@@ -135,10 +135,14 @@ public final class ChatImage {
 	 * @return
 	 * @throws IOException
 	 */
-	public ChatImage drawFromFile(final File file) throws IOException {
+	public ChatImage drawFromFile(@NonNull final File file) throws IOException {
 		ValidCore.checkBoolean(file.exists(), "Cannot load image from non existing file " + file.toPath());
+		final BufferedImage image = ImageIO.read(file);
 
-		return this.draw(ImageIO.read(file));
+		if (image == null)
+			throw new NullPointerException("Failed to load image from file: " + file);
+
+		return this.draw(image);
 	}
 
 	/**
@@ -148,8 +152,13 @@ public final class ChatImage {
 	 * @return
 	 * @throws IOException
 	 */
-	public ChatImage drawFromUrl(final String webUrl) throws IOException {
-		return this.draw(ImageIO.read(new URL(webUrl)));
+	public ChatImage drawFromUrl(@NonNull final String webUrl) throws IOException {
+		final BufferedImage image = ImageIO.read(new URL(webUrl));
+
+		if (image == null)
+			throw new NullPointerException("Failed to download image from url: " + webUrl);
+
+		return this.draw(image);
 	}
 
 	/**
@@ -158,7 +167,7 @@ public final class ChatImage {
 	 * @param image
 	 * @return
 	 */
-	public ChatImage draw(final BufferedImage image) {
+	public ChatImage draw(@NonNull final BufferedImage image) {
 		ValidCore.checkBoolean(this.height >= 2, "File image height must be equal or above 2");
 
 		final BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);

@@ -3,6 +3,7 @@ package org.mineacademy.fo.platform;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -11,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -309,7 +311,13 @@ final class BukkitPlayer extends FoundationPlayer {
 			if (Remain.isCommandSenderAudience())
 				this.sender.showBossBar(bar.getBar());
 			else
-				this.audience.showBossBar(bar.getBar());
+				try {
+					this.audience.showBossBar(bar.getBar());
+
+				} catch (final NoSuchElementException ex) {
+					Common.logTimed(60 * 60, "FATAL ERROR: Boss bar is unsupported on CraftBukkit, please migrate to Paper.");
+					// Adventure bug on 1.8.8 craft bukkit
+				}
 
 		} else
 			this.sendMessage(bar.getBar().name());

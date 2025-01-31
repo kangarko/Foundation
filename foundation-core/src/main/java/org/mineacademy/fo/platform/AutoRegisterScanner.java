@@ -80,8 +80,8 @@ final class AutoRegisterScanner {
 	 * <p>
 	 * If not, we only call the instance constructor in case there is any underlying registration going on
 	 */
+	@SuppressWarnings("unused")
 	public static void scanAndRegister() {
-
 		registeredCommandGroups.clear();
 
 		proxyListenerRegistered = false;
