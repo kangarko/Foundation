@@ -1,8 +1,6 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
@@ -119,19 +117,6 @@ public interface FoundationPlugin {
 	 */
 	default String getBuiltByBitSharedToken() {
 		return null;
-	}
-
-	/**
-	 * Foundation automatically can filter console commands for you, including
-	 * messages from other plugins or the server itself, preventing unnecessary console spam.
-	 *
-	 * You can return a list of messages that will be matched using "startsWith OR contains" method
-	 * and will be filtered.
-	 *
-	 * @return
-	 */
-	default Set<String> getConsoleFilter() {
-		return new HashSet<>();
 	}
 
 	/**
