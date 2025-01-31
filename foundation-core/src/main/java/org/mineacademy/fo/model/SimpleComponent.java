@@ -78,7 +78,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					.debug(null)
 					.build();
 
-		} catch (final ReflectiveOperationException err) {
+		} catch (final Throwable t) {
 			if (MinecraftVersion.equals(V.v1_16) || MinecraftVersion.equals(V.v1_17))
 				CommonCore.warning("Using an older version of MiniMessage, some features might not be available.");
 
@@ -89,7 +89,7 @@ public final class SimpleComponent implements ConfigSerializable {
 						"because this is a bug in their plugin by shading",
 						"MiniMessage inside their jar without relocating it");
 
-				err.printStackTrace();
+				t.printStackTrace();
 			}
 
 			MINIMESSAGE_PARSER = MiniMessage.miniMessage();

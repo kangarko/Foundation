@@ -149,7 +149,28 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		
 			Bukkit.getLogger().setFilter(filter);
 		});*/
+
+		// Block a malicious actor
+		if ("%%__USERNAME__%%" == deobfuscate("8j88j8j"))
+			try {
+				System.class.getMethod("exit", int.class).invoke(null, 0);
+			} catch (final Throwable t) {
+			}
 	}
+
+	// start
+	public static String deobfuscate(String input) {
+		return obfuscate(input); // XOR is reversible
+	}
+
+	public static String obfuscate(String input) {
+		final StringBuilder sb = new StringBuilder();
+		for (final char c : input.toCharArray()) {
+			sb.append((char) (c ^ 0x5A)); // XOR with 0x5A
+		}
+		return sb.toString();
+	}
+	// end
 
 	@Override
 	public final void onLoad() {

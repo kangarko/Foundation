@@ -611,6 +611,8 @@ public class SimpleDatabase {
 		if (maps.isEmpty())
 			return;
 
+		this.reconnectIfClosed();
+
 		synchronized (this.connection) {
 			final String columns = String.join(", ", maps.get(0).keySet());
 			final String placeholders = String.join(", ", Collections.nCopies(maps.get(0).size(), "?"));
@@ -651,9 +653,14 @@ public class SimpleDatabase {
 				this.connection.commit();
 
 			} catch (final SQLException ex) {
-				CommonCore.error(ex,
-						"Error executing a batch insert",
-						"SQL Query: " + sql);
+				if (ex.getMessage() != null && ex.getMessage().contains("Can not read response from server")) {
+					CommonCore.log("Error executing batch insert: " + sql);
+
+					ex.printStackTrace();
+				} else
+					CommonCore.error(ex,
+							"Error executing a batch insert",
+							"SQL Query: " + sql);
 
 			} finally {
 				try {

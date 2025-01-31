@@ -218,8 +218,13 @@ public abstract class PacketListener {
 				else if (!packet.getChatTypes().getFields().isEmpty())
 					this.actionBarMode = 3;
 
-				else
-					throw new FoException("Unknown way to find if chat packet is action bar, packet: " + packet.getHandle().getClass());
+				else {
+					// Probably ways have changed
+					if (MinecraftVersion.newerThan(V.v1_21))
+						throw new FoException("Unknown way to find if chat packet is action bar, packet: " + packet.getHandle().getClass());
+
+					// Ignore and log the message
+				}
 
 			if (this.actionBarMode == 1) {
 				if (packet.getBooleans().read(0))

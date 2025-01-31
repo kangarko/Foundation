@@ -2553,7 +2553,9 @@ final class PlaceholderAPIHook {
 			this.injector.register();
 
 		} catch (final Throwable throwable) {
-			CommonCore.error(throwable, "Failed to inject our variables into PlaceholderAPI!");
+			CommonCore.warning("Failed to inject our variables into PlaceholderAPI! This is NOT OUR BUG, check if PlaceholderAPI is loaded properly.");
+
+			throwable.printStackTrace();
 		}
 	}
 
@@ -3489,22 +3491,33 @@ class PlotSquaredHook {
 class CMIHook {
 
 	boolean isVanished(final Player player) {
-		final CMIUser user = this.getUser(player);
+		try {
+			final CMIUser user = this.getUser(player);
 
-		return user != null && user.isVanished();
+			return user != null && user.isVanished();
+		} catch (final NoClassDefFoundError ex) {
+			return false;
+		}
 	}
 
 	void setVanished(final Player player, final boolean vanished) {
-		final CMIUser user = this.getUser(player);
+		try {
+			final CMIUser user = this.getUser(player);
 
-		if (user != null && user.isVanished() != vanished)
-			user.setVanished(false);
+			if (user != null && user.isVanished() != vanished)
+				user.setVanished(false);
+		} catch (final NoClassDefFoundError ex) {
+		}
 	}
 
 	boolean isAfk(final Player player) {
-		final CMIUser user = this.getUser(player);
+		try {
+			final CMIUser user = this.getUser(player);
 
-		return user != null && user.isAfk();
+			return user != null && user.isAfk();
+		} catch (final NoClassDefFoundError ex) {
+			return false;
+		}
 	}
 
 	boolean isMuted(final UUID uniqueId) {
@@ -3530,34 +3543,38 @@ class CMIHook {
 	}
 
 	boolean hasGodMode(final Player player) {
-		final CMIUser user = this.getUser(player);
+		try {
+			final CMIUser user = this.getUser(player);
 
-		return user != null ? user.isGod() : false;
+			return user != null ? user.isGod() : false;
+		} catch (final NoClassDefFoundError ex) {
+			return false;
+		}
 	}
 
 	void setGodMode(final Player player, final boolean godMode) {
 		final CMIUser user = this.getUser(player);
 
-		if (user != null)
-			try {
+		try {
+			if (user != null)
 				CMI.getInstance().getNMS().changeGodMode(player, godMode);
 
-			} catch (final Throwable tt) {
-				try {
-					final Method setGod = CMIUser.class.getMethod("setGod", Boolean.class);
+		} catch (final Throwable tt) {
+			try {
+				final Method setGod = CMIUser.class.getMethod("setGod", Boolean.class);
 
-					setGod.invoke(user, godMode);
+				setGod.invoke(user, godMode);
 
-				} catch (final Throwable t) {
-					// unavailable
-				}
+			} catch (final Throwable t) {
+				// unavailable
 			}
+		}
 	}
 
 	void setLastTeleportLocation(final Player player, final Location location) {
-		final CMIUser user = this.getUser(player);
-
 		try {
+			final CMIUser user = this.getUser(player);
+
 			user.getClass().getMethod("setLastTeleportLocation", Location.class).invoke(user, location);
 		} catch (final Throwable t) {
 			// Silently fail.
@@ -3565,12 +3582,16 @@ class CMIHook {
 	}
 
 	void setIgnore(final UUID player, final UUID who, final boolean ignore) {
-		final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
+		try {
+			final CMIUser user = CMI.getInstance().getPlayerManager().getUser(player);
 
-		if (ignore)
-			user.addIgnore(who, true /* Save now. */);
-		else
-			user.removeIgnore(who);
+			if (ignore)
+				user.addIgnore(who, true /* Save now. */);
+			else
+				user.removeIgnore(who);
+
+		} catch (final NoClassDefFoundError ex) {
+		}
 	}
 
 	boolean isIgnoring(final UUID player, final UUID who) {
@@ -3624,15 +3645,27 @@ class CMIHook {
 	}
 
 	private CMIUser getUser(final Player player) {
-		return CMI.getInstance().getPlayerManager().getUser(player);
+		try {
+			return CMI.getInstance().getPlayerManager().getUser(player);
+		} catch (final NoClassDefFoundError ex) {
+			return null;
+		}
 	}
 
 	private CMIUser getUser(final UUID uniqueId) {
-		return CMI.getInstance().getPlayerManager().getUser(uniqueId);
+		try {
+			return CMI.getInstance().getPlayerManager().getUser(uniqueId);
+		} catch (final NoClassDefFoundError ex) {
+			return null;
+		}
 	}
 
 	private CMIUser getUser(final String name) {
-		return CMI.getInstance().getPlayerManager().getUser(name);
+		try {
+			return CMI.getInstance().getPlayerManager().getUser(name);
+		} catch (final NoClassDefFoundError ex) {
+			return null;
+		}
 	}
 }
 
