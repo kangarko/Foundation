@@ -1,5 +1,7 @@
 package org.mineacademy.fo.platform;
 
+import org.bukkit.OfflinePlayer;
+import org.mineacademy.fo.model.DiscordSender;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Variables;
@@ -19,7 +21,17 @@ final class PAPIPlaceholders extends SimpleExpansion {
 
 	@Override
 	protected String onReplace(final FoundationPlayer audience, final String identifier) {
-		return HookManager.getPlaceholderAPIValue(audience != null && audience.isPlayer() ? audience.getPlayer() : null, identifier);
+		OfflinePlayer player = null;
+
+		if (audience != null) {
+			if (audience.isPlayer())
+				player = audience.getPlayer();
+
+			else if (audience.isDiscord())
+				player = ((DiscordSender) audience.getSender()).getOfflinePlayer();
+		}
+
+		return HookManager.getPlaceholderAPIValue(player, identifier);
 	}
 
 	@Override
