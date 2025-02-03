@@ -206,7 +206,7 @@ public final class DiskRegion extends YamlConfig {
 	 * @return
 	 */
 	public boolean isWithin(final Location location) {
-		return this.border != null ? this.border.isWithin(location) : false;
+		return this.border != null && this.border.isWhole() ? this.border.isWithin(location) : false;
 	}
 
 	/**
