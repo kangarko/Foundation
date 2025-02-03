@@ -83,7 +83,11 @@ public final class LitebanTask extends BukkitRunnable {
 			} else {
 				CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
 
-				this.cancel();
+				try {
+					this.cancel();
+				} catch (final Throwable tt) {
+					// Not scheduled yet, ignore
+				}
 			}
 		}
 	}

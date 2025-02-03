@@ -17,6 +17,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.ValidCore;
@@ -111,7 +112,16 @@ public final class DiskRegion extends YamlConfig {
 			return;
 		}
 
-		this.border = VisualizedRegion.deserialize(SerializedMap.fromObject(this));
+		final SerializedMap map = SerializedMap.fromObject(this);
+
+		if (map.containsKey("Primary") && map.containsKey("Secondary"))
+			this.border = VisualizedRegion.deserialize(map);
+
+		else {
+			this.border = new VisualizedRegion();
+
+			Common.warning("Incomplete region " + this.getFileName() + ", a region on disk must have both Primary and Secodanry location keys in its yml file.");
+		}
 	}
 
 	@Override
