@@ -1023,7 +1023,16 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public static SimpleComponent fromAdventureJson(@NonNull final String json, final boolean legacy) {
-		return fromAdventure((legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).deserialize(json));
+		try {
+			return fromAdventure((legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).deserialize(json));
+		} catch (final Throwable t) {
+			CommonCore.error(t,
+					"Failed to parse JSON into SimpleComponent!",
+					"Legacy: " + legacy,
+					"Json: " + json);
+
+			return SimpleComponent.empty();
+		}
 	}
 
 	/**
