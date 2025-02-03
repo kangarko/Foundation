@@ -82,15 +82,17 @@ public final class SimpleComponent implements ConfigSerializable {
 			if (MinecraftVersion.equals(V.v1_16) || MinecraftVersion.equals(V.v1_17))
 				CommonCore.warning("Using an older version of MiniMessage, some features might not be available.");
 
-			else {
+			else
 				CommonCore.logFramed(
-						"Fatal error initializing MiniMessage. If you see",
-						"plugin name below, report this to its developer",
-						"because this is a bug in their plugin by shading",
-						"MiniMessage inside their jar without relocating it");
-
-				t.printStackTrace();
-			}
+						"Error initializing MiniMessage. In most cases, this is",
+						"caused by a third party plugin shading outdated Adventure",
+						"library without relocating it, which is a bad coding",
+						"practice. Some custom Spigot forks are known to do",
+						"that too. See the below article for more information:",
+						"https://github.com/kangarko/ChatControl/wiki/JAR-hell",
+						"",
+						"We will continue loading, some features might not",
+						"be available.");
 
 			MINIMESSAGE_PARSER = MiniMessage.miniMessage();
 		}
