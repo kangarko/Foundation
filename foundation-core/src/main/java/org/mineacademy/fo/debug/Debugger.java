@@ -203,6 +203,13 @@ public final class Debugger {
 									event.setTag("server_distro", Platform.getPlatformName());
 									event.setTag("server_player_count", String.valueOf(Platform.getOnlinePlayers().size()));
 
+									if (messages != null && messages.length > 0) {
+										int x = 1;
+
+										for (final String message : messages)
+											event.setTag("custom_message_" + x++, message);
+									}
+
 									if ("%%__BUILTBYBIT__%%".equals("true")) {
 										event.setTag("bbb_user_id", "%%__USER__%%");
 										event.setTag("bbb_user_name", "%%__USERNAME__%%");
