@@ -411,7 +411,7 @@ public final class Variables {
 	private SimpleComponent replaceComponent0(@NonNull final SimpleComponent component) {
 		return component.replaceMatch(BRACKET_VARIABLE_PATTERN, (result, input) -> {
 			final String variable = result.group(1);
-			SimpleComponent value = this.replaceVariable(variable);
+			SimpleComponent value = variable.isEmpty() ? null : this.replaceVariable(variable);
 
 			if (value != null && convertHexToMini) {
 				value = value.replaceMatch(HEX_AMPERSAND_PATTERN, (result2, builder) -> {
