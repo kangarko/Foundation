@@ -73,10 +73,18 @@ public final class LitebanTask extends BukkitRunnable {
 		} catch (final IllegalStateException | SQLException ex) {
 			// Ignore
 
-		} catch (final Throwable t) {
-			CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
+		} catch (Throwable t) {
+			while (t.getCause() != null)
+				t = t.getCause();
 
-			this.cancel();
+			if (t instanceof IllegalStateException || t instanceof SQLException) {
+				// ignore
+
+			} else {
+				CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
+
+				this.cancel();
+			}
 		}
 	}
 

@@ -396,7 +396,10 @@ public final class FileUtil {
 		} catch (final Exception ex) {
 
 			// do not throw our exception since it would cause an infinite loop if there is a problem due to error writing
-			CommonCore.error(ex, "Failed to write to " + to);
+			if (ex instanceof IOException && "There is not enough space on the disk".equals(ex.getMessage()))
+				ex.printStackTrace();
+			else
+				throw new FoException(ex, "Failed to write to " + to, false);
 		}
 	}
 
