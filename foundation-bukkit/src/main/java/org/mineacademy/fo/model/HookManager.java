@@ -1300,7 +1300,7 @@ public final class HookManager {
 	 * @param player the player whose prefix you want to get.
 	 * @return
 	 */
-	public static String getPlayerPrefix(final Player player) {
+	public static String getPlayerPrefix(@NonNull final Player player) {
 		return isVaultLoaded() ? vaultHook.getPlayerPrefix(player) : "";
 	}
 
@@ -1310,7 +1310,7 @@ public final class HookManager {
 	 * @param player the player whose suffix you want to get.
 	 * @return
 	 */
-	public static String getPlayerSuffix(final Player player) {
+	public static String getPlayerSuffix(@NonNull final Player player) {
 		return isVaultLoaded() ? vaultHook.getPlayerSuffix(player) : "";
 	}
 
@@ -1321,7 +1321,7 @@ public final class HookManager {
 	 * @param player the player whose permission group you want to get.
 	 * @return
 	 */
-	public static String getPlayerPermissionGroup(final Player player) {
+	public static String getPlayerPermissionGroup(@NonNull final Player player) {
 		return isVaultLoaded() ? vaultHook.getPlayerGroup(player) : "";
 	}
 
@@ -1331,7 +1331,7 @@ public final class HookManager {
 	 * @param player the player whose balance you want to get.
 	 * @return
 	 */
-	public static double getBalance(final Player player) {
+	public static double getBalance(@NonNull final Player player) {
 		return isVaultLoaded() ? vaultHook.getBalance(player) : 0;
 	}
 
