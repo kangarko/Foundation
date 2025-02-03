@@ -159,7 +159,7 @@ public class SimpleDatabase {
 				Class.forName("org.mariadb.jdbc.Driver");
 
 			} else
-				throw new FoException("Unknown database driver '" + url + "'. Only SQLite, MySQL and MariaDB (which supports MariaDB automatically) are supported at this time.");
+				throw new FoException("Unknown database driver '" + url + "'. Only SQLite, MySQL and MariaDB (which supports MariaDB automatically) are supported at this time.", false);
 
 			this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
 
@@ -194,11 +194,11 @@ public class SimpleDatabase {
 				return;
 			}
 
-		} catch (final Exception ex) {
-			final String message = CommonCore.getOrEmpty(ex.getMessage());
+		} catch (final Throwable throwable) {
+			final String message = CommonCore.getOrEmpty(throwable.getMessage());
 
-			if (ex instanceof SQLNonTransientConnectionException && message.equals("Too many connections")) {
-				CommonCore.throwErrorUnreported(ex,
+			if (throwable instanceof SQLNonTransientConnectionException && message.equals("Too many connections")) {
+				CommonCore.throwErrorUnreported(throwable,
 						"Too many connections to the database!",
 						"URL: " + url,
 						"User: " + user,
@@ -210,20 +210,31 @@ public class SimpleDatabase {
 						"SHOW PROCESSLIST;");
 			}
 
+			else if (throwable instanceof UnsatisfiedLinkError)
+				CommonCore.throwErrorUnreported(throwable,
+						"Failed to load the database driver",
+						"URL: " + url,
+						"User: " + user,
+						"Error: " + throwable.getMessage(),
+						"",
+						"Please make sure you have the correct driver for your database installed.",
+						"Check the console for more information.");
+
 			// Mostly user-caused errors, do not report to sentry
-			else if (message.contains("Access denied for user") || message.contains("Could not create connection to database server"))
-				CommonCore.throwErrorUnreported(ex,
+			else if (message.contains("Communications link failure") || message.contains("invalid database address") || message.contains("Connection refused")
+					|| message.contains("Access denied for user") || message.contains("Could not create connection to database server"))
+				CommonCore.throwErrorUnreported(throwable,
 						"Failed to connect to a database",
 						"URL: " + url,
 						"User: " + user,
-						"Error: " + ex.getMessage());
+						"Error: " + throwable.getMessage());
 
 			else
-				CommonCore.throwError(ex,
+				CommonCore.throwError(throwable,
 						"Failed to connect to a database",
 						"URL: " + url,
 						"User: " + user,
-						"Error: " + ex.getMessage());
+						"Error: " + throwable.getMessage());
 		}
 
 	}
