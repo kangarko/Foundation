@@ -475,6 +475,9 @@ public abstract class Menu {
 		ValidCore.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
 		ValidCore.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
 
+		Valid.checkBoolean(this.size % 9 == 0, "Menu size must be a multiple of 9, got " + this.size + " in " + this);
+		Valid.checkBoolean(this.size >= 9 && this.size <= 54, "Menu size must be between 9 and 54, got " + this.size + " in " + this);
+
 		this.viewer = player;
 		this.registerButtonsIfHasnt();
 

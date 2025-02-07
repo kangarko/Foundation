@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
@@ -102,7 +103,16 @@ public final class Whiteblacklist {
 
 			if (compileAsPatterns)
 				for (final String item : this.items)
-					this.patterns.add(CommonCore.compilePattern(item));
+					try {
+						this.patterns.add(CommonCore.compilePattern(item));
+
+					} catch (final PatternSyntaxException ex) {
+						CommonCore.logFramed(false,
+								"Invalid regex pattern: " + item + " in the following list:",
+								"List: " + items);
+
+						ex.printStackTrace();
+					}
 		}
 
 		else {

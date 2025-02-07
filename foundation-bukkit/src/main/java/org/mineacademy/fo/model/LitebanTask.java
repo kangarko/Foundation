@@ -41,8 +41,13 @@ public final class LitebanTask extends BukkitRunnable {
 			return;
 		}
 
-		this.apiInstance = ReflectionUtil.invokeStatic(classDatabase, "get");
-		this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
+		try {
+			this.apiInstance = ReflectionUtil.invokeStatic(classDatabase, "get");
+			this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
+
+		} catch (final Throwable t) {
+			CommonCore.log("Failed to hook into LiteBans, got: " + t.getMessage() + " (unless you explicitly need this integration, you can ignore this error)");
+		}
 	}
 
 	@Override
