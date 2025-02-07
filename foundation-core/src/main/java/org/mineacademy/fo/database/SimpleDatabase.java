@@ -221,7 +221,7 @@ public class SimpleDatabase {
 						"Check the console for more information.");
 
 			// Mostly user-caused errors, do not report to sentry
-			else if (message.contains("Communications link failure") || message.contains("invalid database address") || message.contains("Connection refused")
+			else if (message.contains("Communications link failure") || message.contains("Could not connect to") || message.contains("invalid database address") || message.contains("Connection refused")
 					|| message.contains("Access denied for user") || message.contains("Could not create connection to database server"))
 				CommonCore.throwErrorUnreported(throwable,
 						"Failed to connect to a database",
