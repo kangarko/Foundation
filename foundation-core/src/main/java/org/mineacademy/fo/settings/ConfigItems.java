@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -206,7 +207,7 @@ public final class ConfigItems<T extends YamlConfig> {
 	 *
 	 * @param loader for advanced loading mechanisms, most people wont use this
 	 */
-	public void loadItems(final Function<File, T> loader) {
+	public void loadItems(final Consumer<File> loader) {
 
 		// Clear old items
 		this.loadedItemsMap.clear();
@@ -230,7 +231,7 @@ public final class ConfigItems<T extends YamlConfig> {
 
 			for (final File file : files)
 				if (loader != null)
-					loader.apply(file);
+					loader.accept(file);
 
 				else {
 					final String name = FileUtil.getFileName(file);
