@@ -21,7 +21,6 @@ import sun.misc.Unsafe;
  * An abstract class for reflection-based wrappers around class loaders for adding
  * URLs to the classpath.
  */
-@SuppressWarnings("restriction")
 abstract class ClassLoaderHelper {
 
 	/**
