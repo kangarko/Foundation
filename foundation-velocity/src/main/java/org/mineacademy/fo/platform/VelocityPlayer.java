@@ -32,7 +32,7 @@ final class VelocityPlayer extends FoundationPlayer {
 	private final Player player;
 	private final CommandSource sender;
 
-	VelocityPlayer(@NonNull final CommandSource sender) {
+	private VelocityPlayer(@NonNull final CommandSource sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;
@@ -178,4 +178,9 @@ final class VelocityPlayer extends FoundationPlayer {
 	public void showTitle(final Title title) {
 		this.sender.showTitle(title);
 	}
+
+	static VelocityPlayer wrap(@NonNull final CommandSource sender) {
+		return new VelocityPlayer(sender);
+	}
+
 }

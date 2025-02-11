@@ -38,7 +38,10 @@ final class BukkitListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onQuit(final PlayerQuitEvent event) {
-		SimpleScoreboard.clearBoardsFor(event.getPlayer());
+		final Player player = event.getPlayer();
+
+		SimpleScoreboard.clearBoardsFor(player);
+		Platform.getPlatform().unregisterPlayer(player.getUniqueId());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -186,6 +189,9 @@ final class BukkitListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onJoin(final PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
+
+		((BukkitPlatform) Platform.getPlatform()).registerPlayer(player);
+
 		final FoundationPlayer audience = Platform.toPlayer(player);
 
 		// Delay to make visible

@@ -1,14 +1,14 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.NonNull;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 
-final class BungeeServer implements FoundationServer {
+final class BungeeServer extends FoundationServer {
 
 	/**
 	 * The server we are wrapping
@@ -35,11 +35,13 @@ final class BungeeServer implements FoundationServer {
 	}
 
 	@Override
-	public List<FoundationPlayer> getPlayers() {
-		return this.server.getPlayers().stream()
-				.filter(ProxiedPlayer::isConnected)
-				.map(BungeePlayer::new)
-				.collect(Collectors.toList());
+	public int getPlayerCount() {
+		return this.server.getPlayers().size();
+	}
+
+	@Override
+	public Set<UUID> getPlayerUniqueIds() {
+		return this.server.getPlayers().stream().map(player -> player.getUniqueId()).collect(Collectors.toSet());
 	}
 
 	@Override

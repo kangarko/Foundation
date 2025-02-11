@@ -11,10 +11,14 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
 import net.md_5.bungee.api.connection.Connection;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PluginMessageEvent;
+import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.event.EventPriority;
 
 /**
  * A listener that forwards incoming messages to the registered listeners
@@ -23,6 +27,20 @@ import net.md_5.bungee.event.EventHandler;
  */
 @Deprecated
 public final class BungeeListener implements Listener {
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerJoin(final ServerConnectEvent event) {
+		final ProxiedPlayer player = event.getPlayer();
+
+		((BungeePlatform) Platform.getPlatform()).registerPlayer(player);
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onPlayerJoin(final ServerDisconnectEvent event) {
+		final ProxiedPlayer player = event.getPlayer();
+
+		Platform.getPlatform().unregisterPlayer(player.getUniqueId());
+	}
 
 	/**
 	 * Handle the received message automatically if it matches our tag

@@ -16,8 +16,10 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.connection.PluginMessageEvent.ForwardResult;
+import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -32,6 +34,20 @@ import com.velocitypowered.api.util.UuidUtils;
  */
 @Deprecated
 public final class VelocityListener {
+
+	@Subscribe(priority = Short.MAX_VALUE)
+	public void onPlayerJoin(final PlayerChooseInitialServerEvent event) {
+		final Player player = event.getPlayer();
+
+		((VelocityPlatform) Platform.getPlatform()).registerPlayer(player);
+	}
+
+	@Subscribe(priority = Short.MIN_VALUE)
+	public void onPlayerJoin(final DisconnectEvent event) {
+		final Player player = event.getPlayer();
+
+		((VelocityPlatform) Platform.getPlatform()).unregisterPlayer(player.getUniqueId());
+	}
 
 	/**
 	 * Handle the received message automatically if it matches our tag
