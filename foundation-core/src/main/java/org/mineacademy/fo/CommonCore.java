@@ -1694,6 +1694,9 @@ public abstract class CommonCore {
 				}
 
 				return outputStream.toByteArray();
+
+			} finally {
+				deflater.end(); // Ensure native memory is released
 			}
 
 		} catch (final Exception ex) {
@@ -1711,23 +1714,26 @@ public abstract class CommonCore {
 	 */
 	public static final String decompress(final byte[] data) {
 		final Inflater inflater = new Inflater();
-		inflater.setInput(data);
+		try {
+			inflater.setInput(data);
 
-		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length)) {
-			final byte[] buffer = new byte[1024];
+			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length)) {
+				final byte[] buffer = new byte[1024];
 
-			while (!inflater.finished()) {
-				final int count = inflater.inflate(buffer);
+				while (!inflater.finished()) {
+					final int count = inflater.inflate(buffer);
 
-				outputStream.write(buffer, 0, count);
+					outputStream.write(buffer, 0, count);
+				}
+
+				return new String(outputStream.toByteArray(), "UTF-8");
 			}
-
-			return new String(outputStream.toByteArray(), "UTF-8");
-
 		} catch (final Exception ex) {
 			CommonCore.throwError(ex, "Failed to decompress data");
-
 			return "";
+
+		} finally {
+			inflater.end(); // Properly releases native resources
 		}
 	}
 
