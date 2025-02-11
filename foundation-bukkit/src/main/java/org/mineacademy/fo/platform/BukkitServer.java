@@ -1,7 +1,9 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.mineacademy.fo.remain.Remain;
@@ -11,7 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class BukkitServer implements FoundationServer {
+public final class BukkitServer extends FoundationServer {
 
 	@Getter
 	private static final BukkitServer instance = new BukkitServer();
@@ -27,8 +29,13 @@ public final class BukkitServer implements FoundationServer {
 	}
 
 	@Override
-	public List<FoundationPlayer> getPlayers() {
-		return Platform.getOnlinePlayers();
+	public int getPlayerCount() {
+		return Remain.getOnlinePlayers().size();
+	}
+
+	@Override
+	public Set<UUID> getPlayerUniqueIds() {
+		return Remain.getOnlinePlayers().stream().map(player -> player.getUniqueId()).collect(Collectors.toSet());
 	}
 
 	@Override

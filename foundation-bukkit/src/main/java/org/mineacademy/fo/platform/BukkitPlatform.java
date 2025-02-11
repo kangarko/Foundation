@@ -86,6 +86,10 @@ final class BukkitPlatform extends FoundationPlatform {
 
 	private static BukkitAudiences adventure;
 
+	public void registerPlayer(Player player) {
+		this.players.put(player.getUniqueId(), BukkitPlayer.wrap(player));
+	}
+
 	public static BukkitAudiences getAdventure() {
 		ValidCore.checkNotNull(hasAdventure(), "Adventure not initialized or not available!");
 
@@ -542,16 +546,6 @@ final class BukkitPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public List<FoundationPlayer> getOnlinePlayers() {
-		final List<FoundationPlayer> players = new ArrayList<>();
-
-		for (final Player player : Remain.getOnlinePlayers())
-			players.add(this.toPlayer(player));
-
-		return players;
-	}
-
-	@Override
 	public String getPlatformName() {
 		return Bukkit.getName();
 	}
@@ -559,20 +553,6 @@ final class BukkitPlatform extends FoundationPlatform {
 	@Override
 	public String getPlatformVersion() {
 		return Bukkit.getBukkitVersion();
-	}
-
-	@Override
-	protected FoundationPlayer getPlayer(final String name) {
-		final Player player = Bukkit.getPlayerExact(name);
-
-		return player != null ? this.toPlayer(player) : null;
-	}
-
-	@Override
-	protected FoundationPlayer getPlayer(final UUID uniqueid) {
-		final Player player = Remain.getPlayerByUUID(uniqueid);
-
-		return player != null && player.isOnline() ? this.toPlayer(player) : null;
 	}
 
 	@Override
@@ -718,7 +698,14 @@ final class BukkitPlatform extends FoundationPlatform {
 		if (!(sender instanceof CommandSender))
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);
 
-		return new BukkitPlayer((CommandSender) sender);
+		if (sender instanceof Player) {
+			final FoundationPlayer target = this.players.get(((Player) sender).getUniqueId());
+
+			if (target != null)
+				return target;
+		}
+
+		return BukkitPlayer.wrap((CommandSender) sender);
 	}
 
 	@Override

@@ -1,40 +1,48 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Represents a server running our Foundation plugin.
  */
-public interface FoundationServer {
+public abstract class FoundationServer {
 
 	/**
 	 * Return the address of the server.
 	 *
 	 * @return
 	 */
-	InetSocketAddress getAddress();
+	public abstract InetSocketAddress getAddress();
 
 	/**
 	 * Return the name of the server.
 	 *
 	 * @return
 	 */
-	String getName();
-
-	/**
-	 * Return a list of players on this server.
-	 *
-	 * @return
-	 */
-	List<FoundationPlayer> getPlayers();
+	public abstract String getName();
 
 	/**
 	 * Return true if the server is empty.
 	 *
 	 * @return
 	 */
-	boolean isEmpty();
+	public abstract boolean isEmpty();
+
+	/**
+	 * Return the player count on the server.
+	 *
+	 * @return
+	 */
+	public abstract int getPlayerCount();
+
+	/**
+	 * Return the unique ids of all players on the server.
+	 *
+	 * @return
+	 */
+	public abstract Set<UUID> getPlayerUniqueIds();
 
 	/**
 	 * Send a message to the server.
@@ -43,5 +51,5 @@ public interface FoundationServer {
 	 * @param channel
 	 * @param data
 	 */
-	void sendData(String channel, byte[] data);
+	public abstract void sendData(String channel, byte[] data);
 }

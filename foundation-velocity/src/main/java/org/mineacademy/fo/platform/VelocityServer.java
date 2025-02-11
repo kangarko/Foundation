@@ -1,16 +1,16 @@
 package org.mineacademy.fo.platform;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.messages.LegacyChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import lombok.NonNull;
 
-final class VelocityServer implements FoundationServer {
+final class VelocityServer extends FoundationServer {
 
 	/**
 	 * The server we are wrapping
@@ -37,11 +37,13 @@ final class VelocityServer implements FoundationServer {
 	}
 
 	@Override
-	public List<FoundationPlayer> getPlayers() {
-		return this.server.getPlayersConnected().stream()
-				.filter(Player::isActive)
-				.map(VelocityPlayer::new)
-				.collect(Collectors.toList());
+	public int getPlayerCount() {
+		return this.server.getPlayersConnected().size();
+	}
+
+	@Override
+	public Set<UUID> getPlayerUniqueIds() {
+		return this.server.getPlayersConnected().stream().map(player -> player.getUniqueId()).collect(Collectors.toSet());
 	}
 
 	@Override

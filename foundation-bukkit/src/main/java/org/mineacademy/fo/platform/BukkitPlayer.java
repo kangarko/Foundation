@@ -50,7 +50,11 @@ final class BukkitPlayer extends FoundationPlayer {
 	private final Player player;
 	private final CommandSender sender;
 
-	public BukkitPlayer(@NonNull final CommandSender sender) {
+	public static BukkitPlayer wrap(final CommandSender sender) {
+		return new BukkitPlayer(sender);
+	}
+
+	private BukkitPlayer(@NonNull final CommandSender sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof Player;
 		this.player = this.isPlayer ? (Player) sender : null;

@@ -2,7 +2,6 @@ package org.mineacademy.fo.platform;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +36,10 @@ import net.kyori.adventure.text.event.HoverEventSource;
  * An implementation of {@link FoundationPlatform} for Bukkit.
  */
 final class VelocityPlatform extends FoundationPlatform {
+
+	public void registerPlayer(Player player) {
+		this.players.put(player.getUniqueId(), VelocityPlayer.wrap(player));
+	}
 
 	public static void inject() {
 		Platform.setInstance(new VelocityPlatform());
@@ -93,16 +96,6 @@ final class VelocityPlatform extends FoundationPlatform {
 	}
 
 	@Override
-	public List<FoundationPlayer> getOnlinePlayers() {
-		final List<FoundationPlayer> players = new ArrayList<>();
-
-		for (final Player player : Remain.getOnlinePlayers(false))
-			players.add(this.toPlayer(player));
-
-		return players;
-	}
-
-	@Override
 	public String getPlatformName() {
 		return VelocityPlugin.getServer().getVersion().getName();
 	}
@@ -110,20 +103,6 @@ final class VelocityPlatform extends FoundationPlatform {
 	@Override
 	public String getPlatformVersion() {
 		return VelocityPlugin.getServer().getVersion().getVersion();
-	}
-
-	@Override
-	protected FoundationPlayer getPlayer(final String name) {
-		final Player player = VelocityPlugin.getServer().getPlayer(name).orElse(null);
-
-		return player != null ? this.toPlayer(player) : null;
-	}
-
-	@Override
-	protected FoundationPlayer getPlayer(final UUID uniqueId) {
-		final Player player = VelocityPlugin.getServer().getPlayer(uniqueId).orElse(null);
-
-		return player != null && player.isActive() ? this.toPlayer(player) : null;
 	}
 
 	@Override
@@ -247,7 +226,14 @@ final class VelocityPlatform extends FoundationPlatform {
 		if (!(sender instanceof CommandSource))
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);
 
-		return new VelocityPlayer((CommandSource) sender);
+		if (sender instanceof Player) {
+			final FoundationPlayer target = this.players.get(((Player) sender).getUniqueId());
+
+			if (target != null)
+				return target;
+		}
+
+		return VelocityPlayer.wrap((CommandSource) sender);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package org.mineacademy.fo.platform;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -106,8 +107,8 @@ public final class Platform {
 	 *
 	 * @return
 	 */
-	public static List<FoundationPlayer> getOnlinePlayers() {
-		return getPlatform().getOnlinePlayers();
+	public static Collection<FoundationPlayer> getOnlinePlayers() {
+		return getPlatform().getPlayers();
 	}
 
 	/**

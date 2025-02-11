@@ -34,7 +34,7 @@ final class BungeePlayer extends FoundationPlayer {
 	private final ProxiedPlayer player;
 	private final CommandSender sender;
 
-	BungeePlayer(@NonNull final CommandSender sender) {
+	private BungeePlayer(@NonNull final CommandSender sender) {
 		this.sender = sender;
 		this.isPlayer = sender instanceof ProxiedPlayer;
 		this.player = this.isPlayer ? (ProxiedPlayer) sender : null;
@@ -252,5 +252,9 @@ final class BungeePlayer extends FoundationPlayer {
 	@Override
 	public void showTitle(final Title title) {
 		this.audience.showTitle(title);
+	}
+
+	static BungeePlayer wrap(@NonNull final CommandSender sender) {
+		return new BungeePlayer(sender);
 	}
 }
