@@ -5,12 +5,10 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.ChatUtil;
@@ -823,8 +821,6 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 */
 	public static String convertLegacyToMini(final String message, final boolean supportAmpersand) {
 		final StringBuilder result = new StringBuilder();
-		final Set<String> activeDecorations = new LinkedHashSet<>();
-		String currentColor = null;
 
 		for (int i = 0; i < message.length(); i++) {
 
@@ -836,6 +832,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				for (int j = 2; j <= 12; j += 2) {
 					if (message.charAt(i + j) == '§')
 						hex.append(message.charAt(i + j + 1));
+
 					else {
 						isValidHexSequence = false;
 
@@ -844,96 +841,26 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				}
 
 				if (isValidHexSequence) {
-					// Close all decorations before adding new color
-					for (final String decoration : activeDecorations)
-						result.append("</").append(decoration).append(">");
-
-					activeDecorations.clear();
-
-					// Add the new color
 					result.append('<').append(hex).append('>');
-					currentColor = hex.toString();
 					i += 13; // Skip the entire §x§R§R§G§G§B§B sequence
+
 					continue;
 				}
 			}
 
 			if (i + 1 < message.length() && ((message.charAt(i) == '&' && supportAmpersand) || message.charAt(i) == '§')) {
-				final char formatChar = message.charAt(i + 1);
 				final String code = message.substring(i, i + 2);
-				final String miniCode = LEGACY_TO_MINI.get(code);
 
-				if (miniCode != null) {
-					if (miniCode.equals("<reset>")) {
-						// Close all decorations and remove color
-						for (final String decoration : activeDecorations)
-							result.append("</").append(decoration).append(">");
-
-						activeDecorations.clear();
-						currentColor = null;
-					} else {
-						// Check if it's a decoration or color
-						final boolean isDecoration = formatChar == 'k' || formatChar == 'K' ||
-								formatChar == 'l' || formatChar == 'L' ||
-								formatChar == 'm' || formatChar == 'M' ||
-								formatChar == 'n' || formatChar == 'N' ||
-								formatChar == 'o' || formatChar == 'O';
-
-						if (isDecoration) {
-							// Convert decoration tags to consistent format
-							String tagName;
-							switch (Character.toLowerCase(formatChar)) {
-								case 'k':
-									tagName = "obf";
-									break;
-								case 'l':
-									tagName = "b";
-									break;
-								case 'm':
-									tagName = "st";
-									break;
-								case 'n':
-									tagName = "u";
-									break;
-								case 'o':
-									tagName = "i";
-									break;
-								default:
-									tagName = null;
-									break;
-							}
-
-							if (tagName != null) {
-								activeDecorations.add(tagName);
-
-								result.append('<').append(tagName).append('>');
-							}
-
-						} else {
-							// It's a color - close all existing decorations and color
-							for (final String decoration : activeDecorations)
-								result.append("</").append(decoration).append(">");
-
-							activeDecorations.clear();
-
-							// Add new color
-							final String tagName = miniCode.substring(1, miniCode.length() - 1);
-							result.append('<').append(tagName).append('>');
-							currentColor = tagName;
-						}
-					}
-
+				if (LEGACY_TO_MINI.containsKey(code)) {
+					result.append(LEGACY_TO_MINI.get(code));
 					i++;
+
 					continue;
 				}
 			}
 
 			result.append(message.charAt(i));
 		}
-
-		// Close any remaining decorations at the end
-		for (final String decoration : activeDecorations)
-			result.append("</").append(decoration).append(">");
 
 		return result.toString();
 	}
