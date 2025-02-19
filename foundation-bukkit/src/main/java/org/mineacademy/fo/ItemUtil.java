@@ -2,12 +2,12 @@ package org.mineacademy.fo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.nbt.NBT;
 import org.mineacademy.fo.remain.nbt.ReadableNBT;
@@ -97,7 +97,7 @@ public final class ItemUtil {
 		final ReadableNBT firstNbt = NBT.readNbt(first);
 		final ReadableNBT secondNbt = NBT.readNbt(second);
 
-		return matchNbt(BukkitPlugin.getInstance().getName(), firstNbt, secondNbt) && matchNbt(BukkitPlugin.getInstance().getName() + "_Item", firstNbt, secondNbt);
+		return matchNbt(firstNbt, secondNbt);
 	}
 
 	private static boolean listMatchPlain(List<String> first, List<String> second) {
@@ -125,16 +125,21 @@ public final class ItemUtil {
 	}
 
 	// Compares the NBT string tag of two items
-	private static boolean matchNbt(final String key, final ReadableNBT firstNbt, final ReadableNBT secondNbt) {
-		final boolean firstHas = firstNbt.hasTag(key);
-		final boolean secondHas = secondNbt.hasTag(key);
+	private static boolean matchNbt(final ReadableNBT firstNbt, final ReadableNBT secondNbt) {
+		final Set<String> firstKeys = firstNbt.getKeys();
+		final Set<String> secondKeys = secondNbt.getKeys();
 
-		if (!firstHas && !secondHas)
-			return true; // nothing has, essentially same
+		if (firstKeys.size() != secondKeys.size())
+			return false;
 
-		else if (firstHas && !secondHas || !firstHas && secondHas)
-			return false; // one has but another hasn't, cannot be same
+		for (final String key : firstKeys)
+			if (!secondKeys.contains(key))
+				return false;
 
-		return firstNbt.getString(key).equals(secondNbt.getString(key));
+		for (final String key : secondKeys)
+			if (!firstKeys.contains(key))
+				return false;
+
+		return true;
 	}
 }
