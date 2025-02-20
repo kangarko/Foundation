@@ -20,7 +20,6 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.snakeyaml.engine.v2.api.Dump;
@@ -336,7 +335,9 @@ public class YamlConfig extends FileConfig {
 					}
 
 				if (hasDiskValue)
-					ValidCore.checkBoolean(diskValue instanceof ConfigSection, "Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got " + diskValue.getClass().getSimpleName());
+					if (!(diskValue instanceof ConfigSection))
+						throw new FoException("Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got "
+								+ diskValue.getClass().getSimpleName() + " (If you edited this key, remove it to reset it)", false);
 
 				value = this.toNodeTreeWithDefaults0((ConfigSection) (hasDiskValue ? diskValue : entry.getValue()), defaults != null ? defaults.retrieveMemorySection(entry.getKey()) : null, !isUncommentedSection);
 

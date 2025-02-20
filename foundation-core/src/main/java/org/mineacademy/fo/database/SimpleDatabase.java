@@ -222,7 +222,7 @@ public class SimpleDatabase {
 
 			// Mostly user-caused errors, do not report to sentry
 			else if (message.contains("Communications link failure") || message.contains("Could not connect to") || message.contains("invalid database address") || message.contains("Connection refused")
-					|| message.contains("Access denied for user") || message.contains("Could not create connection to database server"))
+					|| message.contains("Access denied for user") || message.contains("Could not create connection to database server") || message.contains("Incorrect port value"))
 				CommonCore.throwErrorUnreported(throwable,
 						"Failed to connect to a database",
 						"URL: " + url,
@@ -664,10 +664,19 @@ public class SimpleDatabase {
 				this.connection.commit();
 
 			} catch (final SQLException ex) {
-				if (ex.getMessage() != null && ex.getMessage().contains("Can not read response from server")) {
+				final String message = ex.getMessage() != null ? ex.getMessage() : "";
+
+				if (message.contains("Can not read response from server")) {
 					CommonCore.log("Error executing batch insert: " + sql);
 
 					ex.printStackTrace();
+
+				} else if (message.contains("Incorrect string value")) {
+					CommonCore.log("Your db column's character set or collation not supporting 4-byte UTF-8 characters (e.g., emojis). "
+							+ "See https://github.com/kangarko/ChatControl/wiki/Compatibility#database-optional");
+
+					ex.printStackTrace();
+
 				} else
 					CommonCore.error(ex,
 							"Error executing a batch insert",

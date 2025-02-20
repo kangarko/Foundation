@@ -9,7 +9,6 @@ import org.bukkit.entity.LivingEntity;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.MissingEnumException;
 
@@ -293,7 +292,9 @@ public enum CompAttribute {
 		if (hasAttributeClass) {
 			if (this.bukkitAttribute != null) {
 				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
-				ValidCore.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
+
+				if (instance == null)
+					throw new FoException("Attribute " + this + " cannot be set for " + entity, false);
 
 				instance.setBaseValue(value);
 			}
@@ -303,7 +304,9 @@ public enum CompAttribute {
 
 		else if (this.getNmsName() != null) {
 			final Object instance = this.getLegacyAttributeInstance(entity);
-			ValidCore.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
+
+			if (instance == null)
+				throw new FoException("Attribute " + this + " cannot be set for " + entity, false);
 
 			ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
 		}

@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -168,7 +169,8 @@ public final class ChatImage {
 	 * @return
 	 */
 	public ChatImage draw(@NonNull final BufferedImage image) {
-		ValidCore.checkBoolean(this.height >= 2, "File image height must be equal or above 2");
+		if (this.height < 2)
+			throw new FoException("File image height must be equal or above 2, got: " + this.height, false);
 
 		final BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 		newImage.createGraphics().drawImage(image, 0, 0, this.backgroundColor, null);
