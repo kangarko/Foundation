@@ -901,7 +901,9 @@ public abstract class FileConfig extends ConfigSection {
 	 */
 	public final List<String> getCommandList(final String path) {
 		final List<String> list = this.getStringList(path);
-		ValidCore.checkBoolean(!list.isEmpty(), "Please set at least one command alias in '" + path + "' (" + this.getFile() + ") for this will be used as your main command!");
+
+		if (list.isEmpty())
+			throw new FoException("Set at least one command alias in '" + path + "' (" + this.getFile() + ") for this will be used as your main command!", false);
 
 		for (int i = 0; i < list.size(); i++) {
 			String command = list.get(i);

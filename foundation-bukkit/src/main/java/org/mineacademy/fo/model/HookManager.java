@@ -2393,12 +2393,26 @@ class VaultHook {
 
 	void withdraw(final Player player, final double amount) {
 		if (this.economy != null)
-			this.economy.withdrawPlayer(player.getName(), amount);
+			try {
+				this.economy.withdrawPlayer(player.getName(), amount);
+
+			} catch (final RuntimeException ex) {
+				CommonCore.warning("Failed to withdraw " + amount + " from " + player.getName() + " with Vault, is the economy plugin running correctly?");
+
+				ex.printStackTrace();
+			}
 	}
 
 	void deposit(final Player player, final double amount) {
 		if (this.economy != null)
-			this.economy.depositPlayer(player.getName(), amount);
+			try {
+				this.economy.depositPlayer(player.getName(), amount);
+
+			} catch (final RuntimeException ex) {
+				CommonCore.warning("Failed to deposit " + amount + " to " + player.getName() + " with Vault, is the economy plugin running correctly?");
+
+				ex.printStackTrace();
+			}
 	}
 
 	// ------------------------------------------------------------------------------
