@@ -569,20 +569,20 @@ public final class SimpleComponent implements ConfigSerializable {
 			updatedLastStyle = updatedLastStyle.color(component.lastStyle.color());
 
 		for (final Map.Entry<TextDecoration, State> entry : component.lastStyle.decorations().entrySet())
-			if (entry.getValue() == State.TRUE)
-				updatedLastStyle = updatedLastStyle.decoration(entry.getKey(), State.TRUE);
+			if (entry.getValue() != State.NOT_SET)
+				updatedLastStyle = updatedLastStyle.decoration(entry.getKey(), entry.getValue());
 
 		for (int i = 0; i < component.subcomponents.size(); i++) {
 			final ConditionalComponent subcomponent = component.subcomponents.get(i);
 			Component adventure = subcomponent.getComponent();
 
-			if (this.lastStyle != null && !component.toPlain().startsWith("<reset>")) {
+			if (this.lastStyle != null) {
 				if (this.lastStyle.color() != null && adventure.color() == null)
 					adventure = adventure.color(this.lastStyle.color());
 
 				for (final Map.Entry<TextDecoration, State> entry : this.lastStyle.decorations().entrySet())
-					if (entry.getValue() == State.TRUE)
-						adventure = adventure.decoration(entry.getKey(), State.TRUE);
+					if (entry.getValue() != State.NOT_SET)
+						adventure = adventure.decoration(entry.getKey(), entry.getValue());
 			}
 
 			copy.add(new ConditionalComponent(adventure, subcomponent.getViewPermission(), subcomponent.getViewCondition(), subcomponent.getViewVariable()));
@@ -975,7 +975,8 @@ public final class SimpleComponent implements ConfigSerializable {
 			// make the variable parse so we slash it to one.
 			message = message.replaceAll("(\\\\){2,}(?=<)", "\\\\");
 
-			mini = MINIMESSAGE_PARSER.deserialize(message.replace("\\n", "\n"));
+			// See resetColors() below for explainer
+			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>").replace("\\n", "\n"));
 
 		} catch (final Throwable t) {
 			CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
@@ -983,7 +984,33 @@ public final class SimpleComponent implements ConfigSerializable {
 			return null;
 		}
 
+		mini = resetColors(mini);
+
 		return new SimpleComponent(ConditionalComponent.fromAdventure(mini), LastMessageStyleParser.parseStyle(message));
+	}
+
+	// Explanation for this nonsense:
+	// Apparently serialization performs some trunctating to put everything on one line
+	// When appending a simplecomponent to this component, this leads to a bug where color/deco is overflown
+	// so we just force the component to split using a fake color and then set all decors/colors to "resetting" state manually
+	// ... contributions welcome :)
+	private static Component resetColors(Component component) {
+		final List<Component> childrenCopy = new ArrayList<>();
+
+		for (Component child : component.children()) {
+			if (child.color() != null && child.color().equals(TextColor.color(0x180f0d))) {
+				child = child.color(NamedTextColor.WHITE);
+
+				for (final TextDecoration decoration : TextDecoration.values())
+					child = child.decoration(decoration, State.FALSE);
+			}
+
+			child = resetColors(child);
+			childrenCopy.add(child);
+		}
+
+		component = component.children(childrenCopy);
+		return component;
 	}
 
 	/**
