@@ -1273,7 +1273,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	/**
 	 * Helps to resolve last message style from MiniMessage tags.
 	 */
-	@Getter
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	public static final class LastMessageStyleParser {
 
@@ -1283,11 +1282,6 @@ public final class SimpleComponent implements ConfigSerializable {
 		private final static Pattern RGB_PATTERN = Pattern.compile("<#[0-9a-fA-F]{6}>");
 
 		/**
-		 * The message.
-		 */
-		private String message;
-
-		/**
 		 * The last color.
 		 */
 		private TextColor lastColor;
@@ -1295,13 +1289,12 @@ public final class SimpleComponent implements ConfigSerializable {
 		/**
 		 * The last decorations.
 		 */
-		private final Set<TextDecoration> lastDecorations = EnumSet.noneOf(TextDecoration.class);
+		private final Map<TextDecoration, TextDecoration.State> lastDecorations = new EnumMap<>(TextDecoration.class);
 
 		/*
 		 * Parse the given message.
 		 */
 		private void parseMessage(final String message) {
-			this.message = message;
 			this.lastColor = null;
 			this.lastDecorations.clear();
 
@@ -1322,8 +1315,12 @@ public final class SimpleComponent implements ConfigSerializable {
 					final String tagContent = currentTag.toString();
 
 					if (tagContent.equalsIgnoreCase("reset") || tagContent.equalsIgnoreCase("r")) {
-						this.lastColor = null;
+						this.lastColor = NamedTextColor.WHITE;
 						this.lastDecorations.clear();
+
+						// Add all decorations with FALSE state
+						for (final TextDecoration decoration : TextDecoration.values())
+							this.lastDecorations.put(decoration, TextDecoration.State.FALSE);
 
 					} else if (tagContent.startsWith("/")) {
 						// It's a closing tag, remove the '/'
@@ -1351,7 +1348,7 @@ public final class SimpleComponent implements ConfigSerializable {
 							this.lastColor = CompChatColor.MINI_TO_COLOR.get(openingTagName);
 
 						else if (CompChatColor.MINI_TO_DECORATION.containsKey(openingTagName))
-							this.lastDecorations.add(CompChatColor.MINI_TO_DECORATION.get(openingTagName));
+							this.lastDecorations.put(CompChatColor.MINI_TO_DECORATION.get(openingTagName), TextDecoration.State.TRUE);
 
 						else if (RGB_PATTERN.matcher(openingTagName).matches())
 							this.lastColor = TextColor.fromHexString(openingTagName.substring(1, openingTagName.length() - 1));
@@ -1371,8 +1368,6 @@ public final class SimpleComponent implements ConfigSerializable {
 					// Normal text
 					cleanedMessage.append(ch);
 			}
-
-			this.message = cleanedMessage.toString();
 		}
 
 		/**
@@ -1386,7 +1381,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			parser.parseMessage(message);
 
-			return Style.style(parser.getLastColor(), parser.getLastDecorations());
+			return Style.style(parser.lastColor).decorations(parser.lastDecorations);
 		}
 	}
 }
