@@ -466,6 +466,9 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @return
 	 */
 	public static CompChatColor fromString(@NonNull String string) {
+		if ("MAGENTA".equals(string.toUpperCase()))
+			return LIGHT_PURPLE;
+
 		if (string.charAt(0) == '<' && string.charAt(string.length() - 1) == '>')
 			string = string.substring(1, string.length() - 1);
 
