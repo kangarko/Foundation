@@ -94,7 +94,18 @@ public final class SimpleComponent implements ConfigSerializable {
 						"We will continue loading, some features might not",
 						"be available.");
 
-			MINIMESSAGE_PARSER = MiniMessage.miniMessage();
+			try {
+				MINIMESSAGE_PARSER = MiniMessage.miniMessage();
+
+			} catch (final NoSuchMethodError tt) {
+				CommonCore.throwErrorUnreported(tt,
+						"Fatal error initializing legacy MiniMessage. In most cases, this is",
+						"caused by a third party plugin shading outdated Adventure",
+						"library without relocating it, which is a bad coding",
+						"practice. Some custom Spigot forks are known to do",
+						"that too. See the below article for more information:",
+						"https://github.com/kangarko/ChatControl/wiki/JAR-hell");
+			}
 		}
 	}
 
@@ -752,19 +763,20 @@ public final class SimpleComponent implements ConfigSerializable {
 		try {
 			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 
-		} catch (final IllegalArgumentException ex) {
+		} catch (final Throwable t) {
 			final String mini = this.toMini(receiver);
 			final String stripped = mini.replaceAll("(<hover:show_item:[^:>]+):[^>]*?'>", "$1'>");
 
 			CommonCore.log(
 					"Adventure failed to convert component to JSON. Will return stripped!",
 					"Please update your Paper build as this is a server bug which is already fixed.",
+					"If it still persists, raise a ticket with Paper.",
 					"",
 					"Mini: " + mini,
 					"Stripped: " + stripped);
 
-			ex.printStackTrace(); // do not report to sentry, likely not our fault
-			CommonCore.log("(Do not report the above stacktrace to us, read the log above and report to the respective developers)");
+			t.printStackTrace(); // do not report to sentry, likely not our fault
+			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
 
 			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
 		}
