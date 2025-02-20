@@ -207,7 +207,8 @@ public final class Debugger {
 										int x = 1;
 
 										for (final String message : messages)
-											event.setTag("custom_message_" + x++, message);
+											if (message != null && !message.isEmpty() && !message.equals("\n"))
+												event.setTag("custom_message_" + x++, message);
 									}
 
 									if ("%%__BUILTBYBIT__%%".equals("true")) {
