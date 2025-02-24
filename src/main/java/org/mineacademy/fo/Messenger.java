@@ -54,14 +54,14 @@ public class Messenger {
 	 */
 	@Setter
 	@Getter
-	private String questionPrefix = "&8&l[&a&l?&l&8]&7 ";
+	private String questionPrefix = "&8&l[&a&l?&l&8&l]&7 ";
 
 	/**
 	 * The prefix send while sending announcements
 	 */
 	@Setter
 	@Getter
-	private String announcePrefix = "&8&l[&5&l!&l&8]&d ";
+	private String announcePrefix = "&8&l[&5&l!&l&8&l]&d ";
 
 	/**
 	 * Send a message prepended with the {@link #getInfoPrefix()}
