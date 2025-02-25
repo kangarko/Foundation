@@ -491,7 +491,8 @@ public final class Valid {
 	/**
 	 * Compare two lists. Two lists are considered equal if they are same length and all values are the same.
 	 * Exception: Strings are stripped of colors before comparation.
-	 *
+	 * 
+	 * @param <T> 
 	 * @param first first list to compare
 	 * @param second second list to compare with
 	 * @return true if lists are equal

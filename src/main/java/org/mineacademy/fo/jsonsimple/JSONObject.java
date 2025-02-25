@@ -364,6 +364,7 @@ public class JSONObject extends HashMap<String, Object> implements Jsonable {
 	}
 
 	/** A convenience method that assumes there is a Map at the given key.
+	 * @param <T>
 	 * @param key representing where the value ought to be paired with.
 	 * @param def the kind of map to expect at the key. Note unless manually added, Map values will be a JsonObject.
 	 * @return a Map representing the value paired with the key or JsonKey#getValue() if the key isn't present.

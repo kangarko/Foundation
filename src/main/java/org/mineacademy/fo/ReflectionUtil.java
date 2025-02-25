@@ -155,7 +155,8 @@ public final class ReflectionUtil {
 
 	/**
 	 * Return a constructor for the given class
-	 *
+	 * 
+	 * @param <T> 
 	 * @param clazz
 	 * @param params
 	 * @return
@@ -186,6 +187,7 @@ public final class ReflectionUtil {
 	/**
 	 * Get the field content
 	 *
+	 * @param <T>
 	 * @param instance
 	 * @param field
 	 * @return
@@ -509,6 +511,7 @@ public final class ReflectionUtil {
 	/**
 	 * Makes a new instance of a class
 	 *
+	 * @param <T>
 	 * @param clazz
 	 * @return
 	 */
@@ -532,6 +535,7 @@ public final class ReflectionUtil {
 	 * Makes a new instanceo of the given NMS class with arguments,
 	 * NB: Does not work on Minecraft 1.17+
 	 *
+	 * @param <T>
 	 * @param nmsPath
 	 * @param params
 	 * @return
@@ -543,6 +547,7 @@ public final class ReflectionUtil {
 	/**
 	 * Makes a new instance of a class with arguments.
 	 *
+	 * @param <T>
 	 * @param clazz
 	 * @param params
 	 * @return
@@ -661,6 +666,7 @@ public final class ReflectionUtil {
 	 *
 	 * NOTE: For Material class, use our dedicated CompMaterial instead of this method.
 	 *
+	 * @param <T>
 	 * @param enumClass
 	 * @param names
 	 * @return
@@ -688,6 +694,7 @@ public final class ReflectionUtil {
 	 * instead of throwing an error. This is to prevent default configs containing
 	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
+	 * @param <E>
 	 * @param enumType
 	 * @param name
 	 *
@@ -709,6 +716,7 @@ public final class ReflectionUtil {
 	 * instead of throwing an error. This is to prevent default configs containing
 	 * this enum from crashing the plugin when loaded on legacy MC version.
 	 *
+	 * @param <E>
 	 * @param enumType
 	 * @param name
 	 * @param errMessage
@@ -853,6 +861,7 @@ public final class ReflectionUtil {
 	/**
 	 * Wrapper for Enum.valueOf without throwing an exception
 	 *
+	 * @param <E>
 	 * @param enumClass
 	 * @param name
 	 * @return the enum, or null if not exists
@@ -1233,16 +1242,16 @@ public final class ReflectionUtil {
 		/*public Method getDeclaredMethod(final String name, final Class<?>... paramTypes) throws NoSuchMethodException {
 			if (methodCache.containsKey(name)) {
 				final Collection<Method> methods = methodCache.get(name);
-
+		
 				for (final Method method : methods)
 					if (Arrays.equals(paramTypes, method.getParameterTypes()))
 						return method;
 			}
-
+		
 			final Method method = clazz.getDeclaredMethod(name, paramTypes);
-
+		
 			cacheMethod(method);
-
+		
 			return method;
 		}*/
 

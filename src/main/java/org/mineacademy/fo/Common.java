@@ -671,15 +671,15 @@ public final class Common {
 		// Replace hex colors, both raw and parsed
 		/*if (Remain.hasHexColors()) {
 			matcher = HEX_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			matcher = RGB_X_COLOR_REGEX.matcher(message);
-
+		
 			while (matcher.find())
 				message = matcher.replaceAll("");
-
+		
 			message = message.replace(ChatColor.COLOR_CHAR + "x", "");
 		}*/
 
@@ -842,6 +842,7 @@ public final class Common {
 	 * Example:
 	 * "X bosses: Creeper, Zombie
 	 *
+	 * @param <T>
 	 * @param iterable
 	 * @param ofWhat
 	 * @return
@@ -2073,6 +2074,8 @@ public final class Common {
 	/**
 	 * Converts a list having one type object into another
 	 *
+	 * @param <OLD>
+	 * @param <NEW>
 	 * @param list      the old list
 	 * @param converter the converter;
 	 * @return the new list
@@ -2092,6 +2095,8 @@ public final class Common {
 	/**
 	 * Converts a set having one type object into another
 	 *
+	 * @param <OLD>
+	 * @param <NEW>
 	 * @param list      the old list
 	 * @param converter the converter;
 	 * @return the new list
@@ -2110,7 +2115,9 @@ public final class Common {
 
 	/**
 	 * Converts a list having one type object into another
-	 *
+	 * 
+	 * @param <OLD>
+	 * @param <NEW>
 	 * @param list      the old list
 	 * @param converter the converter
 	 * @return the new list
@@ -2314,6 +2321,7 @@ public final class Common {
 	 *
 	 * PSA: If values are strings, we return default if the value is empty or equals to "none"
 	 *
+	 * @param <T>
 	 * @param value the primary value
 	 * @param def   the default value
 	 * @return the value, or default it the value is null
@@ -2408,6 +2416,7 @@ public final class Common {
 	/**
 	 * Creates a new modifiable array list from array
 	 *
+	 * @param <T>
 	 * @param array
 	 * @return
 	 */
@@ -2418,6 +2427,7 @@ public final class Common {
 	/**
 	 * Converts {@link Iterable} to {@link List}
 	 *
+	 * @param <T>
 	 * @param it the iterable
 	 * @return the new list
 	 */

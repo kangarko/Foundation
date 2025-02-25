@@ -58,7 +58,7 @@ abstract class Message {
 	}
 
 	/**
-	 *
+	 * @param <T>
 	 * @return
 	 */
 	public final <T extends BungeeMessageType> T getAction() {

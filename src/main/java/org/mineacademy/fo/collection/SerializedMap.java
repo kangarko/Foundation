@@ -608,6 +608,7 @@ public final class SerializedMap extends StrictCollection implements Iterable<Ma
 	 * Return {@link IsInList} implementation, of a list that is always
 	 * returning true, if the given key equals to ["*"]
 	 *
+	 * @param <T>
 	 * @param path
 	 * @param type
 	 * @return

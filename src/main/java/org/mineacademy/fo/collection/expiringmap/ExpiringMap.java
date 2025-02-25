@@ -395,6 +395,9 @@ public final class ExpiringMap<K, V> implements ConcurrentMap<K, V> {
 		 * Sets the EntryLoader to use when loading entries. Either an EntryLoader or
 		 * ExpiringEntryLoader may be set, not both.
 		 *
+		 * @param <K1>
+		 * @param <V1>
+		 * 
 		 * @param loader to set
 		 * @throws NullPointerException  if {@code loader} is null
 		 * @throws IllegalStateException if an
