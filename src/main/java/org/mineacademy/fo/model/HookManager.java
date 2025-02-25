@@ -1174,7 +1174,7 @@ public final class HookManager {
 	 * @return
 	 */
 	public static String replaceFontImages(@Nullable Player player, final String message) {
-		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImages(player, message) : message;
+		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImagesLegacy(player, message) : message;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -3911,34 +3911,26 @@ class LiteBansHook {
 class ItemsAdderHook {
 
 	private Class<?> itemsAdder;
-	private Method replaceFontImages;
-	private Method replaceFontImagesNoPlayer;
+	private Method replaceFontImagesString;
+	private Method replaceFontImagesStringNoPlayer;
+
 	private boolean failed = false;
 
 	ItemsAdderHook() {
 	}
 
-	/*
-	 * Return true if the given player is muted.
-	 */
-	String replaceFontImages(@Nullable final Player player, final String message) {
-
-		if (this.replaceFontImages == null) {
-
-			// integration failed, do not spam
-			if (this.failed)
-				return message;
-
+	String replaceFontImagesLegacy(@Nullable final Player player, final String messageOrComponent) {
+		if (this.replaceFontImagesString == null && !this.failed) {
 			try {
 				this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
 
-				this.replaceFontImages = ReflectionUtil.getDeclaredMethod(this.itemsAdder, "replaceFontImages", Permissible.class, String.class);
-				this.replaceFontImagesNoPlayer = ReflectionUtil.getDeclaredMethod(this.itemsAdder, "replaceFontImages", String.class);
+				this.replaceFontImagesString = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Permissible.class, String.class);
+				this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
 
 			} catch (final Throwable original) {
 				try {
-					this.replaceFontImages = ReflectionUtil.getDeclaredMethod(this.itemsAdder, "replaceFontImages", Player.class, String.class);
-					this.replaceFontImagesNoPlayer = ReflectionUtil.getDeclaredMethod(this.itemsAdder, "replaceFontImages", String.class);
+					this.replaceFontImagesString = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Player.class, String.class);
+					this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
 
 				} catch (final Throwable tt) {
 					Common.warning("Unable to resolve ItemsAdder API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
@@ -3949,9 +3941,27 @@ class ItemsAdderHook {
 			}
 		}
 
-		if (player == null)
-			return ReflectionUtil.invokeStatic(this.replaceFontImagesNoPlayer, message);
+		if (this.failed)
+			return messageOrComponent;
 
-		return ReflectionUtil.invokeStatic(this.replaceFontImages, player, message);
+		if (player == null) {
+			if (this.replaceFontImagesStringNoPlayer != null) {
+				final String message = messageOrComponent;
+				final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesStringNoPlayer, message);
+
+				return result;
+			}
+
+		} else {
+			if (this.replaceFontImagesString != null) {
+				final String message = messageOrComponent;
+				final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesString, player, message);
+
+				return result;
+			}
+		}
+
+		// Fallback to original message or component if replacement fails
+		return messageOrComponent;
 	}
 }
