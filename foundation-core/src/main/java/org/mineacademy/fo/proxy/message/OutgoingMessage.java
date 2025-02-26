@@ -1,7 +1,6 @@
 package org.mineacademy.fo.proxy.message;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.debug.Debugger;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationServer;
 import org.mineacademy.fo.platform.Platform;
@@ -227,15 +225,15 @@ public final class OutgoingMessage extends Message {
 				else if (data instanceof Boolean)
 					out.writeBoolean((Boolean) data);
 				else if (data instanceof String)
-					this.writeCompressedString(out, (String) data);
+					out.writeUTF((String) data);
 				else if (data instanceof SimpleComponent)
-					this.writeCompressedString(out, ((SimpleComponent) data).serialize().toJson());
+					out.writeUTF(((SimpleComponent) data).serialize().toJson());
 				else if (data instanceof SerializedMap)
-					this.writeCompressedString(out, ((SerializedMap) data).toJson());
+					out.writeUTF(((SerializedMap) data).toJson());
 				else if (data instanceof UUID)
 					out.writeUTF(((UUID) data).toString());
 				else if (data instanceof Enum)
-					this.writeCompressedString(out, ((Enum<?>) data).toString());
+					out.writeUTF(((Enum<?>) data).toString());
 				else if (data instanceof byte[])
 					out.write((byte[]) data);
 				else
@@ -379,24 +377,6 @@ public final class OutgoingMessage extends Message {
 				if (!isSpammyPacket)
 					Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
 			}
-		}
-	}
-
-	/**
-	 * Writes a compressed string to the output.
-	 *
-	 * @param out
-	 * @param data
-	 */
-	private void writeCompressedString(final DataOutput out, final String data) {
-		final byte[] compressed = CommonCore.compress(data);
-
-		try {
-			out.writeInt(compressed.length);
-			out.write(compressed);
-
-		} catch (final Exception ex) {
-			throw new FoException("Failed to write compressed String: " + data, ex);
 		}
 	}
 }

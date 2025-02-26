@@ -31,7 +31,7 @@
   "command-help-tooltip-permission": "<gray>Permission: <white>{permission}",
   "command-help-tooltip-usage": "<gray>Usage: <white>{usage}",
   "command-incompatible": "This command requires Minecraft {version} or greater.",
-  "command-invalid-amount": "Invalid amount 'value'. Enter a valid number.",
+  "command-invalid-amount": "Invalid amount '{value}'. Enter a valid number.",
   "command-invalid-argument": "Invalid argument(s) '{arguments}'. Run <gold>{help_command} <red>for help.",
   "command-invalid-material": "No such material: '{material}'. For available, see list at: https://mineacademy.org/materials",
   "command-invalid-number": "The number must be a whole or a decimal number. Got: '{input}'",

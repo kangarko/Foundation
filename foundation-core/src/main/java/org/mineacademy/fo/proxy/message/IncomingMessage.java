@@ -84,7 +84,14 @@ public final class IncomingMessage extends Message {
 	public String readString() {
 		this.moveHead(String.class);
 
-		return this.readCompressedString();
+		try {
+			return this.input.readUTF();
+
+		} catch (final IOException ex) {
+			CommonCore.sneaky(ex);
+
+			return "";
+		}
 	}
 
 	/**
@@ -95,7 +102,16 @@ public final class IncomingMessage extends Message {
 	public SimpleComponent readSimpleComponent() {
 		this.moveHead(SimpleComponent.class);
 
-		return SimpleComponent.deserialize(SerializedMap.fromObject(Language.JSON, this.readCompressedString()));
+		try {
+			final String raw = this.input.readUTF();
+
+			return SimpleComponent.deserialize(SerializedMap.fromObject(Language.JSON, raw));
+
+		} catch (final IOException ex) {
+			CommonCore.sneaky(ex);
+
+			return SimpleComponent.empty();
+		}
 	}
 
 	/**
@@ -106,7 +122,16 @@ public final class IncomingMessage extends Message {
 	public SerializedMap readMap() {
 		this.moveHead(SerializedMap.class);
 
-		return SerializedMap.fromObject(Language.JSON, this.readCompressedString());
+		try {
+			final String raw = this.input.readUTF();
+
+			return SerializedMap.fromObject(Language.JSON, raw);
+
+		} catch (final IOException ex) {
+			CommonCore.sneaky(ex);
+
+			return new SerializedMap();
+		}
 	}
 
 	/**
@@ -137,7 +162,16 @@ public final class IncomingMessage extends Message {
 	public <T extends Enum<T>> T readEnum(final Class<T> typeOf) {
 		this.moveHead(String.class); // Read enums as Strings
 
-		return ReflectionUtil.lookupEnum(typeOf, this.readCompressedString());
+		try {
+			final String raw = this.input.readUTF();
+
+			return ReflectionUtil.lookupEnum(typeOf, raw);
+
+		} catch (final IOException ex) {
+			CommonCore.sneaky(ex);
+
+			return null;
+		}
 	}
 
 	/**
@@ -286,29 +320,11 @@ public final class IncomingMessage extends Message {
 		}
 	}
 
-	/*
-	 * Helper util to read the next compressed string
-	 */
-	private String readCompressedString() {
-		try {
-			final int length = this.input.readInt();
-			final byte[] compressed = new byte[length];
-
-			this.input.readFully(compressed);
-
-			return CommonCore.decompress(compressed);
-
-		} catch (final IOException ex) {
-			CommonCore.sneaky(ex);
-
-			return null;
-		}
-	}
-
 	/**
 	 *
 	 * @return
 	 */
+	@Override
 	public String getChannel() {
 		return this.getListener().getChannel();
 	}
