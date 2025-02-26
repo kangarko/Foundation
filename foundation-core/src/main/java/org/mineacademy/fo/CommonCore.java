@@ -1,6 +1,5 @@
 package org.mineacademy.fo;
 
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,8 +18,6 @@ import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.database.Row;
@@ -1664,77 +1661,6 @@ public abstract class CommonCore {
 			sortedMap.put(entry.getKey(), entry.getValue());
 
 		return sortedMap;
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// I/O
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Compress the given string into a byte array.
-	 *
-	 * @param data
-	 * @return
-	 */
-	public static final byte[] compress(final String data) {
-		try {
-			final byte[] input = data.getBytes("UTF-8");
-			final Deflater deflater = new Deflater();
-
-			deflater.setInput(input);
-			deflater.finish();
-
-			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(input.length)) {
-				final byte[] buffer = new byte[1024];
-
-				while (!deflater.finished()) {
-					final int count = deflater.deflate(buffer);
-
-					outputStream.write(buffer, 0, count);
-				}
-
-				return outputStream.toByteArray();
-
-			} finally {
-				deflater.end(); // Ensure native memory is released
-			}
-
-		} catch (final Exception ex) {
-			CommonCore.throwError(ex, "Failed to compress data");
-
-			return new byte[0];
-		}
-	}
-
-	/**
-	 * Decompress the given byte array into a string.
-	 *
-	 * @param data
-	 * @return
-	 */
-	public static final String decompress(final byte[] data) {
-		final Inflater inflater = new Inflater();
-		try {
-			inflater.setInput(data);
-
-			try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length)) {
-				final byte[] buffer = new byte[1024];
-
-				while (!inflater.finished()) {
-					final int count = inflater.inflate(buffer);
-
-					outputStream.write(buffer, 0, count);
-				}
-
-				return new String(outputStream.toByteArray(), "UTF-8");
-			}
-		} catch (final Exception ex) {
-			CommonCore.throwError(ex, "Failed to decompress data");
-			return "";
-
-		} finally {
-			inflater.end(); // Properly releases native resources
-		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
