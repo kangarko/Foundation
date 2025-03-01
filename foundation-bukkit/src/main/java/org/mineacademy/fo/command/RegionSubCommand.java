@@ -239,6 +239,8 @@ public class RegionSubCommand extends SimpleSubCommand {
 			this.checkConsole();
 
 			if (region != null) {
+				this.checkBoolean(region.isWhole(), "Region '" + regionName + "' is not a whole region.");
+
 				region.visualize(this.getPlayer());
 
 				this.tellAndList(region, "Region '&2" + regionName + "&7' is being visualized for 10 seconds.");
@@ -249,7 +251,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 				int count = 0;
 
 				for (final DiskRegion otherRegion : DiskRegion.getRegions())
-					if (otherRegion.getCenter().distance(playerLocation) < 100) {
+					if (otherRegion.getCenter().distance(playerLocation) < 100 && otherRegion.isWhole()) {
 						otherRegion.visualize(this.getPlayer());
 
 						count++;
