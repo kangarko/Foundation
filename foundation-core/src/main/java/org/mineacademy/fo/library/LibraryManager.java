@@ -37,6 +37,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.mineacademy.fo.NetworkUtil;
+import org.mineacademy.fo.platform.Platform;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -540,7 +541,11 @@ public abstract class LibraryManager {
 				return file;
 			}
 		} catch (final IOException e) {
-			throw new UncheckedIOException(e);
+			if (e.getMessage() != null && e.getMessage().contains("No space left on device"))
+				Platform.log("Failed to download library '" + library + "' due to no space left on device");
+			else
+				throw new UncheckedIOException(e);
+
 		} finally {
 			try {
 				Files.deleteIfExists(out);

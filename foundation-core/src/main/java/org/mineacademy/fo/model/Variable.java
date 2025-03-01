@@ -310,7 +310,8 @@ public final class Variable extends YamlConfig {
 					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.hoverItem), audience);
 
 					if (result != null) {
-						ValidCore.checkBoolean(result.getClass().getSimpleName().contains("ItemStack"), "Variable '" + this.getFile() + "' option Hover_Item must return ItemStack not " + result.getClass());
+						if (!result.getClass().getSimpleName().contains("ItemStack"))
+							throw new FoException("Variable '" + this.getFile() + "' option Hover_Item must return ItemStack not " + result.getClass(), false);
 
 						component = component.onHover(Platform.convertItemStackToHoverEvent(result));
 					}

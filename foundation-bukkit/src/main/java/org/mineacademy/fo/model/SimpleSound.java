@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.CompSound;
 
@@ -154,7 +155,9 @@ public final class SimpleSound implements ConfigStringSerializable {
 
 		final SimpleSound sound = new SimpleSound();
 
-		ValidCore.checkNotNull(compSound, "Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds");
+		if (compSound == null)
+			throw new FoException("Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds", false);
+
 		sound.sound = compSound;
 
 		if (values.length == 1) {
@@ -164,7 +167,8 @@ public final class SimpleSound implements ConfigStringSerializable {
 			return sound;
 		}
 
-		ValidCore.checkBoolean(values.length == 3, "Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line);
+		if (values.length != 3)
+			throw new FoException("Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line, false);
 
 		final String volumeRaw = values[1];
 		final String pitchRaw = values[2];

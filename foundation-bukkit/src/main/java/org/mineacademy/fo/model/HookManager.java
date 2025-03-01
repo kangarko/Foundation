@@ -2460,7 +2460,7 @@ class VaultHook {
 	Boolean hasPerm(@NonNull final String player, final String perm) {
 		try {
 			return this.permissions != null ? perm != null ? this.permissions.has((String) null, player, perm) : true : null;
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return false; // No supported plugin installed.
 		}
 	}
@@ -2468,7 +2468,7 @@ class VaultHook {
 	Boolean hasPerm(@NonNull final String world, @NonNull final String player, final String perm) {
 		try {
 			return this.permissions != null ? perm != null ? this.permissions.has(world, player, perm) : true : null;
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return false; // No supported plugin installed.
 		}
 	}
@@ -2477,7 +2477,7 @@ class VaultHook {
 		try {
 			return this.permissions != null ? this.permissions.getPrimaryGroup(player) : "";
 
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return ""; // No supported plugin installed.
 		}
 	}
@@ -2486,7 +2486,7 @@ class VaultHook {
 		try {
 			return this.permissions != null ? this.permissions.getPrimaryGroup((String) null, player) : "";
 
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return ""; // No supported plugin installed.
 		}
 	}
@@ -2498,7 +2498,7 @@ class VaultHook {
 	String getPlayerPrefix(final Player player) {
 		try {
 			return this.lookupVault(player, VaultPart.PREFIX);
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return ""; // No supported plugin installed.
 		}
 	}
@@ -2506,7 +2506,7 @@ class VaultHook {
 	String getPlayerSuffix(final Player player) {
 		try {
 			return this.lookupVault(player, VaultPart.SUFFIX);
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return ""; // No supported plugin installed.
 		}
 	}
@@ -2514,7 +2514,7 @@ class VaultHook {
 	String getPlayerGroup(final Player player) {
 		try {
 			return this.lookupVault(player, VaultPart.GROUP);
-		} catch (final UnsupportedOperationException t) {
+		} catch (final RuntimeException t) {
 			return ""; // No supported plugin installed.
 		}
 	}
@@ -2608,8 +2608,17 @@ final class PlaceholderAPIHook {
 	void reloadHooks() {
 		this.hooks = new HashMap<>();
 
+		final Collection<PlaceholderExpansion> expansions;
+
+		try {
+			expansions = PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions();
+
+		} catch (final NoSuchMethodError ex) {
+			return;
+		}
+
 		// MineAcademy edit: Case insensitive
-		for (final PlaceholderExpansion expansion : PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions())
+		for (final PlaceholderExpansion expansion : expansions)
 			try {
 				// Ignore our internal expansion and poorly coded ones
 				if (expansion != null) {

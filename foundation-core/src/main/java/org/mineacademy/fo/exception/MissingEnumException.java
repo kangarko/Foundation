@@ -7,7 +7,7 @@ import org.mineacademy.fo.ReflectionUtil;
  *
  * @see ReflectionUtil#lookupEnum(Class, String)
  */
-public final class MissingEnumException extends RuntimeException {
+public final class MissingEnumException extends IllegalArgumentException {
 
 	private static final long serialVersionUID = 1L;
 
