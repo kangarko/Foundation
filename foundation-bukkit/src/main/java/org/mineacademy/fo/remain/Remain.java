@@ -1904,7 +1904,7 @@ public final class Remain {
 	 * @param icon
 	 * @param toastStyle
 	 */
-	public static void sendToast(final Player receiver, final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
+	public static void sendToast(@NonNull final Player receiver, final String message, @NonNull final CompMaterial icon, @NonNull final CompToastStyle toastStyle) {
 		if (message != null && !message.isEmpty()) {
 			final String colorized = SimpleComponent.fromMiniAmpersand(message).toLegacySection(Platform.toPlayer(receiver)).replace("|", "\n");
 
@@ -3092,7 +3092,8 @@ public final class Remain {
 		if (HookManager.isCitizensLoaded())
 			HookManager.destroyNPC(entity);
 
-		entity.remove();
+		if (!(entity instanceof Player))
+			entity.remove();
 	}
 
 	// ----------------------------------------------------------------------------------------------------
