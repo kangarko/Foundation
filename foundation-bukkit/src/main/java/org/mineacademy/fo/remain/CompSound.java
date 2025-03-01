@@ -1907,7 +1907,9 @@ public enum CompSound {
 	 * @return a matched CompSound.
 	 */
 	@Nullable
-	public static CompSound fromName(@NonNull final String soundName) {
+	public static CompSound fromName(@NonNull String soundName) {
+		soundName = soundName.replace(".", "_");
+
 		final int len = soundName.length();
 		final char[] chs = new char[len];
 		int count = 0;
