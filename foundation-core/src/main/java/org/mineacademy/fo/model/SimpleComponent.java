@@ -14,8 +14,10 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
@@ -979,7 +981,10 @@ public final class SimpleComponent implements ConfigSerializable {
 			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>").replace("\\n", "\n"));
 
 		} catch (final Throwable t) {
-			CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
+			if (MinecraftVersion.equals(V.v1_16))
+				CommonCore.throwErrorUnreported(t, "Error parsing mini message tags in: " + message);
+			else
+				CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
 
 			return null;
 		}
@@ -1065,11 +1070,21 @@ public final class SimpleComponent implements ConfigSerializable {
 	public static SimpleComponent fromAdventureJson(@NonNull final String json, final boolean legacy) {
 		try {
 			return fromAdventure((legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).deserialize(json));
+
 		} catch (final Throwable t) {
-			CommonCore.error(t,
-					"Failed to parse JSON into SimpleComponent!",
+			CommonCore.logFramed(
+					"Failed to parse JSON into SimpleComponent",
 					"Legacy: " + legacy,
 					"Json: " + json);
+
+			if (json.length() > 200) {
+				final String fileName = "malformed-json-" + TimeUtil.getFormattedDate() + ".txt";
+
+				FileUtil.write(fileName, json);
+				CommonCore.log("Saved malformed JSON to " + fileName + " - please report this to the plugin developer.");
+			}
+
+			t.printStackTrace();
 
 			return SimpleComponent.empty();
 		}
