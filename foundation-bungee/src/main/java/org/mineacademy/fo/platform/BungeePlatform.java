@@ -1,6 +1,8 @@
 package org.mineacademy.fo.platform;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -42,10 +44,6 @@ final class BungeePlatform extends FoundationPlatform {
 
 	@Getter
 	private static BungeeAudiences adventure;
-
-	public void registerPlayer(ProxiedPlayer player) {
-		this.players.put(player.getUniqueId(), BungeePlayer.wrap(player));
-	}
 
 	public static void closeAudiences() {
 		if (adventure != null) {
@@ -244,14 +242,17 @@ final class BungeePlatform extends FoundationPlatform {
 		if (!(sender instanceof CommandSender))
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);
 
-		if (sender instanceof ProxiedPlayer) {
-			final FoundationPlayer player = this.players.get(((ProxiedPlayer) sender).getUniqueId());
-
-			if (player != null)
-				return player;
-		}
-
 		return BungeePlayer.wrap((CommandSender) sender);
+	}
+
+	@Override
+	public Collection<FoundationPlayer> getPlayers() {
+		final List<FoundationPlayer> players = new ArrayList<>();
+
+		for (final ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
+			players.add(BungeePlayer.wrap(player));
+
+		return players;
 	}
 
 	@Override

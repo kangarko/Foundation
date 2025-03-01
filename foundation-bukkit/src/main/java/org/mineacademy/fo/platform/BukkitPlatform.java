@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -85,10 +86,6 @@ import net.kyori.adventure.text.event.HoverEventSource;
 final class BukkitPlatform extends FoundationPlatform {
 
 	private static BukkitAudiences adventure;
-
-	public void registerPlayer(Player player) {
-		this.players.put(player.getUniqueId(), BukkitPlayer.wrap(player));
-	}
 
 	public static BukkitAudiences getAdventure() {
 		ValidCore.checkNotNull(hasAdventure(), "Adventure not initialized or not available!");
@@ -698,14 +695,17 @@ final class BukkitPlatform extends FoundationPlatform {
 		if (!(sender instanceof CommandSender))
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);
 
-		if (sender instanceof Player) {
-			final FoundationPlayer target = this.players.get(((Player) sender).getUniqueId());
-
-			if (target != null)
-				return target;
-		}
-
 		return BukkitPlayer.wrap((CommandSender) sender);
+	}
+
+	@Override
+	public Collection<FoundationPlayer> getPlayers() {
+		final List<FoundationPlayer> players = new ArrayList<>();
+
+		for (final Player player : Remain.getOnlinePlayers())
+			players.add(BukkitPlayer.wrap(player));
+
+		return players;
 	}
 
 	@Override
