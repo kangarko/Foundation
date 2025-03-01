@@ -4,9 +4,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.mineacademy.fo.CommonCore;
@@ -30,12 +28,6 @@ import net.kyori.adventure.text.event.HoverEventSource;
 public abstract class FoundationPlatform {
 
 	private String customServerName;
-
-	final Map<UUID, FoundationPlayer> players = new HashMap<>();
-
-	public final void unregisterPlayer(UUID uniqueId) {
-		this.players.remove(uniqueId);
-	}
 
 	protected FoundationPlatform() {
 
@@ -127,16 +119,14 @@ public abstract class FoundationPlatform {
 		return this.customServerName;
 	}
 
-	public final Collection<FoundationPlayer> getPlayers() {
-		return players.values();
-	}
+	public abstract Collection<FoundationPlayer> getPlayers();
 
 	public abstract String getPlatformName();
 
 	public abstract String getPlatformVersion();
 
 	protected final FoundationPlayer getPlayer(final String name) {
-		for (final FoundationPlayer player : this.players.values())
+		for (final FoundationPlayer player : this.getPlayers())
 			if (player.getName().equals(name))
 				return player;
 
@@ -144,7 +134,11 @@ public abstract class FoundationPlatform {
 	}
 
 	protected final FoundationPlayer getPlayer(final UUID uniqueId) {
-		return this.players.get(uniqueId);
+		for (final FoundationPlayer player : this.getPlayers())
+			if (player.getUniqueId().equals(uniqueId))
+				return player;
+
+		return null;
 	}
 
 	public abstract FoundationPlugin getPlugin();

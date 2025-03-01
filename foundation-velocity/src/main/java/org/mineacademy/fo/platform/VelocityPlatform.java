@@ -2,6 +2,8 @@ package org.mineacademy.fo.platform;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,10 +38,6 @@ import net.kyori.adventure.text.event.HoverEventSource;
  * An implementation of {@link FoundationPlatform} for Bukkit.
  */
 final class VelocityPlatform extends FoundationPlatform {
-
-	public void registerPlayer(Player player) {
-		this.players.put(player.getUniqueId(), VelocityPlayer.wrap(player));
-	}
 
 	public static void inject() {
 		Platform.setInstance(new VelocityPlatform());
@@ -226,14 +224,17 @@ final class VelocityPlatform extends FoundationPlatform {
 		if (!(sender instanceof CommandSource))
 			throw new FoException("Can only convert CommandSender to FoundationPlayer, got " + sender.getClass().getSimpleName() + ": " + sender);
 
-		if (sender instanceof Player) {
-			final FoundationPlayer target = this.players.get(((Player) sender).getUniqueId());
-
-			if (target != null)
-				return target;
-		}
-
 		return VelocityPlayer.wrap((CommandSource) sender);
+	}
+
+	@Override
+	public Collection<FoundationPlayer> getPlayers() {
+		final List<FoundationPlayer> players = new ArrayList<>();
+
+		for (final Player player : VelocityPlugin.getServer().getAllPlayers())
+			players.add(VelocityPlayer.wrap(player));
+
+		return players;
 	}
 
 	@Override
