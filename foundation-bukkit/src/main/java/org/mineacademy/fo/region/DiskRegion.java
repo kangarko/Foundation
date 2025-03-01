@@ -230,6 +230,15 @@ public final class DiskRegion extends YamlConfig {
 	}
 
 	/**
+	 * Return if this region is whole
+	 *
+	 * @return
+	 */
+	public boolean isWhole() {
+		return this.border != null && this.border.isWhole();
+	}
+
+	/**
 	 * Visualize this region for player
 	 *
 	 * @param player
@@ -246,6 +255,7 @@ public final class DiskRegion extends YamlConfig {
 	 */
 	public void visualize(final Player player, final Color color) {
 		ValidCore.checkNotNull(this.border, "Cannot call visualize using a region with no border");
+		ValidCore.checkBoolean(this.border.isWhole(), "Cannot visualize a region that is not whole");
 
 		if (!this.border.canSeeParticles(player)) {
 
