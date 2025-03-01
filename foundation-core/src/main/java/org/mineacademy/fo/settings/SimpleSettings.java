@@ -9,6 +9,7 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.debug.LagCatcher;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.Platform;
 
 /**
@@ -171,7 +172,7 @@ public class SimpleSettings extends YamlStaticConfig {
 					TIMEZONE = java.time.ZoneId.of(raw);
 
 				} catch (final Throwable t) {
-					throw new IllegalArgumentException("No such time-zone in 'Timezone' key in " + getFileName() + ": '" + raw + "'! Available: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids");
+					throw new FoException("No such time-zone in 'Timezone' key in " + getFileName() + ": '" + raw + "'! Available: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids", false);
 				}
 		}
 

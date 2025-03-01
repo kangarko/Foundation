@@ -1021,7 +1021,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 				return fromInternal(Language.JSON, converted);
 
 			} catch (final Throwable t) {
-				CommonCore.throwError(t, "SerializedMap failed to parse JSON from " + json);
+				CommonCore.throwError(t, "SerializedMap failed to parse JSON from: " + json);
 
 				return null;
 			}

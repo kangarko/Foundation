@@ -795,7 +795,7 @@ public abstract class FileConfig extends ConfigSection {
 			CommonCore.log("[" + this.getFileName() + "] Wrong time value in '" + path + "'. Expected a human readable format like '20 seconds', got: " + this.getObject(path));
 			ex.printStackTrace();
 
-			return def;
+			return def == null ? SimpleTime.fromSeconds(0) : def;
 		}
 	}
 
