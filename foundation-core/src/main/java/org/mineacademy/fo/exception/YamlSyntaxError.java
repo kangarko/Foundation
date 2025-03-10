@@ -22,6 +22,6 @@ public final class YamlSyntaxError extends RuntimeException {
 
 	@Override
 	public String getMessage() {
-		return "Failed to read yaml file" + (this.file != null ? " " + this.file : "") + " due to bad syntax! Copy and paste its content to yaml-online-parser.appspot.com and fix it. Got: " + super.getMessage();
+		return "Failed to read yaml file" + (this.file != null ? " " + this.file : "") + " due to bad syntax! Copy and paste its content to yaml-online-parser.appspot.com and fix it. Please note emojis in itemstacks might be unsupported on some systems. Got: " + super.getMessage();
 	}
 }
