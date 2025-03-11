@@ -289,6 +289,10 @@ public final class Variables {
 				message = legacyPlaceholderAPIparser.apply(this.audience, message);
 		}
 
+		// We wrap them to prevent parsing variables in the {message}
+		// So now we just heuristically unwrap
+		message = message.replace("\\{U", "{").replace("\\O}", "}");
+
 		return message;
 	}
 
@@ -318,6 +322,10 @@ public final class Variables {
 					value = matcher.group();
 
 				else {
+
+					// Stupid was of fixing variables being parsed in {message}
+					if (variable.equals("message"))
+						value = value.replace("{", "\\{U").replace("}", "\\O}");
 
 					// Probably there is a better way to do this...
 					if (convertHexToMini && !variable.equals("message")) {
