@@ -64,7 +64,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * prevents removing the second tag from \<red\>hello {player}\<red\>
 	 * which makes colored placeholders revert back properly.
 	 */
-	public static MiniMessage MINIMESSAGE_PARSER;
+	private static MiniMessage MINIMESSAGE_PARSER;
 
 	static {
 		try {
@@ -770,8 +770,9 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			CommonCore.log(
 					"Adventure failed to convert component to JSON. Will return stripped!",
-					"Please update your Paper build as this is a server bug which is already fixed.",
-					"If it still persists, raise a ticket with Paper.",
+					"This is a Paper bug (especially if you the error says No data converted",
+					"and your item has a hover event - in that case, update Paper.",
+					"If you are running the latest Paper, open an issue with their team.",
 					"",
 					"Mini: " + mini,
 					"Stripped: " + stripped);
@@ -1172,6 +1173,72 @@ public final class SimpleComponent implements ConfigSerializable {
 		}
 
 		return main;
+	}
+
+	/**
+	 * Serialize the component to MiniMessage format.
+	 *
+	 * @param component
+	 * @return
+	 */
+	public static String serializeAdventureToMini(Component component) {
+		try {
+			return MINIMESSAGE_PARSER.serialize(component);
+
+		} catch (final Throwable t) {
+			final String plain = PlainTextComponentSerializer.plainText().serialize(component);
+
+			CommonCore.log(
+					"Adventure failed to convert Component to MiniMessage. Will return as plain!",
+					"This is a Paper bug (especially if you the error says No data converted",
+					"and your item has a hover event - in that case, update Paper.",
+					"If you are running the latest Paper, open an issue with their team.",
+					"",
+					"Plain: " + plain,
+					"Error: " + t.getMessage());
+
+			t.printStackTrace(); // do not report to sentry, likely not our fault
+			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
+
+			return plain;
+		}
+	}
+
+	/**
+	 * Deserialize the component from MiniMessage format.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static Component deserializeMiniToAdventure(String text) {
+		try {
+			return MINIMESSAGE_PARSER.deserialize(text);
+
+		} catch (final Throwable t) {
+			CommonCore.log(
+					"Adventure failed to convert MiniMessage to Component. Will return as literal!",
+					"This is a Paper bug (especially if you the error says No data converted",
+					"and your item has a hover event - in that case, update Paper.",
+					"If you are running the latest Paper, open an issue with their team.",
+					"",
+					"Text: " + text,
+					"Error: " + t.getMessage());
+
+			t.printStackTrace(); // do not report to sentry, likely not our fault
+			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
+
+			return Component.text(text);
+		}
+	}
+
+	/**
+	 * Strip all tags from the message.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static String stripMiniMessageTags(String message) {
+		return MINIMESSAGE_PARSER.stripTags(message);
 	}
 
 	// --------------------------------------------------------------------
