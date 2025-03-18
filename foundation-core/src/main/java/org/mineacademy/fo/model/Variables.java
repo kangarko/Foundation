@@ -579,7 +579,7 @@ public final class Variables {
 					final Component component = (Component) rawValue;
 
 					if (this.toLegacyMode == ToLegacyMode.MINI)
-						replacedValue = SimpleComponent.MINIMESSAGE_PARSER.serialize(component);
+						replacedValue = SimpleComponent.serializeAdventureToMini(component);
 
 					else if (this.toLegacyMode == ToLegacyMode.PLAIN)
 						replacedValue = PlainTextComponentSerializer.plainText().serialize(component);
