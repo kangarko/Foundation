@@ -582,23 +582,26 @@ public class JsonItemStack {
 					}
 				else {
 					final JsonObject basePotion = extraJson.has("base-effect") ? extraJson.get("base-effect").getAsJsonObject() : null;
-					final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnumSilent(PotionType.class, basePotion.get("type").getAsString()) : null;
-					final boolean isExtended = basePotion.has("isExtended") ? basePotion.get("isExtended").getAsBoolean() : false;
-					final boolean isUpgraded = basePotion.has("isUpgraded") ? basePotion.get("isUpgraded").getAsBoolean() : false;
 
-					Class<?> potionDataClass = null;
+					if (basePotion != null) {
+						final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnumSilent(PotionType.class, basePotion.get("type").getAsString()) : null;
+						final boolean isExtended = basePotion.has("isExtended") ? basePotion.get("isExtended").getAsBoolean() : false;
+						final boolean isUpgraded = basePotion.has("isUpgraded") ? basePotion.get("isUpgraded").getAsBoolean() : false;
 
-					try {
-						potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
-					} catch (final Exception e) {
-					}
+						Class<?> potionDataClass = null;
 
-					if (potionDataClass != null && potionType != null) {
-						final Constructor<?> potionConst = ReflectionUtil.getConstructor(potionDataClass, PotionType.class, boolean.class, boolean.class);
-						final Object potionData = ReflectionUtil.instantiate(potionConst, potionType, isExtended, isUpgraded);
-						final Method setBasePotionData = ReflectionUtil.getMethod(pmeta.getClass(), "setBasePotionData", potionDataClass);
+						try {
+							potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
+						} catch (final Exception e) {
+						}
 
-						ReflectionUtil.invoke(setBasePotionData, pmeta, potionData);
+						if (potionDataClass != null && potionType != null) {
+							final Constructor<?> potionConst = ReflectionUtil.getConstructor(potionDataClass, PotionType.class, boolean.class, boolean.class);
+							final Object potionData = ReflectionUtil.instantiate(potionConst, potionType, isExtended, isUpgraded);
+							final Method setBasePotionData = ReflectionUtil.getMethod(pmeta.getClass(), "setBasePotionData", potionDataClass);
+
+							ReflectionUtil.invoke(setBasePotionData, pmeta, potionData);
+						}
 					}
 				}
 

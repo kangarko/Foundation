@@ -2613,7 +2613,9 @@ final class PlaceholderAPIHook {
 		try {
 			expansions = PlaceholderAPIPlugin.getInstance().getLocalExpansionManager().getExpansions();
 
-		} catch (final NoSuchMethodError ex) {
+		} catch (final Throwable ex) {
+			// Plugin deleted during reload
+
 			return;
 		}
 

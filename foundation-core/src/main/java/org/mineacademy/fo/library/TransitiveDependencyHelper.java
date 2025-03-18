@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.net.SocketTimeoutException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -184,13 +185,21 @@ final class TransitiveDependencyHelper {
 
 				transitiveLibraries.add(libraryBuilder.build());
 			}
-		} catch (final ReflectiveOperationException ex) {
-			Throwable cause = ex;
+		} catch (final Throwable throwable) {
+			if (throwable instanceof SocketTimeoutException) {
+				CommonCore.log("Failed to resolve transitive dependencies for " + library.getArtifactId() + " due to a timeout. This is a fatal issue and the plugin wont start due to missing library. "
+						+ "In most cases, restarting your server will resolve it if the endpoint was down temporarily.");
 
-			while (cause.getCause() != null)
-				cause = cause.getCause();
+				return Collections.emptyList();
 
-			CommonCore.sneaky(cause);
+			} else {
+				Throwable cause = throwable;
+
+				while (cause.getCause() != null)
+					cause = cause.getCause();
+
+				CommonCore.sneaky(cause);
+			}
 		}
 
 		return Collections.unmodifiableCollection(transitiveLibraries);
