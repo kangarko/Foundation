@@ -1066,12 +1066,12 @@ public abstract class CommonCore {
 	 * @see #simplify(Object)
 	 *
 	 * @param <T>
-	 * @param array
+	 * @param list
 	 * @param delimiter
 	 * @return
 	 */
-	public static final <T> String join(final Iterable<T> array, final String delimiter) {
-		return join(array, delimiter, object -> object == null ? "" : simplify(object));
+	public static final <T> String join(final Iterable<T> list, final String delimiter) {
+		return join(list, delimiter, object -> object == null ? "" : simplify(object));
 	}
 
 	/**
@@ -1124,11 +1124,18 @@ public abstract class CommonCore {
 	 * @param stringer
 	 * @return
 	 */
-	public static final <T> String join(final Iterable<T> list, final String delimiter, final Stringer<T> stringer) {
+	public static final <T> String join(final Iterable<T> list, final String delimiter, final Stringer<T> stringer) {		
+
+		// Create a copy to avoid ConcurrentModificationException
+		final List<T> safeList = new ArrayList<>();
+		
+		for (final T element : list) 
+			safeList.add(element);		
+		
 		final StringBuilder builder = new StringBuilder();
 		boolean first = true;
-
-		for (final T element : list) {
+		
+		for (final T element : safeList) {
 			if (element != null) {
 				if (!first)
 					builder.append(delimiter);
