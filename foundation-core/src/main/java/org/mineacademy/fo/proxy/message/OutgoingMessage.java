@@ -244,9 +244,9 @@ public final class OutgoingMessage extends Message {
 						"Error writing data in proxy plugin message!",
 						"Message: " + message,
 						"Channel: " + channel,
-						"Wrong data: " + data,
+						"Errored data: " + (data instanceof SimpleComponent ? ((SimpleComponent) data).toPlain() : data),
 						"Error: {error}",
-						"All data: " + CommonCore.join(dataArray, data2 -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtilCore.Language.YAML, data2), "").toString()));
+						"All data: " + CommonCore.join(dataArray, data2 -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtilCore.Language.YAML, data2), "null").toString()));
 
 				return null;
 			}
