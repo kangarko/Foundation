@@ -714,7 +714,27 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	@Deprecated
 	public String toMini(final FoundationPlayer receiver) {
-		return SimpleComponent.MINIMESSAGE_PARSER.serialize(this.toAdventure(receiver));
+		try {
+			return SimpleComponent.MINIMESSAGE_PARSER.serialize(this.toAdventure(receiver));
+
+		} catch (final Throwable t) {
+			final String mini = this.toPlain(receiver);
+			final String stripped = mini.replaceAll("(<hover:show_item:[^:>]+):[^>]*?'>", "$1'>");
+
+			CommonCore.log(
+					"Adventure failed to convert component to MiniMessage. Will return stripped!",
+					"This is a Paper bug (especially if you the error says 'There is no data holder'",
+					"and your item has a hover event - in that case, update Paper.",
+					"If you are running the latest Paper, open an issue with their team.",
+					"",
+					"Mini: " + mini,
+					"Stripped: " + stripped);
+
+			t.printStackTrace(); // do not report to sentry, likely not our fault
+			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
+
+			return fromSection(this.toLegacySection(receiver)).toMini(receiver);
+		}
 	}
 
 	/**
@@ -770,7 +790,7 @@ public final class SimpleComponent implements ConfigSerializable {
 
 			CommonCore.log(
 					"Adventure failed to convert component to JSON. Will return stripped!",
-					"This is a Paper bug (especially if you the error says No data converted",
+					"This is a Paper bug (especially if you the error says 'There is no data holder'",
 					"and your item has a hover event - in that case, update Paper.",
 					"If you are running the latest Paper, open an issue with their team.",
 					"",
