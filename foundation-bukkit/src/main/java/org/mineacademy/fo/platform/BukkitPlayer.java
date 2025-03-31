@@ -213,7 +213,7 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	protected void performPlayerCommand0(final String replacedCommand) {
-		if (this.isPlayer) {
+		if (this.isPlayer && !Remain.isFolia()) {
 			if (Bukkit.isPrimaryThread())
 				this.player.chat("/" + replacedCommand);
 			else
