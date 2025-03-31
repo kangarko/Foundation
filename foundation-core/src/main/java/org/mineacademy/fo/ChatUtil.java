@@ -212,22 +212,36 @@ public final class ChatUtil {
 		for (int i = 0; i < message.length(); i++) {
 			final char letter = message.charAt(i);
 
-			// Handle potential tags like <red>
-			if (!foundFirstLetter && letter == '<') {
+			// Handle potential tags like <red> or text in [brackets]
+			if (!foundFirstLetter && (letter == '<' || letter == '[')) {
 				result.append(letter);
 
-				final int closeIndex = message.indexOf('>', i);
+				// Handle angle brackets
+				if (letter == '<') {
+					final int closeIndex = message.indexOf('>', i);
 
-				// Verify if there's a closing '>'
-				if (closeIndex != -1) {
-					result.append(message, i + 1, closeIndex + 1);
+					// Verify if there's a closing '>'
+					if (closeIndex != -1) {
+						result.append(message, i + 1, closeIndex + 1);
 
-					i = closeIndex; // Skip the tag entirely
+						i = closeIndex; // Skip the tag entirely
+					}
+					// If no closing '>', treat '<' as normal text
+					else
+						continue; // Skip invalid '<' completely
 				}
+				// Handle square brackets
+				else if (letter == '[') {
+					final int closeIndex = message.indexOf(']', i);
 
-				// If no closing '>', treat '<' as normal text
-				else
-					continue; // Skip invalid '<' completely
+					// Verify if there's a closing ']'
+					if (closeIndex != -1) {
+						result.append(message, i + 1, closeIndex + 1);
+
+						i = closeIndex; // Skip the bracketed text entirely
+					}
+					// If no closing ']', treat '[' as normal text
+				}
 			}
 
 			// Handle other color codes like &x or §x
