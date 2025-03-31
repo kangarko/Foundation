@@ -20,16 +20,16 @@ import lombok.Getter;
  * @deprecated internal use only, see {@link HookManager} for public API
  */
 @Deprecated
-public final class LitebanTask extends BukkitRunnable {
+public final class LitebansTask extends BukkitRunnable {
 
 	@Getter
-	private final static LitebanTask instance = new LitebanTask();
+	private final static LitebansTask instance = new LitebansTask();
 
 	private final Map<String, Long> mutedPlayersByUniqueId = new HashMap<>();
 	private Object apiInstance;
 	private Method methodPrepareStatement;
 
-	LitebanTask() {
+	LitebansTask() {
 		final Class<?> classDatabase;
 
 		try {

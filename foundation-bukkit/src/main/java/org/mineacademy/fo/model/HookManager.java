@@ -903,7 +903,7 @@ public final class HookManager {
 		if (isBanManagerLoaded() && banManagerHook.isMuted(uniqueId))
 			return true;
 
-		if (isLiteBansLoaded() && LitebanTask.getInstance().isMuted(uniqueId))
+		if (isLiteBansLoaded() && LitebansTask.getInstance().isMuted(uniqueId))
 			return true;
 
 		return false;
@@ -939,7 +939,7 @@ public final class HookManager {
 			return new Tuple<>(true, 0L);
 
 		if (isLiteBansLoaded()) {
-			final long unmuteTime = LitebanTask.getInstance().getUnmuteTime(uniqueId);
+			final long unmuteTime = LitebansTask.getInstance().getUnmuteTime(uniqueId);
 
 			if (unmuteTime != 0)
 				return new Tuple<>(true, unmuteTime);
