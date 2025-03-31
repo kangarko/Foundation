@@ -723,11 +723,17 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static Location findClosestLocation(final Location location, List<Location> locations) {
-		locations = new ArrayList<>(locations);
+		final List<Location> locationsCopy = new ArrayList<>();
+
+		// Add locations on the same world
+		for (final Location oldLocation : locations)
+			if (oldLocation.getWorld().equals(location.getWorld()))
+				locationsCopy.add(oldLocation);
+
 		final Location playerLocation = location;
 
-		Collections.sort(locations, (f, s) -> Double.compare(f.distance(playerLocation), s.distance(playerLocation)));
-		return locations.get(0);
+		Collections.sort(locationsCopy, (f, s) -> Double.compare(f.distance(playerLocation), s.distance(playerLocation)));
+		return locationsCopy.get(0);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

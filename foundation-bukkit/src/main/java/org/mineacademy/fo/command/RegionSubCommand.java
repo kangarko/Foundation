@@ -251,7 +251,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 				int count = 0;
 
 				for (final DiskRegion otherRegion : DiskRegion.getRegions())
-					if (otherRegion.getCenter().distance(playerLocation) < 100 && otherRegion.isWhole()) {
+					if (otherRegion.getCenter().getWorld().equals(playerLocation.getWorld()) && otherRegion.getCenter().distance(playerLocation) < 100 && otherRegion.isWhole()) {
 						otherRegion.visualize(this.getPlayer());
 
 						count++;
