@@ -181,4 +181,13 @@ public final class DiscordSender implements CommandSender {
 	public Component name() {
 		return Component.text(this.name);
 	}
+
+	/**
+	 * Get the name of the channel wherefrom the dude sent his message.
+	 *
+	 * @return
+	 */
+	public String getChannelName() {
+		return this.channel.getName();
+	}
 }
