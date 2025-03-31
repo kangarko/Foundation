@@ -37,6 +37,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.mineacademy.fo.NetworkUtil;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.Platform;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -553,7 +554,7 @@ public abstract class LibraryManager {
 			}
 		}
 
-		throw new RuntimeException("Failed to download library '" + library + "'");
+		throw new FoException("Failed to download library '" + library + "'", false);
 	}
 
 	/**

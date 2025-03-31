@@ -273,7 +273,8 @@ public final class Variable extends YamlConfig {
 					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), audience);
 
 					if (result != null) {
-						ValidCore.checkBoolean(result instanceof Boolean, "Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+						if (!(result instanceof Boolean))
+							throw new FoException("Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass() + ": " + result), false);
 
 						if (!((boolean) result))
 							return SimpleComponent.empty();
@@ -371,7 +372,8 @@ public final class Variable extends YamlConfig {
 					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), audience);
 
 					if (result != null) {
-						ValidCore.checkBoolean(result instanceof Boolean, "Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass()));
+						if (!(result instanceof Boolean))
+							throw new FoException("Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass() + ": " + result), false);
 
 						if (!((boolean) result))
 							return "";
