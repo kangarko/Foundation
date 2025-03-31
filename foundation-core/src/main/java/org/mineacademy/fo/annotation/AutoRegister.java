@@ -45,6 +45,19 @@ public @interface AutoRegister {
 	boolean hideIncompatibilityWarnings() default false;
 
 	/**
+	 * When true, we won't register the class automatically.
+	 * I mean that's the whole point of this annotation, right?
+	 * You're wrong, I need to give haters some food.
+	 *
+	 * Actually, some classes are registered automatically regardless of this annotation
+	 * for legacy compatibility reasons, for example, SimpleEnchantment. So if you want to prevent a class from being registered
+	 * automatically, use this annotation and set this to true.
+	 *
+	 * @return
+	 */
+	boolean doNotAutoRegister() default false;
+
+	/**
 	 * When set, we will only register the class on the specified platforms.
 	 *
 	 * @return

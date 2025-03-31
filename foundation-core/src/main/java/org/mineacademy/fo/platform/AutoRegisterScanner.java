@@ -122,6 +122,10 @@ final class AutoRegisterScanner {
 				if (autoRegister != null || ProxyListener.class.isAssignableFrom(clazz) || SimpleExpansion.class.isAssignableFrom(clazz) || customRegisterHandler.canAutoRegister(clazz)) {
 					final Platform.Type[] requiredType = autoRegister != null ? autoRegister.requirePlatform() : null;
 
+					// The only way to stop auto registering for classes registered regardless of this annotation
+					if (autoRegister != null && autoRegister.doNotAutoRegister())
+						continue;
+
 					if (requiredType != null && requiredType.length > 0 && !Arrays.asList(requiredType).contains(Platform.getType()))
 						continue;
 
@@ -281,6 +285,7 @@ final class AutoRegisterScanner {
 
 		} else if (SimpleCommandCore.class.isAssignableFrom(clazz))
 			plugin.registerCommand((SimpleCommandCore) instance);
+
 		else if (SimpleCommandGroup.class.isAssignableFrom(clazz)) {
 			final SimpleCommandGroup group = (SimpleCommandGroup) instance;
 
@@ -295,6 +300,7 @@ final class AutoRegisterScanner {
 		} else if (YamlConfig.class.isAssignableFrom(clazz))
 			// Automatically called onLoadFinish when getting instance
 			enforceModeFor(clazz, mode, FindInstance.SINGLETON);
+
 		else if (customRegisterHandler.autoRegister(clazz, tuple)) {
 			// Handled by custom handler
 
