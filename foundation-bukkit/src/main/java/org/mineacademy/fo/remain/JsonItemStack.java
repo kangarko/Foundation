@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
@@ -33,6 +34,7 @@ import org.bukkit.potion.PotionType;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -70,9 +72,16 @@ public class JsonItemStack {
 	 * @return
 	 */
 	public static JsonObject toJsonObject(@Nullable final ItemStack item) {
-
-		if (item == null)
+		if (item == null || CompMaterial.isAir(item))
 			return null;
+
+		// First, try native Paper approach = supports custom components
+		try {
+			return Bukkit.getUnsafe().serializeItemAsJson(item);
+
+		} catch (final NoSuchMethodError err) {
+			// Unsupported, use our own method
+		}
 
 		final JsonObject json = new JsonObject();
 
@@ -380,6 +389,15 @@ public class JsonItemStack {
 
 		final JsonObject itemJson = CommonCore.GSON.fromJson(string, JsonObject.class);
 
+		if (itemJson.has("id"))
+			try {
+				return Bukkit.getUnsafe().deserializeItemFromJson(itemJson);
+
+			} catch (final NoSuchMethodError err) {
+				throw new FoException("Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
+						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson, false);
+			}
+
 		ValidCore.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
 
 		final String type = itemJson.get("type").getAsString();
@@ -453,7 +471,7 @@ public class JsonItemStack {
 
 		final JsonObject extraJson = metaJson.has("extra-meta") ? metaJson.get("extra-meta").getAsJsonObject() : null;
 
-		if (extraJson != null)
+		if (extraJson != null) {
 			if (meta instanceof SkullMeta) {
 				try {
 					final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
