@@ -316,6 +316,13 @@ public class JsonItemStack {
 			}
 
 			try {
+				if (meta.hasCustomModelData())
+					metaJson.addProperty("custom-model-data", meta.getCustomModelData());
+			} catch (final Throwable t) {
+				// Bug in API
+			}
+
+			try {
 				if (meta instanceof BannerMeta) {
 					final BannerMeta bannerMeta = (BannerMeta) meta;
 					final JsonObject extraMeta = new JsonObject();
@@ -706,6 +713,14 @@ public class JsonItemStack {
 				if (scaling != null)
 					mmeta.setScaling(scaling);
 			}
+
+			if (extraJson.has("custom-model-data"))
+				try {
+					meta.setCustomModelData(extraJson.get("custom-model-data").getAsInt());
+				} catch (final Throwable t) {
+					// Bug in API
+				}
+		}
 
 		item.setItemMeta(meta);
 
