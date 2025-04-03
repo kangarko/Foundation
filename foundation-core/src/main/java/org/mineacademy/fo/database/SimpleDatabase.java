@@ -629,7 +629,7 @@ public class SimpleDatabase {
 			final String placeholders = String.join(", ", Collections.nCopies(maps.get(0).size(), "?"));
 			final String sql = "INSERT INTO " + table.getName() + " (" + columns + ") VALUES (" + placeholders + ");";
 
-			Debugger.debug("mysql", "Batch Insert SQL Template: " + sql);
+			Debugger.debug("mysql", "Batch insert SQL: " + sql);
 
 			try (PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
 
@@ -646,7 +646,10 @@ public class SimpleDatabase {
 							if (value instanceof JsonArray)
 								value = ((JsonArray) value).toString();
 
-							preparedStatement.setObject(index++, value == null || "NULL".equals(value) ? null : value instanceof Boolean ? ((boolean) value) ? 1 : 0 : value);
+							value = value == null || "NULL".equals(value) ? null : value instanceof Boolean ? ((boolean) value) ? 1 : 0 : value;
+
+							Debugger.debug("mysql", "Setting item " + index + " in statement to: " + value);
+							preparedStatement.setObject(index++, value);
 						}
 
 						preparedStatement.addBatch();
