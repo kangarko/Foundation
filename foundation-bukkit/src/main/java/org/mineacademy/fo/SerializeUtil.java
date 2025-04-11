@@ -71,13 +71,14 @@ public final class SerializeUtil extends SerializeUtilCore {
 		if (line == null)
 			return null;
 
-		line = line.toString().replace("\"", "");
+		line = line.replace("\"", "");
 
-		final String[] parts = line.toString().contains(", ") ? line.toString().split(", ") : line.toString().split(" ");
-		ValidCore.checkBoolean(parts.length == 4 || parts.length == 6, "Expected location (String) but got " + line.getClass().getSimpleName() + ": " + line);
+		final String[] parts = line.contains(", ") ? line.split(", ") : line.split(" ");
+		ValidCore.checkBoolean(parts.length == 4 || parts.length == 6, "Expected location of 4 or 6 parts but got " + parts.length + " parts: " + line + " (please note spaces in world names are unsupported)");
 
 		final String world = parts[0];
 		final World bukkitWorld = Bukkit.getWorld(world);
+
 		if (bukkitWorld == null)
 			throw new InvalidWorldException("Location with invalid world '" + world + "': " + line + " (Doesn't exist)", world);
 
