@@ -110,6 +110,9 @@ public final class FileUtil {
 				destination.createNewFile();
 
 			} catch (final Throwable t) {
+				if (t.getMessage().equals("Read-only file system") || t.getMessage().equals("Permission denied"))
+					throw new FoException("Failed to create file " + destination + " because the file system is read-only. Please check your permissions.", false);
+
 				CommonCore.throwError(t, "Could not create new file '" + destination + "' due to " + t);
 			}
 
