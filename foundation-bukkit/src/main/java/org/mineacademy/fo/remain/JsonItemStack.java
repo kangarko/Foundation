@@ -79,7 +79,7 @@ public class JsonItemStack {
 		try {
 			return Bukkit.getUnsafe().serializeItemAsJson(item);
 
-		} catch (final NoSuchMethodError err) {
+		} catch (final NoSuchMethodError | IllegalStateException err) {
 			// Unsupported, use our own method
 		}
 
