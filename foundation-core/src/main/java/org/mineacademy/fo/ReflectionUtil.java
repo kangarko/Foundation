@@ -614,7 +614,7 @@ public final class ReflectionUtil {
 	 * @throws MissingEnumException if the enum is not found and is not inside {@link #addLegacyEnumType(Class, Map)}
 	 * @return the enum or error with exceptions, see above
 	 */
-	public static <E> E lookupEnum(final Class<E> typeOf, String name, final String errorMessage) {
+	public static <E> E lookupEnum(final Class<E> typeOf, @NonNull String name, final String errorMessage) {
 		name = name.toUpperCase().replace(" ", "_");
 
 		final E result = lookupEnumSilent(typeOf, name);
@@ -647,8 +647,11 @@ public final class ReflectionUtil {
 	 * @param name
 	 * @return the enum, or null if not exists
 	 */
-	public static <E> E lookupEnumSilent(@NonNull final Class<E> typeOf, @NonNull String name) {
+	public static <E> E lookupEnumSilent(@NonNull final Class<E> typeOf, String name) {
+		ValidCore.checkNotEmpty(name, "Cannot lookup enum of type " + typeOf + " from no value");
+
 		name = name.toUpperCase().replace(" ", "_");
+
 		E found = lookupEnumSilent0(typeOf, name);
 
 		// Attempt to add or remove plural s
