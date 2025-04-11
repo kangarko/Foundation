@@ -9,25 +9,25 @@ final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 	private final ReadWriteNBTCompoundList nbt;
 	private final Class<E> proxy;
 
-	public ProxiedList(final ReadWriteNBTCompoundList nbt, final Class<E> proxyClass) {
+	public ProxiedList(ReadWriteNBTCompoundList nbt, Class<E> proxyClass) {
 		this.nbt = nbt;
 		this.proxy = proxyClass;
 	}
 
 	@Override
-	public E get(final int index) {
-		final ReadWriteNBT tag = this.nbt.get(index);
-		return new ProxyBuilder<>(tag, this.proxy).build();
+	public E get(int index) {
+		final ReadWriteNBT tag = nbt.get(index);
+		return new ProxyBuilder<>(tag, proxy).build();
 	}
 
 	@Override
 	public int size() {
-		return this.nbt.size();
+		return nbt.size();
 	}
 
 	@Override
-	public void remove(final int index) {
-		this.nbt.remove(index);
+	public void remove(int index) {
+		nbt.remove(index);
 	}
 
 	@Override
@@ -37,13 +37,13 @@ final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 
 	@Override
 	public E addCompound() {
-		final ReadWriteNBT tag = this.nbt.addCompound();
-		return new ProxyBuilder<>(tag, this.proxy).build();
+		final ReadWriteNBT tag = nbt.addCompound();
+		return new ProxyBuilder<>(tag, proxy).build();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return this.nbt.isEmpty();
+		return nbt.isEmpty();
 	}
 
 	private class Itr implements Iterator<E> {
@@ -61,16 +61,16 @@ final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 
 		@Override
 		public boolean hasNext() {
-			return this.cursor != ProxiedList.this.size();
+			return cursor != size();
 		}
 
 		@Override
 		public E next() {
 			try {
-				final int i = this.cursor;
-				final E next = ProxiedList.this.get(i);
-				this.lastRet = i;
-				this.cursor = i + 1;
+				final int i = cursor;
+				final E next = get(i);
+				lastRet = i;
+				cursor = i + 1;
 				return next;
 			} catch (final IndexOutOfBoundsException e) {
 				throw new NoSuchElementException();
@@ -79,14 +79,14 @@ final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 
 		@Override
 		public void remove() {
-			if (this.lastRet < 0)
+			if (lastRet < 0)
 				throw new IllegalStateException();
 
 			try {
-				ProxiedList.this.remove(this.lastRet);
-				if (this.lastRet < this.cursor)
-					this.cursor--;
-				this.lastRet = -1;
+				ProxiedList.this.remove(lastRet);
+				if (lastRet < cursor)
+					cursor--;
+				lastRet = -1;
 			} catch (final IndexOutOfBoundsException e) {
 				throw new ConcurrentModificationException();
 			}

@@ -8,7 +8,7 @@ public class NBTChunk {
 
 	private final Chunk chunk;
 
-	public NBTChunk(final Chunk chunk) {
+	public NBTChunk(Chunk chunk) {
 		this.chunk = chunk;
 	}
 
@@ -19,9 +19,9 @@ public class NBTChunk {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		ValidCore.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTChunk#getPersistentDataContainer requires Minecraft 1.14+");
+		ValidCore.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "Calling NBTChunk.getPersistentDataContainer() on a chunk requires MC 1.16!");
 
-		return new NBTPersistentDataContainer(this.chunk.getPersistentDataContainer());
+		return new NBTPersistentDataContainer(chunk.getPersistentDataContainer());
 	}
 
 }
