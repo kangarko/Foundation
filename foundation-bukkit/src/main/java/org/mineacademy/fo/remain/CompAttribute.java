@@ -290,10 +290,21 @@ public enum CompAttribute {
 		// Minecraft 1.8.8+
 		if (hasAttributeClass) {
 			if (this.bukkitAttribute != null) {
-				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+				AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
 
-				if (instance == null)
-					throw new FoException("Attribute " + this + " cannot be set for " + entity, false);
+				if (instance == null) {
+					try {
+						entity.registerAttribute((Attribute) this.bukkitAttribute);
+						instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+
+						if (instance == null)
+							throw new IllegalStateException("Attribute " + this + " cannot be set nor registered for " + entity);
+
+					} catch (final NoSuchMethodError ex) {
+						// Only Paper supports registering attributes
+						throw new IllegalStateException("Attribute " + this + " cannot be set for " + entity);
+					}
+				}
 
 				instance.setBaseValue(value);
 			}
