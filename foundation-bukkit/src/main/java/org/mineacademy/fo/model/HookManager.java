@@ -3773,8 +3773,14 @@ class DiscordSRVHook {
 		Platform.runTaskAsync(() -> {
 			final String finalMessage = SimpleComponent.fromMiniAmpersand(message).toPlain();
 
-			if (!finalMessage.replace(" ", "").isEmpty())
-				textChannel.sendMessage(finalMessage).complete();
+			if (!finalMessage.replace(" ", "").isEmpty()) {
+				try {
+					textChannel.sendMessage(finalMessage).complete();
+
+				} catch (final Throwable t) {
+					Common.warning("Unable to send message to Discord channel ID " + channelId + ": " + t.getMessage() + ". Message: " + finalMessage);
+				}
+			}
 		});
 
 		return true;
