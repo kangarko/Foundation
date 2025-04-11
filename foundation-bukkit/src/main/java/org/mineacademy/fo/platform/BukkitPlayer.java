@@ -220,7 +220,7 @@ final class BukkitPlayer extends FoundationPlayer {
 				Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
 
 		} else
-			Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> Bukkit.dispatchCommand(this.sender, replacedCommand));
+			Platform.runTask(() -> Bukkit.dispatchCommand(this.sender, replacedCommand));
 	}
 
 	@Override
