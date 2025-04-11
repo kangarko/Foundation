@@ -238,7 +238,7 @@ public final class Variable extends YamlConfig {
 			CommonCore.logFramed(
 					"Error executing JavaScript in a variable!",
 					"Variable: " + this.getFile(),
-					"Line: " + ex.getErrorLine(),
+					(ex instanceof FoScriptException ? "Line: " + ex.getErrorLine() : ""),
 					"Sender: " + audience,
 					"Error: " + ex.getMessage(),
 					"",

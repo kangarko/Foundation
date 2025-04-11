@@ -258,18 +258,18 @@ public final class JavaScriptExecutor {
 				engine.put(key, value);
 			}
 
-			try {
-				if (MinecraftVersion.hasVersion()) {
-					if (javascript.contains("PLAY_ONE_MINUTE")) {
-						if (MinecraftVersion.olderThan(V.v1_13))
-							javascript = javascript.replace("PLAY_ONE_MINUTE", "PLAY_ONE_TICK");
+			if (MinecraftVersion.hasVersion()) {
+				if (javascript.contains("PLAY_ONE_MINUTE")) {
+					if (MinecraftVersion.olderThan(V.v1_13))
+						javascript = javascript.replace("PLAY_ONE_MINUTE", "PLAY_ONE_TICK");
 
-					} else if (javascript.contains("PLAY_ONE_TICK")) {
-						if (MinecraftVersion.atLeast(V.v1_13))
-							javascript = javascript.replace("PLAY_ONE_TICK", "PLAY_ONE_MINUTE");
-					}
+				} else if (javascript.contains("PLAY_ONE_TICK")) {
+					if (MinecraftVersion.atLeast(V.v1_13))
+						javascript = javascript.replace("PLAY_ONE_TICK", "PLAY_ONE_MINUTE");
 				}
+			}
 
+			try {
 				final Object result = engine.eval(javascript);
 
 				if (result instanceof String) {
@@ -295,13 +295,13 @@ public final class JavaScriptExecutor {
 
 				return result;
 
-			} catch (ClassCastException | ScriptException ex) {
+			} catch (final Throwable throwable) {
 
 				// Special support for throwing exceptions in the JS code so that users
 				// can send messages to player directly if upstream supports that
-				final String cause = ex.getCause() != null ? ex.getCause().toString() : "";
+				final String cause = throwable.getCause() != null ? throwable.getCause().toString() : "";
 
-				if (ex.getCause() != null && cause.contains("event handled")) {
+				if (throwable.getCause() != null && cause.contains("event handled")) {
 					final String[] errorMessageSplit = cause.contains("event handled: ") ? cause.split("event handled\\: ") : new String[0];
 					final Object sender = placeholders.get("player");
 
@@ -315,7 +315,7 @@ public final class JavaScriptExecutor {
 					throw new EventHandledException(true);
 				}
 
-				final String message = ex.toString();
+				final String message = throwable.toString();
 				final List<String> errorMessage = CommonCore.newList("Error parsing JavaScript!");
 
 				if (message.contains("Cannot cast org.openjdk.nashorn.internal.runtime.Undefined to org.bukkit.Statistic"))
@@ -327,12 +327,12 @@ public final class JavaScriptExecutor {
 				if (message.contains("TypeError:") && message.contains("player.getName is not a function") && Platform.getPlatformName().contains("Velocity"))
 					errorMessage.add("On Velocity, use player.getUsername() instead of player.getName()");
 
-				if (ex instanceof ScriptException)
-					errorMessage.add("Line: " + ((ScriptException) ex).getLineNumber() + ". Error: " + ex.getMessage());
+				if (throwable instanceof ScriptException)
+					errorMessage.add("Line: " + ((ScriptException) throwable).getLineNumber() + ". Error: " + throwable.getMessage());
 				else
-					errorMessage.add("Error: " + ex.getMessage());
+					errorMessage.add("Error: " + throwable.getMessage());
 
-				throw new FoScriptException(String.join(" ", errorMessage), javascript, ex instanceof ScriptException ? ((ScriptException) ex).getLineNumber() : -1, ex);
+				throw new FoScriptException(String.join(" ", errorMessage), javascript, throwable instanceof ScriptException ? ((ScriptException) throwable).getLineNumber() : -1, throwable);
 			}
 		}
 	}
