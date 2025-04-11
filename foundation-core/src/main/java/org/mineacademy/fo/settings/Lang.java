@@ -398,9 +398,7 @@ public final class Lang {
 				return new SimpleDateFormat(raw);
 
 			} catch (final IllegalArgumentException ex) {
-				CommonCore.throwError(ex, "Date format at '" + key + "' is invalid: '" + raw + "'! See https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for syntax'");
-
-				return null;
+				throw new FoException(ex, "Date format at '" + key + "' is invalid: '" + raw + "'! See https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html for syntax'", false);
 			}
 		}
 	}
