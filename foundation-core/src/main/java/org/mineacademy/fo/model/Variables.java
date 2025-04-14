@@ -289,9 +289,9 @@ public final class Variables {
 				message = legacyPlaceholderAPIparser.apply(this.audience, message);
 		}
 
-		// We wrap them to prevent parsing variables in the {message}
-		// So now we just heuristically unwrap
-		message = message.replace("\\{U", "{").replace("\\O}", "}");
+		// Parse {message} as last to prevent parsing vars inside of it.
+		if (message.contains("{message}"))
+			message = message.replace("{message}", this.getValueAsString("message", "message"));
 
 		return message;
 	}
@@ -316,62 +316,16 @@ public final class Variables {
 				result.append(cached);
 
 			else {
-				String value = variable.isEmpty() ? matcher.group() : this.replaceVariableLegacy(variable);
 
-				if (value == null)
-					value = matcher.group();
+				// Do not parse {message} here to prevent players from using variables in chat
+				if (variable.equals("message")) {
+					result.append(matcher.group());
+					lastMatchEnd = matcher.end();
 
-				else {
-
-					// Stupid was of fixing variables being parsed in {message}
-					if (variable.equals("message"))
-						value = value.replace("{", "\\{U").replace("}", "\\O}");
-
-					// Probably there is a better way to do this...
-					if (convertHexToMini && !variable.equals("message")) {
-						final Matcher ampMatcher = HEX_AMPERSAND_PATTERN.matcher(value);
-						value = ampMatcher.replaceAll("<#$1>");
-
-						// Translate super long §x string to hex
-						{
-							final Matcher md5Matcher = HEX_MD5_PATTERN.matcher(value);
-							final StringBuffer buffer = new StringBuffer();
-
-							while (md5Matcher.find()) {
-								final String legacyFormat = md5Matcher.group();
-								final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "").substring(1);
-
-								md5Matcher.appendReplacement(buffer, "<#" + hexColor + ">");
-							}
-
-							md5Matcher.appendTail(buffer);
-							value = buffer.toString();
-						}
-
-						// Translate {#132456} to hey
-						{
-							// Match both 3-digit and 6-digit hex codes inside {#} brackets
-							final Matcher bracketMatcher = HEX_BRACKET_PATTERN.matcher(value);
-							final StringBuffer buffer = new StringBuffer();
-
-							while (bracketMatcher.find()) {
-								String hex = bracketMatcher.group(1);
-
-								// Expand 3-digit hex codes to 6 digits (e.g., #F00 → FF0000)
-								if (hex.length() == 3)
-									hex = hex.replaceAll("(.)", "$1$1");
-
-								// Convert to MiniMessage color format while preserving case sensitivity
-								final String replacement = "<#" + hex + ">";
-								bracketMatcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
-							}
-
-							bracketMatcher.appendTail(buffer);
-							value = buffer.toString();
-						}
-					}
+					continue;
 				}
 
+				final String value = getValueAsString(variable, matcher.group());
 				result.append(value);
 
 				if (this.cache && cache != null)
@@ -386,6 +340,62 @@ public final class Variables {
 
 		result.append(message.substring(lastMatchEnd));
 		return result.toString();
+	}
+
+	private String getValueAsString(String variable, String fallback) {
+		String value = variable.isEmpty() ? fallback : this.replaceVariableLegacy(variable);
+
+		if (value == null)
+			value = fallback;
+
+		else {
+
+			// Probably there is a better way to do this...
+			if (convertHexToMini && !variable.equals("message")) {
+				final Matcher ampMatcher = HEX_AMPERSAND_PATTERN.matcher(value);
+				value = ampMatcher.replaceAll("<#$1>");
+
+				// Translate super long §x string to hex
+				{
+					final Matcher md5Matcher = HEX_MD5_PATTERN.matcher(value);
+					final StringBuffer buffer = new StringBuffer();
+
+					while (md5Matcher.find()) {
+						final String legacyFormat = md5Matcher.group();
+						final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "").substring(1);
+
+						md5Matcher.appendReplacement(buffer, "<#" + hexColor + ">");
+					}
+
+					md5Matcher.appendTail(buffer);
+					value = buffer.toString();
+				}
+
+				// Translate {#132456} to hey
+				{
+					// Match both 3-digit and 6-digit hex codes inside {#} brackets
+					final Matcher bracketMatcher = HEX_BRACKET_PATTERN.matcher(value);
+					final StringBuffer buffer = new StringBuffer();
+
+					while (bracketMatcher.find()) {
+						String hex = bracketMatcher.group(1);
+
+						// Expand 3-digit hex codes to 6 digits (e.g., #F00 → FF0000)
+						if (hex.length() == 3)
+							hex = hex.replaceAll("(.)", "$1$1");
+
+						// Convert to MiniMessage color format while preserving case sensitivity
+						final String replacement = "<#" + hex + ">";
+						bracketMatcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement));
+					}
+
+					bracketMatcher.appendTail(buffer);
+					value = buffer.toString();
+				}
+			}
+		}
+
+		return value;
 	}
 
 	/**
@@ -422,9 +432,7 @@ public final class Variables {
 			SimpleComponent value = variable.isEmpty() ? null : this.replaceVariable(variable);
 
 			if (value != null && convertHexToMini) {
-				value = value.replaceMatch(HEX_AMPERSAND_PATTERN, (result2, builder) -> {
-					return Component.text("<#" + result2.group(1) + ">");
-				});
+				value = value.replaceMatch(HEX_AMPERSAND_PATTERN, (result2, builder) -> Component.text("<#" + result2.group(1) + ">"));
 
 				value = value.replaceMatch(HEX_MD5_PATTERN, (result2, builder) -> {
 					final String legacyFormat = result2.group();
