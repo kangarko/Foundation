@@ -19,7 +19,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 	private final ReadWriteNBT nbt;
 	private boolean readOnly;
 
-	public ProxyBuilder(ReadWriteNBT nbt, Class<T> target) {
+	public ProxyBuilder(final ReadWriteNBT nbt, final Class<T> target) {
 		if (!target.isInterface()) {
 			throw new NbtApiException("A proxy can only be built from an interface! Check the wiki for examples.");
 		}
@@ -32,7 +32,6 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public T build() {
 		final T inst = (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { target }, this);
 		inst.init();
@@ -40,7 +39,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 	}
 
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 		METHOD_CACHE.computeIfAbsent(method, m -> ProxyBuilder.createFunction((NBTProxy) proxy, m));
 		return METHOD_CACHE.get(method).apply(new Arguments(target, (NBTProxy) proxy, readOnly, nbt, args));
 	}
@@ -52,7 +51,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		Object[] args;
 		boolean readOnly;
 
-		public Arguments(Class<?> target, NBTProxy proxy, boolean readOnly, ReadWriteNBT nbt, Object[] args) {
+		public Arguments(final Class<?> target, final NBTProxy proxy, final boolean readOnly, final ReadWriteNBT nbt, final Object[] args) {
 			this.target = target;
 			this.proxy = proxy;
 			this.nbt = nbt;
@@ -61,20 +60,20 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static Function<Arguments, Object> createFunction(NBTProxy proxy, Method method) {
+	@SuppressWarnings("rawtypes")
+	private static Function<Arguments, Object> createFunction(final NBTProxy proxy, final Method method) {
 		if ("toString".equals(method.getName()) && method.getParameterCount() == 0
 				&& method.getReturnType() == String.class) {
-			return (arguments) -> arguments.nbt.toString();
+			return arguments -> arguments.nbt.toString();
 		}
 		if (method.isDefault()) {
-			return (arguments) -> DefaultMethodInvoker.invokeDefault(arguments.target, arguments.proxy, method,
+			return arguments -> DefaultMethodInvoker.invokeDefault(arguments.target, arguments.proxy, method,
 					arguments.args);
 		}
 		final Type action = getAction(method);
 		if (action == Type.SET) {
 			final String fieldName = getNBTName(proxy.getCasing(), method);
-			return (arguments) -> {
+			return arguments -> {
 				if (arguments.readOnly) {
 					throw new NbtApiException("Tried calling a set method on a read only object.");
 				}
@@ -86,7 +85,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 			final String fieldName = getNBTName(proxy.getCasing(), method);
 			// Allow stacking of proxies
 			if (retType.isInterface() && NBTProxy.class.isAssignableFrom(retType)) {
-				return (arguments) -> {
+				return arguments -> {
 					if (arguments.nbt.hasTag(fieldName) && arguments.nbt.getType(fieldName) != NBTType.NBTTagCompound) {
 						throw new NbtApiException("Tried getting a '" + retType + "' proxy from the field '" + fieldName
 								+ "', but it's not a TagCompound!");
@@ -101,27 +100,25 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 						.getActualTypeArguments()[0];
 				if (parameterType != null && parameterType.isInterface()
 						&& NBTProxy.class.isAssignableFrom(parameterType)) {
-					return (arguments) -> {
-						return new ProxiedList(arguments.nbt.getCompoundList(fieldName), parameterType);
-					};
+					return arguments -> new ProxiedList(arguments.nbt.getCompoundList(fieldName), parameterType);
 				}
 			}
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(retType);
 			if (handler != null) {
-				return (arguments) -> handler.get(arguments.nbt, fieldName);
+				return arguments -> handler.get(arguments.nbt, fieldName);
 			}
-			return (arguments) -> arguments.nbt.getOrNull(fieldName, retType);
+			return arguments -> arguments.nbt.getOrNull(fieldName, retType);
 		}
 		if (action == Type.HAS) {
 			final String fieldName = getNBTName(proxy.getCasing(), method);
-			return (arguments) -> arguments.nbt.hasTag(fieldName);
+			return arguments -> arguments.nbt.hasTag(fieldName);
 		}
 		throw new IllegalArgumentException(
 				"The method '" + method.getName() + "' in '" + method.getDeclaringClass().getName()
 						+ "' can not be handled by the NBT-API. Please check the Wiki for examples!");
 	}
 
-	private static Type getAction(Method method) {
+	private static Type getAction(final Method method) {
 		final NBTTarget target = method.getAnnotation(NBTTarget.class);
 		if (target != null) {
 			if (target.type() == Type.HAS && method.getParameterCount() == 0
@@ -148,7 +145,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		return null;
 	}
 
-	private static String getNBTName(Casing casing, Method method) {
+	private static String getNBTName(final Casing casing, final Method method) {
 		final NBTTarget target = method.getAnnotation(NBTTarget.class);
 		if (target != null) {
 			return target.value();
@@ -156,7 +153,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		return casing.convertString(method.getName().substring(3));
 	}
 
-	private static Object setNBT(ReadWriteNBT nbt, NBTProxy proxy, String key, Object value) {
+	private static Object setNBT(final ReadWriteNBT nbt, final NBTProxy proxy, final String key, final Object value) {
 		// welcome to the "I wish we all could use java 17" method. Thanks, legacy mc
 		// versions
 		if (value == null) {
@@ -188,7 +185,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		} else if (value.getClass().isEnum()) {
 			nbt.setEnum(key, (Enum<?>) value);
 		} else {
-			@SuppressWarnings("unchecked")
+
 			final NBTHandler<Object> handler = (NBTHandler<Object>) proxy.getHandler(value.getClass());
 			if (handler != null) {
 				handler.set(nbt, key, value);

@@ -147,7 +147,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
         return closed;
     }
 
-    @SuppressWarnings("unchecked")
+    
     @Override
     protected void setCompound(Object compound) {
         if (isReadOnly()) {
@@ -318,7 +318,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
      */
     public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler) {
         finalizeChanges();
-        @SuppressWarnings("unchecked")
+        
         T meta = (T) bukkitItem.getItemMeta();
         handler.accept(new NBTContainer(getResolvedObject()).setReadOnly(true), meta);
         bukkitItem.setItemMeta(meta);

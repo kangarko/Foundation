@@ -18,7 +18,7 @@ final class NBTJsonUtil {
 	 * @return
 	 * @throws NbtApiException
 	 */
-	@SuppressWarnings("unchecked")
+	
 	public static JsonElement itemStackToJson(ItemStack itemStack) {
 		try {
 			final Codec<Object> itemStackCodec = (Codec<Object>) ClassWrapper.NMS_ITEMSTACK.getClazz()
