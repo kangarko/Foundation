@@ -414,7 +414,7 @@ public abstract class NBTList<T> implements List<T>, ReadWriteNBTList<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    
     @Override
     public <E> E[] toArray(E[] a) {
         validateClosed();

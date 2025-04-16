@@ -14,7 +14,7 @@ import org.bukkit.Bukkit;
  * @author tr7zw
  *
  */
-@SuppressWarnings("javadoc")
+
 enum MinecraftVersion {
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),

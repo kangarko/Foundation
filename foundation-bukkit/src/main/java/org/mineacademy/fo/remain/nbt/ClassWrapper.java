@@ -9,7 +9,6 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-@SuppressWarnings("javadoc")
 public enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
@@ -87,12 +86,12 @@ public enum ClassWrapper {
 	private boolean enabled = false;
 	private final String mojangName;
 
-	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to) {
+	ClassWrapper(final PackageWrapper packageId, final String clazzName, final MinecraftVersion from, final MinecraftVersion to) {
 		this(packageId, clazzName, from, to, null, null);
 	}
 
-	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
-			String mojangMap, String mojangName) {
+	ClassWrapper(final PackageWrapper packageId, String clazzName, final MinecraftVersion from, final MinecraftVersion to,
+			final String mojangMap, final String mojangName) {
 		this.mojangName = mojangName;
 		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) {
 			return;

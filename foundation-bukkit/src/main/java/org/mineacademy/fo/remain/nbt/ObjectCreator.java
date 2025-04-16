@@ -10,7 +10,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-@SuppressWarnings("javadoc")
+
 public enum ObjectCreator {
 	NMS_NBTTAGCOMPOUND(null, null, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_CUSTOMDATA(MinecraftVersion.MC1_20_R4, null, ClassWrapper.NMS_CUSTOMDATA.getClazz(), ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),

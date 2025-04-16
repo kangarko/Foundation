@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
-@SuppressWarnings("javadoc")
+
 public enum ReflectionMethod {
 
     COMPOUND_SET_FLOAT(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, float.class },

@@ -26,7 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author tr7zw
  *
  */
-@SuppressWarnings("deprecation")
+
 public class NBTReflectionUtil {
 
 	private static Field field_unhandledTags = null;
@@ -266,7 +266,7 @@ public class NBTReflectionUtil {
 	 * @param meta ItemMeta from which tags should be retrieved
 	 * @return Map containing unhandled (custom) NBT tags
 	 */
-	@SuppressWarnings("unchecked")
+	
 	@Deprecated
 	public static Map<String, Object> getUnhandledNBTTags(ItemMeta meta) {
 		try {
@@ -540,7 +540,7 @@ public class NBTReflectionUtil {
 	 * @param clazz
 	 * @return The list at that key. Null if it's an invalid type
 	 */
-	@SuppressWarnings("unchecked")
+	
 	public static <T> NBTList<T> getList(NBTCompound comp, String key, NBTType type, Class<T> clazz) {
 		Object workingtag = comp.getResolvedObject();
 		if (workingtag == null) {
@@ -694,7 +694,7 @@ public class NBTReflectionUtil {
 	 * @param comp
 	 * @return Set of all keys
 	 */
-	@SuppressWarnings("unchecked")
+	
 	public static Set<String> getKeys(NBTCompound comp) {
 		final Object workingtag = comp.getResolvedObject();
 		if (workingtag == null) {
