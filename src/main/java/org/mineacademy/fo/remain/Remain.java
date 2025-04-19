@@ -3453,17 +3453,17 @@ class AdvancementAccessor {
 		return new Gson().toJson(json);
 	}
 
-	private void grantAdvancement(final Player plazer) {
+	private void grantAdvancement(final Player player) {
 		final Advancement adv = this.getAdvancement();
-		final AdvancementProgress progress = plazer.getAdvancementProgress(adv);
+		final AdvancementProgress prog = player.getAdvancementProgress(adv);
 
-		if (!progress.isDone())
-			progress.getRemainingCriteria().forEach(crit -> progress.awardCriteria(crit));
+		if (!prog.isDone())
+			prog.getRemainingCriteria().forEach(crit -> prog.awardCriteria(crit));
 	}
 
-	private void revokeAdvancement(final Player plazer) {
+	private void revokeAdvancement(final Player player) {
 		final Advancement adv = this.getAdvancement();
-		final AdvancementProgress prog = plazer.getAdvancementProgress(adv);
+		final AdvancementProgress prog = player.getAdvancementProgress(adv);
 
 		if (prog.isDone())
 			prog.getAwardedCriteria().forEach(crit -> prog.revokeCriteria(crit));
