@@ -153,6 +153,9 @@ public final class TimeUtil {
 	public static long toTicks(final String humanReadableTime) {
 		ValidCore.checkNotNull(humanReadableTime, "Time is null");
 
+        if (humanReadableTime.trim().equals("0"))
+            return 0;
+
 		long seconds = 0L;
 
 		final String[] split = humanReadableTime.split(" ");
