@@ -146,7 +146,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		/*BukkitConsoleFilter.inject(filter -> {
 			for (final Plugin plugin : Bukkit.getPluginManager().getPlugins())
 				plugin.getLogger().setFilter(filter);
-		
+
 			Bukkit.getLogger().setFilter(filter);
 		});*/
 
@@ -201,7 +201,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 							.build());
 
 				} else
-					this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.19.0");
+					this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.20.0");
 
 			FoundationLibraries.load(this);
 
@@ -495,151 +495,151 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		for (final CompAttribute comp : CompAttribute.values())
 			try {
 				CompAttribute.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (comp.getNmsName() != null)
 					Common.log("Invalid CompAttribute " + comp.name());
 			}
-
+	
 		for (final CompColor comp : CompColor.values())
 			try {
 				if (comp.getDye() == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompColor " + comp.getName());
 			}
-
+	
 		for (final CompItemFlag comp : CompItemFlag.values())
 			try {
 				ItemFlag.valueOf(comp.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Invalid CompItemFlag " + comp);
 			}
-
+	
 		for (final CompParticle comp : CompParticle.values())
 			try {
 				Particle.valueOf(comp.name());
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Skip
-
+	
 			} catch (final IllegalArgumentException ex) {
 				if (!comp.isRemoved())
 					Common.log("Invalid CompParticle " + comp);
 			}
-
+	
 		if (MinecraftVersion.atLeast(V.v1_21))
 			for (final CompSound comp : CompSound.values())
 				try {
 					Sound.valueOf(comp.name());
-
+	
 				} catch (final IllegalArgumentException ex) {
 					Common.log("Invalid CompSound " + comp.name());
 				}
-
+	
 		for (final CompVillagerProfession comp : CompVillagerProfession.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerProfession " + comp);
 			}
-
+	
 		for (final CompVillagerType comp : CompVillagerType.values())
 			try {
 				comp.toBukkit();
-
+	
 			} catch (final NoClassDefFoundError err) {
 				// Ignore
-
+	
 			} catch (final MissingEnumException ex) {
 				Common.log("Invalid CompVillagerType " + comp);
 			}
 	}
-
+	
 	private void scanModernEnumsForUpdates() {
 		for (final Attribute bukkit : Attribute.values())
 			try {
 				CompAttribute.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final DyeColor bukkit : DyeColor.values())
 			try {
 				CompColor.fromDye(bukkit);
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompColor for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final Enchantment bukkit : Enchantment.values())
 			try {
 				if (CompEnchantment.getByName(bukkit.getKey().toString()) == null)
 					throw new IllegalArgumentException();
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompEnchantment for Bukkit's " + bukkit);
 			}
-
+	
 		for (final ItemFlag bukkit : ItemFlag.values())
 			try {
 				CompItemFlag.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompItemFlag for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Material bukkit : Material.values())
 			try {
 				CompMaterial.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompMaterial for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Particle bukkit : Particle.values())
 			try {
 				CompParticle.fromName(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompParticle for Bukkit's " + bukkit);
 			}
-
+	
 		for (final PotionEffectType bukkit : PotionEffectType.values())
 			try {
 				CompPotionEffectType.getByName(bukkit.getKey().toString());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompPotionEffectType for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Sound bukkit : Sound.values())
 			try {
 				CompSound.valueOf(bukkit.name().replace(".", "_"));
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompSound for Bukkit's " + bukkit.name());
 			}
-
+	
 		for (final Villager.Profession bukkit : Villager.Profession.values())
 			try {
 				CompVillagerProfession.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerProfession for Bukkit's " + bukkit);
 			}
-
+	
 		for (final Villager.Type bukkit : Villager.Type.values())
 			try {
 				CompVillagerType.valueOf(bukkit.name());
-
+	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompVillagerType for Bukkit's " + bukkit);
 			}

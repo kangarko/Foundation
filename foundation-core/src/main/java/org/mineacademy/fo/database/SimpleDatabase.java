@@ -154,7 +154,7 @@ public class SimpleDatabase {
 			}
 
 			else if (url.startsWith("jdbc:mariadb://")) {
-				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.12" : "3.5.2");
+				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.12" : "3.5.3");
 
 				Class.forName("org.mariadb.jdbc.Driver");
 
@@ -676,7 +676,7 @@ public class SimpleDatabase {
 
 				} else if (message.contains("Incorrect string value")) {
 					CommonCore.log("Your db column's character set or collation not supporting 4-byte UTF-8 characters (e.g., emojis). "
-							+ "See https://github.com/kangarko/ChatControl/wiki/Compatibility#database-optional");
+							+ "See https://docs.mineacademy.org/general/compatibility.html#remote-database");
 
 					ex.printStackTrace();
 

@@ -168,7 +168,7 @@ public final class Debugger {
 
 				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
 					try {
-						plugin.loadLibrary("io.sentry", "sentry", "8.4.0");
+						plugin.loadLibrary("io.sentry", "sentry", "8.9.0");
 
 						hasSentry = true;
 
