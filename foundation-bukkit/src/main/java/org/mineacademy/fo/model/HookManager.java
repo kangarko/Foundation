@@ -3745,7 +3745,7 @@ class DiscordSRVHook {
 		// The channel is not configured in the config.yml of Discord,
 		// so we can ignore it.
 		if (textChannel == null) {
-			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", this.getChannels()) + ". Not sending: " + message);
+			Common.logTimed(60 * 60, "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", this.getChannels()) + ". Not sending: " + message + ". Please add the channel by name in DiscordSRV/config.yml This message only shows once per hour.");
 
 			return false;
 		}
