@@ -4,12 +4,12 @@ import javax.annotation.Nonnull;
 
 public interface NBTHandler<T> {
 
-	default boolean fuzzyMatch(Object obj) {
-		return false;
-	}
+    public default boolean fuzzyMatch(Object obj) {
+        return false;
+    }
 
-	void set(@Nonnull ReadWriteNBT nbt, @Nonnull String key, @Nonnull T value);
+    public void set(@Nonnull ReadWriteNBT nbt, @Nonnull String key, @Nonnull T value);
 
-	T get(@Nonnull ReadableNBT nbt, @Nonnull String key);
+    public T get(@Nonnull ReadableNBT nbt, @Nonnull String key);
 
 }

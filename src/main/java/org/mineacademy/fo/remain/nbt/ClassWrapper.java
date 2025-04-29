@@ -9,7 +9,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-enum ClassWrapper {
+public enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
 	CRAFT_ENTITY(PackageWrapper.CRAFTBUKKIT, "entity.CraftEntity", null, null),
@@ -18,6 +18,7 @@ enum ClassWrapper {
 	CRAFT_PERSISTENTDATACONTAINER(PackageWrapper.CRAFTBUKKIT, "persistence.CraftPersistentDataContainer",
 			MinecraftVersion.MC1_14_R1, null),
 	NMS_NBTBASE(PackageWrapper.NMS, "NBTBase", null, null, "net.minecraft.nbt", "net.minecraft.nbt.Tag"),
+	NMS_TAGTYPE(PackageWrapper.NMS, "NBTTagType", MinecraftVersion.MC1_21_R4, null, "net.minecraft.nbt", "net.minecraft.nbt.TagType"),
 	NMS_NBTTAGSTRING(PackageWrapper.NMS, "NBTTagString", null, null, "net.minecraft.nbt",
 			"net.minecraft.nbt.StringTag"),
 	NMS_NBTTAGINT(PackageWrapper.NMS, "NBTTagInt", null, null, "net.minecraft.nbt", "net.minecraft.nbt.IntTag"),
@@ -85,16 +86,14 @@ enum ClassWrapper {
 	private boolean enabled = false;
 	private final String mojangName;
 
-	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to) {
+	ClassWrapper(final PackageWrapper packageId, final String clazzName, final MinecraftVersion from, final MinecraftVersion to) {
 		this(packageId, clazzName, from, to, null, null);
 	}
 
-	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
-			String mojangMap, String mojangName) {
+	ClassWrapper(final PackageWrapper packageId, String clazzName, final MinecraftVersion from, final MinecraftVersion to,
+			final String mojangMap, final String mojangName) {
 		this.mojangName = mojangName;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
-			return;
-		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
+		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()))
 			return;
 		this.enabled = true;
 		try {
@@ -122,7 +121,7 @@ enum ClassWrapper {
 				this.clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "[NBTAPI] Error while trying to resolve class '" + clazzName + "'! Plugin will continue to function but some features will be limited.");
+			Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
 		}
 	}
 

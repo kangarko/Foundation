@@ -19,7 +19,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 	private final ReadWriteNBT nbt;
 	private boolean readOnly;
 
-	public ProxyBuilder(ReadWriteNBT nbt, Class<T> target) {
+	public ProxyBuilder(final ReadWriteNBT nbt, final Class<T> target) {
 		if (!target.isInterface())
 			throw new NbtApiException("A proxy can only be built from an interface! Check the wiki for examples.");
 		this.target = target;
@@ -38,7 +38,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 	}
 
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 		METHOD_CACHE.computeIfAbsent(method, m -> ProxyBuilder.createFunction((NBTProxy) proxy, m));
 		return METHOD_CACHE.get(method).apply(new Arguments(this.target, (NBTProxy) proxy, this.readOnly, this.nbt, args));
 	}
@@ -50,7 +50,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		Object[] args;
 		boolean readOnly;
 
-		public Arguments(Class<?> target, NBTProxy proxy, boolean readOnly, ReadWriteNBT nbt, Object[] args) {
+		public Arguments(final Class<?> target, final NBTProxy proxy, final boolean readOnly, final ReadWriteNBT nbt, final Object[] args) {
 			this.target = target;
 			this.proxy = proxy;
 			this.nbt = nbt;
@@ -60,7 +60,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 	}
 
 	@SuppressWarnings("rawtypes")
-	private static Function<Arguments, Object> createFunction(NBTProxy proxy, Method method) {
+	private static Function<Arguments, Object> createFunction(final NBTProxy proxy, final Method method) {
 		if ("toString".equals(method.getName()) && method.getParameterCount() == 0
 				&& method.getReturnType() == String.class)
 			return arguments -> arguments.nbt.toString();
@@ -110,7 +110,7 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 						+ "' can not be handled by the NBT-API. Please check the Wiki for examples!");
 	}
 
-	private static Type getAction(Method method) {
+	private static Type getAction(final Method method) {
 		final NBTTarget target = method.getAnnotation(NBTTarget.class);
 		if (target != null) {
 			if (target.type() == Type.HAS && method.getParameterCount() == 0
@@ -131,14 +131,14 @@ public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler
 		return null;
 	}
 
-	private static String getNBTName(Casing casing, Method method) {
+	private static String getNBTName(final Casing casing, final Method method) {
 		final NBTTarget target = method.getAnnotation(NBTTarget.class);
 		if (target != null)
 			return target.value();
 		return casing.convertString(method.getName().substring(3));
 	}
 
-	private static Object setNBT(ReadWriteNBT nbt, NBTProxy proxy, String key, Object value) {
+	private static Object setNBT(final ReadWriteNBT nbt, final NBTProxy proxy, final String key, final Object value) {
 		// welcome to the "I wish we all could use java 17" method. Thanks, legacy mc
 		// versions
 		if (value == null)

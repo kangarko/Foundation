@@ -92,7 +92,7 @@ public class NBTEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTEntity#getPersistentDataContainer requires Minecraft 1.14+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "Calling NBTEntity.getPersistentDataContainer() on a entity requires MC 1.14!");
 
 		return new NBTPersistentDataContainer(this.ent.getPersistentDataContainer());
 	}

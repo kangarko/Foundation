@@ -14,7 +14,7 @@ final class DefaultMethodInvoker {
 	static {
 		try {
 			invokeDefaultMethod = InvocationHandler.class.getDeclaredMethod("invokeDefault",
-					Object.class, Method.class, Object[].class);
+					new Class[] { Object.class, Method.class, Object[].class });
 			invokeDefaultMethod.setAccessible(true);
 		} catch (NoSuchMethodException | SecurityException e) {
 			// we are in java 8, use the fallback

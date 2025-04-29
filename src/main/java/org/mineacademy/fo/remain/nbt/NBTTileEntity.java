@@ -93,7 +93,7 @@ public class NBTTileEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "NBTTileEntity#getPersistentDataContainer requires Minecraft 1.14+");
+		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "Calling NBTTileEntity.getPersistentDataContainer() on a tile requires MC 1.14!");
 
 		if (this.hasTag("PublicBukkitValues"))
 			return this.getCompound("PublicBukkitValues");

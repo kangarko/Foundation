@@ -4,80 +4,80 @@ import org.bukkit.inventory.ItemStack;
 
 public class NBTHandlers {
 
-	public static final NBTHandler<ItemStack> ITEM_STACK = new NBTHandler<ItemStack>() {
+    public static final NBTHandler<ItemStack> ITEM_STACK = new NBTHandler<ItemStack>() {
 
-		@Override
-		public boolean fuzzyMatch(Object obj) {
-			return obj instanceof ItemStack;
-		}
+        @Override
+        public boolean fuzzyMatch(Object obj) {
+            return obj instanceof ItemStack;
+        }
 
-		@Override
-		public void set(ReadWriteNBT nbt, String key, ItemStack value) {
-			nbt.removeKey(key);
-			final ReadWriteNBT tag = nbt.getOrCreateCompound(key);
-			tag.mergeCompound(NBT.itemStackToNBT(value));
-		}
+        @Override
+        public void set(ReadWriteNBT nbt, String key, ItemStack value) {
+            nbt.removeKey(key);
+            ReadWriteNBT tag = nbt.getOrCreateCompound(key);
+            tag.mergeCompound(NBT.itemStackToNBT(value));
+        }
 
-		@Override
-		public ItemStack get(ReadableNBT nbt, String key) {
-			final ReadableNBT tag = nbt.getCompound(key);
-			if (tag != null)
+        @Override
+        public ItemStack get(ReadableNBT nbt, String key) {
+            ReadableNBT tag = nbt.getCompound(key);
+            if (tag != null)
 				return NBT.itemStackFromNBT(tag);
-			return null;
-		}
+            return null;
+        }
 
-	};
+    };
 
-	public static final NBTHandler<ReadableNBT> STORE_READABLE_TAG = new NBTHandler<ReadableNBT>() {
+    public static final NBTHandler<ReadableNBT> STORE_READABLE_TAG = new NBTHandler<ReadableNBT>() {
 
-		@Override
-		public boolean fuzzyMatch(Object obj) {
-			return obj instanceof ReadableNBT;
-		}
+        @Override
+        public boolean fuzzyMatch(Object obj) {
+            return obj instanceof ReadableNBT;
+        }
 
-		@Override
-		public void set(ReadWriteNBT nbt, String key, ReadableNBT value) {
-			nbt.removeKey(key);
-			nbt.getOrCreateCompound(key).mergeCompound(value);
-		}
+        @Override
+        public void set(ReadWriteNBT nbt, String key, ReadableNBT value) {
+            nbt.removeKey(key);
+            nbt.getOrCreateCompound(key).mergeCompound(value);
+        }
 
-		@Override
-		public ReadableNBT get(ReadableNBT nbt, String key) {
-			final ReadableNBT tag = nbt.getCompound(key);
-			if (tag != null) {
-				final ReadWriteNBT value = NBT.createNBTObject();
-				value.mergeCompound(tag);
-				return value;
-			}
-			return null;
-		}
+        @Override
+        public ReadableNBT get(ReadableNBT nbt, String key) {
+            ReadableNBT tag = nbt.getCompound(key);
+            if (tag != null) {
+                ReadWriteNBT value = NBT.createNBTObject();
+                value.mergeCompound(tag);
+                return value;
+            }
+            return null;
+        }
 
-	};
+    };
 
-	public static final NBTHandler<ReadWriteNBT> STORE_READWRITE_TAG = new NBTHandler<ReadWriteNBT>() {
+    public static final NBTHandler<ReadWriteNBT> STORE_READWRITE_TAG = new NBTHandler<ReadWriteNBT>() {
 
-		@Override
-		public boolean fuzzyMatch(Object obj) {
-			return obj instanceof ReadWriteNBT;
-		}
+        @Override
+        public boolean fuzzyMatch(Object obj) {
+            return obj instanceof ReadWriteNBT;
+        }
 
-		@Override
-		public void set(ReadWriteNBT nbt, String key, ReadWriteNBT value) {
-			nbt.removeKey(key);
-			nbt.getOrCreateCompound(key).mergeCompound(value);
-		}
+        @Override
+        public void set(ReadWriteNBT nbt, String key, ReadWriteNBT value) {
+            nbt.removeKey(key);
+            nbt.getOrCreateCompound(key).mergeCompound(value);
+        }
 
-		@Override
-		public ReadWriteNBT get(ReadableNBT nbt, String key) {
-			final ReadableNBT tag = nbt.getCompound(key);
-			if (tag != null) {
-				final ReadWriteNBT value = NBT.createNBTObject();
-				value.mergeCompound(tag);
-				return value;
-			}
-			return null;
-		}
+        @Override
+        public ReadWriteNBT get(ReadableNBT nbt, String key) {
+            ReadableNBT tag = nbt.getCompound(key);
+            if (tag != null) {
+                ReadWriteNBT value = NBT.createNBTObject();
+                value.mergeCompound(tag);
+                return value;
+            }
+            return null;
+        }
 
-	};
+    };
 
 }
