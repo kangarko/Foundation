@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
@@ -24,6 +25,7 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -208,6 +210,16 @@ public final class EntityUtil {
 
 		if (entity instanceof Animals)
 			return false;
+
+		if (entity instanceof ArmorStand)
+			return false;
+
+		try {
+			if (entity instanceof Tameable)
+				return false;
+		} catch (final NoClassDefFoundError err) {
+			// Ignore
+		}
 
 		return entity instanceof Creature;
 	}
