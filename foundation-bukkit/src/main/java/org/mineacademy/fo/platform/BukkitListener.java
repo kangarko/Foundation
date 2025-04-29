@@ -27,6 +27,7 @@ import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
+import org.mineacademy.fo.visual.Visualizer;
 
 /**
  * Listens for some events we handle for you automatically
@@ -41,6 +42,7 @@ final class BukkitListener implements Listener {
 		final Player player = event.getPlayer();
 
 		SimpleScoreboard.clearBoardsFor(player);
+		Visualizer.stopVisualizing(player);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

@@ -1,7 +1,9 @@
 package org.mineacademy.fo.visual;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -11,13 +13,18 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.model.SimpleRunnable;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * A utility class to help visualize blocks.
@@ -28,16 +35,33 @@ public final class Visualizer {
 	/**
 	 * Stores a map of currently visualized blocks.
 	 */
-	private static final Map<Location, Object /*Old Minecraft compatibility.*/> visualizedBlocks = new HashMap<>();
+	private static final Map<Location, OwnedVisualizedBlock> visualizedBlocksV2 = new HashMap<>();
+
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	private final static class OwnedVisualizedBlock {
+
+		/**
+		 * The block.
+		 */
+		private Object fallingBlock;
+
+		/**
+		 * The UUID of the player who created this visualized block.
+		 */
+		private final UUID creatorPlayerUid;
+	}
 
 	/**
 	 * Starts visualizing the block at the given location.
 	 *
+	 * @param initiator
 	 * @param block
 	 * @param mask
 	 * @param blockName
 	 */
-	public static void visualize(@NonNull final Block block, final CompMaterial mask, final String blockName) {
+	public static void visualize(@NonNull Player initiator, @NonNull final Block block, @NonNull final CompMaterial mask, @NonNull final String blockName) {
 		ValidCore.checkBoolean(!isVisualized(block), "Block at " + block.getLocation() + " already visualized");
 		final Location location = block.getLocation();
 
@@ -47,7 +71,7 @@ public final class Visualizer {
 		for (final Player player : block.getWorld().getPlayers())
 			Remain.sendBlockChange(2, player, location, MinecraftVersion.olderThan(V.v1_9) ? mask : CompMaterial.BARRIER);
 
-		visualizedBlocks.put(location, falling == null ? false : falling);
+		visualizedBlocksV2.put(location, new OwnedVisualizedBlock(falling == null ? false : falling, initiator.getUniqueId()));
 	}
 
 	/*
@@ -57,6 +81,36 @@ public final class Visualizer {
 		if (MinecraftVersion.olderThan(V.v1_9))
 			return null;
 
+		// Hide the original block for world players
+		for (final Player player : location.getWorld().getPlayers())
+			Remain.sendBlockChange(0, player, location, CompMaterial.AIR);
+
+		final FallingBlock falling = handleFallingSpawn(location, mask, blockName);
+
+		// Respawn automatically
+		Platform.runTaskTimer(20, new SimpleRunnable() {
+			@Override
+			public void run() {
+				final OwnedVisualizedBlock owned = visualizedBlocksV2.get(location);
+
+				if (owned != null) {
+					final FallingBlock ownedFalling = (FallingBlock) owned.getFallingBlock();
+
+					if (!ownedFalling.isValid()) {
+						final FallingBlock newFalling = handleFallingSpawn(location, mask, blockName);
+
+						owned.setFallingBlock(newFalling);
+					}
+
+				} else
+					this.cancel();
+			}
+		});
+
+		return falling;
+	}
+
+	private static FallingBlock handleFallingSpawn(final Location location, final CompMaterial mask, final String blockName) {
 		final FallingBlock falling = Remain.spawnFallingBlock(location.clone().add(0.5, 0, 0.5), mask.getMaterial());
 
 		falling.setDropItem(false);
@@ -66,6 +120,18 @@ public final class Visualizer {
 
 		CompProperty.GLOWING.apply(falling, true);
 		CompProperty.GRAVITY.apply(falling, false);
+
+		try {
+			falling.setPersistent(true);
+		} catch (final NoSuchMethodError ex) {
+			// Ignore
+		}
+
+		try {
+			falling.setNoPhysics(true);
+		} catch (final NoSuchMethodError ex) {
+			// Ignore
+		}
 
 		return falling;
 	}
@@ -78,7 +144,8 @@ public final class Visualizer {
 	public static void stopVisualizing(@NonNull final Block block) {
 		ValidCore.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");
 
-		final Object fallingBlock = visualizedBlocks.remove(block.getLocation());
+		final OwnedVisualizedBlock owned = visualizedBlocksV2.remove(block.getLocation());
+		final Object fallingBlock = owned.getFallingBlock();
 
 		// Mark the entity for removal on the next tick
 		if (fallingBlock instanceof FallingBlock)
@@ -90,12 +157,40 @@ public final class Visualizer {
 	}
 
 	/**
+	 * Stops visualizing all blocks for the given player.
+	 *
+	 * @param player
+	 */
+	public static void stopVisualizing(@NonNull final Player player) {
+		final UUID playerUid = player.getUniqueId();
+
+		for (final Iterator<Map.Entry<Location, OwnedVisualizedBlock>> iterator = visualizedBlocksV2.entrySet().iterator(); iterator.hasNext();) {
+			final Map.Entry<Location, OwnedVisualizedBlock> entry = iterator.next();
+			final OwnedVisualizedBlock owned = entry.getValue();
+
+			if (owned.getCreatorPlayerUid().equals(playerUid)) {
+				final Block block = entry.getKey().getBlock();
+
+				// Mark the entity for removal on the next tick
+				if (owned.getFallingBlock() instanceof FallingBlock)
+					((FallingBlock) owned.getFallingBlock()).remove();
+
+				// Then restore the client's block back to normal
+				for (final Player worldPlayer : entry.getKey().getWorld().getPlayers())
+					Remain.sendBlockChange(1, worldPlayer, block);
+
+				iterator.remove();
+			}
+		}
+	}
+
+	/**
 	 * Return true if the given block is currently being visualized.
 	 *
 	 * @param block
 	 * @return
 	 */
 	public static boolean isVisualized(@NonNull final Block block) {
-		return visualizedBlocks.containsKey(block.getLocation());
+		return visualizedBlocksV2.containsKey(block.getLocation());
 	}
 }
