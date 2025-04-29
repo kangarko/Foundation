@@ -184,7 +184,9 @@ public enum CompParticle {
 	WAX_OFF("WAX_OFF", "WAX_OFF"),
 	WAX_ON("WAX_ON", "WAX_ON"),
 	WHITE_ASH("WHITE_ASH", "WHITE_ASH"),
-	WHITE_SMOKE("WHITE_SMOKE", "WHITE_SMOKE");
+	WHITE_SMOKE("WHITE_SMOKE", "WHITE_SMOKE"),
+	TINTED_LEAVES("TINTED_LEAVES", "TINTED_LEAVES"),
+	FIREFLY("FIREFLY", "FIREFLY");
 
 	/**
 	 * Hardcoded values for best performance

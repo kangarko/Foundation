@@ -146,7 +146,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		/*BukkitConsoleFilter.inject(filter -> {
 			for (final Plugin plugin : Bukkit.getPluginManager().getPlugins())
 				plugin.getLogger().setFilter(filter);
-
+		
 			Bukkit.getLogger().setFilter(filter);
 		});*/
 
@@ -226,8 +226,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 * Set the game version based on the Bukkit version.
 	 */
 	private void setVersion() {
-		final String bukkitVersion = Bukkit.getBukkitVersion(); // 1.22.1-R0.1-SNAPSHOT
-		final String versionString = bukkitVersion.split("\\-")[0]; // 1.22.1
+		final String bukkitVersion = Bukkit.getBukkitVersion(); // 1.27.2-R0.1-SNAPSHOT
+		final String versionString = bukkitVersion.split("\\-")[0]; // 1.27.2
 		final String[] versions = versionString.split("\\.");
 		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version '" + bukkitVersion + "', expected '-' and a version number");
 
@@ -244,6 +244,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 		if (this.loadingFailed)
 			return;
 
+		// TODO Uncomment on every Minecraft release
 		//this.scanModernEnumsForUpdates();
 		//this.scanEnumsForErrors();
 
