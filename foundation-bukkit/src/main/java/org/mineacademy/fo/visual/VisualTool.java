@@ -209,7 +209,7 @@ public abstract class VisualTool extends BlockTool {
 			final Block block = location.getBlock();
 
 			if (!Visualizer.isVisualized(block))
-				Visualizer.visualize(block, this.getBlockMask(block, player), this.getBlockName(block, player));
+				Visualizer.visualize(player, block, this.getBlockMask(block, player), this.getBlockName(block, player));
 		}
 	}
 
