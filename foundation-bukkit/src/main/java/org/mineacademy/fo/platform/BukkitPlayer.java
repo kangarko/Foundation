@@ -213,14 +213,26 @@ final class BukkitPlayer extends FoundationPlayer {
 
 	@Override
 	protected void performPlayerCommand0(final String replacedCommand) {
-		if (this.isPlayer && !Remain.isFolia()) {
-			if (Bukkit.isPrimaryThread())
-				this.player.chat("/" + replacedCommand);
-			else
-				Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
-
-		} else
-			Platform.runTask(() -> Bukkit.dispatchCommand(this.sender, replacedCommand));
+		if (Remain.isFolia()) {
+			if (this.sender instanceof Player) {
+				Player player = (Player) this.sender;
+				player.getScheduler().run(BukkitPlugin.getInstance(), scheduledTask -> player.chat("/" + replacedCommand), null);
+			} else {
+				Bukkit.getGlobalRegionScheduler().run(BukkitPlugin.getInstance(), scheduledTask -> Bukkit.dispatchCommand(this.sender, replacedCommand));
+			}
+		} else {
+			if (this.isPlayer) {
+				if (Bukkit.isPrimaryThread())
+					this.player.chat("/" + replacedCommand);
+				else
+					Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> this.player.chat("/" + replacedCommand));
+			} else {
+				if (Bukkit.isPrimaryThread())
+					Bukkit.dispatchCommand(this.sender, replacedCommand);
+				else
+					Bukkit.getScheduler().runTask(BukkitPlugin.getInstance(), () -> Bukkit.dispatchCommand(this.sender, replacedCommand));
+			}
+		}
 	}
 
 	@Override
