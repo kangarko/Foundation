@@ -2124,19 +2124,44 @@ class EssentialsHook {
 
 class MultiverseHook {
 
-	private final MultiverseCore multiVerse;
+	private final org.bukkit.plugin.Plugin mv;
 
 	MultiverseHook() {
-		this.multiVerse = (MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core");
+		this.mv = Bukkit.getPluginManager().getPlugin("Multiverse-Core");
 	}
 
 	String getWorldAlias(final String world) {
-		final MultiverseWorld mvWorld = this.multiVerse.getMVWorldManager().getMVWorld(world);
+		if (mv == null)
+			return world;
+		if (classExists("com.onarandombox.MultiverseCore.MultiverseCore")) {
 
-		if (mvWorld != null)
-			return mvWorld.getColoredWorldString();
+			try {
+				Object wm = mv.getClass()
+						.getMethod("getMVWorldManager")
+						.invoke(mv);
 
+				Object mvWorld = wm.getClass()
+						.getMethod("getMVWorld", String.class)
+						.invoke(wm, world);
+
+				if (mvWorld != null)
+					return (String) mvWorld.getClass()
+							.getMethod("getColoredWorldString")
+							.invoke(mvWorld);
+
+			} catch (ReflectiveOperationException ignored) { }
+		}
 		return world;
+	}
+
+	private static boolean classExists(String name) {
+		try {
+			Class.forName(name, false,
+					Bukkit.getServer().getClass().getClassLoader());
+			return true;
+		} catch (ClassNotFoundException ex) {
+			return false;
+		}
 	}
 }
 
