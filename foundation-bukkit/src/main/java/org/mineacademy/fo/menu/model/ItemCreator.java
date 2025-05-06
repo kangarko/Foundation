@@ -36,6 +36,7 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.enchant.SimpleEnchantment;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.SimpleBook;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.remain.CompColor;
 import org.mineacademy.fo.remain.CompEnchantment;
 import org.mineacademy.fo.remain.CompEntityType;
@@ -768,12 +769,12 @@ public final class ItemCreator {
 			final BookMeta bookMeta = (BookMeta) compiledMeta;
 
 			if (this.bookPages != null) {
-				final List<String> colorizedPages = new ArrayList<>();
+				final List<SimpleComponent> colorizedComponents = new ArrayList<>();
 
 				for (final String page : this.bookPages)
-					colorizedPages.add(this.colorizeBook ? CompChatColor.translateColorCodes(page) : page);
+					colorizedComponents.add(SimpleComponent.fromMiniAmpersand(this.colorizeBook ? page : SimpleComponent.stripMiniMessageTags(CompChatColor.stripColorCodes(page))));
 
-				bookMeta.setPages(colorizedPages);
+				Remain.setPages(bookMeta, colorizedComponents);
 			}
 
 			if (this.bookAuthor != null)
@@ -1097,7 +1098,7 @@ public final class ItemCreator {
 		return ItemCreator.fromMaterial(editable ? CompMaterial.WRITABLE_BOOK : CompMaterial.WRITTEN_BOOK)
 				.bookTitle(title)
 				.bookAuthor(CommonCore.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.author()), "Blank"))
-				.bookPages(CommonCore.convertList(book.pages(), page -> LegacyComponentSerializer.legacySection().serialize(page)))
+				.bookPages(CommonCore.convertList(book.pages(), SimpleComponent::serializeAdventureToMini))
 				.name(title)
 				.tag(SimpleBook.TAG, "true")
 				.hideTags(true);
