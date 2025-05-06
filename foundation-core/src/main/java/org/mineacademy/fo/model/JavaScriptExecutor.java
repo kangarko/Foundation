@@ -36,6 +36,11 @@ public final class JavaScriptExecutor {
 	 * The engine singleton
 	 */
 	private static final ScriptEngine engine;
+	
+	/**
+	 * Lock object for synchronizing variable resolution across threads
+	 */
+	private static final Object LOCK = new Object();
 
 	// Load the engine
 	static {
@@ -233,7 +238,7 @@ public final class JavaScriptExecutor {
 			return null;
 		}
 
-		synchronized (engine) {
+		synchronized (LOCK) {
 			if (placeholders == null)
 				placeholders = new HashMap<>();
 
