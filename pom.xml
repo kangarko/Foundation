@@ -144,7 +144,7 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>MultiverseCore</artifactId>
-            <version>4.3.12</version>
+            <version>5.0.0-pre.6</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>

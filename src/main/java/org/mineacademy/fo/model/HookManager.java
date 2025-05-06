@@ -44,6 +44,9 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.plugin.SimplePlugin;
 import org.mineacademy.fo.region.Region;
 import org.mineacademy.fo.remain.Remain;
+import org.mvplugins.multiverse.core.MultiverseCoreApi;
+import org.mvplugins.multiverse.core.world.MultiverseWorld;
+import org.mvplugins.multiverse.external.vavr.control.Option;
 
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
@@ -68,8 +71,6 @@ import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.MPlayer;
 import com.massivecraft.massivecore.ps.PS;
-import com.onarandombox.MultiverseCore.MultiverseCore;
-import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import com.palmergames.bukkit.towny.TownyUniverse;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
@@ -2080,19 +2081,53 @@ class EssentialsHook {
 
 class MultiverseHook {
 
-	private final MultiverseCore multiVerse;
+	private Object legacyWorldManager;
+	private Method legacyGetMVWorld;
+	private Method legacyGetColoredWorldString;
 
 	MultiverseHook() {
-		this.multiVerse = (MultiverseCore) Bukkit.getPluginManager().getPlugin("Multiverse-Core");
+		final Plugin plugin = Bukkit.getPluginManager().getPlugin("Multiverse-Core");
+
+		// Also support generations 2, 3, 4 give the api there didnt change much
+		if (plugin != null && !plugin.getDescription().getVersion().startsWith("5")) {
+			try {
+				this.legacyWorldManager = plugin.getClass().getMethod("getMVWorldManager").invoke(plugin);
+				this.legacyGetMVWorld = this.legacyWorldManager.getClass().getMethod("getMVWorld", String.class);
+
+				final Class<?> mvWorld = Class.forName("com.onarandombox.MultiverseCore.api.MultiverseWorld");
+				this.legacyGetColoredWorldString = mvWorld.getMethod("getColoredWorldString");
+
+			} catch (final ReflectiveOperationException ex) {
+				Common.error(ex, "Unable to hook into legacy Multiverse-Core 4. The plugin will continue normally, but world aliases will default to world names.");
+			}
+		}
 	}
 
-	String getWorldAlias(final String world) {
-		final MultiverseWorld mvWorld = this.multiVerse.getMVWorldManager().getMVWorld(world);
+	String getWorldAlias(final String worldName) {
+		if (this.legacyWorldManager != null) {
+			try {
+				final Object mvWorld = this.legacyGetMVWorld.invoke(this.legacyWorldManager, worldName);
 
-		if (mvWorld != null)
-			return mvWorld.getColoredWorldString();
+				if (mvWorld != null)
+					return (String) this.legacyGetColoredWorldString.invoke(mvWorld);
 
-		return world;
+			} catch (final ReflectiveOperationException ex) {
+				Common.error(ex, "Unable to get world alias for '" + worldName + "' from legacy Multiverse-Core 4, returning world name.");
+			}
+
+			return worldName;
+		}
+
+		final MultiverseCoreApi api = MultiverseCoreApi.get();
+		final Option<MultiverseWorld> worldOption = api.getWorldManager().getWorld(worldName);
+
+		if (!worldOption.isEmpty()) {
+			final MultiverseWorld world = worldOption.get();
+
+			return world.getAliasOrName();
+		}
+
+		return worldName;
 	}
 }
 
@@ -3813,17 +3848,17 @@ class MythicMobsHook {
 		/*try {
 			final Object mythicPlugin = ReflectionUtil.invokeStatic(ReflectionUtil.lookupClass("io.lumine.mythic.api.MythicProvider"), "get");
 			final Object mobManager = ReflectionUtil.invoke("getMobManager", mythicPlugin);
-		
+
 			final Method getActiveMobsMethod = ReflectionUtil.getMethod(mobManager.getClass(), "getActiveMobs");
 			final Collection<?> activeMobs = ReflectionUtil.invoke(getActiveMobsMethod, mobManager);
-		
+
 			for (final Object mob : activeMobs) {
 				final UUID uniqueId = ReflectionUtil.invoke("getUniqueId", mob);
-		
+
 				if (uniqueId.equals(entity.getUniqueId()))
 					return ReflectionUtil.invoke("getName", mob);
 			}
-		
+
 		} catch (Throwable t) {
 			Common.error(t, "MythicMobs integration failed getting mob name, contact plugin developer to update the integration!");
 		}*/
@@ -3893,16 +3928,16 @@ class LiteBansHook {
 		/*try {
 			final Class<?> api = ReflectionUtil.lookupClass("litebans.api.Database");
 			final Object instance = ReflectionUtil.invokeStatic(api, "get");
-		
+
 			return ReflectionUtil.invoke("isPlayerMuted", instance, player.getUniqueId());
-		
+
 		} catch (final Throwable t) {
 			if (!t.toString().contains("Could not find class")) {
 				Common.log("Unable to check if " + player.getName() + " is muted at LiteBans. Is the API hook outdated? See console error:");
-		
+
 				t.printStackTrace();
 			}
-		
+
 			return false;
 		}*/
 	}
