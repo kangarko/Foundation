@@ -3,6 +3,7 @@
 </a>
 
 [![](https://jitpack.io/v/kangarko/Foundation.svg)](https://jitpack.io/#kangarko/Foundation)
+[Wiki](https://deepwiki.com/kangarko/Foundation)
 
 Make Minecraft plugins faster, save boilerplate code to focus on putting your ideas out there instead of dealing with limited Spigot/Bukkit/Paper APIs.
 
