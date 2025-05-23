@@ -36,7 +36,7 @@ public final class JavaScriptExecutor {
 	 * The engine singleton
 	 */
 	private static final ScriptEngine engine;
-	
+
 	/**
 	 * Lock object for synchronizing variable resolution across threads
 	 */

@@ -232,7 +232,7 @@ public final class Variable extends YamlConfig {
 		Object result = null;
 
 		try {
-			result = JavaScriptExecutor.run(script, audience);
+			result = JavaScriptExecutor.run(script, audience, placeholders);
 
 		} catch (final FoScriptException ex) {
 			CommonCore.logFramed(
