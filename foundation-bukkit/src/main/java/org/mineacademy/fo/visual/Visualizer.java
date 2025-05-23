@@ -13,7 +13,6 @@ import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ValidCore;
-import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompMaterial;
 import org.mineacademy.fo.remain.CompProperty;
@@ -35,7 +34,7 @@ public final class Visualizer {
 	/**
 	 * Stores a map of currently visualized blocks.
 	 */
-	private static final Map<Location, OwnedVisualizedBlock> visualizedBlocksV2 = new HashMap<>();
+	private static final Map<Location, OwnedVisualizedBlock> visualizedBlocks = new HashMap<>();
 
 	@Getter
 	@Setter
@@ -71,7 +70,10 @@ public final class Visualizer {
 		for (final Player player : block.getWorld().getPlayers())
 			Remain.sendBlockChange(2, player, location, MinecraftVersion.olderThan(V.v1_9) ? mask : CompMaterial.BARRIER);
 
-		visualizedBlocksV2.put(location, new OwnedVisualizedBlock(falling == null ? false : falling, initiator.getUniqueId()));
+		visualizedBlocks.put(location, new OwnedVisualizedBlock(falling == null ? false : falling, initiator.getUniqueId()));
+
+		// Remove the block after 10 seconds
+		Platform.runTask(20 * 10, () -> stopVisualizing(block));
 	}
 
 	/*
@@ -85,29 +87,7 @@ public final class Visualizer {
 		for (final Player player : location.getWorld().getPlayers())
 			Remain.sendBlockChange(0, player, location, CompMaterial.AIR);
 
-		final FallingBlock falling = handleFallingSpawn(location, mask, blockName);
-
-		// Respawn automatically
-		Platform.runTaskTimer(20, new SimpleRunnable() {
-			@Override
-			public void run() {
-				final OwnedVisualizedBlock owned = visualizedBlocksV2.get(location);
-
-				if (owned != null) {
-					final FallingBlock ownedFalling = (FallingBlock) owned.getFallingBlock();
-
-					if (!ownedFalling.isValid()) {
-						final FallingBlock newFalling = handleFallingSpawn(location, mask, blockName);
-
-						owned.setFallingBlock(newFalling);
-					}
-
-				} else
-					this.cancel();
-			}
-		});
-
-		return falling;
+		return handleFallingSpawn(location, mask, blockName);
 	}
 
 	private static FallingBlock handleFallingSpawn(final Location location, final CompMaterial mask, final String blockName) {
@@ -142,18 +122,18 @@ public final class Visualizer {
 	 * @param block
 	 */
 	public static void stopVisualizing(@NonNull final Block block) {
-		ValidCore.checkBoolean(isVisualized(block), "Block at " + block.getLocation() + " not visualized");
+		if (isVisualized(block)) {
+			final OwnedVisualizedBlock owned = visualizedBlocks.remove(block.getLocation());
+			final Object fallingBlock = owned.getFallingBlock();
 
-		final OwnedVisualizedBlock owned = visualizedBlocksV2.remove(block.getLocation());
-		final Object fallingBlock = owned.getFallingBlock();
+			// Mark the entity for removal on the next tick
+			if (fallingBlock instanceof FallingBlock)
+				((FallingBlock) fallingBlock).remove();
 
-		// Mark the entity for removal on the next tick
-		if (fallingBlock instanceof FallingBlock)
-			((FallingBlock) fallingBlock).remove();
-
-		// Then restore the client's block back to normal
-		for (final Player player : block.getWorld().getPlayers())
-			Remain.sendBlockChange(1, player, block);
+			// Then restore the client's block back to normal
+			for (final Player player : block.getWorld().getPlayers())
+				Remain.sendBlockChange(1, player, block);
+		}
 	}
 
 	/**
@@ -164,7 +144,7 @@ public final class Visualizer {
 	public static void stopVisualizing(@NonNull final Player player) {
 		final UUID playerUid = player.getUniqueId();
 
-		for (final Iterator<Map.Entry<Location, OwnedVisualizedBlock>> iterator = visualizedBlocksV2.entrySet().iterator(); iterator.hasNext();) {
+		for (final Iterator<Map.Entry<Location, OwnedVisualizedBlock>> iterator = visualizedBlocks.entrySet().iterator(); iterator.hasNext();) {
 			final Map.Entry<Location, OwnedVisualizedBlock> entry = iterator.next();
 			final OwnedVisualizedBlock owned = entry.getValue();
 
@@ -191,6 +171,6 @@ public final class Visualizer {
 	 * @return
 	 */
 	public static boolean isVisualized(@NonNull final Block block) {
-		return visualizedBlocksV2.containsKey(block.getLocation());
+		return visualizedBlocks.containsKey(block.getLocation());
 	}
 }
