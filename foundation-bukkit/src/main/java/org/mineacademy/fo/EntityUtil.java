@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -149,7 +150,7 @@ public final class EntityUtil {
 				if (!found)
 					throw new FoException("Lacking experimental databack! Cannot find a world that supports entity type '" + type + "'. This is NOT A BUG IN OUR PLUGIN. You need to install the datapack for " + type.requiredFeatures() + " or delete the entity");
 			}
-		} catch (final NoSuchMethodError err) {
+		} catch (final NoSuchMethodError | NoSuchElementException err) {
 			// Ignore
 		}
 
