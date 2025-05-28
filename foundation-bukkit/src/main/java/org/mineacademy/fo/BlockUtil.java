@@ -115,6 +115,7 @@ public final class BlockUtil {
 
 			final VectorHelper p3 = p1.add(0, height, 0);
 			final VectorHelper p4 = p2.add(0, height, 0);
+
 			shape.addAll(plotLine(p1, p2));
 			shape.addAll(plotLine(p3, p4));
 			shape.addAll(plotLine(p1, p3));
@@ -122,6 +123,7 @@ public final class BlockUtil {
 			for (double offset = BOUNDING_VERTICAL_GAP; offset < height; offset += BOUNDING_VERTICAL_GAP) {
 				final VectorHelper p5 = p1.add(0.0D, offset, 0.0D);
 				final VectorHelper p6 = p2.add(0.0D, offset, 0.0D);
+
 				shape.addAll(plotLine(p5, p6));
 			}
 		}

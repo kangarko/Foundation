@@ -1124,17 +1124,17 @@ public abstract class CommonCore {
 	 * @param stringer
 	 * @return
 	 */
-	public static final <T> String join(final Iterable<T> list, final String delimiter, final Stringer<T> stringer) {		
+	public static final <T> String join(final Iterable<T> list, final String delimiter, final Stringer<T> stringer) {
 
 		// Create a copy to avoid ConcurrentModificationException
 		final List<T> safeList = new ArrayList<>();
-		
-		for (final T element : list) 
-			safeList.add(element);		
-		
+
+		for (final T element : list)
+			safeList.add(element);
+
 		final StringBuilder builder = new StringBuilder();
 		boolean first = true;
-		
+
 		for (final T element : safeList) {
 			if (element != null) {
 				if (!first)
