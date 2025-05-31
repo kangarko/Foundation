@@ -195,10 +195,10 @@ public final class Variable extends YamlConfig {
 	 * returns the output
 	 *
 	 * @param audience
-	 * @param placeholders
+	 * @param variables
 	 * @return
 	 */
-	public String getValue(final FoundationPlayer audience, final Map<String, Object> placeholders) {
+	public String getValue(final Variables variables) {
 
 		// Replace variables in script
 		final String script;
@@ -207,7 +207,7 @@ public final class Variable extends YamlConfig {
 		try {
 			Variables.setReplaceScript(false);
 
-			script = Variables.builder(audience).placeholders(placeholders).replaceLegacy(this.value);
+			script = variables.replaceLegacy(this.value);
 
 		} catch (final Throwable t) {
 			final String errorHeadline = "Error replacing placeholders in variable!";
@@ -216,7 +216,7 @@ public final class Variable extends YamlConfig {
 					errorHeadline,
 					"",
 					"Variable: " + this.value,
-					"Sender: " + audience,
+					"Sender: " + variables.audience(),
 					"Error: " + t.getMessage(),
 					"",
 					"Please report this issue!");
@@ -232,14 +232,14 @@ public final class Variable extends YamlConfig {
 		Object result = null;
 
 		try {
-			result = JavaScriptExecutor.run(script, audience, placeholders);
+			result = JavaScriptExecutor.run(script, variables);
 
 		} catch (final FoScriptException ex) {
 			CommonCore.logFramed(
 					"Error executing JavaScript in a variable!",
 					"Variable: " + this.getFile(),
 					(ex instanceof FoScriptException ? "Line: " + ex.getErrorLine() : ""),
-					"Sender: " + audience,
+					"Sender: " + variables.audience(),
 					"Error: " + ex.getMessage(),
 					"",
 					"This is likely NOT our plugin bug, check Value key in " + this.getFile(),
@@ -255,12 +255,11 @@ public final class Variable extends YamlConfig {
 	 * Create the variable and append it to the existing component as if the player initiated it
 	 *
 	 * @param audience
-	 * @param placeholders
+	 * @param variables
 	 * @return
 	 */
-	public SimpleComponent build(final FoundationPlayer audience, final Map<String, Object> placeholders) {
+	public SimpleComponent build(final FoundationPlayer audience, Variables variables) {
 		final boolean replacingScript = Variables.isReplaceScript();
-		final Variables variables = Variables.builder(audience).placeholders(placeholders);
 
 		try {
 			Variables.setReplaceScript(false);
@@ -296,7 +295,7 @@ public final class Variable extends YamlConfig {
 					throw ex;
 				}
 
-			final String value = this.getValue(audience, placeholders);
+			final String value = this.getValue(variables);
 
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
@@ -357,19 +356,32 @@ public final class Variable extends YamlConfig {
 	 * @param placeholders
 	 * @return
 	 */
-	public String buildLegacy(final FoundationPlayer audience, final Map<String, Object> placeholders) {
-		final boolean replacingScript = Variables.isReplaceScript();
+	/*public String buildLegacy(final FoundationPlayer audience, final Map<String, Object> placeholders) {
 		final Variables variables = Variables.builder(audience).placeholders(placeholders);
+	
+		return this.buildLegacy(audience, variables);
+	}*/
+
+	/**
+	 * Create the variable as legacy, no interactive nor receiver conditional components
+	 * are supported.
+	 *
+	 * @param audience
+	 * @param variables
+	 * @return
+	 */
+	public String buildLegacy(final Variables variables) {
+		final boolean replacingScript = Variables.isReplaceScript();
 
 		try {
 			Variables.setReplaceScript(false);
 
-			if (this.senderPermission != null && !this.senderPermission.isEmpty() && !audience.hasPermission(this.senderPermission))
+			if (this.senderPermission != null && !this.senderPermission.isEmpty() && !variables.audience().hasPermission(this.senderPermission))
 				return "";
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty())
 				try {
-					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), audience);
+					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), variables.audience());
 
 					if (result != null) {
 						if (!(result instanceof Boolean))
@@ -384,7 +396,7 @@ public final class Variable extends YamlConfig {
 							"Error executing Sender_Condition in a variable!",
 							"Variable: " + this.getFile(),
 							"Sender condition: " + this.senderCondition,
-							"Sender: " + audience,
+							"Sender: " + variables.audience(),
 							"Error: " + ex.getMessage(),
 							"",
 							"This is likely NOT a plugin bug,",
@@ -395,7 +407,7 @@ public final class Variable extends YamlConfig {
 					throw ex;
 				}
 
-			final String value = this.getValue(audience, placeholders);
+			final String value = this.getValue(variables);
 
 			return value == null || value.isEmpty() || "null".equals(value) ? "" : value;
 
