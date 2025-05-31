@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.ProxyMessage;
@@ -217,6 +218,8 @@ public final class VelocityListener {
 				found = false;
 
 			if (found) {
+				Debugger.debug("proxy", VelocityPlugin.getInstance().getName() + " forwarded plugin message '" + subChannel + "' to " + connection.getPlayer().getUsername());
+
 				final byte[] outData = out.toByteArray();
 
 				if (outData.length > 0)
