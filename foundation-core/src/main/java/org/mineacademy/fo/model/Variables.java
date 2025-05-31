@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +118,7 @@ public final class Variables {
 	/**
 	 * The custom placeholders map we apply on top of other placeholders.
 	 */
-	private final Map<String, Object> placeholders = new HashMap<>();
+	private final Map<String, Object> placeholdersV2 = new HashMap<>();
 
 	/**
 	 * Whether to convert the component to legacy text, plain text or mini message in replaceLegacy() methods.
@@ -144,24 +145,43 @@ public final class Variables {
 	}
 
 	/**
+	 * Return the audience for whom we are replacing variables.
+	 *
+	 * @return
+	 */
+	public FoundationPlayer audience() {
+		return this.audience;
+	}
+
+	/**
 	 * Set the placeholders map.
 	 *
 	 * @param placeholders
 	 * @return
 	 */
 	public Variables placeholders(@NonNull final Map<String, Object> placeholders) {
-		this.placeholders.putAll(placeholders);
+		this.placeholdersV2.putAll(placeholders);
 
 		return this;
 	}
 
 	/**
-	 * Return the placeholders map.
+	 * Return the placeholders map in read only mode.
 	 *
 	 * @return
 	 */
-	public Map<String, Object> placeholders() {
-		return this.placeholders;
+	public Map<String, Object> placeholdersReadOnly() {
+		return Collections.unmodifiableMap(this.placeholdersV2);
+	}
+
+	/**
+	 * Remove a placeholder from the placeholders map.
+	 *
+	 * @param key
+	 * @return
+	 */
+	public Object removePlaceholder(@NonNull final String key) {
+		return this.placeholdersV2.remove(key);
 	}
 
 	/**
@@ -184,7 +204,7 @@ public final class Variables {
 				throw new FoException("Placeholders must not start or end with {}. Found: " + key);
 		}
 
-		this.placeholders.putAll(map);
+		this.placeholdersV2.putAll(map);
 
 		return this;
 	}
@@ -197,7 +217,7 @@ public final class Variables {
 	 * @return
 	 */
 	public Variables placeholder(@NonNull final String key, @NonNull final Object value) {
-		this.placeholders.put(key, value);
+		this.placeholdersV2.put(key, value);
 
 		return this;
 	}
@@ -467,7 +487,7 @@ public final class Variables {
 			backSpace = true;
 		}
 
-		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
+		for (final Map.Entry<String, Object> entry : this.placeholdersV2.entrySet()) {
 			final String key = entry.getKey();
 
 			if (key.equals(variable)) {
@@ -508,7 +528,7 @@ public final class Variables {
 			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
 			if (javascriptVariable != null) {
-				final SimpleComponent value = javascriptVariable.build(this.audience, this.placeholders);
+				final SimpleComponent value = javascriptVariable.build(this.audience, this);
 
 				if (value != null)
 					replacedValue = value;
@@ -562,7 +582,7 @@ public final class Variables {
 			backSpace = true;
 		}
 
-		for (final Map.Entry<String, Object> entry : this.placeholders.entrySet()) {
+		for (final Map.Entry<String, Object> entry : this.placeholdersV2.entrySet()) {
 			final String key = entry.getKey();
 
 			if (key.equals(variable)) {
@@ -608,10 +628,10 @@ public final class Variables {
 				else if (rawValue instanceof UUID)
 					replacedValue = rawValue.toString();
 
-				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
+				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
 					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
-				else
+				} else
 					replacedValue = rawValue.toString();
 
 				break;
@@ -622,7 +642,7 @@ public final class Variables {
 			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
 			if (javascriptVariable != null) {
-				String value = javascriptVariable.buildLegacy(this.audience, this.placeholders);
+				String value = javascriptVariable.buildLegacy(this);
 
 				if (value != null) {
 					if (this.toLegacyMode == ToLegacyMode.MINI) {
@@ -687,7 +707,7 @@ public final class Variables {
 			final String key = match.group(1);
 			final Variable variable = Variable.findVariableByKey(key, Variable.Type.MESSAGE);
 
-			return variable != null ? variable.build(this.audience, this.placeholders).toAdventure(null) : input;
+			return variable != null ? variable.build(this.audience, this).toAdventure(null) : input;
 		});
 	}
 
