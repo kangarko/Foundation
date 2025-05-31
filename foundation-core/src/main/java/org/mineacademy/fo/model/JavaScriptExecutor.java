@@ -163,6 +163,19 @@ public final class JavaScriptExecutor {
 	}
 
 	/**
+	 * Compiles and executes the Javascript code for the variables audience ("player" variable is put into the JS code)
+	 * as well as the bukkit event (use "event" variable there)
+	 *
+	 * @param javascript
+	 * @param variables
+	 * @return
+	 * @throws FoScriptException
+	 */
+	public static Object run(@NonNull String javascript, final Variables variables) throws FoScriptException {
+		return run(javascript, variables.audience(), variables.placeholdersReadOnly());
+	}
+
+	/**
 	 * Compiles and executes the Javascript code for the player ("player" variable is put into the JS code)
 	 * as well as the bukkit event (use "event" variable there)
 	 *
@@ -175,6 +188,8 @@ public final class JavaScriptExecutor {
 	public static Object run(@NonNull String javascript, final FoundationPlayer audience, Map<String, Object> placeholders) throws FoScriptException {
 		if (placeholders == null)
 			placeholders = new HashMap<>();
+
+		final Map<String, Object> placeholdersCopy = new HashMap<>(placeholders);
 
 		if (audience == null && javascript.contains("player.")) {
 			CommonCore.warning("Not running JavaScript because it contains 'player' but player was not provided. Script: " + javascript);
@@ -209,17 +224,17 @@ public final class JavaScriptExecutor {
 		}
 
 		if (audience != null) {
-			placeholders.put("audience", audience);
-			placeholders.put("sender", audience.getSender());
+			placeholdersCopy.put("audience", audience);
+			placeholdersCopy.put("sender", audience.getSender());
 
 			if (audience.isDiscord())
-				placeholders.put("discord", audience.getSender());
+				placeholdersCopy.put("discord", audience.getSender());
 
 			if (audience.isPlayer())
-				placeholders.put("player", audience.getPlayer());
+				placeholdersCopy.put("player", audience.getPlayer());
 		}
 
-		return run(javascript, placeholders);
+		return run(javascript, placeholdersCopy);
 	}
 
 	/**
@@ -255,10 +270,10 @@ public final class JavaScriptExecutor {
 			// Put new variables
 			for (final Map.Entry<String, Object> placeholder : placeholders.entrySet()) {
 				final String key = placeholder.getKey();
-				ValidCore.checkNotNull(key, "Key can't be null in javascript placeholders for code " + javascript + ": " + placeholders);
+				ValidCore.checkNotNull(key, "Key can't be null in javascript placeholders for code " + javascript + ": " + placeholders.keySet());
 
 				final Object value = placeholder.getValue();
-				ValidCore.checkNotNull(value, "Value can't be null in javascript placeholders for key " + key + ": " + placeholders);
+				ValidCore.checkNotNull(value, "Value can't be null in javascript placeholders for key " + key + ": " + placeholders.keySet());
 
 				engine.put(key, value);
 			}
