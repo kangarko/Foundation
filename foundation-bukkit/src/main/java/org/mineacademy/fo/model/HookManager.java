@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
 import com.earth2me.essentials.User;
 import com.earth2me.essentials.UserMap;
+import com.massivecraft.factions.Rel;
 import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.MPlayer;
@@ -1590,6 +1592,16 @@ public final class HookManager {
 	 */
 	public static Collection<? extends Player> getOnlineFactionPlayers(final Player player) {
 		return isFactionsLoaded() ? factionsHook.getSameFactionPlayers(player) : new ArrayList<>();
+	}
+
+	/**
+	 * Return the players in the player's faction ally list, or empty if there are none.
+	 *
+	 * @param player the player's faction to check.
+	 * @return
+	 */
+	public static Collection<? extends Player> getAlliedFactionPlayers(final Player player) {
+		return isFactionsLoaded() ? factionsHook.getAlliedFactionPlayers(player) : new ArrayList<>();
 	}
 
 	/**
@@ -3343,6 +3355,11 @@ abstract class FactionsHook {
 	abstract String getFactionOwner(Location loc);
 
 	/**
+	 * Get all the factions allied to the Player's faction
+	 */
+	abstract List<String> getFactionAlliances(Player pl);
+
+	/**
 	 * Get all players in the same faction, used for party chat.
 	 */
 	final Collection<? extends Player> getSameFactionPlayers(final Player pl) {
@@ -3354,6 +3371,24 @@ abstract class FactionsHook {
 				final String onlineFaction = this.getFaction(online);
 
 				if (playerFaction.equals(onlineFaction))
+					recipients.add(online);
+			}
+
+		return recipients;
+	}
+
+	/**
+	 * Get all players from allied factions, used for party chat.
+	 */
+
+	final Collection<? extends Player> getAlliedFactionPlayers(final Player pl) {
+		final List<Player> recipients = new ArrayList<>();
+		final String faction = this.getFaction(pl);
+		final List<String> alliedFactions = this.getFactionAlliances(pl);
+
+		if (alliedFactions != null && !alliedFactions.isEmpty())
+			for (final Player online : Remain.getOnlinePlayers()) {
+				if (alliedFactions.contains(this.getFaction(online)) && this.getFactionAlliances(online).contains(faction))
 					recipients.add(online);
 			}
 
@@ -3398,6 +3433,16 @@ final class FactionsMassive extends FactionsHook {
 			return f.getLeader() != null ? f.getLeader().getName() : null;
 
 		return null;
+	}
+
+	@Override
+	List<String> getFactionAlliances(Player pl) {
+		List<String> alliances = new ArrayList<>();
+		for(Map.Entry<String, Rel> entry : MPlayer.get(pl.getUniqueId()).getFaction().getRelationWishes().entrySet()) {
+			if(entry.getValue().equals(Rel.ALLY))
+				alliances.add(entry.getKey());
+		}
+		return alliances;
 	}
 }
 
@@ -3456,6 +3501,77 @@ final class FactionsUUID extends FactionsHook {
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
+			return null;
+		}
+	}
+
+	@Override
+	List<String> getFactionAlliances(Player pl) {
+		List<String> alliances = new ArrayList<>();
+
+		try {
+			final Object instance = this.instance();
+			if (instance == null) {
+				return alliances;
+			}
+
+			// Get player's faction
+			final Object fplayers = this.fplayers();
+			final Object factionPlayer = fplayers.getClass()
+					.getMethod("getByPlayer", Player.class)
+					.invoke(fplayers, pl);
+
+			final Object faction = factionPlayer != null
+					? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer)
+					: null;
+
+			if (faction == null) {
+				return alliances;
+			}
+
+			// Get relations map
+			final Field relationWishField = faction.getClass()
+					.getSuperclass()
+					.getDeclaredField("relationWish");
+
+			try {
+				relationWishField.setAccessible(true);
+				final Object relationsObject = relationWishField.get(faction);
+
+				if (!(relationsObject instanceof Map<?, ?>)) {
+					return alliances;
+				}
+
+				// Process alliances
+				final Map<?, ?> relations = (Map<?, ?>) relationsObject;
+				for (Map.Entry<?, ?> entry : relations.entrySet()) {
+					if (!"ALLY".equalsIgnoreCase(entry.getValue().toString())) {
+						continue;
+					}
+
+					final Object alliedFaction = instance.getClass()
+							.getMethod("getFactionById", String.class)
+							.invoke(instance, entry.getKey().toString());
+
+					if (alliedFaction == null) {
+						continue;
+					}
+
+					final Object factionName = alliedFaction.getClass()
+							.getMethod("getTag")
+							.invoke(alliedFaction);
+
+					if (factionName != null) {
+						alliances.add(factionName.toString());
+					}
+				}
+			} finally {
+				relationWishField.setAccessible(false);
+			}
+
+			return alliances;
+		} catch (final ReflectiveOperationException ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}
