@@ -3381,10 +3381,10 @@ abstract class FactionsHook {
 	 * Get all players from allied factions, used for party chat.
 	 */
 
-	final Collection<? extends Player> getAlliedFactionPlayers(final Player pl) {
+	final Collection<? extends Player> getAlliedFactionPlayers(final Player player) {
 		final List<Player> recipients = new ArrayList<>();
-		final String faction = this.getFaction(pl);
-		final List<String> alliedFactions = this.getFactionAlliances(pl);
+		final String faction = this.getFaction(player);
+		final List<String> alliedFactions = this.getFactionAlliances(player);
 
 		if (alliedFactions != null && !alliedFactions.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers()) {
@@ -3436,11 +3436,23 @@ final class FactionsMassive extends FactionsHook {
 	}
 
 	@Override
-	List<String> getFactionAlliances(Player pl) {
-		List<String> alliances = new ArrayList<>();
-		for(Map.Entry<String, Rel> entry : MPlayer.get(pl.getUniqueId()).getFaction().getRelationWishes().entrySet()) {
-			if(entry.getValue().equals(Rel.ALLY))
-				alliances.add(entry.getKey());
+	List<String> getFactionAlliances(Player player) {
+		final List<String> alliances = new ArrayList<>();
+
+		final MPlayer mPlayer = MPlayer.get(player.getUniqueId());
+		if(mPlayer == null) return alliances;
+
+		final Faction faction = mPlayer.getFaction();
+		if(faction == null) return alliances;
+
+		final Map<String, Rel> relationWishes = faction.getRelationWishes();
+		if(relationWishes == null) return alliances;
+
+		for(Map.Entry<String, Rel> entry : relationWishes.entrySet()) {
+			final String factionName = entry.getKey();
+			final Rel relation = entry.getValue();
+			if(factionName != null && relation != null && relation.equals(Rel.ALLY))
+				alliances.add(factionName);
 		}
 		return alliances;
 	}
@@ -3506,7 +3518,7 @@ final class FactionsUUID extends FactionsHook {
 	}
 
 	@Override
-	List<String> getFactionAlliances(Player pl) {
+	List<String> getFactionAlliances(Player player) {
 		List<String> alliances = new ArrayList<>();
 
 		try {
@@ -3519,7 +3531,7 @@ final class FactionsUUID extends FactionsHook {
 			final Object fplayers = this.fplayers();
 			final Object factionPlayer = fplayers.getClass()
 					.getMethod("getByPlayer", Player.class)
-					.invoke(fplayers, pl);
+					.invoke(fplayers, player);
 
 			final Object faction = factionPlayer != null
 					? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer)
