@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
 import com.earth2me.essentials.User;
 import com.earth2me.essentials.UserMap;
+import com.massivecraft.factions.Rel;
 import com.massivecraft.factions.entity.BoardColl;
 import com.massivecraft.factions.entity.Faction;
 import com.massivecraft.factions.entity.MPlayer;
@@ -1591,6 +1593,16 @@ public final class HookManager {
 	 */
 	public static Collection<? extends Player> getOnlineFactionPlayers(final Player player) {
 		return isFactionsLoaded() ? factionsHook.getSameFactionPlayers(player) : new ArrayList<>();
+	}
+
+	/**
+	 * Return the players in the player's faction ally list, or empty if there are none.
+	 *
+	 * @param player the player's faction to check.
+	 * @return
+	 */
+	public static Collection<? extends Player> getAlliedFactionPlayers(final Player player) {
+		return isFactionsLoaded() ? factionsHook.getAlliedFactionPlayers(player) : new ArrayList<>();
 	}
 
 	/**
@@ -3331,30 +3343,60 @@ abstract class FactionsHook {
 	/**
 	 * Get the faction of the player.
 	 */
-	abstract String getFaction(Player pl);
+	abstract String getFaction(Player player);
+
+	/**
+	 * Get the ID of the player's faction.
+	 */
+	abstract String getFactionId(Player player);
 
 	/**
 	 * Get the faction at the given location
 	 */
-	abstract String getFaction(Location loc);
+	abstract String getFaction(Location location);
 
 	/**
 	 * Get the faction owner at the given location.
 	 */
-	abstract String getFactionOwner(Location loc);
+	abstract String getFactionOwner(Location location);
+
+	/**
+	 * Get all the factions allied to the Player's faction
+	 */
+	abstract List<String> getFactionAllianceIDs(Player player);
 
 	/**
 	 * Get all players in the same faction, used for party chat.
 	 */
-	final Collection<? extends Player> getSameFactionPlayers(final Player pl) {
+	final Collection<? extends Player> getSameFactionPlayers(final Player player) {
 		final List<Player> recipients = new ArrayList<>();
-		final String playerFaction = this.getFaction(pl);
+		final String playerFaction = this.getFaction(player);
 
 		if (playerFaction != null && !playerFaction.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers()) {
 				final String onlineFaction = this.getFaction(online);
 
 				if (playerFaction.equals(onlineFaction))
+					recipients.add(online);
+			}
+
+		return recipients;
+	}
+
+	/**
+	 * Get all players from allied factions, used for party chat.
+	 */
+	final Collection<? extends Player> getAlliedFactionPlayers(final Player player) {
+		final List<Player> recipients = new ArrayList<>();
+		final String factionId = this.getFactionId(player);
+		final List<String> alliedFactions = this.getFactionAllianceIDs(player);
+
+		if (alliedFactions != null && !alliedFactions.isEmpty())
+			for (final Player online : Remain.getOnlinePlayers()) {
+				if(online.equals(player)) continue;
+				final String onlineFactionId = this.getFactionId(online);
+				final List<String> onlineAlliedFactions = this.getFactionAllianceIDs(online);
+				if (alliedFactions.contains(onlineFactionId) && onlineAlliedFactions.contains(factionId))
 					recipients.add(online);
 			}
 
@@ -3373,32 +3415,63 @@ final class FactionsMassive extends FactionsHook {
 	}
 
 	@Override
-	public String getFaction(final Player pl) {
+	public String getFaction(final Player player) {
 		try {
-			return MPlayer.get(pl.getUniqueId()).getFactionName();
+			return MPlayer.get(player.getUniqueId()).getFactionName();
 		} catch (final Exception ex) {
 			return null;
 		}
 	}
 
 	@Override
-	public String getFaction(final Location loc) {
-		final Faction f = BoardColl.get().getFactionAt(PS.valueOf(loc));
+	String getFactionId(Player player) {
+		try {
+			return MPlayer.get(player.getUniqueId()).getFaction().getId();
+		} catch (final Exception ex) {
+			return null;
+		}
+	}
 
-		if (f != null)
-			return f.getName();
+	@Override
+	public String getFaction(final Location location) {
+		final Faction faction = BoardColl.get().getFactionAt(PS.valueOf(location));
+
+		if (faction != null)
+			return faction.getName();
 
 		return null;
 	}
 
 	@Override
-	public String getFactionOwner(final Location loc) {
-		final Faction f = BoardColl.get().getFactionAt(PS.valueOf(loc));
+	public String getFactionOwner(final Location location) {
+		final Faction faction = BoardColl.get().getFactionAt(PS.valueOf(location));
 
-		if (f != null)
-			return f.getLeader() != null ? f.getLeader().getName() : null;
+		if (faction != null)
+			return faction.getLeader() != null ? faction.getLeader().getName() : null;
 
 		return null;
+	}
+
+	@Override
+	List<String> getFactionAllianceIDs(Player player) {
+		final List<String> alliances = new ArrayList<>();
+
+		final MPlayer mPlayer = MPlayer.get(player.getUniqueId());
+		if(mPlayer == null) return alliances;
+
+		final Faction faction = mPlayer.getFaction();
+		if(faction == null) return alliances;
+
+		final Map<String, Rel> relationWishes = faction.getRelationWishes();
+		if(relationWishes == null) return alliances;
+
+		for(Map.Entry<String, Rel> entry : relationWishes.entrySet()) {
+			final String factionName = entry.getKey();
+			final Rel relation = entry.getValue();
+			if(factionName != null && relation != null && relation.equals(Rel.ALLY))
+				alliances.add(factionName);
+		}
+		return alliances;
 	}
 }
 
@@ -3407,8 +3480,8 @@ final class FactionsUUID extends FactionsHook {
 	@Override
 	public Collection<String> getFactions() {
 		try {
-			final Object i = this.instance();
-			final Set<String> tags = (Set<String>) i.getClass().getMethod("getFactionTags").invoke(i);
+			final Object instance = this.factionsInstance();
+			final Set<String> tags = (Set<String>) instance.getClass().getMethod("getFactionTags").invoke(instance);
 
 			return tags;
 		} catch (final Throwable t) {
@@ -3419,14 +3492,14 @@ final class FactionsUUID extends FactionsHook {
 	}
 
 	@Override
-	public String getFaction(final Player pl) {
+	public String getFaction(final Player player) {
 		try {
-			final Object fplayers = this.fplayers();
-			final Object fpl = fplayers.getClass().getMethod("getByPlayer", Player.class).invoke(fplayers, pl);
-			final Object f = fpl != null ? fpl.getClass().getMethod("getFaction").invoke(fpl) : null;
-			final Object name = f != null ? f.getClass().getMethod("getTag").invoke(f) : null;
+			final Object factionPlayers = this.fPlayers();
+			final Object factionPlayer = factionPlayers.getClass().getMethod("getByPlayer", Player.class).invoke(factionPlayers, player);
+			final Object faction = factionPlayer != null ? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer) : null;
+			final Object factionName = faction != null ? faction.getClass().getMethod("getTag").invoke(faction) : null;
 
-			return name != null ? name.toString() : null;
+			return factionName != null ? factionName.toString() : null;
 
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
@@ -3436,11 +3509,15 @@ final class FactionsUUID extends FactionsHook {
 	}
 
 	@Override
-	public String getFaction(final Location loc) {
-		final Object f = this.findFaction(loc);
-
+	String getFactionId(Player player) {
 		try {
-			return f != null ? f.getClass().getMethod("getTag").invoke(f).toString() : null;
+			final Object factionPlayers = this.fPlayers();
+			final Object factionPlayer = factionPlayers.getClass().getMethod("getByPlayer", Player.class).invoke(factionPlayers, player);
+			final Object faction = factionPlayer != null ? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer) : null;
+			final Object factionId = faction != null ? faction.getClass().getMethod("getId").invoke(faction) : null;
+
+			return factionId != null ? factionId.toString() : null;
+
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3449,8 +3526,21 @@ final class FactionsUUID extends FactionsHook {
 	}
 
 	@Override
-	public String getFactionOwner(final Location loc) {
-		final Object faction = this.findFaction(loc);
+	public String getFaction(final Location location) {
+		final Object faction = this.findFaction(location);
+
+		try {
+			return faction != null ? faction.getClass().getMethod("getTag").invoke(faction).toString() : null;
+		} catch (final ReflectiveOperationException ex) {
+			ex.printStackTrace();
+
+			return null;
+		}
+	}
+
+	@Override
+	public String getFactionOwner(final Location location) {
+		final Object faction = this.findFaction(location);
 
 		try {
 			return faction != null ? ((com.massivecraft.factions.FPlayer) faction.getClass().getMethod("getFPlayerAdmin").invoke(faction)).getName() : null;
@@ -3461,11 +3551,68 @@ final class FactionsUUID extends FactionsHook {
 		}
 	}
 
-	private Object findFaction(final Location loc) {
-		final Class<com.massivecraft.factions.Board> b = com.massivecraft.factions.Board.class;
+	@Override
+	List<String> getFactionAllianceIDs(Player player) {
+		List<String> alliances = new ArrayList<>();
 
 		try {
-			return b.getMethod("getFactionAt", com.massivecraft.factions.FLocation.class).invoke(b.getMethod("getInstance").invoke(null), new com.massivecraft.factions.FLocation(loc));
+			final Object factionsInstance = this.factionsInstance();
+			if (factionsInstance == null) {
+				return alliances;
+			}
+
+			// Get player's faction
+			final Object factionPlayers = this.fPlayers();
+			final Object factionPlayer = factionPlayers.getClass()
+					.getMethod("getByPlayer", Player.class)
+					.invoke(factionPlayers, player);
+
+			final Object faction = factionPlayer != null
+					? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer)
+					: null;
+
+			if (faction == null) {
+				return alliances;
+			}
+
+			// Get relations map
+			final Field relationWishField = faction.getClass()
+					.getSuperclass()
+					.getDeclaredField("relationWish");
+
+			try {
+				relationWishField.setAccessible(true);
+				final Object relationsObject = relationWishField.get(faction);
+
+				if (!(relationsObject instanceof Map<?, ?>)) {
+					return alliances;
+				}
+
+				// Process alliances
+				final Map<?, ?> relations = (Map<?, ?>) relationsObject;
+				for (Map.Entry<?, ?> entry : relations.entrySet()) {
+					if (!"ALLY".equalsIgnoreCase(entry.getValue().toString())) {
+						continue;
+					}
+
+					alliances.add(entry.getKey().toString());
+				}
+			} finally {
+				relationWishField.setAccessible(false);
+			}
+
+			return alliances;
+		} catch (final ReflectiveOperationException ex) {
+			ex.printStackTrace();
+			return null;
+		}
+	}
+
+	private Object findFaction(final Location location) {
+		final Class<com.massivecraft.factions.Board> factionBoard = com.massivecraft.factions.Board.class;
+
+		try {
+			return factionBoard.getMethod("getFactionAt", com.massivecraft.factions.FLocation.class).invoke(factionBoard.getMethod("getInstance").invoke(null), new com.massivecraft.factions.FLocation(location));
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3473,7 +3620,7 @@ final class FactionsUUID extends FactionsHook {
 		}
 	}
 
-	private Object instance() {
+	private Object factionsInstance() {
 		try {
 			return Class.forName("com.massivecraft.factions.Factions").getDeclaredMethod("getInstance").invoke(null);
 		} catch (final ReflectiveOperationException ex) {
@@ -3483,7 +3630,7 @@ final class FactionsUUID extends FactionsHook {
 		}
 	}
 
-	private Object fplayers() {
+	private Object fPlayers() {
 		try {
 			return Class.forName("com.massivecraft.factions.FPlayers").getDeclaredMethod("getInstance").invoke(null);
 		} catch (final ReflectiveOperationException ex) {
