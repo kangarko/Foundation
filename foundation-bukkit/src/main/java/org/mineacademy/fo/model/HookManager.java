@@ -1,8 +1,8 @@
 package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -3393,7 +3393,8 @@ abstract class FactionsHook {
 
 		if (alliedFactions != null && !alliedFactions.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers()) {
-				if(online.equals(player)) continue;
+				if (online.equals(player))
+					continue;
 				final String onlineFactionId = this.getFactionId(online);
 				final List<String> onlineAlliedFactions = this.getFactionAllianceIDs(online);
 				if (alliedFactions.contains(onlineFactionId) && onlineAlliedFactions.contains(factionId))
@@ -3457,18 +3458,21 @@ final class FactionsMassive extends FactionsHook {
 		final List<String> alliances = new ArrayList<>();
 
 		final MPlayer mPlayer = MPlayer.get(player.getUniqueId());
-		if(mPlayer == null) return alliances;
+		if (mPlayer == null)
+			return alliances;
 
 		final Faction faction = mPlayer.getFaction();
-		if(faction == null) return alliances;
+		if (faction == null)
+			return alliances;
 
 		final Map<String, Rel> relationWishes = faction.getRelationWishes();
-		if(relationWishes == null) return alliances;
+		if (relationWishes == null)
+			return alliances;
 
-		for(Map.Entry<String, Rel> entry : relationWishes.entrySet()) {
+		for (final Map.Entry<String, Rel> entry : relationWishes.entrySet()) {
 			final String factionName = entry.getKey();
 			final Rel relation = entry.getValue();
-			if(factionName != null && relation != null && relation.equals(Rel.ALLY))
+			if (factionName != null && relation != null && relation.equals(Rel.ALLY))
 				alliances.add(factionName);
 		}
 		return alliances;
@@ -3553,7 +3557,7 @@ final class FactionsUUID extends FactionsHook {
 
 	@Override
 	List<String> getFactionAllianceIDs(Player player) {
-		List<String> alliances = new ArrayList<>();
+		final List<String> alliances = new ArrayList<>();
 
 		try {
 			final Object factionsInstance = this.factionsInstance();
@@ -3590,7 +3594,7 @@ final class FactionsUUID extends FactionsHook {
 
 				// Process alliances
 				final Map<?, ?> relations = (Map<?, ?>) relationsObject;
-				for (Map.Entry<?, ?> entry : relations.entrySet()) {
+				for (final Map.Entry<?, ?> entry : relations.entrySet()) {
 					if (!"ALLY".equalsIgnoreCase(entry.getValue().toString())) {
 						continue;
 					}
