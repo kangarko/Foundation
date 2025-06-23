@@ -203,7 +203,8 @@ public final class HookManager {
 
 			if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy"))
 				factionsHook = new FactionsUUID();
-			else if (ver.startsWith("2.")) {
+			// Condition commented due to blocking hooks with modern Factions plugins
+			else /*if (ver.startsWith("2."))*/ {
 				Class<?> mplayer = null;
 
 				try {
