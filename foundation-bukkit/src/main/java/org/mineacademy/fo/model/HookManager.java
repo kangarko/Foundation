@@ -1601,8 +1601,8 @@ public final class HookManager {
 	 * @param player the player's faction to check.
 	 * @return
 	 */
-	public static Collection<? extends Player> getAlliedFactionPlayers(final Player player) {
-		return isFactionsLoaded() ? factionsHook.getAlliedFactionPlayers(player) : new ArrayList<>();
+	public static Collection<? extends Player> getRelatedFactionPlayers(final Player player, String relation) {
+		return isFactionsLoaded() ? factionsHook.getRelatedFactionPlayers(player, relation) : new ArrayList<>();
 	}
 
 	/**
@@ -3363,7 +3363,7 @@ abstract class FactionsHook {
 	/**
 	 * Get all the factions allied to the Player's faction
 	 */
-	abstract List<String> getFactionAllianceIDs(Player player);
+	abstract List<String> getFactionRelationIDs(Player player, String relation);
 
 	/**
 	 * Get all players in the same faction, used for party chat.
@@ -3386,18 +3386,18 @@ abstract class FactionsHook {
 	/**
 	 * Get all players from allied factions, used for party chat.
 	 */
-	final Collection<? extends Player> getAlliedFactionPlayers(final Player player) {
+	final Collection<? extends Player> getRelatedFactionPlayers(final Player player, final String relation) {
 		final List<Player> recipients = new ArrayList<>();
 		final String factionId = this.getFactionId(player);
-		final List<String> alliedFactions = this.getFactionAllianceIDs(player);
+		final List<String> relatedFactions = this.getFactionRelationIDs(player, relation);
 
-		if (alliedFactions != null && !alliedFactions.isEmpty())
+		if (relatedFactions != null && !relatedFactions.isEmpty())
 			for (final Player online : Remain.getOnlinePlayers()) {
 				if (online.equals(player))
 					continue;
 				final String onlineFactionId = this.getFactionId(online);
-				final List<String> onlineAlliedFactions = this.getFactionAllianceIDs(online);
-				if (alliedFactions.contains(onlineFactionId) && onlineAlliedFactions.contains(factionId))
+				final List<String> onlineRelatedFactions = this.getFactionRelationIDs(online, relation);
+				if (relatedFactions.contains(onlineFactionId) && onlineRelatedFactions.contains(factionId))
 					recipients.add(online);
 			}
 
@@ -3454,28 +3454,28 @@ final class FactionsMassive extends FactionsHook {
 	}
 
 	@Override
-	List<String> getFactionAllianceIDs(Player player) {
-		final List<String> alliances = new ArrayList<>();
+	List<String> getFactionRelationIDs(Player player, String relation) {
+		final List<String> relations = new ArrayList<>();
 
 		final MPlayer mPlayer = MPlayer.get(player.getUniqueId());
 		if (mPlayer == null)
-			return alliances;
+			return relations;
 
 		final Faction faction = mPlayer.getFaction();
 		if (faction == null)
-			return alliances;
+			return relations;
 
 		final Map<String, Rel> relationWishes = faction.getRelationWishes();
 		if (relationWishes == null)
-			return alliances;
+			return relations;
 
 		for (final Map.Entry<String, Rel> entry : relationWishes.entrySet()) {
 			final String factionName = entry.getKey();
-			final Rel relation = entry.getValue();
-			if (factionName != null && relation != null && relation.equals(Rel.ALLY))
-				alliances.add(factionName);
+			final Rel factionRelation = entry.getValue();
+			if (factionName != null && factionRelation != null && factionRelation.name().equalsIgnoreCase(relation))
+				relations.add(factionName);
 		}
-		return alliances;
+		return relations;
 	}
 }
 
@@ -3556,13 +3556,13 @@ final class FactionsUUID extends FactionsHook {
 	}
 
 	@Override
-	List<String> getFactionAllianceIDs(Player player) {
-		final List<String> alliances = new ArrayList<>();
+	List<String> getFactionRelationIDs(Player player, String relation) {
+		final List<String> relationList = new ArrayList<>();
 
 		try {
 			final Object factionsInstance = this.factionsInstance();
 			if (factionsInstance == null) {
-				return alliances;
+				return relationList;
 			}
 
 			// Get player's faction
@@ -3576,7 +3576,7 @@ final class FactionsUUID extends FactionsHook {
 					: null;
 
 			if (faction == null) {
-				return alliances;
+				return relationList;
 			}
 
 			// Get relations map
@@ -3589,23 +3589,23 @@ final class FactionsUUID extends FactionsHook {
 				final Object relationsObject = relationWishField.get(faction);
 
 				if (!(relationsObject instanceof Map<?, ?>)) {
-					return alliances;
+					return relationList;
 				}
 
 				// Process alliances
 				final Map<?, ?> relations = (Map<?, ?>) relationsObject;
 				for (final Map.Entry<?, ?> entry : relations.entrySet()) {
-					if (!"ALLY".equalsIgnoreCase(entry.getValue().toString())) {
+					if (!relation.equalsIgnoreCase(entry.getValue().toString())) {
 						continue;
 					}
 
-					alliances.add(entry.getKey().toString());
+					relationList.add(entry.getKey().toString());
 				}
 			} finally {
 				relationWishField.setAccessible(false);
 			}
 
-			return alliances;
+			return relationList;
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 			return null;
