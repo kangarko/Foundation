@@ -1599,6 +1599,7 @@ public final class HookManager {
 	 * Return the players in the player's faction ally list, or empty if there are none.
 	 *
 	 * @param player the player's faction to check.
+	 * @param relation 
 	 * @return
 	 */
 	public static Collection<? extends Player> getRelatedFactionPlayers(final Player player, String relation) {
