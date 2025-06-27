@@ -1380,23 +1380,6 @@ public final class HookManager {
 	}
 
 	/**
-	 * Checks if the given player has the given permission. This is
-	 * safe to use for instances where the player may be a temporary
-	 * player from ProtocolLib, where then we use Vault to check the
-	 * player's permission.
-	 *
-	 * @param player the player to check.
-	 * @param perm   the permission to check.
-	 * @return
-	 */
-	public static boolean hasProtocolLibPermission(final Player player, final String perm) {
-		if (isProtocolLibLoaded() && protocolLibHook.isTemporaryPlayer(player))
-			return hasVaultPermission(player, perm);
-
-		return player.hasPermission(perm);
-	}
-
-	/**
 	 * Checks if the given player name has a certain permission using Vault,
 	 * throwing an error if Vault is not present.
 	 *
