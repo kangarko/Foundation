@@ -6,28 +6,26 @@ import java.util.Map;
 
 public interface NBTProxy {
 
-    final Map<Class<?>, NBTHandler<Object>> handlers = new HashMap<>();
+	Map<Class<?>, NBTHandler<Object>> handlers = new HashMap<>();
 
-    public default void init() {
+	default void init() {
 
-    }
-    
-    public default Casing getCasing() {
-        return Casing.PascalCase;
-    }
+	}
 
-    
-    public default <T> NBTHandler<T> getHandler(Class<T> clazz) {
-        return (NBTHandler<T>) handlers.get(clazz);
-    }
+	default Casing getCasing() {
+		return Casing.PascalCase;
+	}
 
-    public default Collection<NBTHandler<Object>> getHandlers() {
-        return handlers.values();
-    }
+	default <T> NBTHandler<T> getHandler(Class<T> clazz) {
+		return (NBTHandler<T>) handlers.get(clazz);
+	}
 
-    
-    public default <T> void registerHandler(Class<T> clazz, NBTHandler<T> handler) {
-        handlers.put(clazz, (NBTHandler<Object>) handler);
-    }
+	default Collection<NBTHandler<Object>> getHandlers() {
+		return handlers.values();
+	}
+
+	default <T> void registerHandler(Class<T> clazz, NBTHandler<T> handler) {
+		handlers.put(clazz, (NBTHandler<Object>) handler);
+	}
 
 }

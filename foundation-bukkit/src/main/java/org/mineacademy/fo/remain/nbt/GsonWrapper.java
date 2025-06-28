@@ -11,7 +11,6 @@ import com.google.gson.Gson;
  * @author tr7zw
  *
  */
-@Deprecated
 final class GsonWrapper {
 
 	/**
@@ -25,7 +24,7 @@ final class GsonWrapper {
 
 	/**
 	 * Turns Objects into Json Strings
-	 * 
+	 *
 	 * @param obj
 	 * @return Json, representing the Object
 	 */
@@ -39,7 +38,7 @@ final class GsonWrapper {
 
 	/**
 	 * Creates an Object of the given type using the Json String
-	 * 
+	 *
 	 * @param json
 	 * @param type
 	 * @return Object that got created, or null if the json is null

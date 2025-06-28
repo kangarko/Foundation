@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 @Retention(RUNTIME)
 @Target(METHOD)
-@interface NBTTarget {
+public @interface NBTTarget {
 	public String value();
 
 	public Type type() default Type.AUTOMATIC;

@@ -2,7 +2,6 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 
@@ -14,7 +13,6 @@ import org.bukkit.Bukkit;
  * @author tr7zw
  *
  */
-
 enum MinecraftVersion {
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
@@ -44,24 +42,19 @@ enum MinecraftVersion {
 	MC1_21_R1(1211, true),
 	MC1_21_R2(1212, true),
 	MC1_21_R3(1213, true),
-	MC1_21_R4(1214, true);
+	MC1_21_R4(1214, true),
+	MC1_21_R5(1215, true);
 
 	private static MinecraftVersion version;
+
 	private static Boolean isForgePresent;
+	private static Boolean isNeoForgePresent;
+	private static Boolean isFabricPresent;
 	private static Boolean isFoliaPresent;
-
-	/**
-	 * Logger used by the api
-	 */
-	private static Logger logger = Logger.getLogger("NBTAPI");
-
-	// NBT-API Version
-	protected static final String VERSION = "2.14.2-SNAPSHOT";
 
 	private final int versionId;
 	private final boolean mojangMapping;
 
-	// TODO: not nice
 	@SuppressWarnings("serial")
 	private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
 		{
@@ -78,6 +71,7 @@ enum MinecraftVersion {
 			this.put("1.21.3", MC1_21_R2);
 			this.put("1.21.4", MC1_21_R3);
 			this.put("1.21.5", MC1_21_R4);
+			this.put("1.21.6", MC1_21_R5);
 		}
 	};
 
@@ -164,8 +158,23 @@ enum MinecraftVersion {
 		return version;
 	}
 
-	public static String getNBTAPIVersion() {
-		return VERSION;
+	/**
+	 * @return True, if Fabric is present
+	 */
+	public static boolean isFabricPresent() {
+		if (isFabricPresent != null)
+			return isFabricPresent;
+
+		try {
+			Class.forName("net.fabricmc.api.ModInitializer");
+
+			isFabricPresent = true;
+
+		} catch (final Exception ex) {
+			isFabricPresent = false;
+		}
+
+		return isFabricPresent;
 	}
 
 	/**
@@ -191,6 +200,23 @@ enum MinecraftVersion {
 	}
 
 	/**
+	 * @return True, if NeoForge is present
+	 */
+	public static boolean isNeoForgePresent() {
+		if (isNeoForgePresent != null)
+			return isNeoForgePresent;
+
+		try {
+			Class.forName("net.neoforged.neoforge.common.NeoForge");
+			isNeoForgePresent = true;
+		} catch (final Exception ex) {
+			isNeoForgePresent = false;
+		}
+
+		return isNeoForgePresent;
+	}
+
+	/**
 	 * @return True, if Folia is present
 	 */
 	public static boolean isFoliaPresent() {
@@ -199,31 +225,10 @@ enum MinecraftVersion {
 
 		try {
 			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
-
 			isFoliaPresent = true;
 		} catch (final Exception ex) {
 			isFoliaPresent = false;
 		}
-
 		return isFoliaPresent;
 	}
-
-	/**
-	 * @return Logger used by the NBT-API
-	 */
-	public static Logger getLogger() {
-		return logger;
-	}
-
-	/**
-	 * Replaces the NBT-API logger with a custom implementation.
-	 *
-	 * @param logger The new logger(can not be null!)
-	 */
-	public static void replaceLogger(Logger logger) {
-		if (logger == null)
-			throw new NullPointerException("Logger can not be null!");
-		MinecraftVersion.logger = logger;
-	}
-
 }

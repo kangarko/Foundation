@@ -13,12 +13,11 @@ final class NBTJsonUtil {
 
 	/**
 	 * 1.20.3-1.21.4 only. Used to convert items into Json, used in Chat Hover Components.
-	 * 
+	 *
 	 * @param itemStack
 	 * @return
 	 * @throws NbtApiException
 	 */
-	
 	public static JsonElement itemStackToJson(ItemStack itemStack) {
 		try {
 			final Codec<Object> itemStackCodec = (Codec<Object>) ClassWrapper.NMS_ITEMSTACK.getClazz()
