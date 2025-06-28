@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.lang.reflect.Constructor;
 
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * This Enum wraps Constructors for NMS classes
@@ -10,8 +10,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
-public enum ObjectCreator {
+enum ObjectCreator {
 	NMS_NBTTAGCOMPOUND(null, null, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_CUSTOMDATA(MinecraftVersion.MC1_20_R4, null, ClassWrapper.NMS_CUSTOMDATA.getClazz(), ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_BLOCKPOSITION(null, null, ClassWrapper.NMS_BLOCKPOSITION.getClazz(), int.class, int.class, int.class),
@@ -22,9 +21,7 @@ public enum ObjectCreator {
 	private Class<?> targetClass;
 
 	ObjectCreator(MinecraftVersion from, MinecraftVersion to, Class<?> clazz, Class<?>... args) {
-		if (clazz == null)
-			return;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId())
+		if ((clazz == null) || (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()))
 			return;
 		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
@@ -33,13 +30,13 @@ public enum ObjectCreator {
 			construct = clazz.getDeclaredConstructor(args);
 			construct.setAccessible(true);
 		} catch (final Exception ex) {
-			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
+			CommonCore.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
 	}
 
 	/**
 	 * Creates an Object instance with given args
-	 * 
+	 *
 	 * @param args
 	 * @return Object created
 	 */

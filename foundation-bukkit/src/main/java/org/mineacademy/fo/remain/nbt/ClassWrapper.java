@@ -1,7 +1,7 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * Wraps NMS and CRAFT classes
@@ -9,7 +9,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-public enum ClassWrapper {
+enum ClassWrapper {
 	CRAFT_ITEMSTACK(PackageWrapper.CRAFTBUKKIT, "inventory.CraftItemStack", null, null),
 	CRAFT_METAITEM(PackageWrapper.CRAFTBUKKIT, "inventory.CraftMetaItem", null, null),
 	CRAFT_ENTITY(PackageWrapper.CRAFTBUKKIT, "entity.CraftEntity", null, null),
@@ -80,23 +80,32 @@ public enum ClassWrapper {
 			"net.minecraft.util.datafix.fixes", "net.minecraft.util.datafix.fixes.References"),
 	NMS_NBTOPS(PackageWrapper.NMS, "DynamicOpsNBT", MinecraftVersion.MC1_20_R4, null,
 			"net.minecraft.nbt", "net.minecraft.nbt.NbtOps"),
+	NMS_PROBLEM_REPORTER(PackageWrapper.NMS, "ProblemReporter", MinecraftVersion.MC1_21_R5, null,
+			"net.minecraft.util", "net.minecraft.util.ProblemReporter"),
+	NMS_TAG_VALUE_INPUT(PackageWrapper.NMS, "TagValueInput", MinecraftVersion.MC1_21_R5, null,
+			"net.minecraft.world.level.storage", "net.minecraft.world.level.storage.TagValueInput"),
+	NMS_VALUE_INPUT(PackageWrapper.NMS, "ValueInput", MinecraftVersion.MC1_21_R5, null,
+			"net.minecraft.world.level.storage", "net.minecraft.world.level.storage.ValueInput"),
+	NMS_TAG_VALUE_OUTPUT(PackageWrapper.NMS, "TagValueOutput", MinecraftVersion.MC1_21_R5, null,
+			"net.minecraft.world.level.storage", "net.minecraft.world.level.storage.TagValueOutput"),
+	NMS_VALUE_OUTPUT(PackageWrapper.NMS, "ValueOutput", MinecraftVersion.MC1_21_R5, null,
+			"net.minecraft.world.level.storage", "net.minecraft.world.level.storage.ValueOutput"),
+	NMS_DYNAMICOPS(PackageWrapper.NONE, "DynamicOps", MinecraftVersion.MC1_21_R5, null,
+			"com.mojang.serialization", "com.mojang.serialization.DynamicOps"),
 	GAMEPROFILE(PackageWrapper.NONE, "com.mojang.authlib.GameProfile", MinecraftVersion.MC1_8_R3, null);
 
 	private Class<?> clazz;
 	private boolean enabled = false;
 	private final String mojangName;
 
-	ClassWrapper(final PackageWrapper packageId, final String clazzName, final MinecraftVersion from, final MinecraftVersion to) {
+	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to) {
 		this(packageId, clazzName, from, to, null, null);
 	}
 
-	ClassWrapper(final PackageWrapper packageId, String clazzName, final MinecraftVersion from, final MinecraftVersion to,
-			final String mojangMap, final String mojangName) {
+	ClassWrapper(PackageWrapper packageId, String clazzName, MinecraftVersion from, MinecraftVersion to,
+			String mojangMap, String mojangName) {
 		this.mojangName = mojangName;
-		if (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) {
-			return;
-		}
-		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId()) {
+		if ((from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()) || (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())) {
 			return;
 		}
 		enabled = true;
@@ -126,7 +135,7 @@ public enum ClassWrapper {
 				clazz = Class.forName(packageId.getUri() + "." + version + "." + clazzName);
 			}
 		} catch (final Throwable ex) {
-			Common.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
+			CommonCore.error(ex, "[NBTAPI] Error while trying to resolve the class '" + clazzName + "'!");
 		}
 	}
 

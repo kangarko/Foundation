@@ -2,7 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.function.UnaryOperator;
 
-enum Casing {
+public enum Casing {
 	camelCase(s -> {
 		if (s.length() < 2) {
 			return s.toLowerCase();
@@ -30,7 +30,7 @@ enum Casing {
 		return Character.toUpperCase(s.charAt(0)) + s.substring(1);
 	}), lowercase(String::toLowerCase), UPPERCASE(String::toUpperCase);
 
-	private final UnaryOperator<String> convert;
+	private UnaryOperator<String> convert;
 
 	Casing(UnaryOperator<String> function) {
 		this.convert = function;

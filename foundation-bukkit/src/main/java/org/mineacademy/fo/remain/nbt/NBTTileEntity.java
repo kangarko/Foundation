@@ -2,8 +2,6 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ValidCore;
 
 /**
  * NBT class to access vanilla tags from TileEntities. TileEntities don't
@@ -98,8 +96,7 @@ public class NBTTileEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		ValidCore.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "Calling NBTTileEntity.getPersistentDataContainer() on a tile requires MC 1.14!");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_14_R1);
 		if (hasTag("PublicBukkitValues")) {
 			return getCompound("PublicBukkitValues");
 		} else {

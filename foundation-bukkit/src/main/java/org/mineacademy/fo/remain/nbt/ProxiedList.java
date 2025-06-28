@@ -4,7 +4,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-final class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
+class ProxiedList<E extends NBTProxy> implements ProxyList<E> {
 
 	private final ReadWriteNBTCompoundList nbt;
 	private final Class<E> proxy;

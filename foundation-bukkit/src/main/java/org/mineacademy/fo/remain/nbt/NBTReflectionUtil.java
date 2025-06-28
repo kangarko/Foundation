@@ -18,6 +18,10 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.mineacademy.fo.CommonCore;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 
 /**
  * Utility class for translating NBTApi calls to reflections into NMS code All
@@ -33,6 +37,10 @@ public class NBTReflectionUtil {
 	private static Field field_handle = null;
 	private static Object type_custom_data = null;
 	private static Object registry_access = null;
+	public static Codec<Object> itemstack_codec = null;
+	public static DynamicOps<Object> nbtOps = null;
+	public static DynamicOps<Object> nbtRegistryOps = null;
+	public static Object problemReporter = null;
 
 	static {
 		try {
@@ -49,15 +57,20 @@ public class NBTReflectionUtil {
 		}
 		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 			try {
-				final Field typeField = ClassWrapper.NMS_DATACOMPONENTS.getClazz().getDeclaredField(
-						MojangToMapping.getMapping().get("net.minecraft.core.component.DataComponents#CUSTOM_DATA"));
+				final Field typeField = ReflectionUtil.getMappedField(ClassWrapper.NMS_DATACOMPONENTS.getClazz(), "net.minecraft.core.component.DataComponents#CUSTOM_DATA");
 				type_custom_data = typeField.get(null);
-			} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-
+			} catch (final Exception e) {
+				CommonCore.error(e, "Unable to find DataComponents#CUSTOM_DATA, NBTApi will not be able to read/write custom data on 1.20+");
 			}
 			try {
 				final Object nmsServer = ReflectionMethod.NMSSERVER_GETSERVER.run(Bukkit.getServer());
 				registry_access = ReflectionMethod.NMSSERVER_GETREGISTRYACCESS.run(nmsServer);
+				itemstack_codec = (Codec<Object>) ReflectionUtil.getMappedField(ClassWrapper.NMS_ITEMSTACK.getClazz(), "net.minecraft.world.item.ItemStack#CODEC").get(null);
+				nbtOps = (DynamicOps<Object>) ReflectionUtil.getMappedField(ClassWrapper.NMS_NBTOPS.getClazz(), "net.minecraft.nbt.NbtOps#INSTANCE").get(null);
+				if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+					nbtRegistryOps = (DynamicOps<Object>) ReflectionMethod.GET_SERIALIZATION_CONTEXT.run(registry_access, nbtOps);
+					problemReporter = ReflectionUtil.getMappedField(ClassWrapper.NMS_PROBLEM_REPORTER.getClazz(), "net.minecraft.util.ProblemReporter#DISCARDING").get(null);
+				}
 			} catch (final Exception e) {
 				e.printStackTrace();
 			}
@@ -73,7 +86,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Gets the NMS Entity for a given Bukkit Entity
-	 * 
+	 *
 	 * @param entity Bukkit Entity
 	 * @return NMS Entity
 	 */
@@ -87,7 +100,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Reads in a InputStream as NMS Compound
-	 * 
+	 *
 	 * @param stream InputStream of any NBT file
 	 * @return NMS Compound
 	 */
@@ -110,7 +123,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Writes a NMS Compound to an OutputStream
-	 * 
+	 *
 	 * @param nbt    NMS Compound
 	 * @param stream Stream to write to
 	 * @return ???
@@ -126,7 +139,7 @@ public class NBTReflectionUtil {
 	/**
 	 * Gets the nms handle ItemStack from a CraftItemStack. Passing Spigot
 	 * ItemStacks will cause an error!
-	 * 
+	 *
 	 * @param item
 	 * @return
 	 */
@@ -140,7 +153,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Writes a Compound to an OutputStream
-	 * 
+	 *
 	 * @param comp   Compound
 	 * @param stream Stream to write to
 	 */
@@ -159,7 +172,7 @@ public class NBTReflectionUtil {
 	/**
 	 * Simulates getOrCreateTag. If an Item doesn't yet have a Tag, it will return a
 	 * new empty tag.
-	 * 
+	 *
 	 * @param nmsitem
 	 * @return NMS Compound
 	 */
@@ -182,14 +195,14 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Set the Compound as the Items NBT or CustomData
-	 * 
+	 *
 	 * @param nmsItem
 	 * @param compound
 	 */
 	public static void setItemStackCompound(Object nmsItem, Object compound) {
 		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 			if (compound == null) {
-				ReflectionMethod.NMSITEM_SET.run(nmsItem, new Object[] { type_custom_data, null });
+				ReflectionMethod.NMSITEM_SET.run(nmsItem, type_custom_data, null);
 			} else {
 				ReflectionMethod.NMSITEM_SET.run(nmsItem, type_custom_data,
 						ObjectCreator.NMS_CUSTOMDATA.getInstance(compound));
@@ -201,13 +214,14 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Converts {@link NBTCompound} to NMS ItemStacks
-	 * 
+	 *
 	 * @param nbtcompound Any valid {@link NBTCompound}
 	 * @return NMS ItemStack
 	 */
 	public static Object convertNBTCompoundtoNMSItem(NBTCompound nbtcompound) {
+		Object nmsComp = null;
 		try {
-			Object nmsComp = getToCompount(nbtcompound.getCompound(), nbtcompound);
+			nmsComp = getToCompount(nbtcompound.getCompound(), nbtcompound);
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 				if (nbtcompound.hasTag("DataVersion", NBTType.NBTTagInt)) {
 					final int dataVersion = nbtcompound.getInteger("DataVersion");
@@ -218,7 +232,9 @@ public class NBTReflectionUtil {
 				} else if (nbtcompound.hasTag("tag") || nbtcompound.hasTag("Count")) {
 					nmsComp = DataFixerUtil.fixUpRawItemData(nmsComp, DataFixerUtil.VERSION1_20_4, DataFixerUtil.getCurrentVersion());
 				}
-				if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4)) {
+				if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+					return CodecHelper.convertNbtToItemStack(nmsComp);
+				} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4)) {
 					final Optional<Object> opt = (Optional<Object>) ReflectionMethod.NMSITEM_LOAD_MODERN.run(null,
 							registry_access, nmsComp);
 					return opt.orElse(null);
@@ -231,20 +247,22 @@ public class NBTReflectionUtil {
 				return ReflectionMethod.NMSITEM_CREATESTACK.run(null, nmsComp);
 			}
 		} catch (final Exception e) {
-			throw new NbtApiException("Exception while converting NBTCompound to NMS ItemStack!", e);
+			throw new NbtApiException("Exception while converting NBTCompound to NMS ItemStack! " + nmsComp, e);
 		}
 	}
 
 	/**
 	 * Converts NMS ItemStacks to {@link NBTContainer}
-	 * 
+	 *
 	 * @param nmsitem NMS ItemStack
 	 * @return {@link NBTContainer} with all the data
 	 */
 	public static NBTContainer convertNMSItemtoNBTCompound(Object nmsitem) {
 		try {
 			NBTContainer container;
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+				container = new NBTContainer(CodecHelper.convertItemStackToNbt(nmsitem));
+			} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 				container = new NBTContainer(ReflectionMethod.NMSITEM_SAVE_MODERN.run(nmsitem, registry_access));
 			} else {
 				final Object answer = ReflectionMethod.NMSITEM_SAVE.run(nmsitem,
@@ -278,14 +296,23 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Gets the Vanilla NBT Compound from a given NMS Entity
-	 * 
+	 *
 	 * @param nmsEntity
 	 * @return NMS NBT Compound
 	 */
 	public static Object getEntityNBTTagCompound(Object nmsEntity) {
 		try {
 			final Object nbt = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
-			Object answer = ReflectionMethod.NMS_ENTITY_GET_NBT.run(nmsEntity, nbt);
+			Object answer;
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+				final Object output = ReflectionMethod.NMS_GET_TAG_VALUE_OUTPUT.run(null, problemReporter, registry_access);
+
+				ReflectionMethod.NMS_ENTITY_GET_NBT_1216.run(nmsEntity, output);
+
+				answer = ReflectionMethod.NMS_TAG_VALUE_OUTPUT_TO_TAG_COMPOUND.run(output);
+			} else {
+				answer = ReflectionMethod.NMS_ENTITY_GET_NBT.run(nmsEntity, nbt);
+			}
 			if (answer == null)
 				answer = nbt;
 			return answer;
@@ -296,14 +323,21 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Loads all Vanilla tags from a NMS Compound into a NMS Entity
-	 * 
+	 *
 	 * @param nbtTag
 	 * @param nmsEntity
 	 * @return The NMS Entity
 	 */
 	public static Object setEntityNBTTag(Object nbtTag, Object nmsEntity) {
 		try {
-			ReflectionMethod.NMS_ENTITY_SET_NBT.run(nmsEntity, nbtTag);
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+				final Object valueInputTag = ReflectionMethod.NMS_GET_TAG_VALUE_INPUT.run(null, problemReporter, registry_access, nbtTag);
+
+				ReflectionMethod.NMS_ENTITY_SET_NBT_1216.run(nmsEntity, valueInputTag);
+			} else {
+				ReflectionMethod.NMS_ENTITY_SET_NBT.run(nmsEntity, nbtTag);
+			}
+
 			return nmsEntity;
 		} catch (final Exception ex) {
 			throw new NbtApiException("Exception while setting the NBTCompound of an Entity", ex);
@@ -312,7 +346,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Gets the NMS Compound from a given TileEntity
-	 * 
+	 *
 	 * @param tile
 	 * @return NMS Compound with the Vanilla data
 	 */
@@ -335,7 +369,13 @@ public class NBTReflectionUtil {
 			}
 
 			Object answer = null;
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+				final Object output = ReflectionMethod.NMS_GET_TAG_VALUE_OUTPUT.run(null, problemReporter, registry_access);
+
+				ReflectionMethod.TILEENTITY_GET_NBT_1216.run(o, output);
+
+				answer = ReflectionMethod.NMS_TAG_VALUE_OUTPUT_TO_TAG_COMPOUND.run(output);
+			} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 				answer = ReflectionMethod.TILEENTITY_GET_NBT_1205.run(o, registry_access);
 			} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1)) {
 				answer = ReflectionMethod.TILEENTITY_GET_NBT_1181.run(o);
@@ -354,7 +394,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Sets Vanilla tags from a NMS Compound to a TileEntity
-	 * 
+	 *
 	 * @param tile
 	 * @param comp
 	 */
@@ -370,7 +410,11 @@ public class NBTReflectionUtil {
 				final Object pos = ObjectCreator.NMS_BLOCKPOSITION.getInstance(tile.getX(), tile.getY(), tile.getZ());
 				o = ReflectionMethod.NMS_WORLD_GET_TILEENTITY.run(nmsworld, pos);
 			}
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+				final Object valueInput = ReflectionMethod.NMS_GET_TAG_VALUE_INPUT.run(null, problemReporter, registry_access, comp);
+
+				ReflectionMethod.TILEENTITY_SET_NBT_1216.run(o, valueInput);
+			} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 				ReflectionMethod.TILEENTITY_SET_NBT_1205.run(o, comp, registry_access);
 			} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1)) {
 				ReflectionMethod.TILEENTITY_SET_NBT.run(o, comp);
@@ -387,7 +431,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Gets the subCompound with a given name from a NMS Compound
-	 * 
+	 *
 	 * @param compound
 	 * @param name
 	 * @return NMS Compound or null
@@ -410,7 +454,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Creates a subCompound with a given name in the given NMS Compound
-	 * 
+	 *
 	 * @param comp
 	 * @param name
 	 */
@@ -438,7 +482,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Checks if the Compound is correctly linked to it's roots
-	 * 
+	 *
 	 * @param comp
 	 * @return true if this is a valid Compound, else false
 	 */
@@ -479,7 +523,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Merges the second {@link NBTCompound} into the first one
-	 * 
+	 *
 	 * @param comp           Target for the merge
 	 * @param nbtcompoundSrc Data to merge
 	 */
@@ -505,7 +549,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Sets a key in a {@link NBTCompound} to a given value
-	 * 
+	 *
 	 * @param comp
 	 * @param key
 	 * @param val
@@ -533,7 +577,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Returns the List saved with a given key.
-	 * 
+	 *
 	 * @param comp
 	 * @param key
 	 * @param type
@@ -594,10 +638,7 @@ public class NBTReflectionUtil {
 				if (nbt instanceof Optional) {
 					nbt = ((Optional<?>) nbt).orElse(null);
 				}
-				if (nbt == null) {
-					return NBTType.NBTTagEnd;
-				}
-				if (new NBTStringList(comp, key, NBTType.NBTTagString, nbt).isEmpty()) {
+				if ((nbt == null) || new NBTStringList(comp, key, NBTType.NBTTagString, nbt).isEmpty()) {
 					return NBTType.NBTTagEnd;
 				}
 				Object compound = ReflectionMethod.LIST_GET.run(nbt, 0);
@@ -639,7 +680,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Uses Gson to set a {@link Serializable} value in a Compound
-	 * 
+	 *
 	 * @param comp
 	 * @param key
 	 * @param value
@@ -647,8 +688,8 @@ public class NBTReflectionUtil {
 	public static void setObject(NBTCompound comp, String key, Object value) {
 		try {
 			final String json = GsonWrapper.getString(value);
-			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
 
+			setData(comp, ReflectionMethod.COMPOUND_SET_STRING, key, json);
 		} catch (final Exception e) {
 			throw new NbtApiException("Exception while setting the Object '" + value + "'!", e);
 		}
@@ -656,7 +697,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Uses Gson to load back a {@link Serializable} object from the Compound
-	 * 
+	 *
 	 * @param comp
 	 * @param key
 	 * @param type
@@ -664,24 +705,22 @@ public class NBTReflectionUtil {
 	 */
 	public static <T> T getObject(NBTCompound comp, String key, Class<T> type) {
 		final String json = (String) getData(comp, ReflectionMethod.COMPOUND_GET_STRING, key);
-		if (json == null) {
+
+		if (json == null)
 			return null;
-		}
+
 		return GsonWrapper.deserializeJson(json, type);
 	}
 
 	/**
 	 * Deletes the given key
-	 * 
+	 *
 	 * @param comp
 	 * @param key
 	 */
 	public static void remove(NBTCompound comp, String key) {
 		final Object rootnbttag = comp.getCompound();
-		if (rootnbttag == null) {
-			return;
-		}
-		if (!validCompound(comp))
+		if ((rootnbttag == null) || !validCompound(comp))
 			return;
 		final Object workingtag = getToCompount(rootnbttag, comp);
 		ReflectionMethod.COMPOUND_REMOVE_KEY.run(workingtag, key);
@@ -690,7 +729,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Gets the Keyset inside this Compound
-	 * 
+	 *
 	 * @param comp
 	 * @return Set of all keys
 	 */
@@ -705,7 +744,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Sets data inside the Compound
-	 * 
+	 *
 	 * @param comp
 	 * @param type
 	 * @param key
@@ -731,7 +770,7 @@ public class NBTReflectionUtil {
 
 	/**
 	 * Gets data from the Compound
-	 * 
+	 *
 	 * @param comp
 	 * @param type
 	 * @param key
