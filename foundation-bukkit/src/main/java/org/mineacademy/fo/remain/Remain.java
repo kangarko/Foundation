@@ -185,7 +185,7 @@ public final class Remain {
 	/**
 	 * Fields related to sending interactive chat components on legacy MC
 	 */
-	private static Class<?> chatSerializer;
+	private static Method fromJSONToNMSComponentmethod;
 	private static Constructor<?> chatPacketConstructor;
 	private static Object enumTitle;
 	private static Object enumSubtitle;
@@ -427,7 +427,31 @@ public final class Remain {
 			hasPlayerOpenSignMethod = false;
 		}
 
-		chatSerializer = Remain.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer", "net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
+		if (MinecraftVersion.olderThan(V.v1_17)) {
+			final Class<?> chatSerializer = Remain.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer");
+
+			fromJSONToNMSComponentmethod = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
+
+		} else {
+			try {
+				final Class<?> chatSerializer = Class.forName("net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
+
+				fromJSONToNMSComponentmethod = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
+
+			} catch (final ClassNotFoundException e) {
+				try {
+					final Class<?> craftChatMessage = Class.forName("org.bukkit.craftbukkit.util.CraftChatMessage");
+
+					fromJSONToNMSComponentmethod = craftChatMessage.getMethod("fromJSON", String.class);
+
+				} catch (final ReflectiveOperationException ex) {
+					CommonCore.error(ex,
+							"Failed to find CraftChatMessage.fromJSON() or ",
+							"IChatBaseComponent$ChatSerializer class. ",
+							"Alert Foundation authors to update!");
+				}
+			}
+		}
 
 		if (MinecraftVersion.olderThan(V.v1_13))
 			try {
@@ -802,10 +826,9 @@ public final class Remain {
 	 * @return
 	 */
 	public static Object convertJsonToIChatBase(final String json) {
-		ValidCore.checkNotNull(chatSerializer, "Cannot convert JSON to IChatBaseComponent, missing chatSerializer class. Json: " + json);
-		final Method fromJson = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
+		ValidCore.checkNotNull(fromJSONToNMSComponentmethod, "Cannot convert JSON to NMS Component - missing methods to do so (see earlier log). Json: " + json);
 
-		return ReflectionUtil.invoke(fromJson, null, json);
+		return ReflectionUtil.invokeStatic(fromJSONToNMSComponentmethod, json);
 	}
 
 	/**
@@ -1471,7 +1494,7 @@ public final class Remain {
 	 */
 	public static boolean isInvisible(final Entity entity) {
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
-			return ((LivingEntity) entity).isInvisible();
+			return entity.isInvisible();
 
 		final Object nmsEntity = getHandleEntity(entity);
 		return (boolean) ReflectionUtil.invoke("isInvisible", nmsEntity);
