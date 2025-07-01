@@ -1754,7 +1754,12 @@ public enum CompMaterial {
 	RED_HARNESS,
 	WHITE_HARNESS,
 	YELLOW_HARNESS,
-	DRIED_GHAST;
+	DRIED_GHAST,
+
+	// 1.21.7 new names:
+	MUSIC_DISC_LAVA_CHICKEN
+
+	;
 
 	/**
 	 * Cached array of {@link CompMaterial#values()} to avoid allocating memory for
