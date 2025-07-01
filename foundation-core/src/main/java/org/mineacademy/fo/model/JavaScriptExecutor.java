@@ -44,7 +44,8 @@ public final class JavaScriptExecutor {
 
 	// Load the engine
 	static {
-		Thread.currentThread().setContextClassLoader(Platform.getPlugin().getPluginClassLoader());
+		// Commented out, no longer needed (?) and causes java.util.NoSuchElementException: No value present on Paper on modern Minecraft versions
+		//Thread.currentThread().setContextClassLoader(Platform.getPlugin().getPluginClassLoader());
 
 		ScriptEngineManager engineManager = new ScriptEngineManager();
 		ScriptEngine scriptEngine = null;
