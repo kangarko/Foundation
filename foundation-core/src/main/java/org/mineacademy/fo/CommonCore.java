@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
 import org.mineacademy.fo.SerializeUtilCore.Language;
 import org.mineacademy.fo.database.Row;
@@ -32,6 +33,7 @@ import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
+import org.mineacademy.fo.collection.ExpiringMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -71,12 +73,12 @@ public abstract class CommonCore {
 	 *
 	 * This cache holds the last times when we sent that message.
 	 */
-	private static final Map<String, Long> TIMED_TELL_CACHE = new LinkedHashMap<>();
+	private static final Map<String, Long> TIMED_TELL_CACHE = ExpiringMap.builder().expiration(61, TimeUnit.MINUTES).build();
 
 	/**
 	 * See {@link #TIMED_TELL_CACHE}, but this is for sending messages to the console.
 	 */
-	private static final Map<String, Long> TIMED_LOG_CACHE = new LinkedHashMap<>();
+	private static final Map<String, Long> TIMED_LOG_CACHE = ExpiringMap.builder().expiration(61, TimeUnit.MINUTES).build();
 
 	/**
 	 * Holds a way to convert objects into their string representation, for example
