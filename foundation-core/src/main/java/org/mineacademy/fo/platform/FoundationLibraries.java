@@ -24,18 +24,18 @@ final class FoundationLibraries {
 			plugin.loadLibrary("com.google.code.gson", "gson", "2.13.0");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience"))
-			plugin.loadLibrary("net.kyori", "adventure-api", "4.21.0");
+			plugin.loadLibrary("net.kyori", "adventure-api", "4.23.0");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer"))
-			plugin.loadLibrary("net.kyori", "adventure-text-serializer-plain", "4.21.0");
+			plugin.loadLibrary("net.kyori", "adventure-text-serializer-plain", "4.23.0");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer"))
-			plugin.loadLibrary("net.kyori", "adventure-text-serializer-legacy", "4.21.0");
+			plugin.loadLibrary("net.kyori", "adventure-text-serializer-legacy", "4.23.0");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer"))
-			plugin.loadLibrary("net.kyori", "adventure-text-serializer-gson", "4.21.0");
+			plugin.loadLibrary("net.kyori", "adventure-text-serializer-gson", "4.23.0");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer"))
-			plugin.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.3.4");
+			plugin.loadLibrary("net.kyori", "adventure-text-serializer-bungeecord", "4.4.0");
 	}
 }
