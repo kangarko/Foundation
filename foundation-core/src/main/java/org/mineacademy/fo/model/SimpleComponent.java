@@ -996,7 +996,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		try {
 			// Correct MiniMessage potentially dangerous behavior where multiple backslashes will
 			// make the variable parse so we slash it to one.
-			message = message.replaceAll("(\\\\){2,}(?=<)", "\\\\");
+			message = message.replaceAll("(\\\\){2,}(?=<[^/])", "\\\\"); // New RegExp normalizes backslashes before opening tags only
 
 			// See resetColors() below for explainer
 			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>").replace("\\n", "\n"));
