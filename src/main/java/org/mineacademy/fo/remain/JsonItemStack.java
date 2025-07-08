@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
@@ -33,6 +34,7 @@ import org.bukkit.potion.PotionType;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.exception.FoException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -59,7 +61,7 @@ public class JsonItemStack {
 	 *
 	 * @return The JSON string
 	 */
-	public static String toJson(@Nullable ItemStack itemStack) {
+	public static String toJson(@Nullable final ItemStack itemStack) {
 		return Common.GSON.toJson(toJsonObject(itemStack));
 	}
 
@@ -69,10 +71,17 @@ public class JsonItemStack {
 	 * @param item
 	 * @return
 	 */
-	public static JsonObject toJsonObject(@Nullable ItemStack item) {
-
-		if (item == null)
+	public static JsonObject toJsonObject(@Nullable final ItemStack item) {
+		if (item == null || CompMaterial.isAir(item))
 			return null;
+
+		// First, try native Paper approach = supports custom components
+		try {
+			return Bukkit.getUnsafe().serializeItemAsJson(item);
+
+		} catch (final NoSuchMethodError | IllegalStateException err) {
+			// Unsupported, use our own method
+		}
 
 		final JsonObject json = new JsonObject();
 
@@ -206,17 +215,21 @@ public class JsonItemStack {
 
 					if (potionDataClass != null) {
 						final Object potionData = ReflectionUtil.invoke("getBasePotionData", pmeta);
-						final PotionType type = ReflectionUtil.invoke("getType", potionData);
-						final boolean isExtended = ReflectionUtil.invoke("isExtended", potionData);
-						final boolean isUpgraded = ReflectionUtil.invoke("isUpgraded", potionData);
-						final String effectName = type.getEffectType().getName();
 
-						final JsonObject baseEffect = new JsonObject();
+						if (potionData != null) {
+							final PotionType type = ReflectionUtil.invoke("getType", potionData);
+							final boolean isExtended = ReflectionUtil.invoke("isExtended", potionData);
+							final boolean isUpgraded = ReflectionUtil.invoke("isUpgraded", potionData);
 
-						baseEffect.addProperty("type", effectName);
-						baseEffect.addProperty("isExtended", isExtended);
-						baseEffect.addProperty("isUpgraded", isUpgraded);
-						extraMeta.add("base-effect", baseEffect);
+							if (type != null) {
+								final JsonObject baseEffect = new JsonObject();
+
+								baseEffect.addProperty("type", type.name());
+								baseEffect.addProperty("isExtended", isExtended);
+								baseEffect.addProperty("isUpgraded", isUpgraded);
+								extraMeta.add("base-effect", baseEffect);
+							}
+						}
 					}
 				}
 
@@ -312,6 +325,13 @@ public class JsonItemStack {
 			}
 
 			try {
+				if (meta.hasCustomModelData())
+					metaJson.addProperty("custom-model-data", meta.getCustomModelData());
+			} catch (final Throwable t) {
+				// Bug in API
+			}
+
+			try {
 				if (meta instanceof BannerMeta) {
 					final BannerMeta bannerMeta = (BannerMeta) meta;
 					final JsonObject extraMeta = new JsonObject();
@@ -330,10 +350,17 @@ public class JsonItemStack {
 
 					if (bannerMeta.numberOfPatterns() > 0) {
 						final JsonArray patterns = new JsonArray();
+
 						bannerMeta.getPatterns()
 								.stream()
-								.map(pattern -> ReflectionUtil.getEnumName(pattern.getColor()) + ":" + pattern.getPattern().getIdentifier())
+								.map(pattern -> {
+									final String color = ReflectionUtil.getEnumName(pattern.getColor());
+									final String identifier = ReflectionUtil.invoke("getIdentifier", pattern.getPattern());
+
+									return color + ":" + identifier;
+								})
 								.forEach(str -> patterns.add(new JsonPrimitive(str)));
+
 						extraMeta.add("patterns", patterns);
 					}
 
@@ -356,11 +383,20 @@ public class JsonItemStack {
 	 *
 	 * @return The {@link ItemStack} or null if not succeed
 	 */
-	public static ItemStack fromJson(@Nullable String string) {
+	public static ItemStack fromJson(@Nullable final String string) {
 		if (string == null || string.isEmpty() || "{}".equals(string) || "null".equals(string))
 			return null;
 
 		final JsonObject itemJson = Common.GSON.fromJson(string, JsonObject.class);
+
+		if (itemJson.has("id"))
+			try {
+				return Bukkit.getUnsafe().deserializeItemFromJson(itemJson);
+
+			} catch (final NoSuchMethodError err) {
+				throw new FoException(err, "Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
+						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson);
+			}
 
 		Valid.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
 
@@ -435,12 +471,16 @@ public class JsonItemStack {
 
 		final JsonObject extraJson = metaJson.has("extra-meta") ? metaJson.get("extra-meta").getAsJsonObject() : null;
 
-		if (extraJson != null)
+		if (extraJson != null) {
 			if (meta instanceof SkullMeta) {
-				final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
+				try {
+					final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
 
-				if (owner != null)
-					((SkullMeta) meta).setOwner(owner);
+					if (owner != null)
+						((SkullMeta) meta).setOwner(owner);
+				} catch (final UnsupportedOperationException ex) {
+					// Silence
+				}
 
 			} else if (meta instanceof BannerMeta) {
 				final BannerMeta bmeta = (BannerMeta) meta;
@@ -477,7 +517,8 @@ public class JsonItemStack {
 									.filter(dyeColor -> ReflectionUtil.getEnumName(dyeColor).equalsIgnoreCase(splitPattern[0]))
 									.findFirst();
 
-							final PatternType patternType = PatternType.getByIdentifier(splitPattern[1]);
+							final Method getByIdentifier = ReflectionUtil.getMethod(PatternType.class, "getByIdentifier", String.class);
+							final PatternType patternType = ReflectionUtil.invokeStatic(getByIdentifier, splitPattern[1]);
 
 							if (color.isPresent() && patternType != null)
 								bukkitPatterns.add(new Pattern(color.get(), patternType));
@@ -554,7 +595,7 @@ public class JsonItemStack {
 
 						try {
 							final String[] splitPotions = effect.split(":");
-							final PotionEffectType potionType = PotionEffectType.getByName(splitPotions[0]);
+							final PotionEffectType potionType = CompPotionEffectType.getByName(splitPotions[0]);
 							final int amplifier = Integer.parseInt(splitPotions[1]);
 							final int duration = Integer.parseInt(splitPotions[2]) * 20;
 
@@ -566,23 +607,26 @@ public class JsonItemStack {
 					}
 				else {
 					final JsonObject basePotion = extraJson.has("base-effect") ? extraJson.get("base-effect").getAsJsonObject() : null;
-					final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnum(PotionType.class, basePotion.get("type").getAsString()) : null;
-					final boolean isExtended = basePotion.has("isExtended") ? basePotion.get("isExtended").getAsBoolean() : false;
-					final boolean isUpgraded = basePotion.has("isUpgraded") ? basePotion.get("isUpgraded").getAsBoolean() : false;
 
-					Class<?> potionDataClass = null;
+					if (basePotion != null) {
+						final PotionType potionType = basePotion.has("type") ? ReflectionUtil.lookupEnumSilent(PotionType.class, basePotion.get("type").getAsString()) : null;
+						final boolean isExtended = basePotion.has("isExtended") ? basePotion.get("isExtended").getAsBoolean() : false;
+						final boolean isUpgraded = basePotion.has("isUpgraded") ? basePotion.get("isUpgraded").getAsBoolean() : false;
 
-					try {
-						potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
-					} catch (final Exception e) {
-					}
+						Class<?> potionDataClass = null;
 
-					if (potionDataClass != null) {
-						final Constructor<?> potionConst = ReflectionUtil.getConstructor(potionDataClass, PotionType.class, boolean.class, boolean.class);
-						final Object potionData = ReflectionUtil.instantiate(potionConst, potionType, isExtended, isUpgraded);
-						final Method setBasePotionData = ReflectionUtil.getMethod(pmeta.getClass(), "setBasePotionData", potionDataClass);
+						try {
+							potionDataClass = ReflectionUtil.lookupClass("org.bukkit.potion.PotionData");
+						} catch (final Exception e) {
+						}
 
-						ReflectionUtil.invoke(setBasePotionData, pmeta, potionData);
+						if (potionDataClass != null && potionType != null) {
+							final Constructor<?> potionConst = ReflectionUtil.getConstructor(potionDataClass, PotionType.class, boolean.class, boolean.class);
+							final Object potionData = ReflectionUtil.instantiate(potionConst, potionType, isExtended, isUpgraded);
+							final Method setBasePotionData = ReflectionUtil.getMethod(pmeta.getClass(), "setBasePotionData", potionDataClass);
+
+							ReflectionUtil.invoke(setBasePotionData, pmeta, potionData);
+						}
 					}
 				}
 
@@ -595,7 +639,7 @@ public class JsonItemStack {
 
 				if (effectTypeName != null) {
 					final FireworkEffectMeta femeta = (FireworkEffectMeta) meta;
-					final FireworkEffect.Type effectType = ReflectionUtil.lookupEnum(FireworkEffect.Type.class, effectTypeName);
+					final FireworkEffect.Type effectType = ReflectionUtil.lookupEnumSilent(FireworkEffect.Type.class, effectTypeName);
 
 					if (effectType != null) {
 						final List<Color> colors = new ArrayList<>();
@@ -647,8 +691,7 @@ public class JsonItemStack {
 						final JsonArray fadeColorsElement = jsonObject.has("fade-colors") ? jsonObject.get("fade-colors").getAsJsonArray() : null;
 
 						if (effectTypeElement != null) {
-
-							final FireworkEffect.Type effectType = ReflectionUtil.lookupEnum(FireworkEffect.Type.class, effectTypeElement);
+							final FireworkEffect.Type effectType = ReflectionUtil.lookupEnumSilent(FireworkEffect.Type.class, effectTypeElement);
 
 							if (effectType != null) {
 								final List<Color> colors = new ArrayList<>();
@@ -688,6 +731,14 @@ public class JsonItemStack {
 				if (scaling != null)
 					mmeta.setScaling(scaling);
 			}
+
+			if (extraJson.has("custom-model-data"))
+				try {
+					meta.setCustomModelData(extraJson.get("custom-model-data").getAsInt());
+				} catch (final Throwable t) {
+					// Bug in API
+				}
+		}
 
 		item.setItemMeta(meta);
 
