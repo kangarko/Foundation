@@ -2338,6 +2338,53 @@ public enum CompMaterial {
 		return name.contains("TRAP_DOOR") || name.contains("TRAPDOOR");
 	}
 
+
+
+	/**
+	 * Returns true if the given material is a helmet or can function as a helmet.
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static boolean isHelmet(final Material mat) {
+		final String name = mat.toString();
+		return name.endsWith("_HELMET") ||
+				isSkull(mat) ||
+				nameEquals(mat, MinecraftVersion.atLeast(V.v1_13) ? "CARVED_PUMPKIN" : "PUMPKIN");
+
+	}
+
+	/**
+	 * Returns true if the given material is a chestplate or can function as a chestplate.
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static boolean isChestplate(final Material mat) {
+		final String name = mat.toString();
+		return name.endsWith("_CHESTPLATE") || nameEquals(mat, "ELYTRA");
+	}
+
+	/**
+	 * Returns true if the given material is a leggings or can function as a leggings.
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static boolean isLeggings(final Material mat) {
+		return mat.toString().endsWith("_LEGGINGS");
+	}
+
+	/**
+	 * Returns true if the given material is a boots or can function as a boots.
+	 *
+	 * @param mat
+	 * @return
+	 */
+	public static boolean isBoots(final Material mat) {
+		return mat.toString().endsWith("_BOOTS");
+	}
+
 	// Utility method for evaluating matches.
 	private static boolean nameContains(final Material mat, final String... names) {
 		final String matName = mat.toString();
