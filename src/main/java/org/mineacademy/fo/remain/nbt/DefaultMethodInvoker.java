@@ -7,14 +7,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-final class DefaultMethodInvoker {
+class DefaultMethodInvoker {
 
 	private static Method invokeDefaultMethod;
 
 	static {
 		try {
 			invokeDefaultMethod = InvocationHandler.class.getDeclaredMethod("invokeDefault",
-					new Class[] { Object.class, Method.class, Object[].class });
+					Object.class, Method.class, Object[].class);
 			invokeDefaultMethod.setAccessible(true);
 		} catch (NoSuchMethodException | SecurityException e) {
 			// we are in java 8, use the fallback
@@ -30,7 +30,7 @@ final class DefaultMethodInvoker {
 	 * @param args
 	 * @return
 	 */
-	public static Object invokeDefault(Class<?> srcInt, Object target, Method method, Object[] args) {
+	public static Object invokeDefault(final Class<?> srcInt, final Object target, final Method method, final Object[] args) {
 		if (invokeDefaultMethod != null)
 			try {
 				return invokeDefaultMethod.invoke(null, target, method, args);

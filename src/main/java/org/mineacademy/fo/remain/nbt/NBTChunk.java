@@ -1,14 +1,12 @@
 package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Chunk;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
 
 public class NBTChunk {
 
 	private final Chunk chunk;
 
-	public NBTChunk(Chunk chunk) {
+	public NBTChunk(final Chunk chunk) {
 		this.chunk = chunk;
 	}
 
@@ -19,8 +17,7 @@ public class NBTChunk {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "Calling NBTChunk.getPersistentDataContainer() on a chunk requires MC 1.16!");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R3);
 		return new NBTPersistentDataContainer(this.chunk.getPersistentDataContainer());
 	}
 

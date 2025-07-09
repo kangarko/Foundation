@@ -13,8 +13,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.bukkit.inventory.ItemStack;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.remain.nbt.PathUtil.PathSegment;
 
 /**
@@ -456,8 +454,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public void setLongArray(final String key, final long[] value) {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "Calling NBTCompound.setLongArray() on a compound requires MC 1.16!");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R1);
 		try {
 			this.writeLock.lock();
 			NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_LONGARRAY, key, value);
@@ -477,8 +474,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 */
 	@Override
 	public long[] getLongArray(final String key) {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_16), "Calling NBTCompound.getLongArray() on a compound requires MC 1.16!");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_16_R1);
 		try {
 			this.readLock.lock();
 			return (long[]) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_LONGARRAY, key);
@@ -646,7 +642,7 @@ public class NBTCompound implements ReadWriteNBT {
 		try {
 			this.writeLock.lock();
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4))
-				this.setIntArray(key, NBTUUIDList.uuidToIntArray(value));
+				this.setIntArray(key, UUIDUtil.uuidToIntArray(value));
 			else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1))
 				NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_UUID, key, value);
 			else
@@ -669,7 +665,7 @@ public class NBTCompound implements ReadWriteNBT {
 			this.readLock.lock();
 			final NBTType type = this.getType(key);
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4) && type == NBTType.NBTTagIntArray)
-				return NBTUUIDList.uuidFromIntArray(this.getIntArray(key));
+				return UUIDUtil.uuidFromIntArray(this.getIntArray(key));
 			else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1)
 					&& type == NBTType.NBTTagIntArray)
 				return (UUID) NBTReflectionUtil.getData(this, ReflectionMethod.COMPOUND_GET_UUID, key);
@@ -1012,7 +1008,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @return Stored value or null
 	 */
 	@Override
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> T getOrNull(final String key, final Class<?> type) {
 		if (type == null)
 			throw new NullPointerException("Default type in getOrNull can't be null!");
@@ -1053,7 +1049,6 @@ public class NBTCompound implements ReadWriteNBT {
 	public <T> T resolveOrNull(final String key, final Class<?> type) {
 		final List<PathSegment> keys = PathUtil.splitPath(key);
 		NBTCompound tag = this;
-
 		for (int i = 0; i < keys.size() - 1; i++) {
 			final PathSegment segment = keys.get(i);
 			if (!segment.hasIndex()) {
@@ -1211,7 +1206,7 @@ public class NBTCompound implements ReadWriteNBT {
 	public ReadWriteNBT resolveCompound(final String key) {
 		final List<PathSegment> keys = PathUtil.splitPath(key);
 		NBTCompound tag = this;
-		for (final PathSegment segment : keys)
+		for (final PathSegment segment : keys) {
 			if (!segment.hasIndex()) {
 				tag = tag.getCompound(segment.getPath());
 				if (tag == null)
@@ -1224,6 +1219,7 @@ public class NBTCompound implements ReadWriteNBT {
 				else
 					tag = list.get(list.size() + segment.getIndex());
 			}
+		}
 		return tag;
 	}
 
@@ -1231,7 +1227,7 @@ public class NBTCompound implements ReadWriteNBT {
 	public ReadWriteNBT resolveOrCreateCompound(final String key) {
 		final List<PathSegment> keys = PathUtil.splitPath(key);
 		NBTCompound tag = this;
-		for (final PathSegment segment : keys)
+		for (final PathSegment segment : keys) {
 			if (!segment.hasIndex()) {
 				tag = tag.getOrCreateCompound(segment.getPath());
 				if (tag == null)
@@ -1244,6 +1240,7 @@ public class NBTCompound implements ReadWriteNBT {
 				else
 					tag = list.get(list.size() + segment.getIndex());
 			}
+		}
 		return tag;
 	}
 
@@ -1416,6 +1413,93 @@ public class NBTCompound implements ReadWriteNBT {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public NBTCompound extractDifference(final ReadableNBT other) {
+		if (this == other)
+			return new NBTContainer();
+
+		if (other instanceof NBTCompound)
+			return saveDiff(new NBTContainer(), this, (NBTCompound) other);
+		else
+			throw new NbtApiException("Unknown NBT object: " + other);
+	}
+
+	private static NBTCompound saveDiff(final NBTCompound saveTo, final NBTCompound compA, final NBTCompound compB) {
+		for (final String key : compA.getKeys())
+			saveDiff(saveTo, compA, compB, key);
+		return saveTo;
+	}
+
+	private static void saveDiff(final NBTCompound saveTo, final NBTCompound compA, final NBTCompound compB, final String key) {
+		final boolean typeMismatch = compA.getType(key) != compB.getType(key);
+		switch (compA.getType(key)) {
+			case NBTTagByte:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setByte(key, compA.getByte(key));
+				return;
+			case NBTTagByteArray:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setByteArray(key, compA.getByteArray(key));
+				return;
+			case NBTTagCompound: {
+				final NBTCompound tmp1 = compA.getCompound(key);
+				if (tmp1 == null)
+					return;
+				if (typeMismatch)
+					saveTo.addCompound(key).mergeCompound(tmp1);
+				else {
+					final NBTCompound tmp2 = compB.getCompound(key);
+					if (tmp2 == null) {
+						saveTo.addCompound(key).mergeCompound(tmp1);
+						return;
+					}
+					final NBTCompound tmpDiff = tmp1.extractDifference(tmp2);
+					if (!tmpDiff.getKeys().isEmpty())
+						saveTo.addCompound(key).mergeCompound(tmpDiff);
+				}
+				return;
+			}
+			case NBTTagDouble:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setDouble(key, compA.getDouble(key));
+				return;
+			case NBTTagEnd:
+				return; // ??
+			case NBTTagFloat:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setFloat(key, compA.getFloat(key));
+				return;
+			case NBTTagInt:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setInteger(key, compA.getInteger(key));
+				return;
+			case NBTTagIntArray:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setIntArray(key, compA.getIntArray(key));
+				return;
+			case NBTTagList:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.set(key, NBTReflectionUtil.getEntry(compA, key));
+				return;
+			case NBTTagLong:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setLong(key, compA.getLong(key));
+				return;
+			case NBTTagShort:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setShort(key, compA.getShort(key));
+				return;
+			case NBTTagString:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setString(key, compA.getString(key));
+				return;
+			case NBTTagLongArray:
+				if (typeMismatch || !isEqual(compA, compB, key))
+					saveTo.setLongArray(key, compA.getLongArray(key));
+				return;
+		}
 	}
 
 	private static boolean isEqual(final NBTCompound compA, final NBTCompound compB, final String key) {

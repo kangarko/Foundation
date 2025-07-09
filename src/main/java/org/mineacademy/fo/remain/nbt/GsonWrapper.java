@@ -11,7 +11,6 @@ import com.google.gson.Gson;
  * @author tr7zw
  *
  */
-@Deprecated
 final class GsonWrapper {
 
 	/**
@@ -29,11 +28,11 @@ final class GsonWrapper {
 	 * @param obj
 	 * @return Json, representing the Object
 	 */
-	public static String getString(Object obj) {
+	public static String getString(final Object obj) {
 		return gson.toJson(obj);
 	}
 
-	public static void overwriteGsonInstance(Gson replacement) {
+	public static void overwriteGsonInstance(final Gson replacement) {
 		gson = replacement;
 	}
 
@@ -44,7 +43,7 @@ final class GsonWrapper {
 	 * @param type
 	 * @return Object that got created, or null if the json is null
 	 */
-	public static <T> T deserializeJson(String json, Class<T> type) {
+	public static <T> T deserializeJson(final String json, final Class<T> type) {
 		try {
 			if (json == null)
 				return null;

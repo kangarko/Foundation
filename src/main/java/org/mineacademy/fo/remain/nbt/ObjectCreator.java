@@ -10,8 +10,7 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
-public enum ObjectCreator {
+enum ObjectCreator {
 	NMS_NBTTAGCOMPOUND(null, null, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_CUSTOMDATA(MinecraftVersion.MC1_20_R4, null, ClassWrapper.NMS_CUSTOMDATA.getClazz(), ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz()),
 	NMS_BLOCKPOSITION(null, null, ClassWrapper.NMS_BLOCKPOSITION.getClazz(), int.class, int.class, int.class),
@@ -21,7 +20,7 @@ public enum ObjectCreator {
 	private Constructor<?> construct;
 	private Class<?> targetClass;
 
-	ObjectCreator(MinecraftVersion from, MinecraftVersion to, Class<?> clazz, Class<?>... args) {
+	ObjectCreator(final MinecraftVersion from, final MinecraftVersion to, final Class<?> clazz, final Class<?>... args) {
 		if ((clazz == null) || (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()))
 			return;
 		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
@@ -41,7 +40,7 @@ public enum ObjectCreator {
 	 * @param args
 	 * @return Object created
 	 */
-	public Object getInstance(Object... args) {
+	public Object getInstance(final Object... args) {
 		try {
 			return this.construct.newInstance(args);
 		} catch (final Exception ex) {

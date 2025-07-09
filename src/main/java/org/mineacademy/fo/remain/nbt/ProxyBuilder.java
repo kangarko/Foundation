@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import org.mineacademy.fo.remain.nbt.NBTTarget.Type;
 
-public final class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
+public class ProxyBuilder<T extends NBTProxy> implements InvocationHandler {
 
 	private static final Map<Method, Function<Arguments, Object>> METHOD_CACHE = new ConcurrentHashMap<>();
 
