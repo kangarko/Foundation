@@ -209,7 +209,22 @@ public enum CompAttribute {
 	/**
 	 * Movement speed through water.
 	 */
-	WATER_MOVEMENT_EFFICIENCY("WATER_MOVEMENT_EFFICIENCY", "GENERIC_WATER_MOVEMENT_EFFICIENCY");
+	WATER_MOVEMENT_EFFICIENCY("WATER_MOVEMENT_EFFICIENCY", "GENERIC_WATER_MOVEMENT_EFFICIENCY"),
+
+	/**
+	 * The camera distance of a player to their own entity.
+	 */
+	CAMERA_DISTANCE("CAMERA_DISTANCE"),
+
+	/**
+	 * Attribute controlling the range an entity transmits itself as a waypoint.
+	 */
+	WAYPOINT_TRANSMIT_RANGE("WAYPOINT_TRANSMIT_RANGE"),
+
+	/**
+	 * Attribute controlling the range an entity receives other waypoints from.
+	 */
+	WAYPOINT_RECEIVE_RANGE("WAYPOINT_RECEIVE_RANGE");
 
 	/**
 	 * Returns true if the attribute is supported by the server.
