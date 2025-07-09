@@ -2,8 +2,6 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
-import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
 
 /**
  * NBT class to access vanilla tags from TileEntities. TileEntities don't
@@ -25,7 +23,7 @@ public class NBTTileEntity extends NBTCompound {
 	 * @param tile     BlockState from any TileEntity
 	 * @param readonly Readonly makes a copy at init, only reading from that copy
 	 */
-	protected NBTTileEntity(BlockState tile, boolean readonly) {
+	protected NBTTileEntity(final BlockState tile, final boolean readonly) {
 		super(null, null);
 		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced()))
 			throw new NullPointerException("Tile can't be null/not placed!");
@@ -43,7 +41,7 @@ public class NBTTileEntity extends NBTCompound {
 	 * @param tile BlockState from any TileEntity
 	 */
 	@Deprecated
-	public NBTTileEntity(BlockState tile) {
+	public NBTTileEntity(final BlockState tile) {
 		super(null, null);
 		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced()))
 			throw new NullPointerException("Tile can't be null/not placed!");
@@ -78,7 +76,7 @@ public class NBTTileEntity extends NBTCompound {
 	}
 
 	@Override
-	protected void setCompound(Object compound) {
+	protected void setCompound(final Object compound) {
 		if (this.readonly)
 			throw new NbtApiException("Tried setting data in read only mode!");
 		if (!Bukkit.isPrimaryThread())
@@ -93,8 +91,7 @@ public class NBTTileEntity extends NBTCompound {
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		Valid.checkBoolean(org.mineacademy.fo.MinecraftVersion.atLeast(V.v1_14), "Calling NBTTileEntity.getPersistentDataContainer() on a tile requires MC 1.14!");
-
+		CheckUtil.assertAvailable(MinecraftVersion.MC1_14_R1);
 		if (this.hasTag("PublicBukkitValues"))
 			return this.getCompound("PublicBukkitValues");
 		else {

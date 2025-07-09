@@ -23,23 +23,20 @@ final class DataFixerUtil {
 	public static final int VERSION1_21 = 3953;
 	public static final int VERSION1_21_2 = 4080;
 	public static final int VERSION1_21_3 = 4189;
-	public static final int VERSION1_21_5 = 4323;
+	public static final int VERSION1_21_4 = 4323;
+	public static final int VERSION1_21_5 = 4435;
 
-
-	public static Object fixUpRawItemData(Object nbt, int fromVersion, int toVersion)
+	public static Object fixUpRawItemData(final Object nbt, final int fromVersion, final int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		final DataFixer dataFixer = (DataFixer) ReflectionMethod.GET_DATAFIXER.run(null);
-		final TypeReference itemStackReference = (TypeReference) ClassWrapper.NMS_REFERENCES.getClazz()
-				.getField(MojangToMapping.getMapping().get("net.minecraft.util.datafix.fixes.References#ITEM_STACK"))
-				.get(null);
-		final DynamicOps<Object> nbtOps = (DynamicOps<Object>) ClassWrapper.NMS_NBTOPS.getClazz()
-				.getField(MojangToMapping.getMapping().get("net.minecraft.nbt.NbtOps#INSTANCE")).get(null);
+		final TypeReference itemStackReference = (TypeReference) ReflectionUtil.getMappedField(ClassWrapper.NMS_REFERENCES.getClazz(), "net.minecraft.util.datafix.fixes.References#ITEM_STACK").get(null);
+		final DynamicOps<Object> nbtOps = (DynamicOps<Object>) ReflectionUtil.getMappedField(ClassWrapper.NMS_NBTOPS.getClazz(), "net.minecraft.nbt.NbtOps#INSTANCE").get(null);
 		final Dynamic<Object> fixed = dataFixer.update(itemStackReference, new Dynamic<>(nbtOps, nbt), fromVersion,
 				toVersion);
 		return fixed.getValue();
 	}
 
-	public static ReadWriteNBT fixUpItemData(ReadWriteNBT nbt, int fromVersion, int toVersion)
+	public static ReadWriteNBT fixUpItemData(final ReadWriteNBT nbt, final int fromVersion, final int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		return NBT.wrapNMSTag(fixUpRawItemData(
 				NBTReflectionUtil.getToCompount(((NBTCompound) nbt).getCompound(), ((NBTCompound) nbt)), fromVersion,
@@ -56,8 +53,10 @@ final class DataFixerUtil {
 	 * @return
 	 */
 	public static int getCurrentVersion() {
-		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4))
+		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5))
 			return VERSION1_21_5;
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4))
+			return VERSION1_21_4;
 		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R3))
 			return VERSION1_21_3;
 		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R2))

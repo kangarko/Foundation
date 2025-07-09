@@ -14,17 +14,17 @@ public class NBTUUIDList extends NBTList<UUID> {
 
 	private final NBTContainer tmpContainer;
 
-	protected NBTUUIDList(NBTCompound owner, String name, NBTType type, Object list) {
+	protected NBTUUIDList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
 		super(owner, name, type, list);
 		this.tmpContainer = new NBTContainer();
 	}
 
 	@Override
-	protected Object asTag(UUID object) {
+	protected Object asTag(final UUID object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGINTARRAY.getClazz().getDeclaredConstructor(int[].class);
 			con.setAccessible(true);
-			return con.newInstance(uuidToIntArray(object));
+			return con.newInstance(UUIDUtil.uuidToIntArray(object));
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
 			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
@@ -32,13 +32,13 @@ public class NBTUUIDList extends NBTList<UUID> {
 	}
 
 	@Override
-	public UUID get(int index) {
+	public UUID get(final int index) {
 		try {
 			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			ReflectionMethod.COMPOUND_SET.run(this.tmpContainer.getCompound(), "tmp", obj);
 			final int[] val = this.tmpContainer.getIntArray("tmp");
 			this.tmpContainer.removeKey("tmp");
-			return uuidFromIntArray(val);
+			return UUIDUtil.uuidFromIntArray(val);
 		} catch (final NumberFormatException nf) {
 			return null;
 		} catch (final Exception ex) {
@@ -46,18 +46,4 @@ public class NBTUUIDList extends NBTList<UUID> {
 		}
 	}
 
-	public static UUID uuidFromIntArray(int[] is) {
-		return new UUID((long) is[0] << 32 | is[1] & 4294967295L,
-				(long) is[2] << 32 | is[3] & 4294967295L);
-	}
-
-	public static int[] uuidToIntArray(UUID uUID) {
-		final long l = uUID.getMostSignificantBits();
-		final long m = uUID.getLeastSignificantBits();
-		return leastMostToIntArray(l, m);
-	}
-
-	private static int[] leastMostToIntArray(long l, long m) {
-		return new int[] { (int) (l >> 32), (int) l, (int) (m >> 32), (int) m };
-	}
 }

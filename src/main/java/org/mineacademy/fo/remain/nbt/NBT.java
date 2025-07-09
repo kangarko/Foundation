@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.Common;
 
 /**
  * General utility class for a clean and simple nbt access.
@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
+
 public class NBT {
 
 	private NBT() {
@@ -38,26 +39,20 @@ public class NBT {
 	public static boolean preloadApi() {
 		try {
 			// boiled down version of the plugin selfcheck without tests
-			if (MinecraftVersion.getVersion() == MinecraftVersion.UNKNOWN) {
-				NbtApiException.confirmedBroken = true;
+			if (MinecraftVersion.getVersion() == MinecraftVersion.UNKNOWN)
 				return false;
-			}
 			for (final ClassWrapper c : ClassWrapper.values())
-				if (c.isEnabled() && c.getClazz() == null) {
-					NbtApiException.confirmedBroken = true;
+				if (c.isEnabled() && c.getClazz() == null)
 					return false;
-				}
 			for (final ReflectionMethod method : ReflectionMethod.values())
-				if (method.isCompatible() && !method.isLoaded()) {
-					NbtApiException.confirmedBroken = true;
+				if (method.isCompatible() && !method.isLoaded())
 					return false;
-				}
-			// not settings NbtApiException.confirmedBroken = false, as no actual tests were done.
-			// This just means the version was found, and all reflections seem to work.
+
 			return true;
+
 		} catch (final Exception ex) {
-			NbtApiException.confirmedBroken = true;
-			MinecraftVersion.getLogger().log(Level.WARNING, "[NBTAPI] Error during the selfcheck!", ex);
+			Common.error(ex, "[NBTAPI] Error during the selfcheck!");
+
 			return false;
 		}
 	}
