@@ -536,7 +536,7 @@ final class BukkitPlatform extends FoundationPlatform {
 
 	@Override
 	protected void dispatchConsoleCommand0(final String command) {
-		if (Bukkit.isPrimaryThread())
+		if (Bukkit.isPrimaryThread() && !Remain.isFolia())
 			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
 		else
 			Platform.runTask(0, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
