@@ -196,7 +196,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/**
 	 * Makes the text appear underlined.
 	 */
-	public static final CompChatColor UNDERLINE = new CompChatColor('n', "underline");
+	public static final CompChatColor UNDERLINE = new CompChatColor('n', "underlined");
 
 	/**
 	 * Makes the text italic.
