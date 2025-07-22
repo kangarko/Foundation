@@ -274,9 +274,9 @@ public final class JavaScriptExecutor {
 				ValidCore.checkNotNull(key, "Key can't be null in javascript placeholders for code " + javascript + ": " + placeholders.keySet());
 
 				final Object value = placeholder.getValue();
-				ValidCore.checkNotNull(value, "Value can't be null in javascript placeholders for key " + key + ": " + placeholders.keySet());
 
-				engine.put(key, value);
+				if (value != null)
+					engine.put(key, value);
 			}
 
 			if (MinecraftVersion.hasVersion()) {
