@@ -440,15 +440,30 @@ public final class Remain {
 
 			} catch (final ClassNotFoundException e) {
 				try {
-					final Class<?> craftChatMessage = Class.forName("org.bukkit.craftbukkit.util.CraftChatMessage");
+					final Class<?> chatSerializer = Class.forName("net.minecraft.network.chat.Component$Serializer");
 
-					fromJSONToNMSComponentmethod = craftChatMessage.getMethod("fromJSON", String.class);
+					fromJSONToNMSComponentmethod = chatSerializer.getMethod("fromJson", String.class);
 
-				} catch (final ReflectiveOperationException ex) {
-					CommonCore.error(ex,
-							"Failed to find CraftChatMessage.fromJSON() or ",
-							"IChatBaseComponent$ChatSerializer class. ",
-							"Alert Foundation authors to update!");
+				} catch(Exception e1) {
+					try {
+						final Class<?> chatSerializer = Class.forName("org.bukkit.craftbukkit." + getNmsVersion() + ".util.CraftChatMessage");
+
+						fromJSONToNMSComponentmethod = chatSerializer.getMethod("fromJSON", String.class);
+
+					} catch(Exception e2) {
+						try {
+							final Class<?> craftChatMessage = Class.forName("org.bukkit.craftbukkit.util.CraftChatMessage");
+
+							fromJSONToNMSComponentmethod = craftChatMessage.getMethod("fromJSON", String.class);
+
+						} catch (final ReflectiveOperationException ex) {
+							CommonCore.error(ex,
+									"Failed to find CraftChatMessage.fromJSON() or ",
+									"Component$Serializer or ",
+									"IChatBaseComponent$ChatSerializer class. ",
+									"Alert Foundation authors to update!");
+						}
+					}
 				}
 			}
 		}
