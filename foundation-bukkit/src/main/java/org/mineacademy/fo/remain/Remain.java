@@ -444,13 +444,13 @@ public final class Remain {
 
 					fromJSONToNMSComponentmethod = chatSerializer.getMethod("fromJson", String.class);
 
-				} catch(Exception e1) {
+				} catch (final Exception e1) {
 					try {
 						final Class<?> chatSerializer = Class.forName("org.bukkit.craftbukkit." + getNmsVersion() + ".util.CraftChatMessage");
 
 						fromJSONToNMSComponentmethod = chatSerializer.getMethod("fromJSON", String.class);
 
-					} catch(Exception e2) {
+					} catch (final Exception e2) {
 						try {
 							final Class<?> craftChatMessage = Class.forName("org.bukkit.craftbukkit.util.CraftChatMessage");
 
