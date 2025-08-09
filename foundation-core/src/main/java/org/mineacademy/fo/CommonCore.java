@@ -16,11 +16,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.concurrent.TimeUnit;
 
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.database.Row;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -33,7 +34,6 @@ import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
-import org.mineacademy.fo.collection.ExpiringMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -1745,6 +1745,19 @@ public abstract class CommonCore {
 				logCombinedError(throwable, outerElements);
 			}
 		};
+	}
+
+	/**
+	 * Run the given runnable immediately if the delay is 0, or schedule it to run after the given delay.
+	 *
+	 * @param delayTicks
+	 * @param runnable
+	 */
+	public static void runTaskOrNow(int delayTicks, @NonNull final Runnable runnable) {
+		if (delayTicks == 0)
+			runnable.run();
+		else
+			Platform.runTask(delayTicks, runnable);
 	}
 
 	/**
