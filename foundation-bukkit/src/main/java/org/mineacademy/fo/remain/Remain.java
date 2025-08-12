@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.google.gson.JsonElement;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
@@ -3569,7 +3570,11 @@ final class AdvancementAccessor {
 
 		final JsonObject display = new JsonObject();
 		display.add("icon", icon);
-		display.addProperty("title", this.message);
+
+		final SimpleComponent titleComponent = SimpleComponent.fromMiniAmpersand(this.message);
+		final JsonElement titleElement = CommonCore.GSON.fromJson(titleComponent.toAdventureJson(false), JsonElement.class);
+		display.add("title", titleElement);
+
 		display.addProperty("description", "");
 		display.addProperty("background", "minecraft:textures/gui/advancements/backgrounds/adventure.png");
 		display.addProperty("frame", this.toastStyle.getKey());
