@@ -320,7 +320,7 @@ public abstract class SimpleCommandCore {
 	@Deprecated
 	final boolean delegateExecute(final FoundationPlayer audience, final String label, final String[] args) {
 		if (!Platform.getPlugin().isPluginEnabled()) {
-			audience.sendMessage(Lang.component("command-cannot-use-while-plugin-disabled"));
+			audience.sendMessage(this.preprocessComponent(Lang.component("command-cannot-use-while-plugin-disabled")));
 
 			return true;
 		}
@@ -360,10 +360,10 @@ public abstract class SimpleCommandCore {
 
 						if (legacyUsage != null)
 							for (final String legacyLine : legacyUsage)
-								audience.sendMessage(SimpleComponent.fromMiniAmpersand(variables.replaceLegacy(this.colorizeUsage(legacyLine))));
+								audience.sendMessage(SimpleComponent.fromMiniAmpersand(variables.replaceLegacy(this.colorizeUsage(this.preprocessMessage(legacyLine)))));
 
 						else if (newUsage != null)
-							audience.sendMessage(variables.replaceComponent(this.colorizeUsage(newUsage)));
+							audience.sendMessage(this.preprocessComponent(variables.replaceComponent(this.colorizeUsage(newUsage))));
 
 						this.tellNoPrefix("<dark_gray>" + CommonCore.chatLineSmooth());
 					}
@@ -1016,6 +1016,8 @@ public abstract class SimpleCommandCore {
 						.placeholders(this.preparePlaceholders())
 						.replaceLegacy(this.tellPrefix != null && !"".equals(tellPrefix) ? this.tellPrefix + part : part);
 
+				part = this.preprocessMessage(part);
+
 				this.audience.sendMessage(SimpleComponent.fromMiniAmpersand(part));
 			}
 	}
@@ -1032,6 +1034,8 @@ public abstract class SimpleCommandCore {
 					.builder(this.audience)
 					.placeholders(this.preparePlaceholders())
 					.replaceComponent(this.tellPrefix != null && !"".equals(tellPrefix) ? SimpleComponent.fromMiniAmpersand(this.tellPrefix).append(component) : component);
+
+			component = this.preprocessComponent(component);
 
 			this.audience.sendMessage(component);
 		}
@@ -1057,7 +1061,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void tellSuccess(final SimpleComponent component) {
 		if (component != null)
-			Messenger.success(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
+			Messenger.success(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(this.preprocessComponent(component)));
 	}
 
 	/**
@@ -1082,7 +1086,7 @@ public abstract class SimpleCommandCore {
 	// PSA: Needs to be public because of shared interface
 	public final void tellInfo(final SimpleComponent component) {
 		if (component != null)
-			Messenger.info(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
+			Messenger.info(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(this.preprocessComponent(component)));
 	}
 
 	/**
@@ -1105,7 +1109,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void tellWarn(final SimpleComponent component) {
 		if (component != null)
-			Messenger.warn(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
+			Messenger.warn(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(this.preprocessComponent(component)));
 	}
 
 	/**
@@ -1128,7 +1132,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void tellError(final SimpleComponent component) {
 		if (component != null)
-			Messenger.error(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
+			Messenger.error(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(this.preprocessComponent(component)));
 	}
 
 	/**
@@ -1151,7 +1155,7 @@ public abstract class SimpleCommandCore {
 	 */
 	protected final void tellQuestion(final SimpleComponent component) {
 		if (component != null)
-			Messenger.question(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(component));
+			Messenger.question(this.audience, Variables.builder(this.audience).placeholders(this.preparePlaceholders()).replaceComponent(this.preprocessComponent(component)));
 	}
 
 	/**
@@ -1197,6 +1201,14 @@ public abstract class SimpleCommandCore {
 	// ----------------------------------------------------------------------
 	// Placeholder
 	// ----------------------------------------------------------------------
+
+	protected SimpleComponent preprocessComponent(SimpleComponent component) {
+		return component;
+	}
+
+	protected String preprocessMessage(String component) {
+		return component;
+	}
 
 	/**
 	 * Replaces placeholders in the message. By default, we replace
@@ -1300,7 +1312,7 @@ public abstract class SimpleCommandCore {
 			}
 
 		} catch (final Throwable t) {
-			this.audience.sendMessage(Lang.component("command-error-tab-complete"));
+			this.audience.sendMessage(this.preprocessComponent(Lang.component("command-error-tab-complete")));
 
 			CommonCore.error(t, "Error tab completing /" + label + " " + Arrays.asList(args));
 		}
