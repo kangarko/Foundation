@@ -179,8 +179,7 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 
 		if (!subsectionMessages.isEmpty()) {
 			messages.add(SimpleComponent
-					.fromMiniAmpersand("&7- ").append(messages.isEmpty() ? Lang.component("command-perms-main") : SimpleComponent.fromPlain(group.value()))
-					.onClickOpenUrl(""));
+					.fromMiniAmpersand("&7- ").append(messages.isEmpty() ? Lang.component("command-perms-main") : SimpleComponent.fromPlain(group.value())));
 
 			messages.addAll(subsectionMessages);
 		}
