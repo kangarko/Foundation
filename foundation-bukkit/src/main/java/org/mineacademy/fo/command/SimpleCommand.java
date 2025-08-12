@@ -6,6 +6,8 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.exception.CommandException;
+import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.settings.Lang;
 
 /**
@@ -81,5 +83,21 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 		this.checkBoolean(player != null && player.isOnline(), Lang.component("player-not-online", "player", name));
 
 		return player;
+	}
+
+	@Override
+	protected SimpleComponent preprocessComponent(SimpleComponent component) {
+		if (component != null && this.isPlayer())
+			component = HookManager.replaceFontImages(this.audience.getPlayer(), component);
+
+		return super.preprocessComponent(component);
+	}
+
+	@Override
+	protected String preprocessMessage(String component) {
+		if (component != null && this.isPlayer())
+			component = HookManager.replaceFontImagesLegacy(this.audience.getPlayer(), component);
+
+		return super.preprocessMessage(component);
 	}
 }
