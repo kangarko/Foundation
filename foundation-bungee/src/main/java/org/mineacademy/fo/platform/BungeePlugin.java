@@ -111,9 +111,9 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			FoundationLibraries.load(this);
 
 			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
-				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.23.0");
+				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.24.0");
 
-			this.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.4.0");
+			this.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.4.1");
 
 			BungeePlatform.inject();
 
