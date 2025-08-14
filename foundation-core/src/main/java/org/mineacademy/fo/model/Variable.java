@@ -194,7 +194,6 @@ public final class Variable extends YamlConfig {
 	 * Runs the script for the given player and the replacements,
 	 * returns the output
 	 *
-	 * @param audience
 	 * @param variables
 	 * @return
 	 */
@@ -366,7 +365,6 @@ public final class Variable extends YamlConfig {
 	 * Create the variable as legacy, no interactive nor receiver conditional components
 	 * are supported.
 	 *
-	 * @param audience
 	 * @param variables
 	 * @return
 	 */

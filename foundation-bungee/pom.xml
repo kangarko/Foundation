@@ -20,13 +20,13 @@
 		<dependency>
 			<groupId>net.md-5</groupId>
 			<artifactId>bungeecord-api</artifactId>
-			<version>1.21-R0.1-SNAPSHOT</version>
+			<version>1.21-R0.4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.kyori</groupId>
 			<artifactId>adventure-platform-bungeecord</artifactId>
-			<version>4.4.0</version>
+			<version>4.4.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
