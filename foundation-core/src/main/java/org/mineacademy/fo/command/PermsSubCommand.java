@@ -169,7 +169,6 @@ public final class PermsSubCommand extends SimpleSubCommandCore {
 			if (phrase == null || node.contains(phrase))
 				subsectionMessages.add(SimpleComponent
 						.fromMiniAmpersand("  " + (has ? "&a" : "&7") + node + (def ? " " + Lang.legacy("command-perms-true-by-default") : ""))
-						.onClickOpenUrl("")
 						.onClickSuggestCmd(node)
 						.onHover(Lang.component("command-perms-info",
 								"info", info,
