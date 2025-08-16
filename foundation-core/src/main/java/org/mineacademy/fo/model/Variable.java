@@ -299,7 +299,7 @@ public final class Variable extends YamlConfig {
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
 
-			SimpleComponent component = SimpleComponent.fromMiniAmpersand(value);
+			SimpleComponent component = SimpleComponent.fromMiniAmpersand(stripBlacklistedTags(value));
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
 				component = component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
@@ -489,6 +489,15 @@ public final class Variable extends YamlConfig {
 	 */
 	public static Set<String> getVariableKeyNames() {
 		return variablesByKeys.keySet();
+	}
+
+	private static final Pattern BLACKLISTED_TAGS =
+			Pattern.compile("<(/?)(click|hover)([^>]*)>", Pattern.CASE_INSENSITIVE);
+
+	public static String stripBlacklistedTags(String text) {
+		if (text == null) return null;
+
+		return BLACKLISTED_TAGS.matcher(text).replaceAll("");
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
