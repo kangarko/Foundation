@@ -451,7 +451,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				this.registerEvents(DiscordListener.DiscordListenerImpl.getInstance());
 			}
 
-			if (HookManager.isPlaceholderAPILoaded() && this.useFullPlaceholderAPIParser())
+			if (HookManager.isPlaceholderAPILoaded())
 				Variables.setLegacyPlaceholderAPIparser((audience, message) -> {
 					final OfflinePlayer player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
 
@@ -911,16 +911,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	@Override
 	public final boolean isPluginEnabled() {
 		return this.platformEnabled && this.isEnabled();
-	}
-
-	/**
-	 * Should we parse PlaceholderAPI variables in the given message using their
-	 * native method? Performance decreases.
-	 *
-	 * @return
-	 */
-	protected boolean useFullPlaceholderAPIParser() {
-		return false;
 	}
 
 	// ----------------------------------------------------------------------------------------

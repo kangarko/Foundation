@@ -94,23 +94,6 @@ public final class Variables {
 	private static boolean replaceScript = true;
 
 	/**
-	 * Set if we should support variables in variables?
-	 * I.e. {luckperms_prefix} that returns itemsadder variable.
-	 *
-	 * Effectivelly halfs the performance of d plugin.
-	 */
-	@Getter
-	@Setter
-	private static boolean doubleParse = false;
-
-	/**
-	 * Convert &#123456 and #123456 to <#123456>? Defaults to false.
-	 */
-	@Getter
-	@Setter
-	private static boolean convertHexToMini = false;
-
-	/**
 	 * The audience for whom we are replacing variables.
 	 */
 	private FoundationPlayer audience;
@@ -302,12 +285,10 @@ public final class Variables {
 		if (legacyPlaceholderAPIparser != null)
 			message = legacyPlaceholderAPIparser.apply(this.audience, message);
 
-		if (doubleParse) {
-			message = this.replaceLegacy0(message);
+		message = this.replaceLegacy0(message);
 
-			if (legacyPlaceholderAPIparser != null)
-				message = legacyPlaceholderAPIparser.apply(this.audience, message);
-		}
+		if (legacyPlaceholderAPIparser != null)
+			message = legacyPlaceholderAPIparser.apply(this.audience, message);
 
 		// Parse {message} as last to prevent parsing vars inside of it.
 		if (message.contains("{message}"))
@@ -371,7 +352,7 @@ public final class Variables {
 		else {
 
 			// Probably there is a better way to do this...
-			if (convertHexToMini && !variable.equals("message")) {
+			if (!variable.equals("message")) {
 				final Matcher ampMatcher = HEX_AMPERSAND_PATTERN.matcher(value);
 				value = ampMatcher.replaceAll("<#$1>");
 
@@ -437,8 +418,7 @@ public final class Variables {
 	public SimpleComponent replaceComponent(@NonNull SimpleComponent component) {
 		component = this.replaceComponent0(component);
 
-		if (doubleParse)
-			component = this.replaceComponent0(component);
+		component = this.replaceComponent0(component);
 
 		return component;
 	}
@@ -451,7 +431,7 @@ public final class Variables {
 			final String variable = result.group(1);
 			SimpleComponent value = variable.isEmpty() ? null : this.replaceVariable(variable);
 
-			if (value != null && convertHexToMini) {
+			if (value != null) {
 				value = value.replaceMatch(HEX_AMPERSAND_PATTERN, (result2, builder) -> Component.text("<#" + result2.group(1) + ">"));
 
 				value = value.replaceMatch(HEX_MD5_PATTERN, (result2, builder) -> {
@@ -693,8 +673,7 @@ public final class Variables {
 	public SimpleComponent replaceMessageVariables(SimpleComponent component) {
 		component = this.replaceMessageVariables0(component);
 
-		if (doubleParse)
-			component = this.replaceMessageVariables0(component);
+		component = this.replaceMessageVariables0(component);
 
 		return component;
 	}
