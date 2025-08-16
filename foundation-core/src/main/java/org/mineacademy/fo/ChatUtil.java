@@ -542,7 +542,10 @@ public final class ChatUtil {
 		final StringBuilder result = new StringBuilder();
 		final String[] words = message.split("\\s+");
 
-		for (final String word : words) {
+		for (String word : words) {
+			final String color = word.startsWith("&") && word.length() > 2 ? word.substring(0, 2) : "";
+			if(!color.isEmpty())
+				word = word.substring(2);
 			final Matcher matcher = CLICKABLE_DOMAIN_PATTERN.matcher(word);
 			if (matcher.matches()) {
 				final String protocol = matcher.group(1) != null ? matcher.group(1) : "https";
@@ -550,9 +553,10 @@ public final class ChatUtil {
 				final String path = matcher.group(3) != null ? matcher.group(3) : "";
 				final String fullUrl = protocol + "://" + domain + path;
 
-				result.append(String.format("<click:open_url:'%s'>%s</click> ", fullUrl, word));
+				String format = String.format("<click:open_url:'%s'>%s</click> ", fullUrl, CompChatColor.convertLegacyToMini(color, true).trim() + word);
+				result.append(format);
 			} else {
-				result.append(word).append(" ");
+				result.append(color).append(word).append(" ");
 			}
 		}
 
