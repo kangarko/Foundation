@@ -777,8 +777,8 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final int findNumber(final int index, final String falseMessage) {
-		return this.findNumber(index, SimpleComponent.fromMiniAmpersand(falseMessage));
+	protected final int findInt(final int index, final String falseMessage) {
+		return this.findInt(index, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -788,7 +788,7 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final int findNumber(final int index, final SimpleComponent falseMessage) {
+	protected final int findInt(final int index, final SimpleComponent falseMessage) {
 		return this.findNumber(Integer.class, index, falseMessage);
 	}
 
@@ -802,8 +802,8 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final int findNumber(final int index, final int min, final int max, final String falseMessage) {
-		return this.findNumber(index, min, max, SimpleComponent.fromMiniAmpersand(falseMessage));
+	protected final int findInt(final int index, final int min, final int max, final String falseMessage) {
+		return this.findInt(index, min, max, SimpleComponent.fromMiniAmpersand(falseMessage));
 	}
 
 	/**
@@ -816,7 +816,57 @@ public abstract class SimpleCommandCore {
 	 * @param falseMessage
 	 * @return
 	 */
-	protected final int findNumber(final int index, final int min, final int max, final SimpleComponent falseMessage) {
+	protected final int findInt(final int index, final int min, final int max, final SimpleComponent falseMessage) {
+		return this.findNumber(Integer.class, index, min, max, falseMessage);
+	}
+
+	/**
+	 * A convenience method for parsing a double at the given args index
+	 *
+	 * @param index
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final double findDouble(final int index, final String falseMessage) {
+		return this.findDouble(index, SimpleComponent.fromMiniAmpersand(falseMessage));
+	}
+
+	/**
+	 * A convenience method for parsing a double at the given args index
+	 *
+	 * @param index
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final double findDouble(final int index, final SimpleComponent falseMessage) {
+		return this.findNumber(Double.class, index, falseMessage);
+	}
+
+	/**
+	 * A convenience method for parsing a double that is between two bounds
+	 * You can use {min} and {max} in the message to be automatically replaced
+	 *
+	 * @param index
+	 * @param min
+	 * @param max
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findDouble(final int index, final int min, final int max, final String falseMessage) {
+		return this.findDouble(index, min, max, SimpleComponent.fromMiniAmpersand(falseMessage));
+	}
+
+	/**
+	 * A convenience method for parsing a double that is between two bounds
+	 * You can use {min} and {max} in the message to be automatically replaced
+	 *
+	 * @param index
+	 * @param min
+	 * @param max
+	 * @param falseMessage
+	 * @return
+	 */
+	protected final int findDouble(final int index, final int min, final int max, final SimpleComponent falseMessage) {
 		return this.findNumber(Integer.class, index, min, max, falseMessage);
 	}
 
