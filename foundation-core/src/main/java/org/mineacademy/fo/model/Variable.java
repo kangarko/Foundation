@@ -38,6 +38,12 @@ public final class Variable extends YamlConfig {
 	private static final Pattern VALID_KEY_PATTERN = Pattern.compile("^\\w+$");
 
 	/**
+	 * Pattern to identify potentially dangerous mini tags inside variables
+	 */
+	private static final Pattern BLACKLISTED_TAGS =
+			Pattern.compile("<(/?)(click|hover)([^>]*)>", Pattern.CASE_INSENSITIVE);
+
+	/**
 	 * A list of all loaded variables
 	 */
 	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variables", Variable.class);
@@ -491,10 +497,14 @@ public final class Variable extends YamlConfig {
 		return variablesByKeys.keySet();
 	}
 
-	private static final Pattern BLACKLISTED_TAGS =
-			Pattern.compile("<(/?)(click|hover)([^>]*)>", Pattern.CASE_INSENSITIVE);
-
-	public static String stripBlacklistedTags(String text) {
+	/**
+	 * Helper method to strip the BLACKLISTED_TAGS from variables
+	 * since those may contain malicious user input.
+	 *
+	 * @param text
+	 * @return
+	 */
+	private static String stripBlacklistedTags(String text) {
 		if (text == null) return null;
 
 		return BLACKLISTED_TAGS.matcher(text).replaceAll("");
