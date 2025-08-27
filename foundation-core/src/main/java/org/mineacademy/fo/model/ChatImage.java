@@ -11,6 +11,7 @@ import java.util.Collection;
 
 import javax.imageio.ImageIO;
 
+import lombok.Setter;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
@@ -28,6 +29,9 @@ import net.kyori.adventure.text.format.TextColor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ChatImage {
+
+	@Setter
+	public static String avatarApiUrl;
 
 	/**
 	 * Represents the height of the image.
@@ -126,7 +130,10 @@ public final class ChatImage {
 	 * @throws IOException
 	 */
 	public ChatImage drawFromHead(final String playerName) throws IOException {
-		return this.drawFromUrl("https://mc-heads.net/avatar/" + playerName + "/" + this.height + ".png");
+		return this.drawFromUrl(Variables.builder().placeholderArray(
+				"player_name", playerName,
+				"image_height", this.height
+		).replaceLegacy(avatarApiUrl));
 	}
 
 	/**
