@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.ChatUtil;
@@ -825,44 +826,85 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	public static String convertLegacyToMini(final String message, final boolean supportAmpersand) {
 		final StringBuilder result = new StringBuilder();
 
-		for (int i = 0; i < message.length(); i++) {
+		final Pattern DOMAIN_INSIDE_MINI_TAG_PATTERN = Pattern.compile("<.*[a-zA-Z0-9\\-.*]+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
+				GENERIC_DOMAIN_PATTERN = Pattern.compile("[a-zA-Z0-9\\-.*]+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
+				COLOR_CODE_PATTERN = Pattern.compile("(?i)(?:[§&][0-9a-fk-or])+");
 
-			// Support §x§R§R§G§G§B§B hex colors
-			if (i + 13 < message.length() && message.charAt(i) == '§' && message.charAt(i + 1) == 'x') {
-				final StringBuilder hex = new StringBuilder("#");
-				boolean isValidHexSequence = true;
+		for (int idx = 0; idx < message.split(" ", -1).length; idx++) {
+			String part = message.split(" ", -1)[idx];
 
-				for (int j = 2; j <= 12; j += 2) {
-					if (message.charAt(i + j) == '§')
-						hex.append(message.charAt(i + j + 1));
+			// If it's empty, that means it was an extra space
+			if (part.isEmpty()) {
+				result.append(" ");
+				continue;
+			}
 
-					else {
-						isValidHexSequence = false;
+			if(DOMAIN_INSIDE_MINI_TAG_PATTERN.matcher(part).find()) {
+				result.append(part).append(" ");
+				continue;
 
-						break;
+			} else if(GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
+				if(String.valueOf(part.charAt(0)).matches("[§&]")) {
+
+					final Matcher matcher = COLOR_CODE_PATTERN.matcher(part);
+					String color = null;
+
+					while(matcher.find() && (color == null || !part.startsWith(color))) {
+						color = matcher.group();
+					}
+
+					if(color != null)
+						result.append(CompChatColor.convertLegacyToMini(color, true)).append(part.replaceFirst(color, "")).append(" ");
+
+				} else result.append(part).append(" ");
+
+				continue;
+			}
+
+			for (int i = 0; i < part.length(); i++) {
+
+				// Support §x§R§R§G§G§B§B hex colors
+				if (i + 13 < part.length() && part.charAt(i) == '§' && part.charAt(i + 1) == 'x') {
+					final StringBuilder hex = new StringBuilder("#");
+					boolean isValidHexSequence = true;
+
+					for (int j = 2; j <= 12; j += 2) {
+						if (part.charAt(i + j) == '§')
+							hex.append(part.charAt(i + j + 1));
+
+						else {
+							isValidHexSequence = false;
+
+							break;
+						}
+					}
+
+					if (isValidHexSequence) {
+						result.append('<').append(hex).append('>');
+						i += 13; // Skip the entire §x§R§R§G§G§B§B sequence
+
+						continue;
 					}
 				}
 
-				if (isValidHexSequence) {
-					result.append('<').append(hex).append('>');
-					i += 13; // Skip the entire §x§R§R§G§G§B§B sequence
+				if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§')) {
+					final String code = part.substring(i, i + 2);
 
-					continue;
+					if (LEGACY_TO_MINI.containsKey(code)) {
+						result.append(LEGACY_TO_MINI.get(code));
+						i++;
+
+						continue;
+					}
 				}
+
+				result.append(part.charAt(i));
 			}
 
-			if (i + 1 < message.length() && ((message.charAt(i) == '&' && supportAmpersand) || message.charAt(i) == '§')) {
-				final String code = message.substring(i, i + 2);
-
-				if (LEGACY_TO_MINI.containsKey(code)) {
-					result.append(LEGACY_TO_MINI.get(code));
-					i++;
-
-					continue;
-				}
+			// re-append the space except after the last part
+			if (idx < message.split(" ", -1).length - 1) {
+				result.append(" ");
 			}
-
-			result.append(message.charAt(i));
 		}
 
 		return result.toString();
