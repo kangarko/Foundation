@@ -305,7 +305,7 @@ public final class Variable extends YamlConfig {
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
 
-			SimpleComponent component = SimpleComponent.fromMiniAmpersand(stripBlacklistedTags(value));
+			SimpleComponent component = SimpleComponent.fromMiniAmpersand(this.type.equals(Type.MESSAGE) ? stripBlacklistedTags(value) : value);
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
 				component = component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
