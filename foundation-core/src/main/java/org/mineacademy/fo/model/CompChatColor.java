@@ -32,6 +32,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 public final class CompChatColor implements TextColor, ConfigStringSerializable {
 
 	/**
+	 * Patterns to identify domains inside and outside of Mini Tags to prevent converting "legacy color codes" inside links to mini tags
+	 * in convertLegacyToMini() method.
+	 */
+	private static final Pattern DOMAIN_INSIDE_MINI_TAG_PATTERN = Pattern.compile("<.*[a-zA-Z0-9\\-.*]+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
+			GENERIC_DOMAIN_PATTERN = Pattern.compile("[a-zA-Z0-9\\-.*]+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
+			COLOR_CODE_PATTERN = Pattern.compile("(?i)(?:[§&][0-9a-fk-or])+");
+
+	/**
 	 * The special character which prefixes all chat colour codes. Use this if
 	 * you need to dynamically convert colour codes from your custom format.
 	 */
@@ -826,41 +834,60 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	public static String convertLegacyToMini(final String message, final boolean supportAmpersand) {
 		final StringBuilder result = new StringBuilder();
 
-		final Pattern DOMAIN_INSIDE_MINI_TAG_PATTERN = Pattern.compile("<.*[a-zA-Z0-9\\-.*]+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
-				GENERIC_DOMAIN_PATTERN = Pattern.compile("[a-zA-Z0-9\\-.*]+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
-				COLOR_CODE_PATTERN = Pattern.compile("(?i)(?:[§&][0-9a-fk-or])+");
+		// Split the message by spaces so we can ignore domains
+		final String[] parts = message.split(" ", -1);
 
-		for (int idx = 0; idx < message.split(" ", -1).length; idx++) {
-			String part = message.split(" ", -1)[idx];
+		for (int idx = 0; idx < parts.length; idx++) {
+			final String part = parts[idx];
 
-			// If it's empty, that means it was an extra space
-			if (part.isEmpty()) {
-				result.append(" ");
+			if (DOMAIN_INSIDE_MINI_TAG_PATTERN.matcher(part).find()) {
+				// Domain inside <click_url> tag, should be ignored
+				result.append(part);
+				if (idx < parts.length - 1) result.append(' ');
 				continue;
 			}
 
-			if(DOMAIN_INSIDE_MINI_TAG_PATTERN.matcher(part).find()) {
-				result.append(part).append(" ");
-				continue;
+			if (GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
+				// Actual domain in the player message, should be sanitized and colors should be ignored
 
-			} else if(GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
-				if(String.valueOf(part.charAt(0)).matches("[§&]")) {
+				if (!part.isEmpty() && (part.charAt(0) == '§' || part.charAt(0) == '&')) {
 
+					// Domain has a color code at the start, so we need to color it properly :)
 					final Matcher matcher = COLOR_CODE_PATTERN.matcher(part);
-					String color = null;
+					String lastMatch = null;
+					String startingMatch = null;
 
-					while(matcher.find() && (color == null || !part.startsWith(color))) {
-						color = matcher.group();
+					while (matcher.find()) {
+						String g = matcher.group();
+						if (part.startsWith(g)) {
+							startingMatch = g;
+							break;
+						}
+						lastMatch = g;
 					}
 
-					if(color != null)
-						result.append(CompChatColor.convertLegacyToMini(color, true)).append(part.replaceFirst(color, "")).append(" ");
+					final String color = (startingMatch != null) ? startingMatch : lastMatch;
 
-				} else result.append(part).append(" ");
+					if (color != null) {
+
+						// Link colorized, now we add the rest of it without parsing colors
+						result.append(CompChatColor.convertLegacyToMini(color, true))
+								.append(part.replaceFirst(Pattern.quote(color), ""));
+						if (idx < parts.length - 1) result.append(' ');
+						continue;
+					}
+				} else {
+
+					// Domain has no color code, just append it without parsing colors
+					result.append(part);
+					if (idx < parts.length - 1) result.append(' ');
+					continue;
+				}
 
 				continue;
 			}
 
+			// Untouched original code below since no domains were identified in this part
 			for (int i = 0; i < part.length(); i++) {
 
 				// Support §x§R§R§G§G§B§B hex colors
@@ -901,10 +928,9 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				result.append(part.charAt(i));
 			}
 
-			// re-append the space except after the last part
-			if (idx < message.split(" ", -1).length - 1) {
+			// Re-append the space we used to split if it is not the last part
+			if (idx < parts.length - 1)
 				result.append(" ");
-			}
 		}
 
 		return result.toString();
@@ -1071,7 +1097,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		}
 
 		return "reset".equals(tag) || "b".equals(tag) || "bold".equals(tag) || "i".equals(tag) || "italic".equals(tag) || "u".equals(tag) || "underlined".equals(tag) || "st".equals(tag)
-				|| "strikethrough".equals(tag) || "obf".equals(tag) || "obfuscated".equals(tag) || NamedTextColor.NAMES.value(tag) != null;
+			   || "strikethrough".equals(tag) || "obf".equals(tag) || "obfuscated".equals(tag) || NamedTextColor.NAMES.value(tag) != null;
 	}
 
 	/**
