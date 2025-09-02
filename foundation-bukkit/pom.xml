@@ -107,7 +107,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>FactionsUUID</artifactId>
-			<version>1.6.9.5-U0.6.39-b341</version>
+			<version>4.1.4-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
