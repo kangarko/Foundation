@@ -38,6 +38,12 @@ public final class Variable extends YamlConfig {
 	private static final Pattern VALID_KEY_PATTERN = Pattern.compile("^\\w+$");
 
 	/**
+	 * Pattern to identify potentially dangerous mini tags inside variables
+	 */
+	private static final Pattern BLACKLISTED_TAGS =
+			Pattern.compile("<(/?)(click|hover)([^>]*)>", Pattern.CASE_INSENSITIVE);
+
+	/**
 	 * A list of all loaded variables
 	 */
 	private static final ConfigItems<Variable> loadedVariables = ConfigItems.fromFolder("variables", Variable.class);
@@ -299,7 +305,7 @@ public final class Variable extends YamlConfig {
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
 
-			SimpleComponent component = SimpleComponent.fromMiniAmpersand(value);
+			SimpleComponent component = SimpleComponent.fromMiniAmpersand(this.type.equals(Type.MESSAGE) ? stripBlacklistedTags(value) : value);
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
 				component = component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
@@ -489,6 +495,19 @@ public final class Variable extends YamlConfig {
 	 */
 	public static Set<String> getVariableKeyNames() {
 		return variablesByKeys.keySet();
+	}
+
+	/**
+	 * Helper method to strip the BLACKLISTED_TAGS from variables
+	 * since those may contain malicious user input.
+	 *
+	 * @param text
+	 * @return
+	 */
+	private static String stripBlacklistedTags(String text) {
+		if (text == null) return null;
+
+		return BLACKLISTED_TAGS.matcher(text).replaceAll("");
 	}
 
 	// ------–------–------–------–------–------–------–------–------–------–------–------–
