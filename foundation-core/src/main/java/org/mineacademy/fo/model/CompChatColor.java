@@ -155,7 +155,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/**
 	 * Represents blue.
 	 */
-	public static final CompChatColor BLUE = new CompChatColor('9', "blue", new Color(0x05555FF));
+	public static final CompChatColor BLUE = new CompChatColor('9', "blue", new Color(0x5555FF));
 
 	/**
 	 * Represents green.
