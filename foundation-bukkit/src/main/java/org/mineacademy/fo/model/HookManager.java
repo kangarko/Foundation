@@ -15,9 +15,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import dev.kitteh.factions.FLocation;
+import dev.kitteh.factions.permissible.Relation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -194,31 +197,36 @@ public final class HookManager {
 			essentialsHook = new EssentialsHook();
 
 		// Various kinds of Faction plugins.
-		final Plugin factions = Bukkit.getPluginManager().getPlugin("Factions");
+		final Plugin factions = Bukkit.getPluginManager().getPlugin("Factions"),
+				factionsUUID = Bukkit.getPluginManager().getPlugin("FactionsUUID");
 
 		if (Platform.isPluginInstalled("FactionsX") && factions == null)
 			CommonCore.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
 
-		else if (factions != null) {
-			final String ver = factions.getDescription().getVersion();
-			final String main = factions.getDescription().getMain();
-
-			if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy"))
+		else if (factions != null || factionsUUID != null) {
+			if(factionsUUID != null)
 				factionsHook = new FactionsUUID();
-			// Condition commented due to blocking hooks with modern Factions plugins
-			else /*if (ver.startsWith("2."))*/ {
-				Class<?> mplayer = null;
+			else {
+				final String ver = factions.getDescription().getVersion();
+				final String main = factions.getDescription().getMain();
 
-				try {
-					mplayer = Class.forName("com.massivecraft.factions.entity.MPlayer"); // only support the free version of the plugin
-				} catch (final ClassNotFoundException ex) {
+				if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy"))
+					factionsHook = new FactionsUUID();
+					// Condition commented due to blocking hooks with modern Factions plugins
+				else /*if (ver.startsWith("2."))*/ {
+					Class<?> mplayer = null;
+
+					try {
+						mplayer = Class.forName("com.massivecraft.factions.entity.MPlayer"); // only support the free version of the plugin
+					} catch (final ClassNotFoundException ex) {
+					}
+
+					if (mplayer != null)
+						factionsHook = new FactionsMassive();
+					else
+						CommonCore.warning("Recognized MCore Factions, but it isn't hooked! Check if you have the latest version!");
+
 				}
-
-				if (mplayer != null)
-					factionsHook = new FactionsMassive();
-				else
-					CommonCore.warning("Recognized MCore Factions, but it isn't hooked! Check if you have the latest version!");
-
 			}
 		}
 
@@ -3465,13 +3473,12 @@ final class FactionsMassive extends FactionsHook {
 
 final class FactionsUUID extends FactionsHook {
 
-	@Override
-	public Collection<String> getFactions() {
+	private Collection<dev.kitteh.factions.Faction> getFactionObjects() {
 		try {
 			final Object instance = this.factionsInstance();
-			final Set<String> tags = (Set<String>) instance.getClass().getMethod("getFactionTags").invoke(instance);
+			final List<dev.kitteh.factions.Faction> facs = (List<dev.kitteh.factions.Faction>) instance.getClass().getMethod("all").invoke(instance);
 
-			return tags;
+			return facs;
 		} catch (final Throwable t) {
 			t.printStackTrace();
 
@@ -3480,12 +3487,35 @@ final class FactionsUUID extends FactionsHook {
 	}
 
 	@Override
+	public Collection<String> getFactions() {
+		final Collection<dev.kitteh.factions.Faction> factionObjects = this.getFactionObjects();
+
+		if(factionObjects == null) {
+			return new ArrayList<>();
+		}
+
+		return factionObjects.stream().map(dev.kitteh.factions.Faction::tag).collect(Collectors.toList());
+	}
+
+	private dev.kitteh.factions.Faction getFactionById(String tag) {
+		final Collection<dev.kitteh.factions.Faction> factionObjects = this.getFactionObjects();
+		if (factionObjects == null)
+			return null;
+
+		for (dev.kitteh.factions.Faction f : factionObjects) {
+			if (f.tag().equals(tag))
+				return f;
+		}
+		return null;
+	}
+
+	@Override
 	public String getFaction(final Player player) {
 		try {
 			final Object factionPlayers = this.fPlayers();
-			final Object factionPlayer = factionPlayers.getClass().getMethod("getByPlayer", Player.class).invoke(factionPlayers, player);
-			final Object faction = factionPlayer != null ? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer) : null;
-			final Object factionName = faction != null ? faction.getClass().getMethod("getTag").invoke(faction) : null;
+			final Object factionPlayer = factionPlayers.getClass().getMethod("get", UUID.class).invoke(factionPlayers, player.getUniqueId());
+			final Object faction = factionPlayer != null ? factionPlayer.getClass().getMethod("faction").invoke(factionPlayer) : null;
+			final Object factionName = faction != null ? faction.getClass().getMethod("tag").invoke(faction) : null;
 
 			return factionName != null ? factionName.toString() : null;
 
@@ -3500,9 +3530,9 @@ final class FactionsUUID extends FactionsHook {
 	String getFactionId(Player player) {
 		try {
 			final Object factionPlayers = this.fPlayers();
-			final Object factionPlayer = factionPlayers.getClass().getMethod("getByPlayer", Player.class).invoke(factionPlayers, player);
-			final Object faction = factionPlayer != null ? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer) : null;
-			final Object factionId = faction != null ? faction.getClass().getMethod("getId").invoke(faction) : null;
+			final Object factionPlayer = factionPlayers.getClass().getMethod("get", UUID.class).invoke(factionPlayers, player.getUniqueId());
+			final Object faction = factionPlayer != null ? factionPlayer.getClass().getMethod("faction").invoke(factionPlayer) : null;
+			final Object factionId = faction != null ? faction.getClass().getMethod("id").invoke(faction) : null;
 
 			return factionId != null ? factionId.toString() : null;
 
@@ -3518,7 +3548,7 @@ final class FactionsUUID extends FactionsHook {
 		final Object faction = this.findFaction(location);
 
 		try {
-			return faction != null ? faction.getClass().getMethod("getTag").invoke(faction).toString() : null;
+			return faction != null ? faction.getClass().getMethod("tag").invoke(faction).toString() : null;
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3531,7 +3561,7 @@ final class FactionsUUID extends FactionsHook {
 		final Object faction = this.findFaction(location);
 
 		try {
-			return faction != null ? ((com.massivecraft.factions.FPlayer) faction.getClass().getMethod("getFPlayerAdmin").invoke(faction)).getName() : null;
+			return faction != null ? ((dev.kitteh.factions.FPlayer) faction.getClass().getMethod("admin").invoke(faction)).name() : null;
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3543,64 +3573,33 @@ final class FactionsUUID extends FactionsHook {
 	List<String> getFactionRelationIDs(Player player, String relation) {
 		final List<String> relationList = new ArrayList<>();
 
-		try {
-			final Object factionsInstance = this.factionsInstance();
-			if (factionsInstance == null) {
-				return relationList;
-			}
+		final dev.kitteh.factions.Faction playerFaction = this.getFactionById(this.getFaction(player));
 
-			// Get player's faction
-			final Object factionPlayers = this.fPlayers();
-			final Object factionPlayer = factionPlayers.getClass()
-					.getMethod("getByPlayer", Player.class)
-					.invoke(factionPlayers, player);
-
-			final Object faction = factionPlayer != null
-					? factionPlayer.getClass().getMethod("getFaction").invoke(factionPlayer)
-					: null;
-
-			if (faction == null) {
-				return relationList;
-			}
-
-			// Get relations map
-			final Field relationWishField = faction.getClass()
-					.getSuperclass()
-					.getDeclaredField("relationWish");
-
-			try {
-				relationWishField.setAccessible(true);
-				final Object relationsObject = relationWishField.get(faction);
-
-				if (!(relationsObject instanceof Map<?, ?>)) {
-					return relationList;
-				}
-
-				// Process alliances
-				final Map<?, ?> relations = (Map<?, ?>) relationsObject;
-				for (final Map.Entry<?, ?> entry : relations.entrySet()) {
-					if (!relation.equalsIgnoreCase(entry.getValue().toString())) {
-						continue;
-					}
-
-					relationList.add(entry.getKey().toString());
-				}
-			} finally {
-				relationWishField.setAccessible(false);
-			}
-
+		if(playerFaction == null)
 			return relationList;
-		} catch (final ReflectiveOperationException ex) {
-			ex.printStackTrace();
-			return null;
+
+		final Collection<dev.kitteh.factions.Faction> factionObjects = this.getFactionObjects();
+		if(factionObjects == null)
+			return relationList;
+
+		for(dev.kitteh.factions.Faction faction : factionObjects) {
+			if(faction.tag().equals(playerFaction.tag()))
+				continue;
+
+			final Relation rel = playerFaction.relationWish(faction);
+
+			if(rel.name().equalsIgnoreCase(relation))
+				relationList.add(String.valueOf(faction.id()));
 		}
+
+		return relationList;
 	}
 
 	private Object findFaction(final Location location) {
-		final Class<com.massivecraft.factions.Board> factionBoard = com.massivecraft.factions.Board.class;
+		final Class<dev.kitteh.factions.Board> factionBoard = dev.kitteh.factions.Board.class;
 
 		try {
-			return factionBoard.getMethod("getFactionAt", com.massivecraft.factions.FLocation.class).invoke(factionBoard.getMethod("getInstance").invoke(null), new com.massivecraft.factions.FLocation(location));
+			return factionBoard.getMethod("factionAt", FLocation.class).invoke(factionBoard.getMethod("board").invoke(null), new dev.kitteh.factions.FLocation(location));
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3610,7 +3609,7 @@ final class FactionsUUID extends FactionsHook {
 
 	private Object factionsInstance() {
 		try {
-			return Class.forName("com.massivecraft.factions.Factions").getDeclaredMethod("getInstance").invoke(null);
+			return Class.forName("dev.kitteh.factions.Factions").getDeclaredMethod("factions").invoke(null);
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3620,7 +3619,7 @@ final class FactionsUUID extends FactionsHook {
 
 	private Object fPlayers() {
 		try {
-			return Class.forName("com.massivecraft.factions.FPlayers").getDeclaredMethod("getInstance").invoke(null);
+			return Class.forName("dev.kitteh.factions.FPlayers").getDeclaredMethod("fPlayers").invoke(null);
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
