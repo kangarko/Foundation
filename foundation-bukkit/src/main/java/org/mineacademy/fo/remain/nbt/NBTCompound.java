@@ -28,8 +28,8 @@ public class NBTCompound implements ReadWriteNBT {
 	private final Lock readLock = readWriteLock.readLock();
 	private final Lock writeLock = readWriteLock.writeLock();
 
-	private String compundName;
-	private NBTCompound parent;
+	private final String compundName;
+	private final NBTCompound parent;
 	private final boolean readOnly;
 	private Object readOnlyCache;
 
@@ -133,7 +133,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Merges all data from comp into this compound. This is done in one action, so
 	 * it also works with Tiles/Entities
-	 * 
+	 *
 	 * @param comp
 	 */
 	public void mergeCompound(NBTCompound comp) {
@@ -160,7 +160,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -177,7 +177,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -193,7 +193,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -210,7 +210,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -226,7 +226,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -243,7 +243,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -259,7 +259,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -276,7 +276,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -292,7 +292,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -309,7 +309,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -325,7 +325,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -342,7 +342,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -358,7 +358,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -375,7 +375,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -391,7 +391,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -408,7 +408,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -424,7 +424,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -441,7 +441,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -457,9 +457,9 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * Requires at least 1.16
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -477,9 +477,9 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * Requires at least 1.16
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -496,7 +496,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -518,7 +518,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Getter
-	 * 
+	 *
 	 * @param key
 	 * @return The stored value or NMS fallback
 	 */
@@ -535,7 +535,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Uses Gson to store an {@link Serializable} Object. Deprecated to clarify that
 	 * it's probably missused. Preferably do the serializing yourself.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -553,7 +553,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Uses Gson to retrieve a stored Object Deprecated to clarify that it's
 	 * probably missused. Preferably do the serializing yourself.
-	 * 
+	 *
 	 * @param key
 	 * @param type Class of the Object
 	 * @return The created Object or null if empty
@@ -570,7 +570,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Save an ItemStack as a compound under a given key
-	 * 
+	 *
 	 * @param key
 	 * @param item
 	 */
@@ -587,7 +587,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Get an ItemStack that was saved at the given key
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */
@@ -606,7 +606,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Save an ItemStack Array as a compound under a given key
-	 * 
+	 *
 	 * @param key
 	 * @param items
 	 */
@@ -624,7 +624,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Get an {@link ItemStack} array that was saved at the given key, or null if no
 	 * stored data was found
-	 * 
+	 *
 	 * @param key key
 	 * @return The stored {@link ItemStack} array, or null if stored data wasn't
 	 *         found
@@ -755,7 +755,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Creates a subCompound, or returns it if already provided
-	 * 
+	 *
 	 * @param name Key to use
 	 * @return The subCompound Object
 	 */
@@ -796,7 +796,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * The same as addCompound, just with a name that better reflects what it does
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -919,7 +919,7 @@ public class NBTCompound implements ReadWriteNBT {
 
 	/**
 	 * Returns the type of the list, null if not a list
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -965,7 +965,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @return Stored or provided value
 	 */
 	@Override
-	
+
 	public <T> T getOrDefault(String key, T defaultValue) {
 		if (defaultValue == null)
 			throw new NullPointerException("Default type in getOrDefault can't be null!");
@@ -1021,7 +1021,7 @@ public class NBTCompound implements ReadWriteNBT {
 	 * @return Stored value or null
 	 */
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	public <T> T getOrNull(String key, Class<?> type) {
 		if (type == null)
 			throw new NullPointerException("Default type in getOrNull can't be null!");
@@ -1121,7 +1121,7 @@ public class NBTCompound implements ReadWriteNBT {
 	}
 
 	// FIXME: before I'm even done writing this method, this sucks. Needs refactoring at some point
-	
+
 	private <T> T getIndexedValue(NBTCompound comp, PathSegment segment, Class<T> type) {
 		if (type == String.class) {
 			if (comp.getType(segment.getPath()) == NBTType.NBTTagList
@@ -1293,7 +1293,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Set a key to the given Enum value. It gets stored as a String. Passing null
 	 * as value will call removeKey(key) instead.
-	 * 
+	 *
 	 * @param <E>
 	 * @param key
 	 * @param value
@@ -1310,7 +1310,7 @@ public class NBTCompound implements ReadWriteNBT {
 	/**
 	 * Get an Enum value that has been set via setEnum or setString(key,
 	 * value.name()). Passing null/invalid keys will return null.
-	 * 
+	 *
 	 * @param <E>
 	 * @param key
 	 * @param type

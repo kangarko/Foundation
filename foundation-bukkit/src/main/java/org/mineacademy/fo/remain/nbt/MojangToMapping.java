@@ -12,7 +12,6 @@ import java.util.Map;
  */
 class MojangToMapping {
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_18R1 = new HashMap<String, String>() {
 
 		{
@@ -76,7 +75,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_18R2 = new HashMap<String, String>() {
 
 		{
@@ -86,7 +84,6 @@ class MojangToMapping {
 		}
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_19R1 = new HashMap<String, String>() {
 
 		{
@@ -97,7 +94,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_19R2 = new HashMap<String, String>() {
 
 		{
@@ -108,7 +104,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_20R1 = new HashMap<String, String>() {
 
 		{
@@ -120,7 +115,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_20R2 = new HashMap<String, String>() {
 
 		{
@@ -131,7 +125,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_20R3 = new HashMap<String, String>() {
 
 		{
@@ -147,7 +140,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_20R4 = new HashMap<String, String>() {
 
 		{
@@ -172,7 +164,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_21R1 = new HashMap<String, String>() {
 
 		{
@@ -183,7 +174,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_21R2 = new HashMap<String, String>() {
 
 		{
@@ -197,7 +187,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_21R3 = new HashMap<String, String>() {
 
 		{
@@ -208,7 +197,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_21R4 = new HashMap<String, String>() {
 
 		{
@@ -239,7 +227,6 @@ class MojangToMapping {
 
 	};
 
-	@SuppressWarnings("serial")
 	private static Map<String, String> MC1_21R5 = new HashMap<String, String>() {
 
 		{

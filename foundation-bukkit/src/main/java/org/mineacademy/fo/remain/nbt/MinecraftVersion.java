@@ -55,7 +55,6 @@ enum MinecraftVersion {
 	private final int versionId;
 	private final boolean mojangMapping;
 
-	@SuppressWarnings("serial")
 	private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
 		{
 			this.put("1.20", MC1_20_R1);
