@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import dev.kitteh.factions.FLocation;
-import dev.kitteh.factions.permissible.Relation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -76,6 +73,8 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
+import dev.kitteh.factions.FLocation;
+import dev.kitteh.factions.permissible.Relation;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.JDA;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
@@ -204,7 +203,7 @@ public final class HookManager {
 			CommonCore.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
 
 		else if (factions != null || factionsUUID != null) {
-			if(factionsUUID != null)
+			if (factionsUUID != null)
 				factionsHook = new FactionsUUID();
 			else {
 				final String ver = factions.getDescription().getVersion();
@@ -212,7 +211,7 @@ public final class HookManager {
 
 				if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy"))
 					factionsHook = new FactionsUUID();
-					// Condition commented due to blocking hooks with modern Factions plugins
+				// Condition commented due to blocking hooks with modern Factions plugins
 				else /*if (ver.startsWith("2."))*/ {
 					Class<?> mplayer = null;
 
@@ -1590,7 +1589,7 @@ public final class HookManager {
 	 * Return the players in the player's faction ally list, or empty if there are none.
 	 *
 	 * @param player the player's faction to check.
-	 * @param relation 
+	 * @param relation
 	 * @return
 	 */
 	public static Collection<? extends Player> getRelatedFactionPlayers(final Player player, String relation) {
@@ -3490,7 +3489,7 @@ final class FactionsUUID extends FactionsHook {
 	public Collection<String> getFactions() {
 		final Collection<dev.kitteh.factions.Faction> factionObjects = this.getFactionObjects();
 
-		if(factionObjects == null) {
+		if (factionObjects == null) {
 			return new ArrayList<>();
 		}
 
@@ -3502,7 +3501,7 @@ final class FactionsUUID extends FactionsHook {
 		if (factionObjects == null)
 			return null;
 
-		for (dev.kitteh.factions.Faction f : factionObjects) {
+		for (final dev.kitteh.factions.Faction f : factionObjects) {
 			if (f.tag().equals(tag))
 				return f;
 		}
@@ -3575,20 +3574,20 @@ final class FactionsUUID extends FactionsHook {
 
 		final dev.kitteh.factions.Faction playerFaction = this.getFactionById(this.getFaction(player));
 
-		if(playerFaction == null)
+		if (playerFaction == null)
 			return relationList;
 
 		final Collection<dev.kitteh.factions.Faction> factionObjects = this.getFactionObjects();
-		if(factionObjects == null)
+		if (factionObjects == null)
 			return relationList;
 
-		for(dev.kitteh.factions.Faction faction : factionObjects) {
-			if(faction.tag().equals(playerFaction.tag()))
+		for (final dev.kitteh.factions.Faction faction : factionObjects) {
+			if (faction.tag().equals(playerFaction.tag()))
 				continue;
 
 			final Relation rel = playerFaction.relationWish(faction);
 
-			if(rel.name().equalsIgnoreCase(relation))
+			if (rel.name().equalsIgnoreCase(relation))
 				relationList.add(String.valueOf(faction.id()));
 		}
 
