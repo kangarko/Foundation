@@ -31,6 +31,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
@@ -339,7 +340,7 @@ public class JsonItemStack {
 					final Method getBaseColor = ReflectionUtil.getMethod(bannerMeta.getClass(), "getBaseColor");
 
 					if (getBaseColor != null) {
-						final DyeColor baseColor = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta));
+						final DyeColor baseColor = (DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta);
 
 						if (baseColor != null) {
 							final String baseColorName = ReflectionUtil.getEnumName(baseColor);
@@ -396,8 +397,16 @@ public class JsonItemStack {
 			} catch (final NoSuchMethodError err) {
 				throw new FoException("Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
 						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson, false);
+			} catch (final IllegalArgumentException ex) {
+				if (ex.getMessage().contains("Failed to get")) {
+					Common.warning("Failed to convert JSON into ItemStack using native method, falling back to legacy. Custom stuff will be removed. "
+							+ "This is because the ItemStack is no longer valid (this is NOT issue in our plugin, "
+							+ "rather the itemstack contained custom data which got corrupted or you deleted your resourcepack or other plugin)! JSON: " + string);
+				} else
+					throw ex;
 			}
 
+		// Fail-safe (manual attempt at loading)
 		ValidCore.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
 
 		final String type = itemJson.get("type").getAsString();
