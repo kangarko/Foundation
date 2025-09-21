@@ -56,7 +56,6 @@ public class DataFixerUtil {
 	@Deprecated
 	public static final int VERSION1_21_5 = 4435;
 
-	@SuppressWarnings("unchecked")
 	public static Object fixUpRawItemData(Object nbt, int fromVersion, int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		final DataFixer dataFixer = (DataFixer) ReflectionMethod.GET_DATAFIXER.run(null);
