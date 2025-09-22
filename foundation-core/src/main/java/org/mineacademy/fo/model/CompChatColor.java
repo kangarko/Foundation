@@ -850,7 +850,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				}
 
 				// Actual domain in the player message, should be sanitized and colors should be ignored
-				if (!part.isEmpty() && (part.charAt(0) == '§' || part.charAt(0) == '&')) {
+				if (!part.isEmpty() && ((part.startsWith("§") || part.startsWith("&")) || part.startsWith("<"))) {
 
 					// Domain has a color code at the start, so we need to color it properly :)
 					final Matcher matcher = COLOR_CODE_PATTERN.matcher(part);
@@ -886,7 +886,8 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 					continue;
 				}
 
-				continue;
+				if(!part.startsWith("<"))
+					continue;
 			}
 
 			// Untouched original code below since no domains were identified in this part
