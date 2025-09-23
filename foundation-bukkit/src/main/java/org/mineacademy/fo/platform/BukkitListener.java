@@ -29,12 +29,22 @@ import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.Visualizer;
 
+import io.papermc.paper.event.player.PlayerCustomClickEvent;
+
 /**
  * Listens for some events we handle for you automatically
  */
 final class BukkitListener implements Listener {
 
 	BukkitListener() {
+
+		// Custom click events
+		try {
+			Class.forName("io.papermc.paper.event.player.PlayerCustomClickEvent");
+			Platform.registerEvents(new CustomClickListener());
+
+		} catch (final ClassNotFoundException ex) {
+		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
@@ -218,5 +228,12 @@ final class BukkitListener implements Listener {
 			}
 		}
 	}
+}
 
+final class CustomClickListener implements Listener {
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onCustomCommand(PlayerCustomClickEvent event) {
+
+	}
 }
