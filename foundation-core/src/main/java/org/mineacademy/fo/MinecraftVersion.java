@@ -13,7 +13,7 @@ public final class MinecraftVersion {
 	private static V current = null;
 
 	/**
-	 * The subversion such as 8 in 1.8.8 or 6 in 1.20.6.
+	 * The subversion such as 8 in 1.8.8 or 8 in 1.21.8.
 	 */
 	private static int subversion = -1;
 
