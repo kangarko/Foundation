@@ -29,6 +29,7 @@ import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.Visualizer;
 
+import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.event.player.PlayerCustomClickEvent;
 
 /**
@@ -234,6 +235,17 @@ final class CustomClickListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCustomCommand(PlayerCustomClickEvent event) {
+		if (!(event.getCommonConnection() instanceof PlayerGameConnection))
+			return;
 
+		final String key = event.getIdentifier().toString();
+		final Player player = ((PlayerGameConnection) event.getCommonConnection()).getPlayer();
+
+		if (key.equals("minecraft:fo_custom_command")) {
+			final Map<String, String> map = CommonCore.GSON.fromJson(event.getTag().toString(), Map.class);
+			final String command = map.get("command");
+
+			player.chat(command);
+		}
 	}
 }

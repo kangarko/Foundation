@@ -32,8 +32,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
@@ -253,10 +251,11 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent onClickRunCmd(final String text) {
-		return this.modifyLastComponentAndReturn(component -> component.clickEvent(
-				MinecraftVersion.hasVersion() && ((MinecraftVersion.atLeast(V.v1_21) && MinecraftVersion.getSubversion() >= 6) || MinecraftVersion.newerThan(V.v1_21))
-						? ClickEvent.custom(Key.key("FoCustomCommand"), BinaryTagHolder.binaryTagHolder(text))
-						: ClickEvent.runCommand(text)));
+		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.runCommand(text)));
+		// Commented out: Awaiting https://github.com/KyoriPowered/adventure/issues/1313
+		//MinecraftVersion.hasVersion() && ((MinecraftVersion.atLeast(V.v1_21) && MinecraftVersion.getSubversion() >= 6) || MinecraftVersion.newerThan(V.v1_21))
+		//		? ClickEvent.custom(Key.key("fo_custom_command"), BinaryTagHolder.binaryTagHolder(CommonCore.GSON.toJson(CommonCore.newHashMap("command", text))))
+		//				: ClickEvent.runCommand(text)));
 	}
 
 	/**
