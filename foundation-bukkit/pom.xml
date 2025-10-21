@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
-			<version>1.21.9-R0.1-SNAPSHOT</version>
+			<version>1.21.10-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy</groupId>
@@ -51,6 +51,12 @@
 			<artifactId>adventure-platform-bukkit</artifactId>
 			<version>4.4.1</version>
 			<scope>provided</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.kyori/adventure-api -->
+		<dependency>
+			<groupId>net.kyori</groupId>
+			<artifactId>adventure-api</artifactId>
+			<version>4.25.0</version>
 		</dependency>
 
 		<!-- Only needed for NBT-API -->

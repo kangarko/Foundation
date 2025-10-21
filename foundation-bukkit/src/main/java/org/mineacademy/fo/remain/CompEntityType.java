@@ -231,7 +231,7 @@ public final class CompEntityType {
 
 			try {
 				for (final World other : Bukkit.getWorlds())
-					if (type.isEnabledByFeature(other)) {
+					if (other.isEnabled(type)) {
 						enabledByFeature = true;
 
 						break;
