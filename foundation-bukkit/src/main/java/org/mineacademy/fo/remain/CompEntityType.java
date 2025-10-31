@@ -1,14 +1,17 @@
 package org.mineacademy.fo.remain;
 
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.ValidCore;
 
 import lombok.NonNull;
@@ -220,6 +223,7 @@ public final class CompEntityType {
 	private static EntityType find(final int id, final CompMaterial spawnEggMaterial, @NonNull final String... bukkitFieldNames) {
 		EntityType type = null;
 		boolean enabledByFeature = false;
+		final Method isEnabled = Remain.getIsEnabledFeatureWorldMethod();
 
 		for (final String bukkitFieldName : bukkitFieldNames) {
 			try {
@@ -229,17 +233,34 @@ public final class CompEntityType {
 				continue;
 			}
 
-			try {
-				for (final World other : Bukkit.getWorlds())
-					if (other.isEnabled(type)) {
-						enabledByFeature = true;
-
-						break;
-					}
-
-			} catch (final IllegalArgumentException | NoSuchMethodError err) {
+			if (isEnabled == null)
 				enabledByFeature = true;
-			}
+
+			else
+				try {
+					for (final World other : Bukkit.getWorlds())
+						if ((boolean) isEnabled.invoke(other, type) == true) {
+							enabledByFeature = true;
+
+							break;
+						}
+
+				} catch (final IllegalArgumentException | NoSuchMethodError err) {
+					enabledByFeature = true;
+
+				} catch (final ReflectiveOperationException ex) {
+					Throwable cause = ex;
+
+					while (cause.getCause() != null)
+						cause = cause.getCause();
+
+					if (cause instanceof IllegalArgumentException || cause instanceof NoSuchMethodError || cause instanceof NoSuchElementException) {
+						// ignore
+					} else
+						Common.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
+
+					enabledByFeature = true;
+				}
 		}
 
 		if (type != null && enabledByFeature) {

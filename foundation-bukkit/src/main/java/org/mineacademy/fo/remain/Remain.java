@@ -23,7 +23,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.google.gson.JsonElement;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
@@ -100,6 +99,7 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.nbt.NBTEntity;
 import org.mineacademy.fo.settings.Lang;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import lombok.AccessLevel;
@@ -805,6 +805,24 @@ public final class Remain {
 	// ----------------------------------------------------------------------------------------------------
 	// Misc
 	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Returns the World#isEnabled() method which takes an entity type
+	 * 
+	 * @return
+	 */
+	public static Method getIsEnabledFeatureWorldMethod() {
+		final boolean hasFeatureClass = ReflectionUtil.isClassAvailable("io.papermc.paper.world.flag.FeatureDependant") && ReflectionUtil.isClassAvailable("io.papermc.paper.world.flag.FeatureFlagSetHolder");
+
+		if (hasFeatureClass) {
+			final Class<?> featureFlagSetHolderClass = ReflectionUtil.lookupClass("io.papermc.paper.world.flag.FeatureFlagSetHolder");
+			final Class<?> featureDependent = ReflectionUtil.lookupClass("io.papermc.paper.world.flag.FeatureDependant");
+
+			return ReflectionUtil.getMethod(featureFlagSetHolderClass, "isEnabled", featureDependent);
+		}
+
+		return null;
+	}
 
 	/**
 	 * Return NMS copy of the given itemstack
