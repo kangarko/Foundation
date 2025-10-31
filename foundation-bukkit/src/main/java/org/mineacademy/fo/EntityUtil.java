@@ -140,7 +140,7 @@ public final class EntityUtil {
 				boolean found = false;
 
 				for (final World other : Bukkit.getWorlds())
-					if (type.isEnabledByFeature(other)) {
+					if (other.isEnabled(type)) {
 						world = other;
 
 						found = true;
