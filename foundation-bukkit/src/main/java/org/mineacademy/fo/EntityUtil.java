@@ -1,5 +1,6 @@
 package org.mineacademy.fo;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -136,22 +137,36 @@ public final class EntityUtil {
 		World world = Bukkit.getWorlds().get(0);
 
 		try {
-			if (!type.requiredFeatures().isEmpty()) {
-				boolean found = false;
+			final Method isEnabled = Remain.getIsEnabledFeatureWorldMethod();
+			boolean found = false;
 
+			if (isEnabled == null)
+				found = true;
+			else
 				for (final World other : Bukkit.getWorlds())
-					if (other.isEnabled(type)) {
+					if ((boolean) isEnabled.invoke(other, type) == true) {
 						world = other;
 
 						found = true;
 						break;
 					}
 
-				if (!found)
-					throw new FoException("Lacking experimental databack! Cannot find a world that supports entity type '" + type + "'. This is NOT A BUG IN OUR PLUGIN. You need to install the datapack for " + type.requiredFeatures() + " or delete the entity");
-			}
-		} catch (final NoSuchMethodError | NoSuchElementException err) {
+			if (!found)
+				throw new FoException("Lacking experimental databack! Cannot find a world that supports entity type '" + type + "'. This is NOT A BUG IN OUR PLUGIN. You need to install the datapack for " + type.requiredFeatures() + " or delete the entity");
+
+		} catch (final IllegalArgumentException | NoSuchMethodError | NoSuchElementException err) {
 			// Ignore
+
+		} catch (final ReflectiveOperationException ex) {
+			Throwable cause = ex;
+
+			while (cause.getCause() != null)
+				cause = cause.getCause();
+
+			if (cause instanceof IllegalArgumentException || cause instanceof NoSuchMethodError || cause instanceof NoSuchElementException) {
+				// ignore
+			} else
+				Common.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
 		}
 
 		final Location location = world.getSpawnLocation();
