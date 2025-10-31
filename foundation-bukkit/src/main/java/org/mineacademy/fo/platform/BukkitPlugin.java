@@ -201,7 +201,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 							.build());
 
 				} else
-					this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.24.0");
+					this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.25.0");
 
 			FoundationLibraries.load(this);
 

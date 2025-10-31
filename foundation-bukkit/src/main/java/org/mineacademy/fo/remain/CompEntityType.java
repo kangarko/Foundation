@@ -21,7 +21,7 @@ public final class CompEntityType {
 	/**
 	 * The comparator for sorting entity types by their name
 	 */
-	private static final Comparator<EntityType> COMPARATOR = (first, last) -> first.name().compareTo(last.name());
+	private static final Comparator<EntityType> COMPARATOR = Comparator.comparing(EntityType::name);
 
 	/**
 	 * A set of all available entity types on this server version.
@@ -231,7 +231,7 @@ public final class CompEntityType {
 
 			try {
 				for (final World other : Bukkit.getWorlds())
-					if (type.isEnabledByFeature(other)) {
+					if (other.isEnabled(type)) {
 						enabledByFeature = true;
 
 						break;
