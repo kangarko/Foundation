@@ -2,8 +2,15 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.DrilldownPie;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * This class acts as the "Brain" of the NBTApi. It contains the main logger for
@@ -43,14 +50,26 @@ enum MinecraftVersion {
 	MC1_21_R2(1212, true),
 	MC1_21_R3(1213, true),
 	MC1_21_R4(1214, true),
-	MC1_21_R5(1215, true);
+	MC1_21_R5(1215, true),
+    MC1_21_R6(1216, true);
 
 	private static MinecraftVersion version;
 
+    private static Boolean hasGsonSupport;
 	private static Boolean isForgePresent;
 	private static Boolean isNeoForgePresent;
 	private static Boolean isFabricPresent;
 	private static Boolean isFoliaPresent;
+    private static boolean bStatsDisabled = false;
+    private static boolean disablePackageWarning = false;
+    private static boolean updateCheckDisabled = true;
+    /**
+     * Logger used by the api
+     */
+    private static Logger logger = Logger.getLogger("NBTAPI");
+
+    // NBT-API Version
+    protected static final String VERSION = "2.15.3";
 
 	private final int versionId;
 	private final boolean mojangMapping;
@@ -73,6 +92,8 @@ enum MinecraftVersion {
 			this.put("1.21.6", MC1_21_R5);
 			this.put("1.21.7", MC1_21_R5);
 			this.put("1.21.8", MC1_21_R5);
+            this.put("1.21.9", MC1_21_R6);
+            this.put("1.21.10", MC1_21_R6);
 		}
 	};
 
@@ -149,15 +170,170 @@ enum MinecraftVersion {
 
 		try {
 			final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-
+            logger.info("[NBTAPI] Found Minecraft: " + ver + "! Trying to find NMS support");
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 
 		} catch (final Exception ex) {
+            logger.info("[NBTAPI] Found Minecraft: " + Bukkit.getServer().getBukkitVersion().split("-")[0]
+                        + "! Trying to find NMS support");
 			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0], MinecraftVersion.UNKNOWN);
 		}
+        if (version != UNKNOWN) {
+            logger.info("[NBTAPI] NMS support '" + version.name() + "' loaded!");
+        } else {
+            logger.warning("[NBTAPI] This Server-Version(" + Bukkit.getServer().getBukkitVersion()
+                           + ") is not supported by this NBT-API Version(" + VERSION + ") located in "
+                           + VersionChecker.getPlugin()
+                           + ". The NBT-API will try to work as good as it can! Some functions may not work!");
+        }
+        init();
 
 		return version;
 	}
+
+    public static String getNBTAPIVersion() {
+        return VERSION;
+    }
+
+    private static void init() {
+        // Maven's Relocate is clever and changes strings, too. So we have to use this
+        // little "trick" ... :D (from bStats)
+        final String defaultPackage = new String(new byte[] { 'd', 'e', '.', 't', 'r', '7', 'z', 'w', '.', 'c', 'h',
+                'a', 'n', 'g', 'e', 'm', 'e', '.', 'n', 'b', 't', 'a', 'p', 'i', '.', 'u', 't', 'i', 'l', 's' });
+        final String reservedPackage = new String(new byte[] { 'd', 'e', '.', 't', 'r', '7', 'z', 'w', '.', 'n', 'b',
+                't', 'a', 'p', 'i', '.', 'u', 't', 'i', 'l', 's' });
+        try {
+            if (hasGsonSupport() && !bStatsDisabled) {
+                Plugin plugin = Bukkit.getPluginManager().getPlugin(VersionChecker.getPlugin());
+                if (plugin != null && plugin instanceof JavaPlugin) {
+                    getLogger()
+                            .info("[NBTAPI] Using the plugin '" + plugin.getName() + "' to create a bStats instance!");
+                    Metrics metrics = new Metrics((JavaPlugin) plugin, 1058);
+                    metrics.addCustomChart(new SimplePie("nbtapi_version", () -> {
+                        return VERSION;
+                    }));
+                    metrics.addCustomChart(new DrilldownPie("nms_version", () -> {
+                        Map<String, Map<String, Integer>> map = new HashMap<>();
+                        Map<String, Integer> entry = new HashMap<>();
+                        entry.put(Bukkit.getName(), 1);
+                        map.put(getVersion().name(), entry);
+                        return map;
+                    }));
+                    metrics.addCustomChart(new SimplePie("shaded", () -> {
+                        return Boolean.toString(!"NBTAPI".equals(VersionChecker.getPlugin()));
+                    }));
+                    metrics.addCustomChart(new SimplePie("server_software", () -> {
+                        return Bukkit.getName();
+                    }));
+                    metrics.addCustomChart(new SimplePie("parent_plugin", () -> {
+                        return VersionChecker.getPluginforBStats();
+                    }));
+                    metrics.addCustomChart(new SimplePie("parent_plugin_type", () -> {
+                        return VersionChecker.getPluginType();
+                    }));
+                    metrics.addCustomChart(new SimplePie("special_environment", () -> {
+                        if (isFoliaPresent()) {
+                            return "Folia";
+                        } else if (isForgePresent()) {
+                            return "Forge";
+                        } else if (isFabricPresent()) {
+                            return "Fabric";
+                        } else if (isNeoForgePresent()) {
+                            return "NeoForge";
+                        } else {
+                            return "None";
+                        }
+                    }));
+                    metrics.addCustomChart(new SimplePie("bindings_check", () -> {
+
+                        boolean failedBinding = false;
+                        for (ClassWrapper c : ClassWrapper.values()) {
+                            if (c.isEnabled() && c.getClazz() == null) {
+                                failedBinding = true;
+                            }
+                        }
+                        for (ReflectionMethod method : ReflectionMethod.values()) {
+                            if (method.isCompatible() && !method.isLoaded()) {
+                                failedBinding = true;
+                            }
+                        }
+
+                        return failedBinding ? "Failed" : "Pass";
+                    }));
+                } else if (plugin == null) {
+                    getLogger().info("[NBTAPI] Unable to create a bStats instance!!");
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "[NBTAPI] Error enabling Metrics!", ex);
+        }
+
+        if (hasGsonSupport() && !updateCheckDisabled)
+            new Thread(() -> {
+                try {
+                    VersionChecker.checkForUpdates();
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "[NBTAPI] Error while checking for updates! Error: " + ex.getMessage());
+                }
+            }).start();
+        if (!disablePackageWarning && MinecraftVersion.class.getPackage().getName().equals(defaultPackage)) {
+            logger.warning(
+                    "#########################################- NBTAPI -#########################################");
+            logger.warning(
+                    "The NBT-API package has not been moved! This *will* cause problems with other plugins containing");
+            logger.warning(
+                    "a different version of the api! Please read the guide on the plugin page on how to get the");
+            logger.warning(
+                    "Maven Shade plugin to relocate the api to your personal location! If you are not the developer,");
+            logger.warning("please check your plugins and contact their developer, so they can fix this issue.");
+            logger.warning(
+                    "#########################################- NBTAPI -#########################################");
+        }
+        if (!disablePackageWarning && !"NBTAPI".equals(VersionChecker.getPlugin())) { // we are not the nbtapi, check
+            // for common shading errors
+            if (!"de.tr7zw.nbtapi.utils".equals(reservedPackage)) {
+                logger.warning(
+                        "#########################################- NBTAPI -#########################################");
+                logger.warning(
+                        "The NBT-API inside " + VersionChecker.getPlugin() + " is the plugin version, not the API!");
+                logger.warning(
+                        "The plugin itself should never be shaded! Remove the `-plugin` from the dependency and fix your shading setup.");
+                logger.warning(
+                        "For more info check: https://github.com/tr7zw/Item-NBT-API/wiki/Using-Maven#option-2-shading-the-nbt-api-into-your-plugin");
+                logger.warning(
+                        "#########################################- NBTAPI -#########################################");
+                return; // don't also print the second error
+            }
+            if (MinecraftVersion.class.getPackage().getName().equals("de.tr7zw.nbtapi.utils")) {
+                logger.warning(
+                        "#########################################- NBTAPI -#########################################");
+                logger.warning(
+                        "The NBT-API inside " + VersionChecker.getPlugin() + " is located at 'de.tr7zw.nbtapi.utils'!");
+                logger.warning(
+                        "This package name is reserved for the official NBTAPI plugin, and not intended to be used for shading!");
+                logger.warning("Please change the relocate to something else. For example: com.example.util.nbtapi");
+                logger.warning(
+                        "#########################################- NBTAPI -#########################################");
+            }
+        }
+    }
+
+    /**
+     * @return True, if Gson is usable
+     */
+    public static boolean hasGsonSupport() {
+        if (hasGsonSupport != null) {
+            return hasGsonSupport;
+        }
+        try {
+            Class.forName("com.google.gson.Gson");
+            hasGsonSupport = true;
+        } catch (Exception ex) {
+            logger.info("[NBTAPI] Gson not found! This will not allow the usage of some methods!");
+            hasGsonSupport = false;
+        }
+        return hasGsonSupport;
+    }
 
 	/**
 	 * @return True, if Fabric is present
@@ -167,7 +343,7 @@ enum MinecraftVersion {
 			return isFabricPresent;
 
 		try {
-			Class.forName("net.fabricmc.api.ModInitializer");
+			logger.info("[NBTAPI] Found Fabric: " + Class.forName("net.fabricmc.api.ModInitializer"));
 
 			isFabricPresent = true;
 
@@ -186,10 +362,12 @@ enum MinecraftVersion {
 			return isForgePresent;
 
 		try {
-			if (getVersion() == MinecraftVersion.MC1_7_R4)
-				Class.forName("cpw.mods.fml.common.Loader");
-			else
-				Class.forName("net.minecraftforge.fml.common.Loader");
+			logger.info("[NBTAPI] Found Forge: " +
+						(getVersion() == MinecraftVersion.MC1_7_R4
+								? Class.forName("cpw.mods.fml.common.Loader")
+								: Class.forName("net.minecraftforge.fml.common.Loader")
+						)
+			);
 
 			isForgePresent = true;
 
@@ -208,7 +386,7 @@ enum MinecraftVersion {
 			return isNeoForgePresent;
 
 		try {
-			Class.forName("net.neoforged.neoforge.common.NeoForge");
+			logger.info("[NBTAPI] Found NeoForge: " + Class.forName("net.neoforged.neoforge.common.NeoForge"));
 			isNeoForgePresent = true;
 		} catch (final Exception ex) {
 			isNeoForgePresent = false;
@@ -225,11 +403,64 @@ enum MinecraftVersion {
 			return isFoliaPresent;
 
 		try {
-			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+			logger.info("[NBTAPI] Found Folia: " + Class.forName("io.papermc.paper.threadedregions.RegionizedServer"));
 			isFoliaPresent = true;
 		} catch (final Exception ex) {
 			isFoliaPresent = false;
 		}
 		return isFoliaPresent;
 	}
+
+    /**
+     * Calling this function before the NBT-Api is used will disable bStats stats
+     * collection. Please consider not to do that, since it won't affect your plugin
+     * and helps the NBT-Api developer to see api's demand.
+     */
+    public static void disableBStats() {
+        bStatsDisabled = true;
+    }
+
+    /**
+     * Disables the update check. Uses Spiget to get the current version and prints
+     * a warning when outdated.
+     */
+    public static void disableUpdateCheck() {
+        updateCheckDisabled = true;
+    }
+
+    /**
+     * Enables the update check. Uses Spiget to get the current version and prints a
+     * warning when outdated.
+     */
+    public static void enableUpdateCheck() {
+        updateCheckDisabled = false;
+    }
+
+    /**
+     * Forcefully disables the log message for plugins not shading the API to
+     * another location. This may be helpful for networks or development
+     * environments, but please don't use it for plugins that are uploaded to
+     * Spigotmc.
+     */
+    public static void disablePackageWarning() {
+        disablePackageWarning = true;
+    }
+
+    /**
+     * @return Logger used by the NBT-API
+     */
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    /**
+     * Replaces the NBT-API logger with a custom implementation.
+     *
+     * @param logger The new logger(can not be null!)
+     */
+    public static void replaceLogger(Logger logger) {
+        if (logger == null)
+            throw new NullPointerException("Logger can not be null!");
+        MinecraftVersion.logger = logger;
+    }
 }
