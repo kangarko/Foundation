@@ -5,12 +5,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.DrilldownPie;
-import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * This class acts as the "Brain" of the NBTApi. It contains the main logger for
@@ -60,7 +55,7 @@ enum MinecraftVersion {
 	private static Boolean isNeoForgePresent;
 	private static Boolean isFabricPresent;
 	private static Boolean isFoliaPresent;
-    private static boolean bStatsDisabled = false;
+//    private static boolean bStatsDisabled = false;
     private static boolean disablePackageWarning = false;
     private static boolean updateCheckDisabled = true;
     /**
@@ -202,7 +197,7 @@ enum MinecraftVersion {
                 'a', 'n', 'g', 'e', 'm', 'e', '.', 'n', 'b', 't', 'a', 'p', 'i', '.', 'u', 't', 'i', 'l', 's' });
         final String reservedPackage = new String(new byte[] { 'd', 'e', '.', 't', 'r', '7', 'z', 'w', '.', 'n', 'b',
                 't', 'a', 'p', 'i', '.', 'u', 't', 'i', 'l', 's' });
-        try {
+        /*try {
             if (hasGsonSupport() && !bStatsDisabled) {
                 Plugin plugin = Bukkit.getPluginManager().getPlugin(VersionChecker.getPlugin());
                 if (plugin != null && plugin instanceof JavaPlugin) {
@@ -266,7 +261,7 @@ enum MinecraftVersion {
             }
         } catch (Exception ex) {
             logger.log(Level.WARNING, "[NBTAPI] Error enabling Metrics!", ex);
-        }
+        }*/
 
         if (hasGsonSupport() && !updateCheckDisabled)
             new Thread(() -> {
@@ -416,9 +411,9 @@ enum MinecraftVersion {
      * collection. Please consider not to do that, since it won't affect your plugin
      * and helps the NBT-Api developer to see api's demand.
      */
-    public static void disableBStats() {
+    /*public static void disableBStats() {
         bStatsDisabled = true;
-    }
+    }*/
 
     /**
      * Disables the update check. Uses Spiget to get the current version and prints
