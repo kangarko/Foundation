@@ -3,6 +3,7 @@ package org.mineacademy.fo.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,6 @@ import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
@@ -33,7 +33,8 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
  * A class that replaces variables in a message. In Foundation, we use
  * placeholders and variables interchangeably.
  *
- * However, for clarity, a Map<String, Object> is typically called "placeholders".
+ * However, for clarity, a Map<String, Object> is typically called
+ * "placeholders".
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Variables {
@@ -49,7 +50,8 @@ public final class Variables {
 	public static final Pattern BRACKET_VARIABLE_PATTERN = Pattern.compile("\\{((?:[^{}]+|(?:\\{[^{}]*\\}))*)\\}");
 
 	/**
-	 * The pattern to find simple {syntax} placeholders starting with {rel_} (used for PlaceholderAPI)
+	 * The pattern to find simple {syntax} placeholders starting with {rel_} (used
+	 * for PlaceholderAPI)
 	 */
 	public static final Pattern BRACKET_REL_VARIABLE_PATTERN = Pattern.compile("[({)](rel_)([^}]+)[(})]");
 
@@ -59,7 +61,8 @@ public final class Variables {
 	public static final Pattern HEX_AMPERSAND_PATTERN = Pattern.compile("(?<!<|:)&#([a-fA-F0-9]{6})(?!>)");
 	public static final Pattern HEX_LITERAL_PATTERN = Pattern.compile("(?<!<|:|&)#([a-fA-F0-9]{6})(?!>)");
 	public static final Pattern HEX_BRACKET_PATTERN = Pattern.compile("\\{#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\}");
-	public static final Pattern HEX_MD5_PATTERN = Pattern.compile("[" + CompChatColor.COLOR_CHAR + "]x([" + CompChatColor.COLOR_CHAR + "][0-9a-fA-F]){6}");
+	public static final Pattern HEX_MD5_PATTERN = Pattern
+			.compile("[" + CompChatColor.COLOR_CHAR + "]x([" + CompChatColor.COLOR_CHAR + "][0-9a-fA-F]){6}");
 
 	/**
 	 * Variables added to Foundation by you or other plugins
@@ -67,7 +70,8 @@ public final class Variables {
 	 * This is used to dynamically replace the variable based on its content, like
 	 * PlaceholderAPI.
 	 *
-	 * We also hook into PlaceholderAPI, however, you'll have to use your plugin's prefix before
+	 * We also hook into PlaceholderAPI, however, you'll have to use your plugin's
+	 * prefix before
 	 * all variables when called from there.
 	 */
 	private static final List<SimpleExpansion> expansions = new ArrayList<>();
@@ -82,16 +86,41 @@ public final class Variables {
 	/**
 	 * Stores cache for legacy variables by audience's name.
 	 */
-	private final Map<ToLegacyMode, Map<String, Map<String, String>>> legacyCache = ExpiringMap.builder().expiration(500, TimeUnit.MILLISECONDS).build();
+	private final Map<ToLegacyMode, Map<String, Map<String, String>>> legacyCache = ExpiringMap.builder()
+			.expiration(500, TimeUnit.MILLISECONDS).build();
 
 	/**
 	 * Whether we should replace JavaScript variables in replace() methods.
 	 *
-	 * Used to prevent a race condition.
+	 * Used to prevent infinite recursion. Thread-local to avoid race conditions.
 	 */
-	@Getter(value = AccessLevel.PACKAGE)
-	@Setter(value = AccessLevel.PACKAGE)
-	private static boolean replaceScript = true;
+	private static final ThreadLocal<Boolean> replaceScript = ThreadLocal.withInitial(() -> true);
+
+	/**
+	 * Get whether we should replace JavaScript variables in replace() methods.
+	 *
+	 * @return
+	 */
+	static boolean isReplaceScript() {
+		return replaceScript.get();
+	}
+
+	/**
+	 * Set whether we should replace JavaScript variables in replace() methods.
+	 *
+	 * @param value
+	 */
+	static void setReplaceScript(final boolean value) {
+		replaceScript.set(value);
+	}
+
+	/**
+	 * Clean up the ThreadLocal to prevent memory leaks.
+	 * Should be called when a thread is done processing.
+	 */
+	static void cleanupThreadLocal() {
+		replaceScript.remove();
+	}
 
 	/**
 	 * The audience for whom we are replacing variables.
@@ -104,12 +133,14 @@ public final class Variables {
 	private final Map<String, Object> placeholdersV2 = new HashMap<>();
 
 	/**
-	 * Whether to convert the component to legacy text, plain text or mini message in replaceLegacy() methods.
+	 * Whether to convert the component to legacy text, plain text or mini message
+	 * in replaceLegacy() methods.
 	 */
 	private ToLegacyMode toLegacyMode = ToLegacyMode.MINI;
 
 	/**
-	 * Whether to cache the result of the legacy conversion for 500ms. Defaults to false.
+	 * Whether to cache the result of the legacy conversion for 500ms. Defaults to
+	 * false.
 	 */
 	private boolean cache = false;
 
@@ -172,7 +203,8 @@ public final class Variables {
 	 * They must be in the format: string, value, string, value etc.
 	 * Where value must be either a String, a primitive or a SimpleComponent.
 	 *
-	 * For example: placeholderArray(player, "Notch, "age", 21, "rank", SimpleComponent.fromSection("&cVIP")
+	 * For example: placeholderArray(player, "Notch, "age", 21, "rank",
+	 * SimpleComponent.fromSection("&cVIP")
 	 *
 	 * @param placeholders
 	 * @return
@@ -268,10 +300,12 @@ public final class Variables {
 	 *
 	 * PlaceholderAPI is supported.
 	 *
-	 * This method substitutes placeholders and variables with corresponding values from various sources,
+	 * This method substitutes placeholders and variables with corresponding values
+	 * from various sources,
 	 * such as predefined strings, player information, and configurations.
 	 *
-	 * For example, it could replace the variable "prefix_warn" with a warning prefix like "[Warn]"
+	 * For example, it could replace the variable "prefix_warn" with a warning
+	 * prefix like "[Warn]"
 	 * or replace built-in placeholders like server name or formatted dates.
 	 *
 	 * To add custom variables, see {@link #addExpansion(SimpleExpansion)}
@@ -305,7 +339,10 @@ public final class Variables {
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
 
-		final Map<String, String> cache = this.cache && this.audience != null ? legacyCache.getOrDefault(this.toLegacyMode, new HashMap<>()).getOrDefault(this.audience.getName(), new HashMap<>()) : null;
+		final Map<String, String> cache = this.cache && this.audience != null
+				? legacyCache.getOrDefault(this.toLegacyMode, new HashMap<>()).getOrDefault(this.audience.getName(),
+						new HashMap<>())
+				: null;
 
 		while (matcher.find()) {
 			final String variable = matcher.group(1);
@@ -363,7 +400,8 @@ public final class Variables {
 
 					while (md5Matcher.find()) {
 						final String legacyFormat = md5Matcher.group();
-						final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "").substring(1);
+						final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "")
+								.substring(1);
 
 						md5Matcher.appendReplacement(buffer, "<#" + hexColor + ">");
 					}
@@ -404,10 +442,12 @@ public final class Variables {
 	 *
 	 * PlaceholderAPI is supported.
 	 *
-	 * This method substitutes placeholders and variables with corresponding values from various sources,
+	 * This method substitutes placeholders and variables with corresponding values
+	 * from various sources,
 	 * such as predefined strings, player information, and configurations.
 	 *
-	 * For example, it could replace the variable "prefix_warn" with a warning prefix like "[Warn]"
+	 * For example, it could replace the variable "prefix_warn" with a warning
+	 * prefix like "[Warn]"
 	 * or replace built-in placeholders like server name or formatted dates.
 	 *
 	 * To add custom variables, see {@link #addExpansion(SimpleExpansion)}
@@ -432,17 +472,20 @@ public final class Variables {
 			SimpleComponent value = variable.isEmpty() ? null : this.replaceVariable(variable);
 
 			if (value != null) {
-				value = value.replaceMatch(HEX_AMPERSAND_PATTERN, (result2, builder) -> Component.text("<#" + result2.group(1) + ">"));
+				value = value.replaceMatch(HEX_AMPERSAND_PATTERN,
+						(result2, builder) -> Component.text("<#" + result2.group(1) + ">"));
 
 				value = value.replaceMatch(HEX_MD5_PATTERN, (result2, builder) -> {
 					final String legacyFormat = result2.group();
-					final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "").substring(1);
+					final String hexColor = legacyFormat.replaceAll("[" + CompChatColor.COLOR_CHAR + "]", "")
+							.substring(1);
 
 					return Component.text("<#" + hexColor + ">");
 				});
 			}
 
-			return value == null ? PlainTextComponentSerializer.plainText().deserialize(result.group()) : value.toAdventure(this.audience);
+			return value == null ? PlainTextComponentSerializer.plainText().deserialize(result.group())
+					: value.toAdventure(this.audience);
 		});
 	}
 
@@ -495,7 +538,8 @@ public final class Variables {
 					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
-					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
+							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
 				else
 					replacedValue = SimpleComponent.fromMiniSection(rawValue.toString());
@@ -504,7 +548,7 @@ public final class Variables {
 			}
 		}
 
-		if (replacedValue == null && this.audience != null && replaceScript) {
+		if (replacedValue == null && this.audience != null && replaceScript.get()) {
 			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
 			if (javascriptVariable != null) {
@@ -528,7 +572,7 @@ public final class Variables {
 
 		final String replacedPlainValue = replacedValue == null ? "" : replacedValue.toPlain(this.audience);
 
-		if ((frontSpace || backSpace) && !replacedPlainValue.isEmpty()) {
+		if ((frontSpace || backSpace) && !replacedPlainValue.isEmpty() && replacedValue != null) {
 			if (frontSpace && replacedPlainValue.charAt(0) != ' ')
 				replacedValue = SimpleComponent.fromPlain(" ").append(replacedValue);
 
@@ -609,7 +653,8 @@ public final class Variables {
 					replacedValue = rawValue.toString();
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
-					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key + "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
+							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
 				} else
 					replacedValue = rawValue.toString();
@@ -618,7 +663,7 @@ public final class Variables {
 			}
 		}
 
-		if (replacedValue == null && this.audience != null && replaceScript) {
+		if (replacedValue == null && this.audience != null && replaceScript.get()) {
 			final Variable javascriptVariable = Variable.findVariableByKey(variable, Variable.Type.FORMAT);
 
 			if (javascriptVariable != null) {
@@ -633,7 +678,8 @@ public final class Variables {
 							value = SimpleComponent.fromMiniAmpersand(value).toPlain();
 
 						else
-							value = CompChatColor.convertMiniToLegacy(value); // No gradient support, they will simply be lost
+							value = CompChatColor.convertMiniToLegacy(value); // No gradient support, they will simply
+																				// be lost
 					}
 
 					replacedValue = value;
@@ -702,7 +748,7 @@ public final class Variables {
 	public static void addExpansion(final SimpleExpansion expansion) {
 		expansions.add(expansion);
 
-		expansions.sort((first, second) -> Integer.compare(second.getPriority(), first.getPriority()));
+		expansions.sort(Comparator.comparing(SimpleExpansion::getPriority).reversed());
 	}
 
 	/**
