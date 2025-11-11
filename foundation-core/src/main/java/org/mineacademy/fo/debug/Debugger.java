@@ -305,11 +305,13 @@ public final class Debugger {
 		} catch (final Throwable secondError) {
 
 			// Use system in case CommonCore#log threw the error
-			log(CommonCore.configLine());
-			log("Got error when saving another error!");
-			log("Original error that is not saved:");
-			log(CommonCore.configLine());
-			throwable.printStackTrace();
+			if (throwable != null) {
+				log(CommonCore.configLine());
+				log("Got error when saving another error!");
+				log("Original error that is not saved:");
+				log(CommonCore.configLine());
+				throwable.printStackTrace();
+			}
 
 			log(CommonCore.configLine());
 			log("New error:");
