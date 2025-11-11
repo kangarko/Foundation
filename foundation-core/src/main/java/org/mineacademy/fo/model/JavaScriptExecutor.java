@@ -265,7 +265,7 @@ public final class JavaScriptExecutor {
 			if (javascript.equals("false") || javascript.equals("!true") || javascript.equals("no"))
 				return false;
 
-			// CLear past variables
+			// Clear past variables
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
 
 			// Put new variables
