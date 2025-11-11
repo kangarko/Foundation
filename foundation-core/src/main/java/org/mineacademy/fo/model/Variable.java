@@ -40,8 +40,7 @@ public final class Variable extends YamlConfig {
 	/**
 	 * Pattern to identify potentially dangerous mini tags inside variables
 	 */
-	private static final Pattern BLACKLISTED_TAGS =
-			Pattern.compile("<(/?)(click|hover)([^>]*)>", Pattern.CASE_INSENSITIVE);
+	private static final Pattern BLACKLISTED_TAGS = Pattern.compile("<(/?)(click|hover)([^>]*)>", Pattern.CASE_INSENSITIVE);
 
 	/**
 	 * A list of all loaded variables
@@ -143,10 +142,14 @@ public final class Variable extends YamlConfig {
 
 		// Check for known mistakes
 		if (this.key == null || this.key.isEmpty())
-			throw new FoException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Key' as variable name in " + this.getFile(), false);
+			throw new FoException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Key' as variable name in " + this.getFile(),
+					false);
 
 		if (this.value == null)
-			throw new FoException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Value' key as what the variable shows in " + this.getFile() + " (this must be a valid JavaScript code, if unsure put a string there and surround with '' quotes)", false);
+			throw new FoException("(DO NOT REPORT, FIX IT YOURSELF) Set 'Value' key as what the variable shows in "
+					+ this.getFile()
+					+ " (this must be a valid JavaScript code, if unsure put a string there and surround with '' quotes)",
+					false);
 
 		final char startChar = this.key.charAt(0);
 		final char endChar = this.key.charAt(this.key.length() - 1);
@@ -166,11 +169,15 @@ public final class Variable extends YamlConfig {
 		}
 
 		if (this.isSet("Receiver_Condition") || this.isSet("Receiver_Permission"))
-			CommonCore.warning("The 'Receiver_Condition' and 'Receiver_Permission' keys are no longer supported in variables and will be removed from " + this.getFile());
+			CommonCore.warning(
+					"The 'Receiver_Condition' and 'Receiver_Permission' keys are no longer supported in variables and will be removed from "
+							+ this.getFile());
 
 		// Test for key validity
 		if (!VALID_KEY_PATTERN.matcher(this.key).matches())
-			throw new FoException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFile() + " must only contains letters, numbers or underscores. Do not write [] or {} there! Got: '" + this.key + "'", false);
+			throw new FoException("(DO NOT REPORT, PLEASE FIX YOURSELF) The 'Key' variable in " + this.getFile()
+					+ " must only contains letters, numbers or underscores. Do not write [] or {} there! Got: '"
+					+ this.key + "'", false);
 
 		// Always save to update keys
 		this.save();
@@ -232,6 +239,9 @@ public final class Variable extends YamlConfig {
 
 		} finally {
 			Variables.setReplaceScript(replacingScript);
+			// Clean up ThreadLocal when we're back to the original state
+			if (replacingScript)
+				Variables.cleanupThreadLocal();
 		}
 
 		Object result = null;
@@ -257,7 +267,8 @@ public final class Variable extends YamlConfig {
 	}
 
 	/**
-	 * Create the variable and append it to the existing component as if the player initiated it
+	 * Create the variable and append it to the existing component as if the player
+	 * initiated it
 	 *
 	 * @param audience
 	 * @param variables
@@ -269,16 +280,21 @@ public final class Variable extends YamlConfig {
 		try {
 			Variables.setReplaceScript(false);
 
-			if (this.senderPermission != null && !this.senderPermission.isEmpty() && !audience.hasPermission(this.senderPermission))
+			if (this.senderPermission != null && !this.senderPermission.isEmpty()
+					&& !audience.hasPermission(this.senderPermission))
 				return SimpleComponent.empty();
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty())
 				try {
-					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), audience);
+					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition),
+							audience);
 
 					if (result != null) {
 						if (!(result instanceof Boolean))
-							throw new FoException("Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass() + ": " + result), false);
+							throw new FoException(
+									"Variable '" + this.getFile() + "' option Condition must return boolean not "
+											+ (result == null ? "null" : result.getClass() + ": " + result),
+									false);
 
 						if (!((boolean) result))
 							return SimpleComponent.empty();
@@ -305,7 +321,8 @@ public final class Variable extends YamlConfig {
 			if (value == null || value.isEmpty() || "null".equals(value))
 				return SimpleComponent.empty();
 
-			SimpleComponent component = SimpleComponent.fromMiniAmpersand(this.type.equals(Type.MESSAGE) ? stripBlacklistedTags(value) : value);
+			SimpleComponent component = SimpleComponent
+					.fromMiniAmpersand(this.type.equals(Type.MESSAGE) ? stripBlacklistedTags(value) : value);
 
 			if (!ValidCore.isNullOrEmpty(this.hoverText))
 				component = component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
@@ -316,7 +333,8 @@ public final class Variable extends YamlConfig {
 
 					if (result != null) {
 						if (!result.getClass().getSimpleName().contains("ItemStack"))
-							throw new FoException("Variable '" + this.getFile() + "' option Hover_Item must return ItemStack not " + result.getClass(), false);
+							throw new FoException("Variable '" + this.getFile()
+									+ "' option Hover_Item must return ItemStack not " + result.getClass(), false);
 
 						component = component.onHover(Platform.convertItemStackToHoverEvent(result));
 					}
@@ -350,25 +368,34 @@ public final class Variable extends YamlConfig {
 
 		} finally {
 			Variables.setReplaceScript(replacingScript);
+			// Clean up ThreadLocal when we're back to the original state
+			if (replacingScript)
+				Variables.cleanupThreadLocal();
 		}
 	}
 
 	/**
-	 * Create the variable as legacy, no interactive nor receiver conditional components
+	 * Create the variable as legacy, no interactive nor receiver conditional
+	 * components
 	 * are supported.
 	 *
 	 * @param audience
 	 * @param placeholders
 	 * @return
 	 */
-	/*public String buildLegacy(final FoundationPlayer audience, final Map<String, Object> placeholders) {
-		final Variables variables = Variables.builder(audience).placeholders(placeholders);
-	
-		return this.buildLegacy(audience, variables);
-	}*/
+	/*
+	 * public String buildLegacy(final FoundationPlayer audience, final Map<String,
+	 * Object> placeholders) {
+	 * final Variables variables =
+	 * Variables.builder(audience).placeholders(placeholders);
+	 *
+	 * return this.buildLegacy(audience, variables);
+	 * }
+	 */
 
 	/**
-	 * Create the variable as legacy, no interactive nor receiver conditional components
+	 * Create the variable as legacy, no interactive nor receiver conditional
+	 * components
 	 * are supported.
 	 *
 	 * @param variables
@@ -380,16 +407,21 @@ public final class Variable extends YamlConfig {
 		try {
 			Variables.setReplaceScript(false);
 
-			if (this.senderPermission != null && !this.senderPermission.isEmpty() && !variables.audience().hasPermission(this.senderPermission))
+			if (this.senderPermission != null && !this.senderPermission.isEmpty()
+					&& !variables.audience().hasPermission(this.senderPermission))
 				return "";
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty())
 				try {
-					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition), variables.audience());
+					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.senderCondition),
+							variables.audience());
 
 					if (result != null) {
 						if (!(result instanceof Boolean))
-							throw new FoException("Variable '" + this.getFile() + "' option Condition must return boolean not " + (result == null ? "null" : result.getClass() + ": " + result), false);
+							throw new FoException(
+									"Variable '" + this.getFile() + "' option Condition must return boolean not "
+											+ (result == null ? "null" : result.getClass() + ": " + result),
+									false);
 
 						if (!((boolean) result))
 							return "";
@@ -417,6 +449,9 @@ public final class Variable extends YamlConfig {
 
 		} finally {
 			Variables.setReplaceScript(replacingScript);
+			// Clean up ThreadLocal when we're back to the original state
+			if (replacingScript)
+				Variables.cleanupThreadLocal();
 		}
 	}
 
@@ -459,7 +494,7 @@ public final class Variable extends YamlConfig {
 	/**
 	 * Return a variable, or null if not loaded
 	 *
-	 * @param key the placeholder name without {}
+	 * @param key  the placeholder name without {}
 	 * @param type
 	 *
 	 * @return
@@ -505,7 +540,8 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	private static String stripBlacklistedTags(String text) {
-		if (text == null) return null;
+		if (text == null)
+			return null;
 
 		return BLACKLISTED_TAGS.matcher(text).replaceAll("");
 	}
@@ -548,7 +584,8 @@ public final class Variable extends YamlConfig {
 				if (mode.key.equalsIgnoreCase(key))
 					return mode;
 
-			throw new IllegalArgumentException("No such variable type: " + key + " Available: " + CommonCore.join(values()));
+			throw new IllegalArgumentException(
+					"No such variable type: " + key + " Available: " + CommonCore.join(values()));
 		}
 
 		/**
