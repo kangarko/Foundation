@@ -43,7 +43,8 @@ enum MinecraftVersion {
 	MC1_21_R2(1212, true),
 	MC1_21_R3(1213, true),
 	MC1_21_R4(1214, true),
-	MC1_21_R5(1215, true);
+	MC1_21_R5(1215, true),
+	MC1_21_R6(1216, true);
 
 	private static MinecraftVersion version;
 
