@@ -60,18 +60,18 @@ public final class LitebansTask extends BukkitRunnable {
 		try (PreparedStatement statement = ReflectionUtil.invoke(this.methodPrepareStatement, this.apiInstance, "SELECT * FROM {mutes}")) {
 			statement.execute();
 
-			final ResultSet resultSet = statement.getResultSet();
+			try (final ResultSet resultSet = statement.getResultSet()) {
+				while(resultSet.next()) {
+					final String uuid = resultSet.getString("UUID");
+					final boolean active = resultSet.getBoolean("ACTIVE");
+					final long until = resultSet.getLong("UNTIL");
 
-			while (resultSet.next()) {
-				final String uuid = resultSet.getString("UUID");
-				final boolean active = resultSet.getBoolean("ACTIVE");
-				final long until = resultSet.getLong("UNTIL");
+					if(active) {
+						if(until != 0 && until < System.currentTimeMillis())
+							continue;
 
-				if (active) {
-					if (until != 0 && until < System.currentTimeMillis())
-						continue;
-
-					this.mutedPlayersByUniqueId.put(uuid, until);
+						this.mutedPlayersByUniqueId.put(uuid, until);
+					}
 				}
 			}
 
