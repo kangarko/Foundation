@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.ValidCore;
@@ -344,7 +342,7 @@ public final class OutgoingMessage extends Message {
 	 *
 	 * @param ignoredServerName
 	 */
-	public void broadcastExcept(@Nullable final String ignoredServerName) {
+	public void broadcastExcept(final String ignoredServerName) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
 			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
