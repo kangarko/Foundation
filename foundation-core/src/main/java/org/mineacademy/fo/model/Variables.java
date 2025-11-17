@@ -13,8 +13,6 @@ import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
@@ -152,7 +150,7 @@ public final class Variables {
 	 * @param audience
 	 * @return
 	 */
-	public Variables audience(@Nullable final Object audience) {
+	public Variables audience(final Object audience) {
 		this.audience = audience == null ? null : Platform.toPlayer(audience);
 
 		return this;
@@ -775,7 +773,7 @@ public final class Variables {
 	 * @param audience
 	 * @return
 	 */
-	public static Variables builder(@Nullable final FoundationPlayer audience) {
+	public static Variables builder(final FoundationPlayer audience) {
 		return new Variables().audience(audience);
 	}
 
