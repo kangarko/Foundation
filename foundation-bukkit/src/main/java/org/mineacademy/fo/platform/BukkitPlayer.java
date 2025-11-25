@@ -34,7 +34,6 @@ import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatMessageType;
@@ -215,7 +214,7 @@ final class BukkitPlayer extends FoundationPlayer {
 	protected void performPlayerCommand0(final String replacedCommand) {
 		if (Remain.isFolia()) {
 			if (this.sender instanceof Player) {
-				Player player = (Player) this.sender;
+				final Player player = (Player) this.sender;
 				player.getScheduler().run(BukkitPlugin.getInstance(), scheduledTask -> player.chat("/" + replacedCommand), null);
 			} else {
 				Bukkit.getGlobalRegionScheduler().run(BukkitPlugin.getInstance(), scheduledTask -> Bukkit.dispatchCommand(this.sender, replacedCommand));
@@ -302,8 +301,9 @@ final class BukkitPlayer extends FoundationPlayer {
 			return;
 		}
 
-		//this.audience.sendMessage(component);
-		this.player.spigot().sendMessage((!this.hasHexColorSupport() ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(component));
+		this.audience.sendMessage(component);
+		// Faster but apparently breaks command click/suggest events for legacy MC 
+		//this.player.spigot().sendMessage((!this.hasHexColorSupport() ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(component));
 	}
 
 	@Override
