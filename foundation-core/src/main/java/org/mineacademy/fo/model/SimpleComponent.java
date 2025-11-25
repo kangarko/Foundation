@@ -252,10 +252,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public SimpleComponent onClickRunCmd(final String text) {
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.runCommand(text)));
-		// Commented out: Awaiting https://github.com/KyoriPowered/adventure/issues/1313
-		//MinecraftVersion.hasVersion() && ((MinecraftVersion.atLeast(V.v1_21) && MinecraftVersion.getSubversion() >= 6) || MinecraftVersion.newerThan(V.v1_21))
-		//		? ClickEvent.custom(Key.key("fo_custom_command"), BinaryTagHolder.binaryTagHolder(CommonCore.GSON.toJson(CommonCore.newHashMap("command", text))))
-		//				: ClickEvent.runCommand(text)));
 	}
 
 	/**
