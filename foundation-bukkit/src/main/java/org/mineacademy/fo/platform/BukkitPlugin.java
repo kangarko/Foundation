@@ -572,13 +572,21 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 				Common.log("Missing CompAttribute for Bukkit's " + bukkit.name());
 			}
 	
-		// also check CompBiome
 		for (final Biome bukkit : Biome.values())
 			try {
 				CompBiome.valueOf(bukkit.name().toUpperCase());
 	
 			} catch (final IllegalArgumentException ex) {
 				Common.log("Missing CompBiome for Bukkit's " + bukkit.name());
+			}
+	
+		for (final EntityType bukkit : EntityType.values())
+			try {
+				if (CompEntityType.fromName(bukkit.name()) == null)
+					throw new IllegalArgumentException();
+	
+			} catch (final IllegalArgumentException ex) {
+				Common.log("Missing CompEntityType for Bukkit's " + bukkit.name());
 			}
 	
 		for (final DyeColor bukkit : DyeColor.values())
