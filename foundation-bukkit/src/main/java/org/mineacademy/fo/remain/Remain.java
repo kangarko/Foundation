@@ -355,8 +355,11 @@ public final class Remain {
 		try {
 			fieldPlayerConnection = Remain.getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
 					.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : "playerConnection");
+
 		} catch (final Throwable t) {
-			CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
+
+			if (MinecraftVersion.olderThan(V.v1_21))
+				CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_12))
@@ -371,7 +374,9 @@ public final class Remain {
 			sendPacket = Remain.getNMSClass("PlayerConnection", "net.minecraft.server.network.PlayerConnection")
 					.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 		} catch (final Throwable t) {
-			CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
+
+			if (MinecraftVersion.olderThan(V.v1_21))
+				CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_16)) {
