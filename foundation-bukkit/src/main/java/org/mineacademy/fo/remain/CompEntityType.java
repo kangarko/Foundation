@@ -206,6 +206,17 @@ public final class CompEntityType {
 	public static final EntityType CREAKING_TRANSIENT = find(-1, null, "CREAKING_TRANSIENT");
 	public static final EntityType FISHING_BOBBER = find(-1, null, "FISHING_BOBBER", "FISHING_HOOK");
 	public static final EntityType LIGHTNING_BOLT = find(-1, null, "LIGHTNING_BOLT", "LIGHTNING");
+
+	// Up to Minecraft 1.21.11
+	public static final EntityType CAMEL_HUSK = find(-1, CompMaterial.CAMEL_HUSK_SPAWN_EGG, "CAMEL_HUSK");
+	public static final EntityType COPPER_GOLEM = find(-1, CompMaterial.COPPER_GOLEM_SPAWN_EGG, "COPPER_GOLEM");
+	public static final EntityType HAPPY_GHAST = find(-1, CompMaterial.HAPPY_GHAST_SPAWN_EGG, "HAPPY_GHAST");
+	public static final EntityType LINGERING_POTION = find(-1, null, "LINGERING_POTION");
+	public static final EntityType MANNEQUIN = find(-1, null, "MANNEQUIN");
+	public static final EntityType NAUTILUS = find(-1, CompMaterial.NAUTILUS_SPAWN_EGG, "NAUTILUS");
+	public static final EntityType PARCHED = find(-1, CompMaterial.PARCHED_SPAWN_EGG, "PARCHED");
+	public static final EntityType ZOMBIE_NAUTILUS = find(-1, CompMaterial.ZOMBIE_NAUTILUS_SPAWN_EGG, "ZOMBIE_NAUTILUS");
+
 	/** @deprecated removed */
 	@Deprecated
 	public static final EntityType WEATHER = find(-1, null, "WEATHER");
