@@ -1880,6 +1880,89 @@ public final class Common {
 	}
 
 	/**
+	 * Joins elements into a human-readable list using an Oxford comma.
+	 *
+	 * Examples: "a", "a and b", "a, b, and c"
+	 *
+	 * @param <T>
+	 * @param array
+	 * @return
+	 */
+	public static <T> String joinWithOxfordComma(final T[] array) {
+		Valid.checkNotNull(array, "Cannot join null array!");
+
+		return joinWithOxfordComma(Arrays.asList(array));
+	}
+
+	/**
+	 * Joins elements into a human-readable list using an Oxford comma and "and".
+	 *
+	 * @param <T>
+	 * @param array
+	 * @return
+	 */
+	public static <T> String joinWithOxfordComma(final Iterable<T> array) {
+		Valid.checkNotNull(array, "Cannot join null array!");
+
+		return joinWithOxfordComma(array, "and");
+	}
+
+	/**
+	 * Joins elements into a human-readable list using an Oxford comma and the given conjunction.
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param conjunction
+	 * @return
+	 */
+	public static <T> String joinWithOxfordComma(final Iterable<T> array, final String conjunction) {
+		Valid.checkNotNull(array, "Cannot join null array!");
+		Valid.checkNotNull(conjunction, "Conjunction cannot be null!");
+
+		return joinWithOxfordComma(array, conjunction, object -> object == null ? "" : simplify(object));
+	}
+
+	/**
+	 * Joins elements into a human-readable list using an Oxford comma and the given conjunction.
+	 *
+	 * @param <T>
+	 * @param array
+	 * @param conjunction
+	 * @param stringer
+	 * @return
+	 */
+	public static <T> String joinWithOxfordComma(final Iterable<T> array, final String conjunction, final Stringer<T> stringer) {
+		Valid.checkNotNull(array, "Cannot join null array!");
+		Valid.checkNotNull(conjunction, "Conjunction cannot be null!");
+		Valid.checkNotNull(stringer, "Stringer cannot be null!");
+
+		final List<String> parts = new ArrayList<>();
+
+		for (final T item : array)
+			if (item != null)
+				parts.add(stringer.toString(item));
+
+		final int size = parts.size();
+		if (size == 0)
+			return "";
+
+		if (size == 1)
+			return parts.get(0);
+
+		if (size == 2)
+			return parts.get(0) + " " + conjunction + " " + parts.get(1);
+
+		final StringBuilder message = new StringBuilder(parts.get(0));
+
+		for (int i = 1; i < size - 1; i++)
+			message.append(", ").append(parts.get(i));
+
+		message.append(", ").append(conjunction).append(" ").append(parts.get(size - 1));
+
+		return message.toString();
+	}
+
+	/**
 	 * Replace some common classes such as entity to name automatically
 	 *
 	 * @param arg
