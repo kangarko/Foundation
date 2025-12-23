@@ -3,6 +3,8 @@ package org.mineacademy.fo.menu;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import jdk.internal.icu.text.StringPrep;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -11,6 +13,8 @@ import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.conversation.SimpleConversation;
+import org.mineacademy.fo.conversation.SimpleDecimalPrompt;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.button.Button;
 import org.mineacademy.fo.menu.model.ItemCreator;
@@ -274,14 +278,33 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 				return;
 
 			final double chance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
-			final double next = this.getNextQuantityDouble(click);
-			final double newChance = MathUtil.range(chance + next, 0.D, 1.D);
 
-			// Save drop chance
-			this.editedDropChances.put(slot, newChance);
+			if(click.name().startsWith("SHIFT_")) {
+				new SimpleDecimalPrompt("Enter the chance to run this command from 0.00% to 100%. Current: " + (chance * 100) + "%.", newChance -> {
+					newChance /= 100;
 
-			// Update item
-			this.setItem(slot, this.getItemAt(slot));
+					// Save drop chance
+					final double range = MathUtil.range(newChance, 0.D, 1.D);
+
+					this.editedDropChances.put(slot, range);
+				}) {
+					@Override
+					public void onConversationEnd(final SimpleConversation conversation, final ConversationAbandonedEvent event) {
+						super.onConversationEnd(conversation, event);
+
+						MenuContainerChances.this.displayTo(player);
+					}
+				}.show(player);
+			} else {
+				final double next = this.getNextQuantityDouble(click);
+				final double newChance = MathUtil.range(chance + next, 0.D, 1.D);
+
+				// Save drop chance
+				this.editedDropChances.put(slot, newChance);
+
+				// Update item
+				this.setItem(slot, this.getItemAt(slot));
+			}
 		}
 	}
 
