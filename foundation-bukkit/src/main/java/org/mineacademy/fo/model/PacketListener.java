@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.BukkitPlugin;
@@ -310,7 +311,8 @@ public abstract class PacketListener {
 							else if (this.hasIChatBase)
 								modifierIChatBaseComponent.write(0, WrappedChatComponent.fromJson(json));
 					}
-				}
+				} else
+					Debugger.debug("packets", "Skipping null or oversized chat message for " + playerName + ": " + json);
 
 			} finally {
 				this.processedPlayers.remove(player.getName());
