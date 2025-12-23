@@ -36,7 +36,8 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * in convertLegacyToMini() method.
 	 */
 	private static final Pattern GENERIC_DOMAIN_PATTERN = Pattern.compile("(?<![\\d.])(?:(?!\\d+\\.\\d*[a-df-zA-DF-Z]|\\d*\\.\\d+[a-df-zA-DF-Z])[a-zA-Z0-9\\-.*])+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
-			COLOR_CODE_PATTERN = Pattern.compile("(?i)(?:[§&][0-9a-fk-or])+");
+			COLOR_CODE_PATTERN = Pattern.compile("(?i)(?:[§&][0-9a-fk-or])+"),
+			URL_PATTERN = Pattern.compile("(?i)^((?:[§&][0-9a-fk-or])+)?(https?://\\S+)$");
 
 	/**
 	 * The special character which prefixes all chat colour codes. Use this if
@@ -839,6 +840,27 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		for (int idx = 0; idx < parts.length; idx++) {
 			final String part = parts[idx];
 
+			// Check for URLs with http:// or https:// protocol first (with optional leading color codes)
+			final Matcher urlMatcher = URL_PATTERN.matcher(part);
+
+			if (urlMatcher.matches()) {
+				final String colorPrefix = urlMatcher.group(1); // Optional color codes before URL
+				final String url = urlMatcher.group(2); // The actual URL
+
+				if (colorPrefix != null && !colorPrefix.isEmpty()) {
+					// URL has color codes at the start, convert only the color part
+					result.append(CompChatColor.convertLegacyToMini(colorPrefix, supportAmpersand));
+				}
+
+				// Append URL as-is without processing color codes inside it
+				result.append(url);
+
+				if (idx < parts.length - 1)
+					result.append(' ');
+
+				continue;
+			}
+
 			if (GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
 
 				if (part.startsWith("<") && part.endsWith(">")) {
@@ -854,7 +876,6 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 					// Domain has a color code at the start, so we need to color it properly :)
 					final Matcher matcher = COLOR_CODE_PATTERN.matcher(part);
-					String lastMatch = null;
 					String startingMatch = null;
 
 					while (matcher.find()) {
@@ -863,31 +884,25 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 							startingMatch = g;
 							break;
 						}
-						lastMatch = g;
 					}
 
-					final String color = (startingMatch != null) ? startingMatch : lastMatch;
-
-					if (color != null) {
+					// Only use color codes that actually start the domain, never from inside it
+					if (startingMatch != null) {
 
 						// Link colorized, now we add the rest of it without parsing colors
-						result.append(CompChatColor.convertLegacyToMini(color, true))
-								.append(part.replaceFirst(Pattern.quote(color), ""));
+						result.append(CompChatColor.convertLegacyToMini(startingMatch, true))
+								.append(part.substring(startingMatch.length()));
 						if (idx < parts.length - 1)
 							result.append(' ');
 						continue;
 					}
-				} else {
-
-					// Domain has no color code, just append it without parsing colors
-					result.append(part);
-					if (idx < parts.length - 1)
-						result.append(' ');
-					continue;
 				}
 
-				if(!part.startsWith("<"))
-					continue;
+				// Domain has no color code at start, just append it without parsing colors
+				result.append(part);
+				if (idx < parts.length - 1)
+					result.append(' ');
+				continue;
 			}
 
 			// Untouched original code below since no domains were identified in this part
