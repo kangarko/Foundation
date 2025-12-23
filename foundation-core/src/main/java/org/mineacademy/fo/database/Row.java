@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.collection.SerializedMap;
+import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.Platform;
 
@@ -73,6 +74,8 @@ public abstract class Row {
 	 * Save this row to the database by adding it to the queue. This will add it as a new row.
 	 */
 	public final void insertToQueue() {
+		Debugger.debug("Preparing to save log: " + this.toString());
+
 		this.getTable().getDatabase().insertToQueue(this);
 	}
 
