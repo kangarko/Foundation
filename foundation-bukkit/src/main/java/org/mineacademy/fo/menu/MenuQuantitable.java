@@ -153,7 +153,10 @@ public interface MenuQuantitable {
 						this.getLevelLoreLabel() + ": &6" + level,
 						"",
 						"   &8(Mouse click)",
-						"  &7&l< &4-" + quantity + "    &2+" + quantity + " &7&l>")
+						"  &7&l< &4-" + quantity + "    &2+" + quantity + " &7&l>",
+						"",
+						"   &8(Shift + click)",
+						"  &7Custom chance")
 				.make();
 	}
 
