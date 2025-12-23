@@ -3,7 +3,6 @@ package org.mineacademy.fo.menu;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import jdk.internal.icu.text.StringPrep;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -279,7 +278,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 
 			final double chance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
 
-			if(click.name().startsWith("SHIFT_")) {
+			if (click.name().startsWith("SHIFT_")) {
 				new SimpleDecimalPrompt("Enter the chance to run this command from 0.00% to 100%. Current: " + (chance * 100) + "%.", newChance -> {
 					newChance /= 100;
 
