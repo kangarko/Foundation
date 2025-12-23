@@ -275,7 +275,11 @@ public abstract class PacketListener {
 					final WrappedChatComponent chatComponent = modifierIChatBaseComponent.read(0);
 
 					if (chatComponent != null)
-						json = chatComponent.getJson();
+						try {
+							json = chatComponent.getJson();
+						} catch (final Throwable t) {
+							// Ignore, a bug in ProtocolLib 
+						}
 				}
 
 				if (json != null && json.length() < 50_000) {
