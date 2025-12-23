@@ -277,7 +277,7 @@ public abstract class PacketListener {
 					if (chatComponent != null)
 						try {
 							json = chatComponent.getJson();
-						} catch(final Throwable t) {
+						} catch (final Throwable t) {
 							throw new FoException("Failed to get json from chat component: " + chatComponent + ". This is not being caused by MineAcademy.", t);
 						}
 				}
