@@ -74,8 +74,6 @@ public abstract class Row {
 	 * Save this row to the database by adding it to the queue. This will add it as a new row.
 	 */
 	public final void insertToQueue() {
-		Debugger.debug("Preparing to save log: " + this.toString());
-
 		this.getTable().getDatabase().insertToQueue(this);
 	}
 
