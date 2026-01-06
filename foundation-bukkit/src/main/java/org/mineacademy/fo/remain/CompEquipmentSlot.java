@@ -152,7 +152,7 @@ public enum CompEquipmentSlot {
 		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
 		ValidCore.checkNotNull(equipment);
 
-		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND");
+		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND") || entity.getType().toString().equals("MANNEQUIN");
 
 		if (MinecraftVersion.olderThan(V.v1_9) && item == null)
 			item = new ItemStack(Material.AIR);
