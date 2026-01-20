@@ -203,6 +203,10 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		if (this.loadingFailed)
 			return;
 
+		this.enabled = false;
+
+		getServer().getScheduler().cancel(this);
+
 		BungeePlatform.closeAudiences();
 
 		try {
