@@ -66,7 +66,10 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	 * @return
 	 */
 	public static ProxyServer getServer() {
-		return getInstance().proxy;
+		if (instance == null)
+			throw new IllegalStateException("VelocityPlugin instance is null - plugin has been shutdown.");
+
+		return instance.proxy;
 	}
 
 	/**
@@ -251,6 +254,10 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 	public final void onProxyShutdown(final ProxyShutdownEvent event) {
 		if (this.loadingFailed)
 			return;
+
+		this.enabled = false;
+
+		this.proxy.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
 
 		try {
 			this.onPluginStop();
