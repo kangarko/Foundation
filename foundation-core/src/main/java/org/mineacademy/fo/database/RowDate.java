@@ -28,7 +28,7 @@ public abstract class RowDate extends Row {
 	 * @param date
 	 */
 	protected RowDate(final long date) {
-		this.date = System.currentTimeMillis();
+		this.date = date;
 	}
 
 	/**
