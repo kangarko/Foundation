@@ -45,6 +45,14 @@
   "command-invalid-uuid": "Invalid UUID '{uuid}'",
   "command-invalid-usage": "Invalid usage. Usage: '{usage}'",
   "command-invalid-world": "Invalid world '{world}'. Available: {available}",
+  "command-label": [
+    "&8{line}",
+    " {header_prefix}{plugin_name} &r{secondary_prefix}{plugin_version}",
+    " ",
+    " {secondary_prefix}Made by &f{authors} {secondary_prefix}{copyright}",
+    " {secondary_prefix}{credits}",
+    "&8{line}"
+  ],
   "command-label-authors": "Made by",
   "command-label-description": "<red>Description: {description}",
   "command-label-help-for": "Help for /{label}",

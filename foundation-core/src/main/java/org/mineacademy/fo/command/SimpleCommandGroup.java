@@ -224,22 +224,21 @@ public abstract class SimpleCommandGroup {
 	 */
 	protected List<String> getNoParamsHeader() {
 		final List<String> messages = new ArrayList<>();
-
-		messages.add("&8" + CommonCore.chatLineSmooth());
-		messages.add(" " + this.getHeaderPrefix() + Platform.getPlugin().getName() + " &r" + this.getSecondaryPrefix() + Platform.getPlugin().getVersion());
-		messages.add(" ");
-
 		final String authors = Platform.getPlugin().getAuthors();
+		final int foundedYear = Platform.getPlugin().getFoundedYear();
+		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+		final String copyright = foundedYear != -1 ? "\u00A9 " + foundedYear + (currentYear != foundedYear ? " - " + currentYear : "") : "";
 
-		if (!authors.isEmpty()) {
-			final int foundedYear = Platform.getPlugin().getFoundedYear();
-			final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-
-			messages.add(" " + this.getSecondaryPrefix() + Lang.plain("command-label-authors") + " &f" + authors + (foundedYear != -1 ? " " + this.getSecondaryPrefix() + "\u00A9 " + foundedYear + (currentYear != foundedYear ? " - " + currentYear : "") : ""));
-		}
-
-		messages.add(" " + this.getSecondaryPrefix() + this.getCredits());
-		messages.add("&8" + CommonCore.chatLineSmooth());
+		for (final String line : Lang.plain("command-label").split("\n"))
+			messages.add(line
+					.replace("{plugin_name}", Platform.getPlugin().getName())
+					.replace("{plugin_version}", Platform.getPlugin().getVersion())
+					.replace("{authors}", authors)
+					.replace("{copyright}", copyright)
+					.replace("{credits}", this.getCredits())
+					.replace("{line}", CommonCore.chatLineSmooth())
+					.replace("{header_prefix}", this.getHeaderPrefix())
+					.replace("{secondary_prefix}", this.getSecondaryPrefix()));
 
 		return messages;
 	}
