@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import lombok.NonNull;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 final class BungeeServer extends FoundationServer {
 
@@ -41,7 +42,7 @@ final class BungeeServer extends FoundationServer {
 
 	@Override
 	public Set<UUID> getPlayerUniqueIds() {
-		return this.server.getPlayers().stream().map(player -> player.getUniqueId()).collect(Collectors.toSet());
+		return this.server.getPlayers().stream().map(ProxiedPlayer::getUniqueId).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -52,5 +53,10 @@ final class BungeeServer extends FoundationServer {
 	@Override
 	public void sendData(final String channel, final byte[] byteArray) {
 		this.server.sendData(channel, byteArray);
+	}
+
+	@Override
+	public String toString() {
+		return "BungeeServer{name=" + getName() + ",address=" + getAddress() + "}";
 	}
 }
