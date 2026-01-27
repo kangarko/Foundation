@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
@@ -35,7 +36,7 @@ public final class BukkitServer extends FoundationServer {
 
 	@Override
 	public Set<UUID> getPlayerUniqueIds() {
-		return Remain.getOnlinePlayers().stream().map(player -> player.getUniqueId()).collect(Collectors.toSet());
+		return Remain.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -46,5 +47,10 @@ public final class BukkitServer extends FoundationServer {
 	@Override
 	public void sendData(final String channel, final byte[] byteArray) {
 		Platform.sendPluginMessage(null, channel, byteArray);
+	}
+
+	@Override
+	public String toString() {
+		return "BukkitServer{name=" + getName() + ",address=" + getAddress() + "}";
 	}
 }

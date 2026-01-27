@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.messages.LegacyChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
@@ -43,7 +44,7 @@ final class VelocityServer extends FoundationServer {
 
 	@Override
 	public Set<UUID> getPlayerUniqueIds() {
-		return this.server.getPlayersConnected().stream().map(player -> player.getUniqueId()).collect(Collectors.toSet());
+		return this.server.getPlayersConnected().stream().map(Player::getUniqueId).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -54,5 +55,10 @@ final class VelocityServer extends FoundationServer {
 	@Override
 	public void sendData(final String channel, final byte[] byteArray) {
 		this.server.sendPluginMessage(new LegacyChannelIdentifier(channel), byteArray);
+	}
+
+	@Override
+	public String toString() {
+		return "VelocityServer{name=" + getName() + ",address=" + getAddress() + "}";
 	}
 }
