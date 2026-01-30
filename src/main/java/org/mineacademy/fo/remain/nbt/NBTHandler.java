@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 
 public interface NBTHandler<T> {
 
-	default boolean fuzzyMatch(final Object obj) {
+	default boolean fuzzyMatch(Object obj) {
 		return false;
 	}
 

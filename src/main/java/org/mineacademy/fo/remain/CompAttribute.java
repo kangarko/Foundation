@@ -9,8 +9,6 @@ import org.bukkit.entity.LivingEntity;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.ReflectionUtil.MissingEnumException;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.exception.FoException;
 
 import lombok.NonNull;
@@ -241,7 +239,7 @@ public enum CompAttribute {
 	 *
 	 * @param names
 	 */
-	CompAttribute(String... names) {
+	CompAttribute(final String... names) {
 		if (MinecraftVersion.atLeast(V.v1_9))
 			for (final String name : names)
 				try {
@@ -249,7 +247,7 @@ public enum CompAttribute {
 
 					break;
 
-				} catch (final MissingEnumException | IllegalArgumentException ex) {
+				} catch (final IllegalArgumentException ex) {
 					// Ignore
 				}
 	}
@@ -307,22 +305,35 @@ public enum CompAttribute {
 		// Minecraft 1.8.8+
 		if (hasAttributeClass) {
 			if (this.bukkitAttribute != null) {
-				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
-				Valid.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
+				AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+
+				if (instance == null) {
+					try {
+						entity.registerAttribute((Attribute) this.bukkitAttribute);
+						instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+
+						if (instance == null)
+							throw new IllegalStateException("Attribute " + this + " cannot be set nor registered for " + entity);
+
+					} catch (final NoSuchMethodError ex) {
+						// Only Paper supports registering attributes
+						throw new IllegalStateException("Attribute " + this + " cannot be set for " + entity);
+					}
+				}
 
 				instance.setBaseValue(value);
 			}
 
-		} else {
-			if (this == MAX_HEALTH)
-				entity.setMaxHealth(value);
+		} else if (this == MAX_HEALTH)
+			entity.setMaxHealth(value);
 
-			else if (this.getNmsName() != null) {
-				final Object instance = this.getLegacyAttributeInstance(entity);
-				Valid.checkNotNull(instance, "Attribute " + this + " cannot be set for " + entity);
+		else if (this.getNmsName() != null) {
+			final Object instance = this.getLegacyAttributeInstance(entity);
 
-				ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
-			}
+			if (instance == null)
+				throw new FoException("Attribute " + this + " cannot be set for " + entity);
+
+			ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
 		}
 	}
 
@@ -340,15 +351,13 @@ public enum CompAttribute {
 				return instance != null;
 			}
 
-		} else {
-			if (this == MAX_HEALTH)
-				return true;
+		} else if (this == MAX_HEALTH)
+			return true;
 
-			else if (this.getNmsName() != null) {
-				final Object instance = this.getLegacyAttributeInstance(entity);
+		else if (this.getNmsName() != null) {
+			final Object instance = this.getLegacyAttributeInstance(entity);
 
-				return instance != null;
-			}
+			return instance != null;
 		}
 
 		return false;

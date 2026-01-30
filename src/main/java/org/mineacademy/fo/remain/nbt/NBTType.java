@@ -22,8 +22,8 @@ public enum NBTType {
 	NBTTagIntArray(11, "INT[]"),
 	NBTTagLongArray(12, "LONG[]");
 
-	NBTType(final int i, final String name) {
-		this.id = i;
+	NBTType(int i, String name) {
+		id = i;
 		this.name = name;
 	}
 
@@ -34,28 +34,28 @@ public enum NBTType {
 	 * @return Id used by Minecraft internally
 	 */
 	public int getId() {
-		return this.id;
+		return id;
 	}
 
 	/**
 	 * @return Name of the NBTType
 	 */
 	public String getName() {
-		return this.name;
+		return name;
 	}
 
 	/**
 	 * @param id Internal Minecraft id
 	 * @return Enum representing the id, NBTTagEnd for invalide ids
 	 */
-	public static NBTType valueOf(final int id) {
+	public static NBTType valueOf(int id) {
 		for (final NBTType t : values())
 			if (t.getId() == id)
 				return t;
 		return NBTType.NBTTagEnd;
 	}
 
-	public static NBTType fromName(final String name) {
+	public static NBTType fromName(String name) {
 		for (final NBTType t : values())
 			if (t.getName().equals(name))
 				return t;

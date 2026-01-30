@@ -18,7 +18,7 @@ final class NBTJsonUtil {
 	 * @return
 	 * @throws NbtApiException
 	 */
-	public static JsonElement itemStackToJson(final ItemStack itemStack) {
+	public static JsonElement itemStackToJson(ItemStack itemStack) {
 		try {
 			final Codec<Object> itemStackCodec = (Codec<Object>) ClassWrapper.NMS_ITEMSTACK.getClazz()
 					.getField(MojangToMapping.getMapping().get("net.minecraft.world.item.ItemStack#CODEC")).get(null);

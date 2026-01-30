@@ -20,16 +20,17 @@ public class NBTBlock {
 	private final Block block;
 	private final NBTChunk nbtChunk;
 
-	public NBTBlock(final Block block) {
+	public NBTBlock(Block block) {
 		this.block = block;
-		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3))
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3)) {
 			throw new NbtApiException("NBTBlock is only working for 1.16.4+!");
-		this.nbtChunk = new NBTChunk(block.getChunk());
+		}
+		nbtChunk = new NBTChunk(block.getChunk());
 	}
 
 	public NBTCompound getData() {
-		return this.nbtChunk.getPersistentDataContainer().getOrCreateCompound("blocks")
-				.getOrCreateCompound(this.block.getX() + "_" + this.block.getY() + "_" + this.block.getZ());
+		return nbtChunk.getPersistentDataContainer().getOrCreateCompound("blocks")
+				.getOrCreateCompound(block.getX() + "_" + block.getY() + "_" + block.getZ());
 	}
 
 }

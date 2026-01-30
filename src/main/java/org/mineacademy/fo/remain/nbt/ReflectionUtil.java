@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 
 final class ReflectionUtil {
 
-	public static Field getMappedField(final Class<?> clazz, final String mapping) {
+	public static Field getMappedField(Class<?> clazz, String mapping) {
 		final String mojmapName = mapping.split("#")[1];
 		try {
 			return clazz.getField(mojmapName);

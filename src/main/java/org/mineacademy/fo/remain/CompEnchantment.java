@@ -278,7 +278,7 @@ public final class CompEnchantment {
 	 * @param name
 	 * @return
 	 */
-	public static Enchantment getByName(String name) {
+	public static Enchantment getByName(final String name) {
 		return byName.get(name.replace("minecraft:", "").toUpperCase());
 	}
 
@@ -297,7 +297,7 @@ public final class CompEnchantment {
 	 * @param type
 	 * @return
 	 */
-	public static String getLoreName(Enchantment type) {
+	public static String getLoreName(final Enchantment type) {
 		return loreName.get(type);
 	}
 
@@ -313,7 +313,7 @@ public final class CompEnchantment {
 	/*
 	 * Find the enchantment by ID or name, returns null if unsupported by server
 	 */
-	private static Enchantment register(int id, String legacyName, String modernName) {
+	private static Enchantment register(final int id, final String legacyName, final String modernName) {
 		Enchantment enchantment = null;
 
 		try {

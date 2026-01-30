@@ -28,11 +28,11 @@ final class GsonWrapper {
 	 * @param obj
 	 * @return Json, representing the Object
 	 */
-	public static String getString(final Object obj) {
+	public static String getString(Object obj) {
 		return gson.toJson(obj);
 	}
 
-	public static void overwriteGsonInstance(final Gson replacement) {
+	public static void overwriteGsonInstance(Gson replacement) {
 		gson = replacement;
 	}
 
@@ -43,10 +43,11 @@ final class GsonWrapper {
 	 * @param type
 	 * @return Object that got created, or null if the json is null
 	 */
-	public static <T> T deserializeJson(final String json, final Class<T> type) {
+	public static <T> T deserializeJson(String json, Class<T> type) {
 		try {
-			if (json == null)
+			if (json == null) {
 				return null;
+			}
 
 			final T obj = gson.fromJson(json, type);
 			return type.cast(obj);

@@ -14,13 +14,13 @@ public class NBTUUIDList extends NBTList<UUID> {
 
 	private final NBTContainer tmpContainer;
 
-	protected NBTUUIDList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
+	protected NBTUUIDList(NBTCompound owner, String name, NBTType type, Object list) {
 		super(owner, name, type, list);
 		this.tmpContainer = new NBTContainer();
 	}
 
 	@Override
-	protected Object asTag(final UUID object) {
+	protected Object asTag(UUID object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGINTARRAY.getClazz().getDeclaredConstructor(int[].class);
 			con.setAccessible(true);
@@ -32,12 +32,12 @@ public class NBTUUIDList extends NBTList<UUID> {
 	}
 
 	@Override
-	public UUID get(final int index) {
+	public UUID get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
-			ReflectionMethod.COMPOUND_SET.run(this.tmpContainer.getCompound(), "tmp", obj);
-			final int[] val = this.tmpContainer.getIntArray("tmp");
-			this.tmpContainer.removeKey("tmp");
+			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			ReflectionMethod.COMPOUND_SET.run(tmpContainer.getCompound(), "tmp", obj);
+			final int[] val = tmpContainer.getIntArray("tmp");
+			tmpContainer.removeKey("tmp");
 			return UUIDUtil.uuidFromIntArray(val);
 		} catch (final NumberFormatException nf) {
 			return null;
