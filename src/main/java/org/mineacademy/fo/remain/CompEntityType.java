@@ -1,14 +1,17 @@
 package org.mineacademy.fo.remain;
 
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
+import org.mineacademy.fo.Common;
 import org.mineacademy.fo.Valid;
 
 import lombok.NonNull;
@@ -21,12 +24,7 @@ public final class CompEntityType {
 	/**
 	 * The comparator for sorting entity types by their name
 	 */
-	private static final Comparator<EntityType> COMPARATOR = new Comparator<EntityType>() {
-		@Override
-		public int compare(EntityType first, EntityType last) {
-			return first.name().compareTo(last.name());
-		}
-	};
+	private static final Comparator<EntityType> COMPARATOR = Comparator.comparing(EntityType::name);
 
 	/**
 	 * A set of all available entity types on this server version.
@@ -208,6 +206,17 @@ public final class CompEntityType {
 	public static final EntityType CREAKING_TRANSIENT = find(-1, null, "CREAKING_TRANSIENT");
 	public static final EntityType FISHING_BOBBER = find(-1, null, "FISHING_BOBBER", "FISHING_HOOK");
 	public static final EntityType LIGHTNING_BOLT = find(-1, null, "LIGHTNING_BOLT", "LIGHTNING");
+
+	// Up to Minecraft 1.21.11
+	public static final EntityType CAMEL_HUSK = find(-1, CompMaterial.CAMEL_HUSK_SPAWN_EGG, "CAMEL_HUSK");
+	public static final EntityType COPPER_GOLEM = find(-1, CompMaterial.COPPER_GOLEM_SPAWN_EGG, "COPPER_GOLEM");
+	public static final EntityType HAPPY_GHAST = find(-1, CompMaterial.HAPPY_GHAST_SPAWN_EGG, "HAPPY_GHAST");
+	public static final EntityType LINGERING_POTION = find(-1, null, "LINGERING_POTION");
+	public static final EntityType MANNEQUIN = find(-1, null, "MANNEQUIN");
+	public static final EntityType NAUTILUS = find(-1, CompMaterial.NAUTILUS_SPAWN_EGG, "NAUTILUS");
+	public static final EntityType PARCHED = find(-1, CompMaterial.PARCHED_SPAWN_EGG, "PARCHED");
+	public static final EntityType ZOMBIE_NAUTILUS = find(-1, CompMaterial.ZOMBIE_NAUTILUS_SPAWN_EGG, "ZOMBIE_NAUTILUS");
+
 	/** @deprecated removed */
 	@Deprecated
 	public static final EntityType WEATHER = find(-1, null, "WEATHER");
@@ -222,9 +231,10 @@ public final class CompEntityType {
 	/*
 	 * Find the entity type by the given id and bukkit field names.
 	 */
-	private static EntityType find(int id, CompMaterial spawnEggMaterial, @NonNull String... bukkitFieldNames) {
+	private static EntityType find(final int id, final CompMaterial spawnEggMaterial, @NonNull final String... bukkitFieldNames) {
 		EntityType type = null;
 		boolean enabledByFeature = false;
+		final Method isEnabled = Remain.getIsEnabledFeatureWorldMethod();
 
 		for (final String bukkitFieldName : bukkitFieldNames) {
 			try {
@@ -234,17 +244,34 @@ public final class CompEntityType {
 				continue;
 			}
 
-			try {
-				for (final World other : Bukkit.getWorlds())
-					if (type.isEnabledByFeature(other)) {
-						enabledByFeature = true;
-
-						break;
-					}
-
-			} catch (final IllegalArgumentException | NoSuchMethodError err) {
+			if (isEnabled == null)
 				enabledByFeature = true;
-			}
+
+			else
+				try {
+					for (final World other : Bukkit.getWorlds())
+						if ((boolean) isEnabled.invoke(other, type) == true) {
+							enabledByFeature = true;
+
+							break;
+						}
+
+				} catch (final IllegalArgumentException | NoSuchMethodError err) {
+					enabledByFeature = true;
+
+				} catch (final ReflectiveOperationException ex) {
+					Throwable cause = ex;
+
+					while (cause.getCause() != null)
+						cause = cause.getCause();
+
+					if (cause instanceof IllegalArgumentException || cause instanceof NoSuchMethodError || cause instanceof NoSuchElementException) {
+						// ignore
+					} else
+						Common.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
+
+					enabledByFeature = true;
+				}
 		}
 
 		if (type != null && enabledByFeature) {
@@ -331,7 +358,7 @@ public final class CompEntityType {
 	 * @param name
 	 * @return
 	 */
-	public static EntityType fromName(@NonNull String name) {
+	public static EntityType fromName(@NonNull final String name) {
 		EntityType type = BY_NAME.get(name.toUpperCase());
 
 		if (type == null)
@@ -347,7 +374,7 @@ public final class CompEntityType {
 	 * @param material
 	 * @return
 	 */
-	public static EntityType fromSpawnEggMaterial(CompMaterial material) {
+	public static EntityType fromSpawnEggMaterial(final CompMaterial material) {
 		return SPAWN_EGG_TO_ENTITY.get(material);
 	}
 
@@ -358,7 +385,7 @@ public final class CompEntityType {
 	 * @param type
 	 * @return
 	 */
-	public static CompMaterial getSpawnEgg(EntityType type) {
+	public static CompMaterial getSpawnEgg(final EntityType type) {
 		return ENTITY_TO_SPAWN_EGG.get(type);
 	}
 
@@ -368,7 +395,7 @@ public final class CompEntityType {
 	 * @param type
 	 * @return
 	 */
-	public static Integer getId(EntityType type) {
+	public static Integer getId(final EntityType type) {
 		return ID_TO_ENTITY.get(type);
 	}
 
@@ -379,7 +406,7 @@ public final class CompEntityType {
 	 * @param id
 	 * @return
 	 */
-	public static EntityType fromId(int id) {
+	public static EntityType fromId(final int id) {
 		Valid.checkBoolean(id != -1, "Cannot get entity type from id -1");
 
 		return BY_ID.get(id);

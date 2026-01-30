@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.ReflectionUtil.ReflectionException;
 import org.mineacademy.fo.Valid;
 
 import lombok.SneakyThrows;
@@ -186,7 +185,8 @@ public enum CompParticle {
 	WHITE_ASH("WHITE_ASH", "WHITE_ASH"),
 	WHITE_SMOKE("WHITE_SMOKE", "WHITE_SMOKE"),
 	TINTED_LEAVES("TINTED_LEAVES", "TINTED_LEAVES"),
-	FIREFLY("FIREFLY", "FIREFLY");
+	FIREFLY("FIREFLY", "FIREFLY"),
+	COPPER_FIRE_FLAME("COPPER_FIRE_FLAME", "COPPER_FIRE_FLAME");
 
 	/**
 	 * Hardcoded values for best performance
@@ -232,7 +232,7 @@ public enum CompParticle {
 	/*
 	 * Construct a new compatible particle class
 	 */
-	CompParticle(String nameLegacy, String nameModern) {
+	CompParticle(final String nameLegacy, final String nameModern) {
 		this(null, nameLegacy, nameModern);
 	}
 
@@ -240,7 +240,7 @@ public enum CompParticle {
 	 * Construct a new compatible particle class
 	 */
 	@SuppressWarnings("rawtypes")
-	CompParticle(String name1_7, String nameLegacy, String nameModern) {
+	CompParticle(final String name1_7, final String nameLegacy, final String nameModern) {
 		this.name1_7 = name1_7;
 		this.nameLegacy = nameLegacy;
 		this.nameModern = nameModern;
@@ -254,7 +254,7 @@ public enum CompParticle {
 				try {
 					packetClass = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "N/A");
 
-				} catch (final ReflectionException ex) {
+				} catch (final org.mineacademy.fo.ReflectionUtil.ReflectionException ex) {
 
 					// Likely 1.7.10 Thermos, unsupported
 					this.nmsEnumParticle = null;
@@ -322,6 +322,15 @@ public enum CompParticle {
 	}
 
 	/**
+	 * Return the Bukkit particle or null if this particle is not supported on this server
+	 *
+	 * @return
+	 */
+	public Particle getParticle() {
+		return (Particle) bukkitEnumParticle;
+	}
+
+	/**
 	 * Spawns this particle with the given color, only works for {@link #REDSTONE}
 	 * The particle size requires MC 1.13+
 	 *
@@ -329,7 +338,7 @@ public enum CompParticle {
 	 * @param color
 	 * @param particleSize
 	 */
-	public void spawn(Location location, Color color, float particleSize) {
+	public void spawn(final Location location, final Color color, final float particleSize) {
 		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
 
 		if (atLeast1_13)
@@ -353,7 +362,7 @@ public enum CompParticle {
 	 * @param color
 	 * @param particleSize
 	 */
-	public void spawn(Player player, Location location, Color color, float particleSize) {
+	public void spawn(final Player player, final Location location, final Color color, final float particleSize) {
 		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
 
 		if (atLeast1_13)
@@ -373,7 +382,7 @@ public enum CompParticle {
 	 *
 	 * @param location
 	 */
-	public void spawn(Location location) {
+	public void spawn(final Location location) {
 		this.spawn(location, 0, 0, 0, 0, 0, 0, null);
 	}
 
@@ -383,7 +392,7 @@ public enum CompParticle {
 	 * @param location
 	 * @param data
 	 */
-	public final void spawn(Location location, CompMaterial data) {
+	public final void spawn(final Location location, final CompMaterial data) {
 		Valid.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
 
 		if (atLeast1_12) {
@@ -403,7 +412,7 @@ public enum CompParticle {
 	 * @param location
 	 * @param extra
 	 */
-	public final void spawn(Location location, double extra) {
+	public final void spawn(final Location location, final double extra) {
 		this.spawn(location, 0, extra);
 	}
 
@@ -414,7 +423,7 @@ public enum CompParticle {
 	 * @param speed
 	 * @param extra
 	 */
-	public final void spawn(Location location, double speed, double extra) {
+	public final void spawn(final Location location, final double speed, final double extra) {
 		this.spawn(location, 0d, 0d, 0d, speed, 0, extra, null);
 	}
 
@@ -430,7 +439,7 @@ public enum CompParticle {
 	 * @param extra
 	 * @param data
 	 */
-	public void spawn(Location location, double offsetX, double offsetY, double offsetZ, double speed, int count, double extra, int... data) {
+	public void spawn(final Location location, final double offsetX, final double offsetY, final double offsetZ, final double speed, final int count, final double extra, final int... data) {
 		if (this.isRemoved())
 			return;
 
@@ -457,7 +466,7 @@ public enum CompParticle {
 	 * @param player
 	 * @param location
 	 */
-	public void spawn(Player player, Location location) {
+	public void spawn(final Player player, final Location location) {
 		this.spawn(player, location, 0d, 0d, 0d, 0d, 0, 0d, null);
 	}
 
@@ -468,7 +477,7 @@ public enum CompParticle {
 	 * @param location
 	 * @param extra
 	 */
-	public void spawn(Player player, Location location, double extra) {
+	public void spawn(final Player player, final Location location, final double extra) {
 		this.spawn(player, location, 0d, 0d, 0d, 0d, 0, extra, null);
 	}
 
@@ -479,7 +488,7 @@ public enum CompParticle {
 	 * @param location
 	 * @param data
 	 */
-	public final void spawn(Player player, Location location, CompMaterial data) {
+	public final void spawn(final Player player, final Location location, final CompMaterial data) {
 		Valid.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
 
 		if (atLeast1_12) {
@@ -506,23 +515,30 @@ public enum CompParticle {
 	 * @param extra
 	 * @param data
 	 */
-	public void spawn(Player player, Location location, double offsetX, double offsetY, double offsetZ, double speed, int count, double extra, int... data) {
+	public void spawn(final Player player, final Location location, final double offsetX, final double offsetY, final double offsetZ, final double speed, final int count, final double extra, final int... data) {
 		if (this.isRemoved())
 			return;
 
 		// Minecraft 1.12 and up
-		if (this.bukkitEnumParticle != null && this != REDSTONE)
-			player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
+		if (this.bukkitEnumParticle != null && this != REDSTONE) {
+			if (data == null)
+				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
+			else
+				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 
-		else if (this.packetConstructor != null)
-			Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
+		} else if (this.packetConstructor != null) {
+			if (data == null)
+				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra));
+			else
+				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
+		}
 	}
 
 	/*
 	 * Resolves a compatible particle packet using Foundation fast cached reflection methods
 	 */
 	@SneakyThrows
-	private Object preparePacket(double posX, double posY, double posZ, double offsetX, double offsetY, double offsetZ, double speed, int count, double extra, int... data) {
+	private Object preparePacket(final double posX, final double posY, final double posZ, final double offsetX, final double offsetY, final double offsetZ, final double speed, final int count, final double extra, int... data) {
 
 		if (atLeast1_8) {
 

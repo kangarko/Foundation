@@ -11,48 +11,51 @@ package org.mineacademy.fo.remain.nbt;
  */
 public class NBTListCompound extends NBTCompound {
 
-	private final NBTList<?> owner;
+	private NBTList<?> owner;
 	private Object compound;
 
-	protected NBTListCompound(final NBTList<?> parent, final Object obj) {
+	protected NBTListCompound(NBTList<?> parent, Object obj) {
 		super(null, null);
-		this.owner = parent;
-		this.compound = obj;
+		owner = parent;
+		compound = obj;
 	}
 
 	public NBTList<?> getListParent() {
-		return this.owner;
+		return owner;
 	}
 
 	@Override
 	protected boolean isClosed() {
-		return this.owner.getParent().isClosed();
+		return owner.getParent().isClosed();
 	}
 
 	@Override
 	protected boolean isReadOnly() {
-		return this.owner.getParent().isReadOnly();
+		return owner.getParent().isReadOnly();
 	}
 
 	@Override
 	public Object getCompound() {
-		if (this.isClosed())
+		if (isClosed()) {
 			throw new NbtApiException("Tried using closed NBT data!");
-		return this.compound;
+		}
+		return compound;
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
-		if (this.isClosed())
+	protected void setCompound(Object compound) {
+		if (isClosed()) {
 			throw new NbtApiException("Tried using closed NBT data!");
-		if (this.isReadOnly())
+		}
+		if (isReadOnly()) {
 			throw new NbtApiException("Tried setting data in read only mode!");
+		}
 		this.compound = compound;
 	}
 
 	@Override
 	protected void saveCompound() {
-		this.owner.save();
+		owner.save();
 	}
 
 }

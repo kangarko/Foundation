@@ -11,12 +11,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class NBTIntegerList extends NBTList<Integer> {
 
-	protected NBTIntegerList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
+	protected NBTIntegerList(NBTCompound owner, String name, NBTType type, Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	protected Object asTag(final Integer object) {
+	protected Object asTag(Integer object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGINT.getClazz().getDeclaredConstructor(int.class);
 			con.setAccessible(true);
@@ -28,9 +28,9 @@ public class NBTIntegerList extends NBTList<Integer> {
 	}
 
 	@Override
-	public Integer get(final int index) {
+	public Integer get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
 			return Integer.valueOf(obj.toString());
 		} catch (final NumberFormatException nf) {
 			return 0;

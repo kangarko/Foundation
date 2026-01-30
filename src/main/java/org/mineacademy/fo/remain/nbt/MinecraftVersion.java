@@ -43,7 +43,8 @@ enum MinecraftVersion {
 	MC1_21_R2(1212, true),
 	MC1_21_R3(1213, true),
 	MC1_21_R4(1214, true),
-	MC1_21_R5(1215, true);
+	MC1_21_R5(1215, true),
+	MC1_21_R6(1216, true);
 
 	private static MinecraftVersion version;
 
@@ -55,7 +56,6 @@ enum MinecraftVersion {
 	private final int versionId;
 	private final boolean mojangMapping;
 
-	@SuppressWarnings("serial")
 	private static final Map<String, MinecraftVersion> VERSION_TO_REVISION = new HashMap<String, MinecraftVersion>() {
 		{
 			this.put("1.20", MC1_20_R1);
@@ -73,14 +73,15 @@ enum MinecraftVersion {
 			this.put("1.21.5", MC1_21_R4);
 			this.put("1.21.6", MC1_21_R5);
 			this.put("1.21.7", MC1_21_R5);
+			this.put("1.21.8", MC1_21_R5);
 		}
 	};
 
-	MinecraftVersion(final int versionId) {
+	MinecraftVersion(int versionId) {
 		this(versionId, false);
 	}
 
-	MinecraftVersion(final int versionId, final boolean mojangMapping) {
+	MinecraftVersion(int versionId, boolean mojangMapping) {
 		this.versionId = versionId;
 		this.mojangMapping = mojangMapping;
 	}
@@ -89,7 +90,7 @@ enum MinecraftVersion {
 	 * @return A simple comparable Integer, representing the version.
 	 */
 	public int getVersionId() {
-		return this.versionId;
+		return versionId;
 	}
 
 	/**
@@ -97,7 +98,7 @@ enum MinecraftVersion {
 	 *         internally
 	 */
 	public boolean isMojangMapping() {
-		return this.mojangMapping;
+		return mojangMapping;
 	}
 
 	/**
@@ -107,12 +108,13 @@ enum MinecraftVersion {
 	 * @return
 	 */
 	public String getPackageName() {
-		if (this == UNKNOWN)
+		if (this == UNKNOWN) {
 			try {
 				return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 			} catch (final Exception ex) {
 				// ignore, paper without remap, will fail
 			}
+		}
 		return this.name().replace("MC", "v");
 	}
 
@@ -122,7 +124,7 @@ enum MinecraftVersion {
 	 * @param version The minimum version
 	 * @return
 	 */
-	public static boolean isAtLeastVersion(final MinecraftVersion version) {
+	public static boolean isAtLeastVersion(MinecraftVersion version) {
 		return getVersion().getVersionId() >= version.getVersionId();
 	}
 
@@ -132,7 +134,7 @@ enum MinecraftVersion {
 	 * @param version The minimum version
 	 * @return
 	 */
-	public static boolean isNewerThan(final MinecraftVersion version) {
+	public static boolean isNewerThan(MinecraftVersion version) {
 		return getVersion().getVersionId() > version.getVersionId();
 	}
 

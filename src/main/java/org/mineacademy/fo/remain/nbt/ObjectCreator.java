@@ -20,15 +20,15 @@ enum ObjectCreator {
 	private Constructor<?> construct;
 	private Class<?> targetClass;
 
-	ObjectCreator(final MinecraftVersion from, final MinecraftVersion to, final Class<?> clazz, final Class<?>... args) {
+	ObjectCreator(MinecraftVersion from, MinecraftVersion to, Class<?> clazz, Class<?>... args) {
 		if ((clazz == null) || (from != null && MinecraftVersion.getVersion().getVersionId() < from.getVersionId()))
 			return;
 		if (to != null && MinecraftVersion.getVersion().getVersionId() > to.getVersionId())
 			return;
 		try {
 			this.targetClass = clazz;
-			this.construct = clazz.getDeclaredConstructor(args);
-			this.construct.setAccessible(true);
+			construct = clazz.getDeclaredConstructor(args);
+			construct.setAccessible(true);
 		} catch (final Exception ex) {
 			Common.error(ex, "Unable to find the constructor for the class '" + clazz.getName() + "'");
 		}
@@ -40,11 +40,11 @@ enum ObjectCreator {
 	 * @param args
 	 * @return Object created
 	 */
-	public Object getInstance(final Object... args) {
+	public Object getInstance(Object... args) {
 		try {
-			return this.construct.newInstance(args);
+			return construct.newInstance(args);
 		} catch (final Exception ex) {
-			throw new NbtApiException("Exception while creating a new instance of '" + this.targetClass + "'", ex);
+			throw new NbtApiException("Exception while creating a new instance of '" + targetClass + "'", ex);
 		}
 	}
 

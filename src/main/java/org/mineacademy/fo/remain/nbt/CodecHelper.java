@@ -5,7 +5,7 @@ import java.util.Optional;
 
 final class CodecHelper {
 
-	public static Object convertItemStackToNbt(final Object itemStack) {
+	public static Object convertItemStackToNbt(Object itemStack) {
 		Object result = null;
 		try {
 			// FIXME caching, this has 0 exception handling
@@ -17,7 +17,7 @@ final class CodecHelper {
 		}
 	}
 
-	public static Object convertNbtToItemStack(final Object nbt) {
+	public static Object convertNbtToItemStack(Object nbt) {
 		Object result = null;
 		try {
 			// FIXME caching, this has 0 exception handling

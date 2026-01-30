@@ -23,28 +23,31 @@ public class NBTTileEntity extends NBTCompound {
 	 * @param tile     BlockState from any TileEntity
 	 * @param readonly Readonly makes a copy at init, only reading from that copy
 	 */
-	protected NBTTileEntity(final BlockState tile, final boolean readonly) {
+	protected NBTTileEntity(BlockState tile, boolean readonly) {
 		super(null, null);
-		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced()))
+		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced())) {
 			throw new NullPointerException("Tile can't be null/not placed!");
+		}
 		this.tile = tile;
 		this.readonly = readonly;
-		if (readonly)
-			this.compound = this.getCompound();
-		else
+		if (readonly) {
+			this.compound = getCompound();
+		} else {
 			this.compound = null;
+		}
 	}
 
 	/**
 	 * Deprecated: Please use the NBT class
-	 *
+	 * 
 	 * @param tile BlockState from any TileEntity
 	 */
 	@Deprecated
-	public NBTTileEntity(final BlockState tile) {
+	public NBTTileEntity(BlockState tile) {
 		super(null, null);
-		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced()))
+		if (tile == null || (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_8_R3) && !tile.isPlaced())) {
 			throw new NullPointerException("Tile can't be null/not placed!");
+		}
 		this.readonly = false;
 		this.compound = null;
 		this.tile = tile;
@@ -57,49 +60,51 @@ public class NBTTileEntity extends NBTCompound {
 
 	@Override
 	protected boolean isClosed() {
-		return this.closed;
+		return closed;
 	}
 
 	@Override
 	protected boolean isReadOnly() {
-		return this.readonly;
+		return readonly;
 	}
 
 	@Override
 	public Object getCompound() {
 		// this runs before async check, since it's just a copy
-		if (this.readonly && this.compound != null)
-			return this.compound;
+		if (readonly && compound != null) {
+			return compound;
+		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("BlockEntity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getTileEntityNBTTagCompound(this.tile);
+		return NBTReflectionUtil.getTileEntityNBTTagCompound(tile);
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
-		if (this.readonly)
+	protected void setCompound(Object compound) {
+		if (readonly) {
 			throw new NbtApiException("Tried setting data in read only mode!");
+		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("BlockEntity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setTileEntityNBTTagCompound(this.tile, compound);
+		NBTReflectionUtil.setTileEntityNBTTagCompound(tile, compound);
 	}
 
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 *
+	 * 
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
 		CheckUtil.assertAvailable(MinecraftVersion.MC1_14_R1);
-		if (this.hasTag("PublicBukkitValues"))
-			return this.getCompound("PublicBukkitValues");
-		else {
+		if (hasTag("PublicBukkitValues")) {
+			return getCompound("PublicBukkitValues");
+		} else {
 			final NBTContainer container = new NBTContainer();
 			container.addCompound("PublicBukkitValues").setString("__nbtapi",
 					"Marker to make the PersistentDataContainer have content");
-			this.mergeCompound(container);
-			return this.getCompound("PublicBukkitValues");
+			mergeCompound(container);
+			return getCompound("PublicBukkitValues");
 		}
 	}
 

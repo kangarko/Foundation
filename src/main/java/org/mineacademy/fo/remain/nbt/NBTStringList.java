@@ -12,16 +12,17 @@ import java.util.Optional;
  */
 public class NBTStringList extends NBTList<String> {
 
-	protected NBTStringList(final NBTCompound owner, final String name, final NBTType type, final Object list) {
+	protected NBTStringList(NBTCompound owner, String name, NBTType type, Object list) {
 		super(owner, name, type, list);
 	}
 
 	@Override
-	public String get(final int index) {
+	public String get(int index) {
 		try {
-			final Object ret = ReflectionMethod.LIST_GET_STRING.run(this.listObject, index);
-			if (ret instanceof Optional<?>)
+			final Object ret = ReflectionMethod.LIST_GET_STRING.run(listObject, index);
+			if (ret instanceof Optional<?>) {
 				return ((Optional<String>) ret).orElse("");
+			}
 			return (String) ret;
 		} catch (final Exception ex) {
 			throw new NbtApiException(ex);
@@ -29,7 +30,7 @@ public class NBTStringList extends NBTList<String> {
 	}
 
 	@Override
-	protected Object asTag(final String object) {
+	protected Object asTag(String object) {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGSTRING.getClazz().getDeclaredConstructor(String.class);
 			con.setAccessible(true);

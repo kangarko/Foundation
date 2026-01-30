@@ -556,6 +556,24 @@ public final class Remain {
 		}
 	}
 
+	/**
+	 * Returns the World#isEnabled() method which takes an entity type
+	 * 
+	 * @return
+	 */
+	public static Method getIsEnabledFeatureWorldMethod() {
+		final boolean hasFeatureClass = ReflectionUtil.isClassAvailable("io.papermc.paper.world.flag.FeatureDependant") && ReflectionUtil.isClassAvailable("io.papermc.paper.world.flag.FeatureFlagSetHolder");
+
+		if (hasFeatureClass) {
+			final Class<?> featureFlagSetHolderClass = ReflectionUtil.lookupClass("io.papermc.paper.world.flag.FeatureFlagSetHolder");
+			final Class<?> featureDependent = ReflectionUtil.lookupClass("io.papermc.paper.world.flag.FeatureDependant");
+
+			return ReflectionUtil.getMethod(featureFlagSetHolderClass, "isEnabled", featureDependent);
+		}
+
+		return null;
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	// Compatibility methods below
 	// ----------------------------------------------------------------------------------------------------
@@ -2246,7 +2264,7 @@ public final class Remain {
 	 */
 	public static boolean isInvisible(Entity entity) {
 		if (entity instanceof LivingEntity && MinecraftVersion.atLeast(V.v1_16))
-			return ((LivingEntity) entity).isInvisible();
+			return entity.isInvisible();
 
 		else if (MinecraftVersion.atLeast(V.v1_4)) {
 			final Object nmsEntity = getHandleEntity(entity);

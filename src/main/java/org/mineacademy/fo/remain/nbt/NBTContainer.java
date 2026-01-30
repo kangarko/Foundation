@@ -23,33 +23,35 @@ public class NBTContainer extends NBTCompound {
 	@Deprecated
 	public NBTContainer() {
 		super(null, null);
-		this.nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
+		nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
 	}
 
 	/**
 	 * Takes in any NMS Compound to wrap it
-	 *
+	 * 
 	 * @param nbt
 	 * @deprecated Use NBT.wrapNMSTag
 	 */
 	@Deprecated
 	public NBTContainer(Object nbt) {
 		super(null, null);
-		if (nbt == null)
+		if (nbt == null) {
 			nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
-		if (!ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass()))
+		}
+		if (!ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().isAssignableFrom(nbt.getClass())) {
 			throw new NbtApiException("The object '" + nbt.getClass() + "' is not a valid NBT-Object!");
+		}
 		this.nbt = nbt;
 	}
 
 	/**
 	 * Reads in a NBT InputStream
-	 *
+	 * 
 	 * @param inputsteam
 	 * @deprecated Use NBT.readNBT
 	 */
 	@Deprecated
-	public NBTContainer(final InputStream inputsteam) {
+	public NBTContainer(InputStream inputsteam) {
 		super(null, null);
 		this.nbt = NBTReflectionUtil.readNBT(inputsteam);
 	}
@@ -57,17 +59,18 @@ public class NBTContainer extends NBTCompound {
 	/**
 	 * Parses in a NBT String to a standalone {@link NBTCompound}. Can throw a
 	 * {@link NbtApiException} in case something goes wrong.
-	 *
+	 * 
 	 * @param nbtString
 	 * @deprecated Use NBT.parseNBT
 	 */
 	@Deprecated
-	public NBTContainer(final String nbtString) {
+	public NBTContainer(String nbtString) {
 		super(null, null);
-		if (nbtString == null)
+		if (nbtString == null) {
 			throw new NullPointerException("The String can't be null!");
+		}
 		try {
-			this.nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
+			nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
 		} catch (final Exception ex) {
 			throw new NbtApiException("Unable to parse Malformed Json!", ex);
 		}
@@ -75,12 +78,12 @@ public class NBTContainer extends NBTCompound {
 
 	@Override
 	public Object getCompound() {
-		return this.nbt;
+		return nbt;
 	}
 
 	@Override
-	public void setCompound(final Object tag) {
-		this.nbt = tag;
+	public void setCompound(Object tag) {
+		nbt = tag;
 	}
 
 	@Override
@@ -90,15 +93,15 @@ public class NBTContainer extends NBTCompound {
 
 	@Override
 	protected boolean isClosed() {
-		return this.closed;
+		return closed;
 	}
 
 	@Override
 	protected boolean isReadOnly() {
-		return this.readOnly;
+		return readOnly;
 	}
 
-	protected NBTContainer setReadOnly(final boolean readOnly) {
+	protected NBTContainer setReadOnly(boolean readOnly) {
 		this.readOnly = true;
 		return this;
 	}

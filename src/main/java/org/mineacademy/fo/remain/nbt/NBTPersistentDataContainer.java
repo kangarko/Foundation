@@ -8,23 +8,23 @@ public class NBTPersistentDataContainer extends NBTCompound {
 
 	private final PersistentDataContainer container;
 
-	public NBTPersistentDataContainer(final PersistentDataContainer container) {
+	public NBTPersistentDataContainer(PersistentDataContainer container) {
 		super(null, null);
 		this.container = container;
 	}
 
 	@Override
 	public Object getCompound() {
-		return ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_TO_TAG.run(this.container);
+		return ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_TO_TAG.run(container);
 	}
 
 	@Override
-	protected void setCompound(final Object compound) {
-
+	protected void setCompound(Object compound) {
+		
 		final Map<Object, Object> map = (Map<Object, Object>) ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_GET_MAP
-				.run(this.container);
+				.run(container);
 		map.clear();
-		ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_PUT_ALL.run(this.container, compound);
+		ReflectionMethod.CRAFT_PERSISTENT_DATA_CONTAINER_PUT_ALL.run(container, compound);
 	}
 
 }
