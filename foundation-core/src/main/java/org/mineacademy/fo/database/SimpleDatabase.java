@@ -122,7 +122,7 @@ public class SimpleDatabase {
 
 		try {
 			if (url.startsWith("jdbc:sqlite")) {
-				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.49.1.0");
+				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.51.1.0");
 
 				Class.forName("org.sqlite.JDBC");
 
@@ -141,7 +141,7 @@ public class SimpleDatabase {
 
 			else if (url.startsWith("jdbc:mysql://")) {
 				try {
-					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.2.0");
+					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.6.0");
 
 					Class.forName("com.mysql.cj.jdbc.Driver");
 
@@ -154,7 +154,7 @@ public class SimpleDatabase {
 			}
 
 			else if (url.startsWith("jdbc:mariadb://")) {
-				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.12" : "3.5.3");
+				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.12" : "3.5.7");
 
 				Class.forName("org.mariadb.jdbc.Driver");
 
