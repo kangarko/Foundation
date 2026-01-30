@@ -15,13 +15,13 @@ final class FoundationLibraries {
 	 * @param plugin
 	 */
 	public static void load(final FoundationPlugin plugin) {
-		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "2.10");
+		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "3.0.1");
 
 		if (CommonCore.getJavaVersion() >= 15 && !ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
-			plugin.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.6");
+			plugin.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.7");
 
 		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
-			plugin.loadLibrary("com.google.code.gson", "gson", "2.13.1");
+			plugin.loadLibrary("com.google.code.gson", "gson", "2.13.2");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience"))
 			plugin.loadLibrary("net.kyori", "adventure-api", "4.26.1");
