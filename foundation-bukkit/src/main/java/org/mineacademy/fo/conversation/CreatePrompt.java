@@ -22,7 +22,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	/**
 	 * A valid name pattern.
 	 */
-	private static final Pattern ENGLISH_ONLY_PATTERN = Pattern.compile("^[a-zA-Z0-9_ ]+$");
+	private static final Pattern ENGLISH_ONLY_PATTERN = Pattern.compile("^[a-zA-Z0-9 ]+$");
 
 	/**
 	 * What type of object are we creating? Such as "region, "Boss" etc. This is NOT the actual name.
@@ -124,7 +124,7 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 		if (invalidInput.length() > 24)
 			return name + " name cannot be longer than 24 letters!";
 
-		return name + " name contains invalid letters! Use English only alphabet without spaces.";
+		return name + " name contains invalid letters! Use English only alphabet without spaces or underscores.";
 	}
 
 	/**
