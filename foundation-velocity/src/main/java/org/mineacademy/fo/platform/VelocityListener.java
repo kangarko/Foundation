@@ -105,9 +105,10 @@ public final class VelocityListener {
 				final String target = in.readUTF();
 				final byte[] toForward = this.prepareForwardMessage(in);
 
-				if (target.equals("ALL")) {
+				if (target.equals("ALL") || target.equals("ONLINE")) {
 					for (final RegisteredServer other : Remain.getServers())
-						other.sendPluginMessage(event.getIdentifier(), toForward);
+						if (!other.getServerInfo().getName().equals(connection.getServerInfo().getName()))
+							other.sendPluginMessage(event.getIdentifier(), toForward);
 
 				} else
 					proxy.getServer(target).ifPresent(conn -> conn.sendPluginMessage(event.getIdentifier(), toForward));
