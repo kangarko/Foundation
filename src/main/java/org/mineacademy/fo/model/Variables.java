@@ -338,7 +338,22 @@ public final class Variables {
 
 			if (value != null) {
 				final boolean emptyColorless = Common.stripColors(value).isEmpty();
-				value = value.isEmpty() ? "" : (frontSpace && !emptyColorless ? " " : "") + Common.colorize(value) + (backSpace && !emptyColorless ? " " : "");
+
+				if (value.isEmpty()) {
+					value = "";
+
+				} else {
+					String lastColors = "";
+
+					if (backSpace && !emptyColorless) {
+						final int varIndex = message.indexOf(matcher.group());
+
+						if (varIndex > 0)
+							lastColors = ChatColor.getLastColors(Common.colorize(message.substring(0, varIndex)));
+					}
+
+					value = (frontSpace && !emptyColorless ? " " : "") + Common.colorize(value) + (backSpace && !emptyColorless ? ChatColor.RESET + " " + lastColors : "");
+				}
 
 				message = message.replace(matcher.group(), value);
 			}

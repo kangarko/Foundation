@@ -2650,7 +2650,20 @@ class PlaceholderAPIHook {
 				if (value != null) {
 					value = Matcher.quoteReplacement(Common.colorize(value));
 
-					text = text.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? "" : (frontSpace ? " " : "") + value + (backSpace ? " " : ""));
+					if (!value.isEmpty()) {
+						String lastColors = "";
+
+						if (backSpace) {
+							final int varIndex = text.indexOf(matcher.group());
+
+							if (varIndex > 0)
+								lastColors = Matcher.quoteReplacement(ChatColor.getLastColors(Common.colorize(text.substring(0, varIndex))));
+						}
+
+						text = text.replaceAll(Pattern.quote(matcher.group()), (frontSpace ? " " : "") + value + (backSpace ? Matcher.quoteReplacement(ChatColor.RESET.toString()) + " " + lastColors : ""));
+
+					} else
+						text = text.replaceAll(Pattern.quote(matcher.group()), "");
 				}
 			}
 		}
@@ -2811,7 +2824,7 @@ class PlaceholderAPIHook {
 					if (value != null) {
 						final boolean emptyColorless = Common.stripColors(value).isEmpty();
 
-						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? " " : "");
+						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? ChatColor.RESET + " " : "");
 					}
 				}
 
