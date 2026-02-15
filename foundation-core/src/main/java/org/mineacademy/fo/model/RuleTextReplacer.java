@@ -32,8 +32,39 @@ public final class RuleTextReplacer {
 		return LegacyComponentSerializer.legacySection().deserialize(message).replaceText(b -> b.match(pattern).replacement((matchResult, builder) -> {
 			this.changed = true;
 
-			if (replacement.startsWith("@prolong "))
-				return PlainTextComponentSerializer.plainText().deserialize(CommonCore.duplicate(replacement.replace("@prolong ", ""), matchResult.group().length()) + (matchResult.group().endsWith(" ") ? " " : ""));
+			if (replacement.startsWith("@prolong")) {
+				final String afterProlong = replacement.substring("@prolong".length());
+				int groupIndex = 0;
+				String prolongChar;
+
+				if (afterProlong.startsWith(":")) {
+					// @prolong:N <char> — match specific group length
+					final int spaceIndex = afterProlong.indexOf(' ');
+
+					if (spaceIndex == -1) {
+						prolongChar = "";
+					} else {
+						try {
+							groupIndex = Integer.parseInt(afterProlong.substring(1, spaceIndex));
+						} catch (final NumberFormatException ex) {
+							groupIndex = 0;
+						}
+
+						prolongChar = afterProlong.substring(spaceIndex + 1);
+					}
+
+				} else if (afterProlong.startsWith(" ")) {
+					// @prolong <char> — match entire match length
+					prolongChar = afterProlong.substring(1);
+
+				} else
+					return PlainTextComponentSerializer.plainText().deserialize(replacement);
+
+				final String matchedGroup = groupIndex > 0 && groupIndex <= matchResult.groupCount() ? matchResult.group(groupIndex) : matchResult.group();
+				final int length = matchedGroup != null ? matchedGroup.length() : 0;
+
+				return PlainTextComponentSerializer.plainText().deserialize(CommonCore.duplicate(prolongChar, length) + (matchedGroup != null && matchedGroup.endsWith(" ") ? " " : ""));
+			}
 
 			return PlainTextComponentSerializer.plainText().deserialize(replacement);
 		}));
