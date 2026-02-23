@@ -207,6 +207,13 @@ public final class Remain {
 	private static Method cancel;
 
 	/**
+	 * Fields related to Folia entity scheduler
+	 */
+	private static Method entityGetScheduler;
+	private static Method entitySchedulerRun;
+	private static Method entitySchedulerRunDelayed;
+
+	/**
 	 * Fields related to skull handling.
 	 */
 	private static Field blockProfileField;
@@ -516,6 +523,13 @@ public final class Remain {
 				execute = ReflectionUtil.getMethod(foliaScheduler.getClass(), "run", Plugin.class, Consumer.class);
 				runDelayed = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class);
 				cancel = ReflectionUtil.getMethod(ReflectionUtil.lookupClass("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), "cancel");
+
+				entityGetScheduler = Entity.class.getMethod("getScheduler");
+
+				final Class<?> entitySchedulerClass = entityGetScheduler.getReturnType();
+
+				entitySchedulerRun = entitySchedulerClass.getMethod("run", Plugin.class, Consumer.class, Runnable.class);
+				entitySchedulerRunDelayed = entitySchedulerClass.getMethod("runDelayed", Plugin.class, Consumer.class, Runnable.class, long.class);
 			} catch (final Throwable t) {
 				CommonCore.error(t, "Failed to setup Folia scheduler");
 			}
@@ -2863,6 +2877,41 @@ public final class Remain {
 			} catch (final ReflectiveOperationException ex) {
 				CommonCore.error(ex, "Error updating " + player.getName() + " inventory title to '" + title + "'");
 			}
+		}
+	}
+
+	/**
+	 * Runs the task on the given entity's owning thread on Folia/ShreddedPaper,
+	 * or falls back to {@link #runTask(int, Runnable)} on non-Folia servers.
+	 *
+	 * @param entity     the entity whose scheduler to use
+	 * @param delayTicks the delay in ticks (0 = next tick)
+	 * @param timer      the runnable to execute
+	 */
+	public static void runEntityTask(final Entity entity, final int delayTicks, final Runnable timer) {
+		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
+
+		if (CommonCore.runIfDisabled(runnable))
+			return;
+
+		if (!isFolia || entity == null) {
+			runTask(delayTicks, runnable);
+
+			return;
+		}
+
+		try {
+			final Object scheduler = entityGetScheduler.invoke(entity);
+
+			if (delayTicks <= 0)
+				entitySchedulerRun.invoke(scheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), (Runnable) null);
+			else
+				entitySchedulerRunDelayed.invoke(scheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), (Runnable) null, (long) delayTicks);
+
+		} catch (final Throwable t) {
+			CommonCore.error(t, "Failed to schedule entity task for " + entity + ", falling back to global scheduler");
+
+			runTask(delayTicks, runnable);
 		}
 	}
 
