@@ -171,11 +171,11 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("Citizens"))
 			try {
-				Class.forName("net.citizensnpcs.api.ai.Goal");
+				Class.forName("net.citizensnpcs.api.ai.Goal", true, Bukkit.getPluginManager().getPlugin("Citizens").getClass().getClassLoader());
 
 				citizensHook = new CitizensHook();
 			} catch (final ClassNotFoundException ex) {
-				CommonCore.warning(BukkitPlugin.getInstance().getName() + " failed to hook into Citizens because the plugin is did not start properly, or our hook is outdated. Check your console for earlier errors.");
+				CommonCore.warning(BukkitPlugin.getInstance().getName() + " failed to hook into Citizens because the plugin did not start properly, or our hook is outdated. Check your console for earlier errors.");
 			}
 
 		if (Platform.isPluginInstalled("CMI"))
@@ -183,8 +183,10 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("DiscordSRV"))
 			try {
-				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
-				Class.forName("github.scarsz.discordsrv.util.DiscordUtil");
+				final ClassLoader discordLoader = Bukkit.getPluginManager().getPlugin("DiscordSRV").getClass().getClassLoader();
+
+				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel", true, discordLoader);
+				Class.forName("github.scarsz.discordsrv.util.DiscordUtil", true, discordLoader);
 
 				discordSRVHook = new DiscordSRVHook();
 
@@ -3878,23 +3880,33 @@ class CitizensHook {
 	}
 
 	Entity getNPCTarget(final Entity entity) {
-		final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+		try {
+			final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
 
-		if (npc != null) {
-			final EntityTarget target = npc.getNavigator().getEntityTarget();
+			if (npc != null) {
+				final EntityTarget target = npc.getNavigator().getEntityTarget();
 
-			if (target != null)
-				return target.getTarget();
+				if (target != null)
+					return target.getTarget();
+			}
+
+		} catch (final NoClassDefFoundError err) {
+			CommonCore.logTimed(60 * 30, "Unable to get NPC target for " + entity + ", got " + err + ". This error only shows once per 30min.");
 		}
 
 		return null;
 	}
 
 	void destroyNPC(final Entity entity) {
-		final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+		try {
+			final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
 
-		if (npc != null)
-			npc.destroy();
+			if (npc != null)
+				npc.destroy();
+
+		} catch (final NoClassDefFoundError err) {
+			CommonCore.logTimed(60 * 30, "Unable to destroy NPC " + entity + ", got " + err + ". This error only shows once per 30min.");
+		}
 	}
 }
 
