@@ -408,7 +408,7 @@ public final class Variables {
 					value = buffer.toString();
 				}
 
-				// Translate {#132456} to hey
+				// Translate {#132456} to hex
 				{
 					// Match both 3-digit and 6-digit hex codes inside {#} brackets
 					final Matcher bracketMatcher = HEX_BRACKET_PATTERN.matcher(value);
@@ -479,6 +479,15 @@ public final class Variables {
 							.substring(1);
 
 					return Component.text("<#" + hexColor + ">");
+				});
+
+				value = value.replaceMatch(HEX_BRACKET_PATTERN, (result2, builder) -> {
+					String hex = result2.group(1);
+
+					if (hex.length() == 3)
+						hex = hex.replaceAll("(.)", "$1$1");
+
+					return Component.text("<#" + hex + ">");
 				});
 			}
 
