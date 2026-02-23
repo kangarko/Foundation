@@ -170,7 +170,15 @@ public final class HookManager {
 			bossHook = new BossHook();
 
 		if (Platform.isPluginInstalled("Citizens"))
-			citizensHook = new CitizensHook();
+			try {
+				Class.forName("net.citizensnpcs.api.ai.BehaviorController");
+
+				citizensHook = new CitizensHook();
+
+			} catch (final ClassNotFoundException ex) {
+				CommonCore.error(ex, "Failed to hook into Citizens! Ensure you're using latest Citizens build. If yes, report this issue "
+						+ "to github.com/kangarko/" + Platform.getPlugin().getName() + "/issues");
+			}
 
 		if (Platform.isPluginInstalled("CMI"))
 			CMIHook = new CMIHook();
