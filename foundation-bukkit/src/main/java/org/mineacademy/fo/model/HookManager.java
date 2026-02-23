@@ -170,23 +170,15 @@ public final class HookManager {
 			bossHook = new BossHook();
 
 		if (Platform.isPluginInstalled("Citizens"))
-			try {
-				Class.forName("net.citizensnpcs.api.ai.Goal", true, Bukkit.getPluginManager().getPlugin("Citizens").getClass().getClassLoader());
-
-				citizensHook = new CitizensHook();
-			} catch (final ClassNotFoundException ex) {
-				CommonCore.warning(BukkitPlugin.getInstance().getName() + " failed to hook into Citizens because the plugin did not start properly, or our hook is outdated. Check your console for earlier errors.");
-			}
+			citizensHook = new CitizensHook();
 
 		if (Platform.isPluginInstalled("CMI"))
 			CMIHook = new CMIHook();
 
 		if (Platform.isPluginInstalled("DiscordSRV"))
 			try {
-				final ClassLoader discordLoader = Bukkit.getPluginManager().getPlugin("DiscordSRV").getClass().getClassLoader();
-
-				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel", true, discordLoader);
-				Class.forName("github.scarsz.discordsrv.util.DiscordUtil", true, discordLoader);
+				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
+				Class.forName("github.scarsz.discordsrv.util.DiscordUtil");
 
 				discordSRVHook = new DiscordSRVHook();
 
