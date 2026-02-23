@@ -48,7 +48,7 @@ public abstract class Row {
 	 * @return
 	 */
 	public final int getId() {
-		ValidCore.checkNotNull(this.id, "ID not set for " + this.toMap());
+		ValidCore.checkNotNull(this.id, "ID not set for " + this.getClass().getSimpleName());
 
 		return this.id;
 	}
