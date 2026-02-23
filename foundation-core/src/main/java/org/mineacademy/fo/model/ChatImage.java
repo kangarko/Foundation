@@ -266,16 +266,22 @@ public final class ChatImage {
 	public String[] toString(@NonNull final String... text) {
 		ValidCore.checkBoolean(this.lines != null && this.lines.length > 0, "Set lines first using draw() methods or setLines()");
 
-		final String[] lines = this.lines.clone();
+		final int totalLines = Math.max(this.lines.length, text.length);
+		final String[] result = new String[totalLines];
 
-		for (int y = 0; y < lines.length; y++)
-			if (text.length > y) {
-				final String line = text[y];
+		for (int y = 0; y < totalLines; y++) {
+			final boolean hasImage = y < this.lines.length;
+			final boolean hasText = y < text.length;
 
-				lines[y] += " " + line;
-			}
+			if (hasImage && hasText)
+				result[y] = this.lines[y] + " " + text[y];
+			else if (hasImage)
+				result[y] = this.lines[y];
+			else
+				result[y] = text[y];
+		}
 
-		return lines;
+		return result;
 	}
 
 	/**
