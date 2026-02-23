@@ -32,25 +32,11 @@ public final class RuleTextReplacer {
 		return LegacyComponentSerializer.legacySection().deserialize(message).replaceText(b -> b.match(pattern).replacement((matchResult, builder) -> {
 			this.changed = true;
 
-			if (replacement.startsWith("@prolong "))
-				return PlainTextComponentSerializer.plainText().deserialize(CommonCore.duplicate(replacement.replace("@prolong ", ""), matchResult.group().length()) + (matchResult.group().endsWith(" ") ? " " : ""));
+			if (replacement.startsWith("@prolong ")) {
+				final String prolongChar = replacement.substring("@prolong ".length());
 
-			return PlainTextComponentSerializer.plainText().deserialize(replacement);
-		}));
-	}
-
-	/**
-	 * Replace the message with the given pattern and replacement, prolonging the replacement to match the original message length
-	 * if the replacement starts with "@prolong"
-	 *
-	 * @param message
-	 * @param pattern
-	 * @param replacement
-	 * @return
-	 */
-	public Component replace(final String message, final Pattern pattern, final String replacement) {
-		return LegacyComponentSerializer.legacySection().deserialize(message).replaceText(b -> b.match(pattern).replacement((matchResult, builder) -> {
-			this.changed = true;
+				return PlainTextComponentSerializer.plainText().deserialize(CommonCore.duplicate(prolongChar, matchResult.group().length()) + (matchResult.group().endsWith(" ") ? " " : ""));
+			}
 
 			return PlainTextComponentSerializer.plainText().deserialize(replacement);
 		}));
