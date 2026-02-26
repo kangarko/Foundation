@@ -64,7 +64,20 @@ public final class RuleTextReplacer {
 				final String matched = matchResult.group(groupIndex);
 				final int length = matched != null ? matched.length() : 0;
 
-				return PlainTextComponentSerializer.plainText().deserialize(CommonCore.duplicate(prolongChar, length) + (matchResult.group().endsWith(" ") ? " " : ""));
+				final String prefix;
+				final String actualProlongChar;
+
+				if (prolongChar.length() > 1) {
+					final int lastCodePoint = prolongChar.codePointBefore(prolongChar.length());
+
+					actualProlongChar = new String(Character.toChars(lastCodePoint));
+					prefix = prolongChar.substring(0, prolongChar.length() - Character.charCount(lastCodePoint));
+				} else {
+					prefix = "";
+					actualProlongChar = prolongChar;
+				}
+
+				return PlainTextComponentSerializer.plainText().deserialize(prefix + CommonCore.duplicate(actualProlongChar, length) + (matchResult.group().endsWith(" ") ? " " : ""));
 			}
 
 			return PlainTextComponentSerializer.plainText().deserialize(replacement);
