@@ -118,6 +118,7 @@ public class YamlConfig extends FileConfig {
 				.setParseComments(true)
 				.setCodePointLimit(Integer.MAX_VALUE)
 				.setMaxAliasesForCollections(Integer.MAX_VALUE)
+				.setAllowNonScalarKeys(true)
 				.build();
 
 		this.constructor = customConstructor.apply(loadSettings);
