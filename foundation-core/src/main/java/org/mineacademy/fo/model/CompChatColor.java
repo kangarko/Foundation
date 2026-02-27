@@ -908,13 +908,14 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 			// Untouched original code below since no domains were identified in this part
 			for (int i = 0; i < part.length(); i++) {
 
-				// Support §x§R§R§G§G§B§B hex colors
-				if (i + 13 < part.length() && part.charAt(i) == '§' && part.charAt(i + 1) == 'x') {
+				// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
+				if (i + 13 < part.length() && (part.charAt(i) == '§' || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
+					final char prefix = part.charAt(i);
 					final StringBuilder hex = new StringBuilder("#");
 					boolean isValidHexSequence = true;
 
 					for (int j = 2; j <= 12; j += 2) {
-						if (part.charAt(i + j) == '§')
+						if (part.charAt(i + j) == prefix)
 							hex.append(part.charAt(i + j + 1));
 
 						else {
@@ -926,7 +927,19 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 					if (isValidHexSequence) {
 						result.append('<').append(hex).append('>');
-						i += 13; // Skip the entire §x§R§R§G§G§B§B sequence
+						i += 13; // Skip the entire §x§R§R§G§G§B§B or &x&R&R&G&G&B&B sequence
+
+						continue;
+					}
+				}
+
+				// Support &#RRGGBB and §#RRGGBB hex colors
+				if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§') && part.charAt(i + 1) == '#') {
+					final String hexCode = part.substring(i + 2, i + 8);
+
+					if (hexCode.matches("[0-9a-fA-F]{6}")) {
+						result.append("<#").append(hexCode).append('>');
+						i += 7; // Skip the entire &#RRGGBB sequence
 
 						continue;
 					}
