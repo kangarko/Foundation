@@ -32,39 +32,24 @@ public final class RuleTextReplacer {
 		return LegacyComponentSerializer.legacySection().deserialize(message).replaceText(b -> b.match(pattern).replacement((matchResult, builder) -> {
 			this.changed = true;
 
-			if (replacement.startsWith("@prolong")) {
-				final String afterProlong = replacement.substring("@prolong".length());
-				int groupIndex = 0;
-				String prolongChar;
+			if (replacement.startsWith("@prolong ")) {
+				final String prolongChar = replacement.substring("@prolong ".length());
+				final int length = matchResult.group().length();
 
-				if (afterProlong.startsWith(":")) {
-					final int spaceIndex = afterProlong.indexOf(' ');
+				final String prefix;
+				final String actualProlongChar;
 
-					if (spaceIndex == -1)
-						throw new IllegalArgumentException("Invalid @prolong syntax, expected '@prolong:N <char>', got: " + replacement);
+				if (prolongChar.length() > 1) {
+					final int lastCodePoint = prolongChar.codePointBefore(prolongChar.length());
 
-					final String groupStr = afterProlong.substring(1, spaceIndex);
+					actualProlongChar = new String(Character.toChars(lastCodePoint));
+					prefix = prolongChar.substring(0, prolongChar.length() - Character.charCount(lastCodePoint));
+				} else {
+					prefix = "";
+					actualProlongChar = prolongChar;
+				}
 
-					try {
-						groupIndex = Integer.parseInt(groupStr);
-					} catch (final NumberFormatException ex) {
-						throw new IllegalArgumentException("Invalid @prolong group index, expected a number, got: '" + groupStr + "' in: " + replacement);
-					}
-
-					if (groupIndex < 0 || groupIndex > matchResult.groupCount())
-						throw new IllegalArgumentException("@prolong group index " + groupIndex + " is out of range, pattern has " + matchResult.groupCount() + " group(s)");
-
-					prolongChar = afterProlong.substring(spaceIndex + 1);
-
-				} else if (afterProlong.startsWith(" "))
-					prolongChar = afterProlong.substring(1);
-				else
-					return PlainTextComponentSerializer.plainText().deserialize(replacement);
-
-				final String matched = matchResult.group(groupIndex);
-				final int length = matched != null ? matched.length() : 0;
-
-				return PlainTextComponentSerializer.plainText().deserialize(CommonCore.duplicate(prolongChar, length) + (matchResult.group().endsWith(" ") ? " " : ""));
+				return PlainTextComponentSerializer.plainText().deserialize(prefix + CommonCore.duplicate(actualProlongChar, length) + (matchResult.group().endsWith(" ") ? " " : ""));
 			}
 
 			return PlainTextComponentSerializer.plainText().deserialize(replacement);
