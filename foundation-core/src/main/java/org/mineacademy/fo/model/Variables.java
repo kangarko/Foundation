@@ -584,7 +584,7 @@ public final class Variables {
 				replacedValue = SimpleComponent.fromPlain(" ").append(replacedValue);
 
 			if (backSpace && replacedPlainValue.charAt(replacedPlainValue.length() - 1) != ' ')
-				replacedValue = replacedValue.appendPlain(" ");
+				replacedValue = replacedValue.appendPlainReset(" ");
 		}
 
 		return replacedValue;
@@ -711,7 +711,7 @@ public final class Variables {
 					replacedValue = " " + replacedValue;
 
 				if (backSpace && !replacedValue.endsWith(" "))
-					replacedValue = replacedValue + " ";
+					replacedValue = replacedValue + CompChatColor.RESET + " ";
 			}
 
 		return replacedValue;

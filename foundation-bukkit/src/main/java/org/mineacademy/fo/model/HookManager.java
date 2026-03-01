@@ -2719,7 +2719,7 @@ final class PlaceholderAPIHook {
 				if (value != null) {
 					value = Matcher.quoteReplacement(CompChatColor.translateColorCodes(value));
 
-					message = message.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? "" : (frontSpace ? " " : "") + value + (backSpace ? " " : ""));
+					message = message.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? "" : (frontSpace ? " " : "") + value + (backSpace ? CompChatColor.RESET + " " : ""));
 				}
 			}
 		}
@@ -2961,7 +2961,7 @@ final class PlaceholderAPIHook {
 					if (value != null) {
 						final boolean emptyColorless = CompChatColor.stripColorCodes(value).isEmpty();
 
-						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? " " : "");
+						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? CompChatColor.RESET + " " : "");
 					}
 				}
 
