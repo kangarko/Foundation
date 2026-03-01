@@ -494,6 +494,22 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
+	 * Append plain text without inheriting the current component's style.
+	 * Used for neutral separator spaces (e.g. the '+' operator) that must
+	 * not carry decorations like underline or bold from the preceding value.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public SimpleComponent appendPlainReset(final String text) {
+		final List<ConditionalComponent> copy = new ArrayList<>(this.subcomponents);
+
+		copy.add(ConditionalComponent.fromPlain(text));
+
+		return new SimpleComponent(copy, Style.empty());
+	}
+
+	/**
 	 * Append text with & and § color codes to the component.
 	 *
 	 * @param text
