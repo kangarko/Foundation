@@ -46,6 +46,7 @@ import org.mvplugins.multiverse.core.MultiverseCoreApi;
 import org.mvplugins.multiverse.core.world.MultiverseWorld;
 import org.mvplugins.multiverse.external.vavr.control.Option;
 
+import com.alessiodp.parties.api.Parties;
 import com.Zrips.CMI.CMI;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.Zrips.CMI.Modules.TabList.TabListManager;
@@ -73,6 +74,10 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
+import de.simonsator.partyandfriends.spigot.api.pafplayers.PAFPlayer;
+import de.simonsator.partyandfriends.spigot.api.pafplayers.PAFPlayerManager;
+import de.simonsator.partyandfriends.spigot.api.party.PartyManager;
+import de.simonsator.partyandfriends.spigot.api.party.PlayerParty;
 import dev.kitteh.factions.FLocation;
 import dev.kitteh.factions.permissible.Relation;
 import github.scarsz.discordsrv.DiscordSRV;
@@ -125,6 +130,8 @@ public final class HookManager {
 	private static ItemsAdderHook itemsAdderHook;
 	private static LandsHook landsHook;
 	private static LocketteProHook locketteProHook;
+	private static PAFHook pafHook;
+	private static PartiesHook partiesHook;
 	private static LWCHook lwcHook;
 	private static MultiverseHook multiverseHook;
 	private static MVdWPlaceholderHook MVdWPlaceholderHook;
@@ -236,6 +243,12 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("Lands"))
 			landsHook = new LandsHook();
+
+		if (Platform.isPluginInstalled("Spigot-Party-API-PAF"))
+			pafHook = new PAFHook();
+
+		if (Platform.isPluginInstalled("Parties"))
+			partiesHook = new PartiesHook();
 
 		if (Platform.isPluginInstalled("LiteBans"))
 			liteBansDummyHook = true;
@@ -448,6 +461,24 @@ public final class HookManager {
 	 */
 	public static boolean isLandsLoaded() {
 		return landsHook != null;
+	}
+
+	/**
+	 * Is Party and Friends (PAF) loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isPAFLoaded() {
+		return pafHook != null;
+	}
+
+	/**
+	 * Is Parties (AlessioDP) loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isPartiesLoaded() {
+		return partiesHook != null;
 	}
 
 	/**
@@ -778,6 +809,36 @@ public final class HookManager {
 	 */
 	public static Collection<Player> getLandPlayers(final Player player) {
 		return isLandsLoaded() ? landsHook.getLandPlayers(player) : new ArrayList<>();
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Parties (AlessioDP)
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return true if two players are in the same Parties (AlessioDP) party.
+	 *
+	 * @param player1
+	 * @param player2
+	 * @return
+	 */
+	public static boolean isInSamePartiesParty(final Player player1, final Player player2) {
+		return isPartiesLoaded() && partiesHook.isInSameParty(player1, player2);
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// PAF (Party and Friends)
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Return true if two players are in the same Party and Friends party.
+	 *
+	 * @param player1
+	 * @param player2
+	 * @return
+	 */
+	public static boolean isInSamePAFParty(final Player player1, final Player player2) {
+		return isPAFLoaded() && pafHook.isInSameParty(player1, player2);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -4310,5 +4371,47 @@ class ItemsAdderHook {
 
 		// Fallback to original message or component if replacement fails
 		return messageOrComponent;
+	}
+}
+
+class PartiesHook {
+
+	boolean isInSameParty(final Player player1, final Player player2) {
+		try {
+			return Parties.getApi().areInTheSameParty(player1.getUniqueId(), player2.getUniqueId());
+
+		} catch (final Throwable t) {
+			return false;
+		}
+	}
+}
+
+class PAFHook {
+
+	boolean isInSameParty(final Player player1, final Player player2) {
+		try {
+			final PAFPlayerManager playerManager = PAFPlayerManager.getInstance();
+
+			if (playerManager == null)
+				return false;
+
+			final PAFPlayer pafPlayer1 = playerManager.getPlayer(player1.getUniqueId());
+			final PAFPlayer pafPlayer2 = playerManager.getPlayer(player2.getUniqueId());
+
+			if (pafPlayer1 == null || pafPlayer2 == null)
+				return false;
+
+			final PartyManager partyManager = PartyManager.getInstance();
+
+			if (partyManager == null)
+				return false;
+
+			final PlayerParty party = partyManager.getParty(pafPlayer1);
+
+			return party != null && party.isInParty(pafPlayer2);
+
+		} catch (final Throwable t) {
+			return false;
+		}
 	}
 }
