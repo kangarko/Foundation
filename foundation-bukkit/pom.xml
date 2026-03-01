@@ -124,6 +124,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>PAF</artifactId>
+			<version>1.6.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mineacademy.plugin</groupId>
+			<artifactId>Parties</artifactId>
+			<version>3.2.16</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>MythicMobs</artifactId>
 			<version>5.11.1-de409cac</version>
 			<scope>provided</scope>
