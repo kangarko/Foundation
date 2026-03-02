@@ -70,7 +70,7 @@ public final class LitebansTask extends BukkitRunnable {
 						if(until != 0 && until < System.currentTimeMillis())
 							continue;
 
-						this.mutedPlayersByUniqueId.put(uuid, until);
+						this.mutedPlayersByUniqueId.put(uuid.replace("-", ""), until);
 					}
 				}
 			}
@@ -98,10 +98,10 @@ public final class LitebansTask extends BukkitRunnable {
 	}
 
 	public boolean isMuted(UUID uuid) {
-		return this.mutedPlayersByUniqueId.containsKey(uuid.toString());
+		return this.mutedPlayersByUniqueId.containsKey(uuid.toString().replace("-", ""));
 	}
 
 	public long getUnmuteTime(UUID uuid) {
-		return this.mutedPlayersByUniqueId.getOrDefault(uuid.toString(), 0L);
+		return this.mutedPlayersByUniqueId.getOrDefault(uuid.toString().replace("-", ""), 0L);
 	}
 }
