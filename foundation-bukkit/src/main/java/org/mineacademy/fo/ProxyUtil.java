@@ -199,6 +199,10 @@ public final class ProxyUtil {
 	 * through which we send the proxy message as
 	 */
 	private static Player findFirstPlayer() {
-		return Remain.getOnlinePlayers().isEmpty() ? null : Remain.getOnlinePlayers().iterator().next();
+		for (final Player player : Remain.getOnlinePlayers())
+			if (!player.hasMetadata("fake-player") && !player.hasMetadata("NPC"))
+				return player;
+
+		return null;
 	}
 }
