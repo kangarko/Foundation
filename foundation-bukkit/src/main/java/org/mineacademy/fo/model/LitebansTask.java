@@ -67,7 +67,7 @@ public final class LitebansTask extends BukkitRunnable {
 					final long until = resultSet.getLong("UNTIL");
 
 					if(active) {
-						if(until != 0 && until < System.currentTimeMillis())
+						if(until > 0 && until < System.currentTimeMillis())
 							continue;
 
 						this.mutedPlayersByUniqueId.put(uuid, until);
