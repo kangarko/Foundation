@@ -174,6 +174,15 @@ public final class RandomUtil {
 	}
 
 	/**
+	 * Returns a random double between 0.0 (inclusive) and 1.0 (exclusive).
+	 *
+	 * @return
+	 */
+	public static double nextDouble() {
+		return random.nextDouble();
+	}
+
+	/**
 	 * Returns a random true/false by 50% chance.
 	 *
 	 * @return
