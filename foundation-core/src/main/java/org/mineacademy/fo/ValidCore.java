@@ -35,7 +35,7 @@ public abstract class ValidCore {
 	/**
 	 * A pattern for valid whole numbers.
 	 */
-	private static final Pattern PATTERN_DECIMAL = Pattern.compile("([0-9]+\\.?[0-9]*|\\.[0-9]+)");
+	private static final Pattern PATTERN_DECIMAL = Pattern.compile("-?([0-9]+\\.?[0-9]*|\\.[0-9]+)");
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Checking for validity and throwing errors if false or null
