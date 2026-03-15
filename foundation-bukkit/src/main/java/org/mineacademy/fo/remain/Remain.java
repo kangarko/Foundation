@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -205,6 +206,14 @@ public final class Remain {
 	private static Method runDelayed;
 	private static Method execute;
 	private static Method cancel;
+
+	/**
+	 * Fields related to Folia async scheduler
+	 */
+	private static Object foliaAsyncScheduler;
+	private static Method asyncExecute;
+	private static Method asyncRunDelayed;
+	private static Method asyncRunAtFixedRate;
 
 	/**
 	 * Fields related to Folia entity scheduler
@@ -523,6 +532,11 @@ public final class Remain {
 				execute = ReflectionUtil.getMethod(foliaScheduler.getClass(), "run", Plugin.class, Consumer.class);
 				runDelayed = ReflectionUtil.getMethod(foliaScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class);
 				cancel = ReflectionUtil.getMethod(ReflectionUtil.lookupClass("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), "cancel");
+
+				foliaAsyncScheduler = ReflectionUtil.invoke("getAsyncScheduler", org.bukkit.Bukkit.getServer());
+				asyncExecute = ReflectionUtil.getMethod(foliaAsyncScheduler.getClass(), "runNow", Plugin.class, Consumer.class);
+				asyncRunDelayed = ReflectionUtil.getMethod(foliaAsyncScheduler.getClass(), "runDelayed", Plugin.class, Consumer.class, long.class, TimeUnit.class);
+				asyncRunAtFixedRate = ReflectionUtil.getMethod(foliaAsyncScheduler.getClass(), "runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class, TimeUnit.class);
 
 				entityGetScheduler = Entity.class.getMethod("getScheduler");
 
@@ -2987,9 +3001,9 @@ public final class Remain {
 			final Object taskHandle;
 
 			if (delayTicks == 0)
-				taskHandle = ReflectionUtil.invoke(execute, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
+				taskHandle = ReflectionUtil.invoke(asyncExecute, foliaAsyncScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run());
 			else
-				taskHandle = ReflectionUtil.invoke(runDelayed, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks);
+				taskHandle = ReflectionUtil.invoke(asyncRunDelayed, foliaAsyncScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), delayTicks * 50L, TimeUnit.MILLISECONDS);
 
 			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
@@ -3095,7 +3109,7 @@ public final class Remain {
 			return null;
 
 		if (Remain.isFolia()) {
-			final Object taskHandle = ReflectionUtil.invoke(runAtFixedRate, foliaScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks), repeatTicks);
+			final Object taskHandle = ReflectionUtil.invoke(asyncRunAtFixedRate, foliaAsyncScheduler, BukkitPlugin.getInstance(), (Consumer<Object>) t -> runnable.run(), Math.max(1, delayTicks) * 50L, repeatTicks * 50L, TimeUnit.MILLISECONDS);
 
 			final SimpleBukkitTask task = SimpleBukkitTask.fromFolia(cancel, taskHandle);
 
