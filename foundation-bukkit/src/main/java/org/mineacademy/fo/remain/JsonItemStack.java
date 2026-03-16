@@ -402,6 +402,16 @@ public class JsonItemStack {
 					Common.warning("Failed to convert JSON into ItemStack using native method, falling back to legacy. Custom stuff will be removed. "
 							+ "This is because the ItemStack is no longer valid (this is NOT issue in our plugin, "
 							+ "rather the itemstack contained custom data which got corrupted or you deleted your resourcepack or other plugin)! JSON: " + string);
+
+				} else if (ex.getMessage() != null && ex.getMessage().contains("Not a number")) {
+					final String sanitized = string.replace("\"Infinity\"", "1.0E10").replace("\"-Infinity\"", "-1.0E10").replace("\"NaN\"", "0");
+
+					try {
+						return Bukkit.getUnsafe().deserializeItemFromJson(CommonCore.GSON.fromJson(sanitized, JsonObject.class));
+
+					} catch (final IllegalArgumentException retryEx) {
+						Common.warning("Failed to deserialize item even after sanitizing Infinity/NaN values: " + retryEx.getMessage());
+					}
 				} else
 					throw ex;
 			}
