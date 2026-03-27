@@ -415,14 +415,8 @@ public abstract class CommonCore {
 		if (throwable instanceof HandledException)
 			return;
 
-		boolean sentry = true;
-
-		// Certain edge cases: Do not report to sentry since it's used-caused and must be solved on his end
-		if (throwable.getMessage() != null && throwable.getMessage().contains("The database file has been moved since it was opened"))
-			sentry = false;
-
 		if (!(throwable instanceof FoException))
-			Debugger.saveError(sentry, throwable, messages);
+			Debugger.saveError(throwable, messages);
 
 		logFramed(replaceErrorVariable(throwable, messages));
 		Debugger.printStackTrace(throwable);
@@ -434,7 +428,7 @@ public abstract class CommonCore {
 	 *
 	 * Use the {error} variable to replace it with the actual error message.
 	 *
-	 * This saves the error to sentry.io if {@link SimpleSettings#SENTRY} and {@link FoundationPlugin#getSentryDsn()} are set.
+	 * This reports the error if {@link SimpleSettings#ERROR_AUTO_REPORTING} is set.
 	 *
 	 * @see #logFramed(String...)
 	 *

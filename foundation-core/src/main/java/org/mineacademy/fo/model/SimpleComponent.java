@@ -746,7 +746,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					"Mini: " + mini,
 					"Stripped: " + stripped);
 
-			t.printStackTrace(); // do not report to sentry, likely not our fault
+			t.printStackTrace(); // do not auto-report, likely not our fault
 			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
 
 			return fromSection(this.toLegacySection(receiver)).toMini(receiver);
@@ -813,7 +813,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					"Mini: " + mini,
 					"Stripped: " + stripped);
 
-			t.printStackTrace(); // do not report to sentry, likely not our fault
+			t.printStackTrace(); // do not auto-report, likely not our fault
 			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
 
 			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
@@ -1233,7 +1233,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					"Plain: " + plain,
 					"Error: " + t.getMessage());
 
-			t.printStackTrace(); // do not report to sentry, likely not our fault
+			t.printStackTrace(); // do not auto-report, likely not our fault
 			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
 
 			return plain;
@@ -1260,7 +1260,7 @@ public final class SimpleComponent implements ConfigSerializable {
 					"Text: " + text,
 					"Error: " + t.getMessage());
 
-			t.printStackTrace(); // do not report to sentry, likely not our fault
+			t.printStackTrace(); // do not auto-report, likely not our fault
 			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
 
 			return Component.text(text);

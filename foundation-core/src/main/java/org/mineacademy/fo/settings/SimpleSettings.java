@@ -114,11 +114,11 @@ public class SimpleSettings extends YamlStaticConfig {
 	public static Boolean NOTIFY_NEW_VERSIONS = true;
 
 	/**
-	 * Report errors to Sentry.io?
+	 * Report errors automatically?
 	 *
 	 * Defaults to true.
 	 */
-	public static Boolean SENTRY = true;
+	public static Boolean ERROR_AUTO_REPORTING = true;
 
 	/**
 	 * What debug sections should we enable in {@link Debugger} ? When you call {@link Debugger#debug(String, String...)}
@@ -196,8 +196,8 @@ public class SimpleSettings extends YamlStaticConfig {
 		if (isSetDefault("Notify_New_Versions"))
 			NOTIFY_NEW_VERSIONS = getBoolean("Notify_New_Versions");
 
-		if (isSetDefault("Sentry"))
-			SENTRY = getBoolean("Sentry");
+		if (isSetDefault("Error_Auto_Reporting"))
+			ERROR_AUTO_REPORTING = getBoolean("Error_Auto_Reporting");
 
 		if (isSetDefault("Debug"))
 			DEBUG_SECTIONS = getStringList("Debug");
