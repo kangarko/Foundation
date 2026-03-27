@@ -12,14 +12,12 @@ import java.util.function.Supplier;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import io.sentry.Sentry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -30,23 +28,19 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Debugger {
 
-	/**
-	 * Used to prevent duplicated reporting to sentry
-	 */
+	private static final String CRASH_REPORT_URL = "https://matejpacan.com/api/crash-report";
+
 	private static final Set<String> reportedExceptions = new HashSet<>();
 
-	/**
-	 * Tags to be added to the Sentry error reporting.
-	 */
-	private static final List<Supplier<Map<String, String>>> sentryTags = new ArrayList<>();
+	private static final List<Supplier<Map<String, String>>> crashTags = new ArrayList<>();
 
 	/**
-	 * Add a tag to the Sentry error reporting.
+	 * Add a tag to the crash error reporting.
 	 *
 	 * @param tag
 	 */
-	public static void addSentryTag(Supplier<Map<String, String>> tag) {
-		sentryTags.add(tag);
+	public static void addCrashTag(Supplier<Map<String, String>> tag) {
+		crashTags.add(tag);
 	}
 
 	/**
@@ -105,35 +99,6 @@ public final class Debugger {
 	 * <p>File is written to the server's base directory.</p>
 	 */
 	public static void saveError(Throwable throwable, final String... messages) {
-		saveError(true, throwable, messages);
-	}
-
-	/**
-	 * Save an error and relevant information to an `error.log` file.
-	 *
-	 * <p>This method stores the error details, additional messages, system information,
-	 * and the stack trace of the error for debugging purposes.</p>
-	 *
-	 * @param sentry
-	 * @param throwable The exception or error that occurred. The stack trace will be logged, and its causes will be chained.
-	 * @param messages  Optional additional information that may help identify or explain the issue.
-	 *
-	 * <p><b>Example Usage:</b></p>
-	 * <pre>{@code
-	 * try {
-	 *   // Some code that might throw an error
-	 * } catch (Throwable t) {
-	 *   saveError(t, "Something went wrong while executing this operation.");
-	 * }
-	 * }</pre>
-	 *
-	 * <p>The method also logs a message to the server console, informing the user to check the `error.log`.</p>
-	 *
-	 * <p>In case another error occurs while saving the log, it will attempt to log that error to the system.</p>
-	 *
-	 * <p>File is written to the server's base directory.</p>
-	 */
-	public static void saveError(boolean sentry, Throwable throwable, final String... messages) {
 
 		if (!Platform.hasPlatform()) {
 			System.out.println("Fatal error saving error, platform not set yet.");
@@ -144,7 +109,6 @@ public final class Debugger {
 			return;
 		}
 
-		// Log to sentry if enabled.
 		final FoundationPlugin plugin = Platform.getPlugin();
 
 		// Ignore PlugMan errors
@@ -155,99 +119,127 @@ public final class Debugger {
 				return;
 			}
 
-		// Do not report errors from outdated plugin versions
-		if (sentry && plugin.getSentryDsn() != null && SimpleSettings.SENTRY && !(throwable instanceof OutOfMemoryError)) {
+		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !(throwable instanceof OutOfMemoryError)) {
 			final Throwable finalThrowable = throwable;
 
-			// Prevent duplicated reporting
 			final StackTraceElement[] elements = finalThrowable.getStackTrace();
 			final String key = Arrays.toString(elements);
 
 			if (!reportedExceptions.contains(key) && elements.length > 0) {
-				boolean hasSentry = false;
+				reportedExceptions.add(key);
 
-				if (!ReflectionUtil.isClassAvailable("io.sentry.Sentry"))
+				Platform.runTaskAsync(() -> {
 					try {
-						plugin.loadLibrary("io.sentry", "sentry", "8.31.0");
+						final StringBuilder trace = new StringBuilder();
+						Throwable cause = finalThrowable;
 
-						hasSentry = true;
+						do {
+							trace.append(cause.getClass().getSimpleName()).append(": ").append(CommonCore.getOrDefault(cause.getMessage(), "(Unknown cause)")).append("\n");
+
+							for (final StackTraceElement el : cause.getStackTrace())
+								trace.append("\tat ").append(el.toString()).append("\n");
+						} while ((cause = cause.getCause()) != null);
+
+						final String traceHash = Integer.toHexString(key.hashCode());
+
+						final Map<String, String> payload = new java.util.LinkedHashMap<>();
+
+						payload.put("plugin_name", plugin.getName());
+						payload.put("plugin_version", plugin.getVersion());
+						payload.put("server_version", Platform.getPlatformVersion());
+						payload.put("server_distro", Platform.getPlatformName());
+						payload.put("player_count", String.valueOf(Platform.getOnlinePlayers().size()));
+						payload.put("trace_hash", traceHash);
+						payload.put("stack_trace", trace.toString());
+
+						if (messages != null && messages.length > 0) {
+							final StringBuilder messageBuilder = new StringBuilder();
+
+							for (final String message : messages)
+								if (message != null && !message.isEmpty() && !message.equals("\n"))
+									messageBuilder.append(message).append("\n");
+
+							if (messageBuilder.length() > 0)
+								payload.put("messages", messageBuilder.toString().trim());
+						}
+
+						if ("%%__BUILTBYBIT__%%".equals("true")) {
+							payload.put("bbb_user_id", "%%__USER__%%");
+							payload.put("bbb_user_name", "%%__USERNAME__%%");
+							payload.put("bbb_nonce", "%%__NONCE__%%");
+						}
+
+						final Map<String, String> customTags = new java.util.LinkedHashMap<>();
+
+						for (final Supplier<Map<String, String>> supplier : crashTags) {
+							final Map<String, String> map = supplier.get();
+
+							if (map != null)
+								customTags.putAll(map);
+						}
+
+						if (!customTags.isEmpty())
+							payload.put("custom_tags", CommonCore.GSON.toJson(customTags));
+
+						postCrashReport(payload);
 
 					} catch (final Throwable t) {
-						CommonCore.log("Failed to load error reporting library Sentry:.");
 						t.printStackTrace();
-
-						CommonCore.log("Saving error locally due to missing sentry:");
-						saveErrorLocally(throwable, messages);
 					}
-
-				if (hasSentry) {
-					Platform.runTaskAsync(() -> {
-						try {
-							// Need to address the bug where a globally included sentry has the DSN of the first plugin
-							Sentry.init(options -> {
-
-								// Prevent exceptions from other plugins from being caught
-								options.setEnableUncaughtExceptionHandler(false);
-
-								options.setDsn(plugin.getSentryDsn());
-								options.setTracesSampleRate(0.0);
-
-								// Add plugin name and version to Sentry context
-								options.setBeforeSend((event, hint) -> {
-									event.setRelease(plugin.getVersion());
-									event.setServerName(null);
-									event.setDist(Platform.getPlatformVersion());
-									event.setTag("plugin_name", plugin.getName());
-									event.setTag("plugin_version", plugin.getVersion());
-									event.setTag("server_version", Platform.getPlatformVersion());
-									event.setTag("server_distro", Platform.getPlatformName());
-									event.setTag("server_player_count", String.valueOf(Platform.getOnlinePlayers().size()));
-
-									if (messages != null && messages.length > 0) {
-										int x = 1;
-
-										for (final String message : messages)
-											if (message != null && !message.isEmpty() && !message.equals("\n"))
-												event.setTag("custom_message_" + x++, message);
-									}
-
-									if ("%%__BUILTBYBIT__%%".equals("true")) {
-										event.setTag("bbb_user_id", "%%__USER__%%");
-										event.setTag("bbb_user_name", "%%__USERNAME__%%");
-										event.setTag("bbb_user_name", "%%__USERNAME__%%");
-										event.setTag("bbb_nonce", "%%__NONCE__%%");
-									}
-
-									for (final Supplier<Map<String, String>> supplier : sentryTags) {
-										final Map<String, String> map = supplier.get();
-
-										if (map != null)
-											for (final Map.Entry<String, String> entry : map.entrySet())
-												event.setTag(entry.getKey(), entry.getValue());
-									}
-
-									return event;
-								});
-							});
-
-							Sentry.captureException(finalThrowable);
-
-						} catch (final Throwable t) {
-
-							// Catch here to prevent a dead loop because platform wraps runnables
-							if (!t.getMessage().equals("zip file closed"))
-								t.printStackTrace();
-						}
-					});
-				}
-
-				reportedExceptions.add(key);
+				});
 			}
 		}
 
-		// Else, only log locally.
-		else
-			saveErrorLocally(throwable, messages);
+		saveErrorLocally(throwable, messages);
+	}
+
+	private static void postCrashReport(final Map<String, String> payload) {
+		try {
+			final StringBuilder json = new StringBuilder("{");
+			boolean first = true;
+
+			for (final Map.Entry<String, String> entry : payload.entrySet()) {
+				if (!first)
+					json.append(",");
+
+				json.append("\"").append(escapeJson(entry.getKey())).append("\":\"").append(escapeJson(entry.getValue())).append("\"");
+				first = false;
+			}
+
+			json.append("}");
+
+			final java.net.URL url = new java.net.URI(CRASH_REPORT_URL).toURL();
+			final java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+
+			connection.setRequestMethod("POST");
+			connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+			connection.setConnectTimeout(10_000);
+			connection.setReadTimeout(10_000);
+			connection.setDoOutput(true);
+
+			try (final java.io.OutputStream os = connection.getOutputStream()) {
+				os.write(json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			}
+
+			final int responseCode = connection.getResponseCode();
+
+			if (responseCode >= 400)
+				CommonCore.log("Crash report failed with HTTP " + responseCode);
+
+			connection.disconnect();
+
+		} catch (final Throwable t) {
+			CommonCore.log("Failed to send crash report: " + t.getMessage());
+		}
+	}
+
+	private static String escapeJson(String value) {
+		return value
+				.replace("\\", "\\\\")
+				.replace("\"", "\\\"")
+				.replace("\n", "\\n")
+				.replace("\r", "\\r")
+				.replace("\t", "\\t");
 	}
 
 	private static void saveErrorLocally(Throwable throwable, final String... messages) {

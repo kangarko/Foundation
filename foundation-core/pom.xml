@@ -17,13 +17,5 @@
 	<artifactId>foundation-core</artifactId>
 	
 	<dependencies>
-
-		<!-- Error reporting -->
-		<dependency>
-			<groupId>io.sentry</groupId>
-			<artifactId>sentry</artifactId>
-			<version>8.19.1</version>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 </project>

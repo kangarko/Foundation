@@ -186,12 +186,12 @@ public interface FoundationPlugin {
 	ClassLoader getPluginClassLoader();
 
 	/**
-	 * Return the Sentry DSN for this plugin used for error reporting.
+	 * Return true to enable automatic crash reporting for this plugin.
 	 *
-	 * @return
+	 * @return false by default
 	 */
-	default String getSentryDsn() {
-		return null;
+	default boolean isErrorReportingSupported() {
+		return false;
 	}
 
 	/**
