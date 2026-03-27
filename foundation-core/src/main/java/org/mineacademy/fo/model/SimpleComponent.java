@@ -1014,6 +1014,36 @@ public final class SimpleComponent implements ConfigSerializable {
 			// make the variable parse so we slash it to one.
 			message = message.replaceAll("(\\\\){2,}(?=<[^/])", "\\\\"); // New RegExp normalizes backslashes before opening tags only
 
+			// Safety net: convert any remaining § legacy color codes that may have been missed
+			// by convertLegacyToMini (e.g. when domain detection falsely matches player text like "*in")
+			if (message.indexOf(CompChatColor.COLOR_CHAR) != -1) {
+				final StringBuilder sb = new StringBuilder(message.length() + 16);
+
+				for (int i = 0; i < message.length(); i++) {
+					if (message.charAt(i) == CompChatColor.COLOR_CHAR) {
+
+						if (i + 1 < message.length()) {
+							final String code = message.substring(i, i + 2);
+							final String replacement = CompChatColor.LEGACY_TO_MINI.get(code);
+
+							if (replacement != null) {
+								sb.append(replacement);
+								i++;
+
+								continue;
+							}
+						}
+
+						// Unrecognized or trailing § - skip it to prevent MiniMessage crash
+						continue;
+					}
+
+					sb.append(message.charAt(i));
+				}
+
+				message = sb.toString();
+			}
+
 			// See resetColors() below for explainer
 			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>").replace("\\n", "\n"));
 
