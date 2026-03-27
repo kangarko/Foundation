@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
@@ -157,9 +159,10 @@ public final class InventoryDrawer {
 	 * @return
 	 */
 	public Inventory build(final InventoryHolder holder) {
+		final String localTitle = MinecraftVersion.newerThan(V.v1_8) ? this.title : (this.title.length() > 30 ? this.title.substring(0, 30) : this.title);
 
 		// Automatically append the black color in the menu, can be overriden by colors
-		final Inventory inv = Bukkit.createInventory(holder, this.size, CompChatColor.translateColorCodes("<black>" + (this.title.length() > 30 ? this.title.substring(0, 30) : this.title)));
+		final Inventory inv = Bukkit.createInventory(holder, this.size, CompChatColor.translateColorCodes("<black>" + localTitle));
 
 		inv.setContents(this.content);
 
