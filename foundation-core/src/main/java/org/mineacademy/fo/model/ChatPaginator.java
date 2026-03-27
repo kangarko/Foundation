@@ -182,6 +182,8 @@ public final class ChatPaginator {
 	 */
 	public void send(final FoundationPlayer audience, final int page) {
 		if (audience.isPlayer()) {
+			audience.removeOtherPluginsTempMetadata("fo_ActivePages");
+			audience.setTempMetadata("fo_ActivePages", true);
 			audience.setTempMetadata(Platform.getPlugin().getName() + "_Pages", this);
 			audience.dispatchCommand("/#flp " + page);
 

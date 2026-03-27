@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServiceRegisterEvent;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
@@ -100,6 +101,24 @@ final class BukkitListener implements Listener {
 				event.setCancelled(true);
 
 				return;
+			}
+
+			// Skip if another Foundation-based plugin is the active paginator
+			if (player.hasMetadata("fo_ActivePages")) {
+				boolean ours = false;
+
+				for (final MetadataValue mv : player.getMetadata("fo_ActivePages"))
+					if (mv.getOwningPlugin() == BukkitPlugin.getInstance()) {
+						ours = true;
+
+						break;
+					}
+
+				if (!ours) {
+					event.setCancelled(true);
+
+					return;
+				}
 			}
 
 			final String numberRaw = args[1];
