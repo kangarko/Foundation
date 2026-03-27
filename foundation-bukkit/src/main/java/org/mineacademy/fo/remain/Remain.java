@@ -3309,6 +3309,13 @@ public final class Remain {
 	 * @return
 	 */
 	public static Skull setSkullBlockBase64(final Skull block, final String base64) {
+
+		if (isPaper) {
+			block.setPlayerProfile(createPaperProfileFromBase64(base64));
+
+			return block;
+		}
+
 		try {
 			if (blockProfileField == null) {
 				blockProfileField = block.getClass().getDeclaredField("profile");
@@ -3333,6 +3340,13 @@ public final class Remain {
 	 * @return
 	 */
 	public static SkullMeta setSkullMetaBase64(final SkullMeta meta, final String base64) {
+
+		if (isPaper) {
+			meta.setPlayerProfile(createPaperProfileFromBase64(base64));
+
+			return meta;
+		}
+
 		try {
 			if (metaSetProfileMethod == null) {
 				metaSetProfileMethod = meta.getClass().getDeclaredMethod("setProfile", ReflectionUtil.lookupClass("com.mojang.authlib.GameProfile"));
@@ -3358,6 +3372,15 @@ public final class Remain {
 		}
 
 		return meta;
+	}
+
+	private static com.destroystokyo.paper.profile.PlayerProfile createPaperProfileFromBase64(final String base64) {
+		final UUID uuid = new UUID(base64.substring(base64.length() - 20).hashCode(), base64.substring(base64.length() - 10).hashCode());
+		final com.destroystokyo.paper.profile.PlayerProfile profile = Bukkit.createProfile(uuid, "aaaaa");
+
+		profile.setProperty(new com.destroystokyo.paper.profile.ProfileProperty("textures", base64));
+
+		return profile;
 	}
 
 	/**
