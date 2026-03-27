@@ -12,6 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
@@ -312,6 +313,13 @@ final class BukkitPlayer extends FoundationPlayer {
 			Remain.sendToast(this.player, component.toLegacySection(this), style);
 		else
 			this.sendMessage(component);
+	}
+
+	@Override
+	public void removeOtherPluginsTempMetadata(final String key) {
+		for (final MetadataValue mv : this.player.getMetadata(key))
+			if (mv.getOwningPlugin() != BukkitPlugin.getInstance())
+				this.player.removeMetadata(key, mv.getOwningPlugin());
 	}
 
 	@Override

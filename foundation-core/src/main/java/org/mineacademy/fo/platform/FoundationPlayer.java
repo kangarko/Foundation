@@ -682,6 +682,18 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	/**
+	 * Removes temporary metadata entries set by other Foundation-based plugins for the given key.
+	 * Used to ensure only one plugin is the active paginator at a time.
+	 *
+	 * @deprecated internal use only
+	 * @param key the metadata key
+	 */
+	@Deprecated
+	public void removeOtherPluginsTempMetadata(final String key) {
+		// Override on Bukkit to handle cross-plugin metadata cleanup
+	}
+
+	/**
 	 * Sets a temporary metadata for the player that will be lost after the player quits or server reloads.
 	 *
 	 * @deprecated internal use only. On Bukkit, use CompMetadata instead
