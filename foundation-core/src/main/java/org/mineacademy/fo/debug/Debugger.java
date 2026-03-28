@@ -14,6 +14,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
+import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -119,7 +120,7 @@ public final class Debugger {
 				return;
 			}
 
-		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !(throwable instanceof OutOfMemoryError)) {
+		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError)) {
 			final Throwable finalThrowable = throwable;
 
 			final StackTraceElement[] elements = finalThrowable.getStackTrace();
@@ -163,11 +164,8 @@ public final class Debugger {
 								payload.put("messages", messageBuilder.toString().trim());
 						}
 
-						if ("%%__BUILTBYBIT__%%".equals("true")) {
-							payload.put("bbb_user_id", "%%__USER__%%");
-							payload.put("bbb_user_name", "%%__USERNAME__%%");
+						if ("%%__BUILTBYBIT__%%".equals("true"))
 							payload.put("bbb_nonce", "%%__NONCE__%%");
-						}
 
 						final Map<String, String> customTags = new java.util.LinkedHashMap<>();
 
@@ -213,6 +211,7 @@ public final class Debugger {
 
 			connection.setRequestMethod("POST");
 			connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+			connection.setRequestProperty("User-Agent", "MineAcademy-CrashReporter/1.0");
 			connection.setConnectTimeout(10_000);
 			connection.setReadTimeout(10_000);
 			connection.setDoOutput(true);
