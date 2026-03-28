@@ -1007,6 +1007,11 @@ public final class SimpleComponent implements ConfigSerializable {
 		if (" ".equals(message))
 			return fromPlain(" ");
 
+		// Strip section-sign legacy codes that are invalid in MiniMessage.
+		// These can survive when convertLegacyToMini's domain detection
+		// falsely skips conversion (e.g. "§f*in" matched as a domain).
+		message = message.replaceAll("§[0-9a-fA-Fk-oK-OrR]", "");
+
 		Component mini;
 
 		try {
