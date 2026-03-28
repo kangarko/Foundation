@@ -183,8 +183,9 @@ public final class HookManager {
 				citizensHook = new CitizensHook();
 
 			} catch (final ClassNotFoundException ex) {
-				CommonCore.error(ex, "Failed to hook into Citizens! Ensure you're using latest Citizens build. If yes, report this issue "
-						+ "to github.com/kangarko/" + Platform.getPlugin().getName() + "/issues");
+				CommonCore.logFramed("Failed to hook into Citizens!",
+						"Ensure you're using the latest Citizens build.",
+						"If yes, report this issue to github.com/kangarko/" + Platform.getPlugin().getName() + "/issues");
 			}
 
 		if (Platform.isPluginInstalled("CMI"))
@@ -198,7 +199,8 @@ public final class HookManager {
 				discordSRVHook = new DiscordSRVHook();
 
 			} catch (final ClassNotFoundException ex) {
-				CommonCore.error(ex, "&c" + BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV because the plugin is outdated (1.18.x is supported)!");
+				CommonCore.logFramed(BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV",
+						"because the plugin is outdated (1.18.x is supported)!");
 			}
 
 		if (Platform.isPluginInstalled("Essentials"))

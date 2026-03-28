@@ -871,35 +871,57 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 					continue;
 				}
 
-				// Actual domain in the player message, should be sanitized and colors should be ignored
-				if (!part.isEmpty() && ((part.startsWith("§") || part.startsWith("&")) || part.startsWith("<"))) {
+				// Domain-like text detected. Convert any legacy color codes (§X/&X) to MiniMessage
+				// while preserving the domain text and existing MiniMessage tags as-is.
+				// Legacy color codes are never part of actual domains so they're always safe to convert.
+				for (int i = 0; i < part.length(); i++) {
 
-					// Domain has a color code at the start, so we need to color it properly :)
-					final Matcher matcher = COLOR_CODE_PATTERN.matcher(part);
-					String startingMatch = null;
+					// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
+					if (i + 13 < part.length() && (part.charAt(i) == '§' || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
+						final char prefix = part.charAt(i);
+						final StringBuilder hex = new StringBuilder("#");
+						boolean isValidHexSequence = true;
 
-					while (matcher.find()) {
-						final String g = matcher.group();
-						if (part.startsWith(g)) {
-							startingMatch = g;
-							break;
+						for (int j = 2; j <= 12; j += 2) {
+							if (part.charAt(i + j) == prefix)
+								hex.append(part.charAt(i + j + 1));
+							else {
+								isValidHexSequence = false;
+								break;
+							}
+						}
+
+						if (isValidHexSequence) {
+							result.append('<').append(hex).append('>');
+							i += 13;
+							continue;
 						}
 					}
 
-					// Only use color codes that actually start the domain, never from inside it
-					if (startingMatch != null) {
+					// Support &#RRGGBB and §#RRGGBB hex colors
+					if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§') && part.charAt(i + 1) == '#') {
+						final String hexCode = part.substring(i + 2, i + 8);
 
-						// Link colorized, now we add the rest of it without parsing colors
-						result.append(CompChatColor.convertLegacyToMini(startingMatch, true))
-								.append(part.substring(startingMatch.length()));
-						if (idx < parts.length - 1)
-							result.append(' ');
-						continue;
+						if (hexCode.matches("[0-9a-fA-F]{6}")) {
+							result.append("<#").append(hexCode).append('>');
+							i += 7;
+							continue;
+						}
 					}
+
+					if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§')) {
+						final String code = part.substring(i, i + 2);
+
+						if (LEGACY_TO_MINI.containsKey(code)) {
+							result.append(LEGACY_TO_MINI.get(code));
+							i++;
+							continue;
+						}
+					}
+
+					result.append(part.charAt(i));
 				}
 
-				// Domain has no color code at start, just append it without parsing colors
-				result.append(part);
 				if (idx < parts.length - 1)
 					result.append(' ');
 				continue;
