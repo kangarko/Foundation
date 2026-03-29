@@ -66,6 +66,8 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	private static MiniMessage MINIMESSAGE_PARSER;
 
+	private static boolean HAS_STRIP_TAGS;
+
 	static {
 		try {
 			TextDecoration.class.getMethod("withState", boolean.class);
@@ -108,6 +110,18 @@ public final class SimpleComponent implements ConfigSerializable {
 						"https://docs.mineacademy.org/chatcontrol/jar-hell");
 			}
 		}
+
+		boolean hasStripTags;
+
+		try {
+			MiniMessage.class.getMethod("stripTags", String.class);
+			hasStripTags = true;
+
+		} catch (final NoSuchMethodException ex) {
+			hasStripTags = false;
+		}
+
+		HAS_STRIP_TAGS = hasStripTags;
 	}
 
 	/**
@@ -218,7 +232,7 @@ public final class SimpleComponent implements ConfigSerializable {
 			legacy = CompChatColor.convertMiniToLegacy("<gray>" + CompChatColor.translateColorCodes(legacy));
 
 			// Receiver conditions and hover/click (unsupported) tags will be lost
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && MiniMessage.miniMessage().stripTags(legacy).length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && stripMiniMessageTags(legacy).length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
 				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
 
 			// This is up to 1.5-2x faster
@@ -1274,7 +1288,17 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public static String stripMiniMessageTags(String message) {
-		return MINIMESSAGE_PARSER.stripTags(message);
+		if (HAS_STRIP_TAGS)
+			return MINIMESSAGE_PARSER.stripTags(message);
+
+		return message.replaceAll("<[^<>]+>", "");
+	}
+
+	public static String escapeMiniMessageTags(String message) {
+		if (HAS_STRIP_TAGS)
+			return MINIMESSAGE_PARSER.escapeTags(message);
+
+		return message.replace("<", "\\<").replace(">", "\\>");
 	}
 
 	// --------------------------------------------------------------------
