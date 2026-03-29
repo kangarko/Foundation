@@ -218,8 +218,15 @@ public final class SimpleComponent implements ConfigSerializable {
 			legacy = CompChatColor.convertMiniToLegacy("<gray>" + CompChatColor.translateColorCodes(legacy));
 
 			// Receiver conditions and hover/click (unsupported) tags will be lost
-			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && MiniMessage.miniMessage().stripTags(legacy).length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
-				legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13)) {
+				try {
+					if (MINIMESSAGE_PARSER != null && MINIMESSAGE_PARSER.stripTags(legacy).length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+						legacy = String.join("\n", CommonCore.split(legacy, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+
+				} catch (final NoSuchMethodError ex) {
+					// Ignore, older MiniMessage shaded by third party plugin or server fork lacks stripTags
+				}
+			}
 
 			// This is up to 1.5-2x faster
 			joined = joined.append(Component.text(legacy));
@@ -1274,7 +1281,16 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public static String stripMiniMessageTags(String message) {
-		return MINIMESSAGE_PARSER.stripTags(message);
+
+		if (MINIMESSAGE_PARSER == null)
+			return message;
+
+		try {
+			return MINIMESSAGE_PARSER.stripTags(message);
+
+		} catch (final NoSuchMethodError ex) {
+			return message;
+		}
 	}
 
 	// --------------------------------------------------------------------
