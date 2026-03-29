@@ -10,6 +10,7 @@ import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.model.SimpleExpansion;
 import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.platform.FoundationServer;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
 
@@ -44,8 +45,14 @@ final class FoundationPlaceholders extends SimpleExpansion {
 		else if ("player_uuid".equals(identifier))
 			return audience == null || !audience.isPlayer() ? "" : audience.getUniqueId().toString();
 
-		else if ("player_server".equals(identifier))
-			return audience == null || !audience.isPlayer() ? "" : audience.getServer().getName();
+		else if ("player_server".equals(identifier)) {
+			if (audience == null || !audience.isPlayer())
+				return "";
+
+			final FoundationServer server = audience.getServer();
+
+			return server != null ? server.getName() : "";
+		}
 
 		else if ("player_is_discord".equals(identifier) || "sender_is_discord".equals(identifier))
 			return audience != null && audience.isDiscord() ? "true" : "false";
