@@ -39,7 +39,6 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.title.TitlePart;
@@ -446,7 +445,7 @@ public abstract class FoundationPlayer implements Audience {
 
 			if (hover.action() == HoverEvent.Action.SHOW_TEXT) {
 				final Component oldHover = (Component) hover.value();
-				final String oldMini = MiniMessage.miniMessage().serialize(oldHover);
+				final String oldMini = SimpleComponent.serializeAdventureToMini(oldHover);
 
 				if (oldMini.contains("\n")) {
 					final String[] oldLines = oldMini.split("\n");
@@ -473,7 +472,7 @@ public abstract class FoundationPlayer implements Audience {
 					String newMiniHover = String.join("\n", oldLines);
 					newMiniHover = CompChatColor.convertLegacyToMini(newMiniHover, false);
 
-					adventure = adventure.hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize(newMiniHover)));
+					adventure = adventure.hoverEvent(HoverEvent.showText(SimpleComponent.deserializeMiniToAdventure(newMiniHover)));
 				}
 			}
 		}
