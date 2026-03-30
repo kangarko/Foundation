@@ -5,8 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -724,9 +726,11 @@ public final class Variables {
 	 * @return
 	 */
 	public SimpleComponent replaceMessageVariables(SimpleComponent component) {
-		component = this.replaceMessageVariables0(component);
+		final Set<String> replacedKeys = new HashSet<>();
 
-		component = this.replaceMessageVariables0(component);
+		component = this.replaceMessageVariables0(component, replacedKeys);
+
+		component = this.replaceMessageVariables0(component, replacedKeys);
 
 		return component;
 	}
@@ -734,12 +738,22 @@ public final class Variables {
 	/*
 	 * Implementation for replacing [item] and the like variables.
 	 */
-	private SimpleComponent replaceMessageVariables0(final SimpleComponent component) {
+	private SimpleComponent replaceMessageVariables0(final SimpleComponent component, final Set<String> replacedKeys) {
 		return component.replaceMatch(Variables.MESSAGE_VARIABLE_PATTERN, (match, input) -> {
 			final String key = match.group(1);
+
+			if (replacedKeys.contains(key))
+				return input;
+
 			final Variable variable = Variable.findVariableByKey(key, Variable.Type.MESSAGE);
 
-			return variable != null ? variable.build(this.audience, this).toAdventure(null) : input;
+			if (variable != null) {
+				replacedKeys.add(key);
+
+				return variable.build(this.audience, this).toAdventure(null);
+			}
+
+			return input;
 		});
 	}
 
