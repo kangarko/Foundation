@@ -2214,7 +2214,12 @@ public final class Remain {
 		final org.bukkit.inventory.meta.BookMeta meta = (org.bukkit.inventory.meta.BookMeta) metaObject;
 
 		try {
-			meta.pages(CommonCore.convertArray(pages, SimpleComponent::toAdventure));
+			final List<net.kyori.adventure.text.Component> adventurePages = new ArrayList<>();
+
+			for (final SimpleComponent page : pages)
+				adventurePages.add(page.toAdventure());
+
+			meta.pages(adventurePages);
 
 		} catch (final NoSuchMethodError noAdventureError) {
 			try {
