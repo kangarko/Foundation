@@ -661,7 +661,11 @@ public final class Variables {
 				else if (rawValue instanceof UUID)
 					replacedValue = rawValue.toString();
 
-				else
+				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
+					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
+							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+
+				} else
 					replacedValue = rawValue.toString();
 
 				break;
