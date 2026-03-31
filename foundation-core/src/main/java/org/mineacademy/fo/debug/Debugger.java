@@ -31,7 +31,7 @@ public final class Debugger {
 
 	private static final String CRASH_REPORT_URL = "https://matejpacan.com/api/crash-report";
 
-	private static final Set<String> reportedExceptions = new HashSet<>();
+	private static final Set<String> reportedExceptions = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
 	private static final List<Supplier<Map<String, String>>> crashTags = new ArrayList<>();
 
