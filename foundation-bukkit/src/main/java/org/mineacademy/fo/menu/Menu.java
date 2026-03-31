@@ -607,7 +607,9 @@ public abstract class Menu {
 		ValidCore.checkNotNull(player, "Cannot restartMenu if it was not yet shown to a player! Menu: " + this);
 
 		final Inventory inventory = Remain.getTopInventoryFromOpenInventory(player);
-		ValidCore.checkBoolean(inventory.getType() == InventoryType.CHEST, player.getName() + "'s inventory closed in the meanwhile (now == " + inventory.getType() + ").");
+
+		if (inventory.getType() != InventoryType.CHEST)
+			return;
 
 		// Most plugins save items here
 		if (callOnMenuClose)
