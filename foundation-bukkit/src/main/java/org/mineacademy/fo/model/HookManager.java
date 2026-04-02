@@ -1895,7 +1895,12 @@ public final class HookManager {
 	 */
 	public static void sendDiscordMessage(final CommandSender sender, final String channel, @NonNull final String message) {
 		if (isDiscordSRVLoaded())
-			discordSRVHook.sendMessage(sender, channel, message);
+			try {
+				discordSRVHook.sendMessage(sender, channel, message);
+
+			} catch (final LinkageError ex) {
+				Common.logTimed(60 * 60, "Unable to send Discord message, is DiscordSRV up to date? Error: " + ex.getMessage() + ". This message only shows once per hour.");
+			}
 	}
 
 	/**
@@ -1906,7 +1911,12 @@ public final class HookManager {
 	 */
 	public static void sendDiscordMessage(final String channel, @NonNull final String message) {
 		if (isDiscordSRVLoaded())
-			discordSRVHook.sendMessage(channel, message);
+			try {
+				discordSRVHook.sendMessage(channel, message);
+
+			} catch (final LinkageError ex) {
+				Common.logTimed(60 * 60, "Unable to send Discord message, is DiscordSRV up to date? Error: " + ex.getMessage() + ". This message only shows once per hour.");
+			}
 	}
 
 	/**
@@ -1917,7 +1927,12 @@ public final class HookManager {
 	 */
 	public static void sendDiscordMessage(final long channelId, @NonNull final String message) {
 		if (isDiscordSRVLoaded())
-			discordSRVHook.sendMessage(channelId, message);
+			try {
+				discordSRVHook.sendMessage(channelId, message);
+
+			} catch (final LinkageError ex) {
+				Common.logTimed(60 * 60, "Unable to send Discord message, is DiscordSRV up to date? Error: " + ex.getMessage() + ". This message only shows once per hour.");
+			}
 	}
 }
 
