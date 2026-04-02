@@ -861,7 +861,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				continue;
 			}
 
-			if (GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
+			if (part.length() <= 253 && GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
 
 				if (part.startsWith("<") && part.endsWith(">")) {
 					// Domain inside <click_url> tag, should be ignored
