@@ -546,11 +546,13 @@ public final class Variables {
 				else if (rawValue instanceof UUID)
 					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
 
-				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
-					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
+				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
+					CommonCore.warning("Expected String in Variables#placeholders() in {" + key
 							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
 
-				else
+					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
+
+				} else
 					replacedValue = SimpleComponent.fromMiniSection(rawValue.toString());
 
 				break;
@@ -662,8 +664,10 @@ public final class Variables {
 					replacedValue = rawValue.toString();
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
-					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
+					CommonCore.warning("Expected String in Variables#placeholders() in {" + key
 							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+
+					replacedValue = rawValue.toString();
 
 				} else
 					replacedValue = rawValue.toString();
