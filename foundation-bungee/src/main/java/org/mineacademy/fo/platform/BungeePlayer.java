@@ -115,7 +115,14 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public FoundationServer getServer() {
-		return this.isPlayer ? new BungeeServer(this.player.getServer().getInfo()) : null;
+		if (this.isPlayer) {
+			final net.md_5.bungee.api.connection.Server server = this.player.getServer();
+
+			if (server != null)
+				return new BungeeServer(server.getInfo());
+		}
+
+		return null;
 	}
 
 	@Override
