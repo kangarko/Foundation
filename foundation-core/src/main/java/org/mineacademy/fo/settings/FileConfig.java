@@ -227,7 +227,12 @@ public abstract class FileConfig extends ConfigSection {
 			}
 
 		} catch (final FileNotFoundException ex) {
-			throw new FoException(ex, "Unable to access " + this.file + ", did you delete it or used PlugMan?", false);
+			final String message = ex.getMessage();
+			final boolean permissionDenied = message != null && message.contains("Permission denied");
+
+			throw new FoException(ex, "Unable to access " + this.file + (permissionDenied
+					? ". Permission denied - check file ownership and permissions on your server (e.g. chown/chmod)."
+					: ". Did you delete it or used PlugMan?"), false);
 
 		} catch (final IOException ex) {
 			CommonCore.throwError(ex, "Error saving " + this.file);
