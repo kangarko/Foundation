@@ -238,13 +238,11 @@ public final class OutgoingMessage extends Message {
 					throw new IllegalArgumentException("Unknown data type to write as plugin message: " + data.getClass());
 
 			} catch (final Throwable t) {
-				CommonCore.throwError(t,
-						"Error writing data in proxy plugin message!",
+				CommonCore.log(
+						"Error writing data in proxy plugin message, skipping.",
 						"Message: " + message,
 						"Channel: " + channel,
-						"Errored data: " + (data instanceof SimpleComponent ? ((SimpleComponent) data).toPlain() : data),
-						"Error: {error}",
-						"All data: " + CommonCore.join(dataArray, data2 -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtilCore.Language.YAML, data2), "null").toString()));
+						"Error: " + t);
 
 				return null;
 			}
@@ -276,6 +274,9 @@ public final class OutgoingMessage extends Message {
 		final String channel = this.getChannel();
 		final ProxyMessage message = this.getMessage();
 		final byte[] byteArray = this.toByteArray(senderUid, Platform.getCustomServerName());
+
+		if (byteArray == null)
+			return;
 
 		if (byteArray.length >= MAX_MESSAGE_SIZE) {
 			CommonCore.log("Outgoing proxy message '" + message + "' was oversized, not sending. Max length: " + MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
@@ -309,6 +310,9 @@ public final class OutgoingMessage extends Message {
 			final String channel = this.getChannel();
 			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
 			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
+
+			if (byteArray == null)
+				return;
 
 			if (server.isEmpty()) {
 				if (!isSpammyPacket)
@@ -363,6 +367,9 @@ public final class OutgoingMessage extends Message {
 				}
 
 				final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, otherServer.getName());
+
+				if (byteArray == null)
+					return;
 
 				if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
 					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
