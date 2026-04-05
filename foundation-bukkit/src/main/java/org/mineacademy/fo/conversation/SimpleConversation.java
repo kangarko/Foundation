@@ -395,12 +395,14 @@ public abstract class SimpleConversation implements ConversationAbandonedListene
 					SimpleComponent component = SimpleComponent.empty();
 
 					// Add question prefix if not contained already
-					if (!CompChatColor.stripColorCodes(question).contains(Lang.plain("prefix-question"))) {
+					final boolean hasQuestionPrefix = Lang.exists("prefix-question");
+
+					if (!hasQuestionPrefix || !CompChatColor.stripColorCodes(question).contains(Lang.plain("prefix-question"))) {
 						final String prefix = this.prefix.getPrefix(this.context);
 
 						if (!prefix.isEmpty())
 							component = component.appendMiniAmpersand(prefix);
-						else
+						else if (hasQuestionPrefix)
 							component = component.append(Lang.component("prefix-question"));
 					}
 

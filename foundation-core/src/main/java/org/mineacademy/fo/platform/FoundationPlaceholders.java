@@ -90,22 +90,22 @@ final class FoundationPlaceholders extends SimpleExpansion {
 			return SimpleSettings.PREFIX;
 
 		else if ("prefix_info".equals(identifier))
-			return Lang.plain("prefix-info");
+			return Lang.exists("prefix-info") ? Lang.plain("prefix-info") : "";
 
 		else if ("prefix_success".equals(identifier))
-			return Lang.plain("prefix-success");
+			return Lang.exists("prefix-success") ? Lang.plain("prefix-success") : "";
 
 		else if ("prefix_warn".equals(identifier))
-			return Lang.plain("prefix-warn");
+			return Lang.exists("prefix-warn") ? Lang.plain("prefix-warn") : "";
 
 		else if ("prefix_error".equals(identifier))
-			return Lang.plain("prefix-error");
+			return Lang.exists("prefix-error") ? Lang.plain("prefix-error") : "";
 
 		else if ("prefix_question".equals(identifier))
-			return Lang.plain("prefix-question");
+			return Lang.exists("prefix-question") ? Lang.plain("prefix-question") : "";
 
 		else if ("prefix_announce".equals(identifier))
-			return Lang.plain("prefix-announce");
+			return Lang.exists("prefix-announce") ? Lang.plain("prefix-announce") : "";
 
 		else if ("server_name".equals(identifier))
 			return Platform.hasCustomServerName() ? Platform.getCustomServerName() : "";
