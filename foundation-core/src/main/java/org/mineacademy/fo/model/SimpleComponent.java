@@ -1289,14 +1289,24 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public static String stripMiniMessageTags(String message) {
 		if (HAS_STRIP_TAGS)
-			return MINIMESSAGE_PARSER.stripTags(message);
+			try {
+				return MINIMESSAGE_PARSER.stripTags(message);
+
+			} catch (final Throwable t) {
+				// Strict-mode parsers throw on legacy § color codes (e.g. vanilla quit/death messages)
+			}
 
 		return message.replaceAll("<[^<>]+>", "");
 	}
 
 	public static String escapeMiniMessageTags(String message) {
 		if (HAS_STRIP_TAGS)
-			return MINIMESSAGE_PARSER.escapeTags(message);
+			try {
+				return MINIMESSAGE_PARSER.escapeTags(message);
+
+			} catch (final Throwable t) {
+				// Strict-mode parsers throw on legacy § color codes
+			}
 
 		return message.replace("<", "\\<").replace(">", "\\>");
 	}
