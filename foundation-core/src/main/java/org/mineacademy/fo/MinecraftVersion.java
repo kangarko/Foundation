@@ -2,10 +2,14 @@ package org.mineacademy.fo;
 
 import org.mineacademy.fo.exception.FoException;
 
+import java.util.regex.Pattern;
+
 /**
  * Represents the current Minecraft version the plugin is loaded on.
  */
 public final class MinecraftVersion {
+
+	public static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+\\.\\d+(?:\\.\\d+)?)");
 
 	/**
 	 * The wrapper representation of the version.
@@ -21,25 +25,32 @@ public final class MinecraftVersion {
 	 * The version wrapper.
 	 */
 	public enum V {
-		v1_21(21),
-		v1_20(20),
-		v1_19(19),
-		v1_18(18),
-		v1_17(17),
-		v1_16(16),
-		v1_15(15),
-		v1_14(14),
-		v1_13(13),
-		v1_12(12),
-		v1_11(11),
-		v1_10(10),
-		v1_9(9),
-		v1_8(8),
-		v1_7(7),
-		v1_6(6),
-		v1_5(5),
-		v1_4(4),
-		v1_3_AND_BELOW(3);
+		v26_2(26, 2),
+		v26_1(26, 1),
+		v1_21(1, 21),
+		v1_20(1, 20),
+		v1_19(1, 19),
+		v1_18(1, 18),
+		v1_17(1, 17),
+		v1_16(1, 16),
+		v1_15(1, 15),
+		v1_14(1, 14),
+		v1_13(1, 13),
+		v1_12(1, 12),
+		v1_11(1, 11),
+		v1_10(1, 10),
+		v1_9(1, 9),
+		v1_8(1, 8),
+		v1_7(1, 7),
+		v1_6(1, 6),
+		v1_5(1, 5),
+		v1_4(1, 4),
+		v1_3_AND_BELOW(1, 3);
+
+		/**
+		 * The major version (the first part of the version number).
+		 */
+		private final int majorVersionNumber;
 
 		/**
 		 * The numeric version (the second part of the 1.x number).
@@ -49,27 +60,31 @@ public final class MinecraftVersion {
 		/**
 		 * Creates new enum for a Minecraft version.
 		 *
-		 * @param version
+		 * @param majorVersionNumber
+		 * @param minorVersionNumber
 		 */
-		V(final int version) {
-			this.minorVersionNumber = version;
+		V(int majorVersionNumber, int minorVersionNumber) {
+			this.majorVersionNumber = majorVersionNumber;
+			this.minorVersionNumber = minorVersionNumber;
 		}
 
 		/**
 		 * Attempts to get the version from number.
 		 *
-		 * @deprecated internal use only
-		 * @param number
+		 * @param major
+		 * @param minor
 		 * @return
 		 * @throws RuntimeException if number not found
+		 * @deprecated internal use only
 		 */
 		@Deprecated
-		public static V parse(final int number) {
+		public static V parse(final int major, final int minor) {
 			for (final V v : values())
-				if (v.minorVersionNumber == number)
+				if (v.majorVersionNumber == major && v.minorVersionNumber == minor) {
 					return v;
+				}
 
-			throw new FoException("Invalid version number: " + number);
+			throw new FoException("Invalid version number: " + major + "." + minor);
 		}
 
 		/**
@@ -77,7 +92,7 @@ public final class MinecraftVersion {
 		 */
 		@Override
 		public String toString() {
-			return "1." + this.minorVersionNumber;
+			return majorVersionNumber + "." + minorVersionNumber;
 		}
 	}
 
@@ -126,6 +141,9 @@ public final class MinecraftVersion {
 	 */
 	private static int compareWith(final V version) {
 		try {
+			if (getCurrent().majorVersionNumber != version.majorVersionNumber) {
+				return getCurrent().majorVersionNumber - version.majorVersionNumber;
+			}
 			return getCurrent().minorVersionNumber - version.minorVersionNumber;
 
 		} catch (final Throwable t) {
@@ -168,7 +186,7 @@ public final class MinecraftVersion {
 
 	/**
 	 * Return true if this server supports reporting Minecraft version.
-	 *
+	 * <p>
 	 * Bukkit = true, includes subversions
 	 * Bungee = true, excludes subversions
 	 * Velocity = false
@@ -182,9 +200,9 @@ public final class MinecraftVersion {
 	/**
 	 * Set the current Minecraft version.
 	 *
-	 * @deprecated internal use only
 	 * @param current
 	 * @param subversion
+	 * @deprecated internal use only
 	 */
 	@Deprecated
 	public static void setVersion(final V current, final int subversion) {

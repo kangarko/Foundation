@@ -1,8 +1,7 @@
 package org.mineacademy.fo.platform;
 
-import java.io.File;
-import java.util.Objects;
-
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.plugin.Plugin;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -11,14 +10,17 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.library.BungeeLibraryManager;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.model.BStatsBungee;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
+import sun.net.util.ProxyUtil;
 
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Plugin;
+import java.io.File;
+import java.util.Objects;
+import java.util.regex.Matcher;
 
 /**
  * Represents a Velocity plugin.
@@ -138,24 +140,28 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 		String bungeeVersion = BungeePlugin.getServer().getVersion();
 
 		if (bungeeVersion.startsWith("git:")) {
-			final String[] split = bungeeVersion.split("\\:");
-
+			final String[] split = bungeeVersion.split(":");
 			ValidCore.checkBoolean(split.length > 1, "Unsupported platform (BungeeCord or Waterfall is supported): " + bungeeVersion);
 			bungeeVersion = split[2];
 
-			final String versionString = bungeeVersion.split("\\-")[0]; // 1.22.1
-			final String[] versions = versionString.split("\\.");
-			ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bungee version '" + bungeeVersion + "', expected '-' and a version number");
+			final Matcher matcher = MinecraftVersion.VERSION_PATTERN.matcher(bungeeVersion);
+			ValidCore.checkBoolean(matcher.find(), "Foundation find no numeric version prefix in '" + bungeeVersion + "'");
+			final String[] parts = matcher.group(1).split("\\.");
+			ValidCore.checkBoolean(parts.length == 2 || parts.length == 3, "Foundation cannot read Bungee version '" + bungeeVersion + "', expected '-' and a version number");
+			try {
+				final int major = Integer.parseInt(parts[0]);
+				final int minor = Integer.parseInt(parts[1]);
+				final int patch = parts.length == 3 ? Integer.parseInt(parts[2]) : 0;
 
-			final int version = Integer.parseInt(versions[1]); // 20
+				final MinecraftVersion.V current = major == 1 && minor <= 3 ? V.v1_3_AND_BELOW : V.parse(major, minor);
+				MinecraftVersion.setVersion(current, patch);
 
-			final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
-			final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
-
-			MinecraftVersion.setVersion(current, subversion);
+			} catch (NumberFormatException ex) {
+				throw new FoException("Cannot parse Bukkit version '" + bungeeVersion + "'", ex);
+			}
 
 		} else
-			this.getLogger().warning("Unsupported platform '" + bungeeVersion + "'. Only BungeeCord or Waterfall are officially supported. If issues arise we will not be able to provide support.");
+			getLogger().warning("Unsupported platform '" + bungeeVersion + "'. Only BungeeCord or Waterfall are officially supported. If issues arise we will not be able to provide support.");
 	}
 
 	@Override
@@ -276,7 +282,7 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 
 	/**
 	 * Disables this plugin
-	 *
+	 * <p>
 	 * Attempting to disable a plugin that is not enabled will have no effect
 	 */
 	@Override

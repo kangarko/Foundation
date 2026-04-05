@@ -1,8 +1,7 @@
 package org.mineacademy.fo.platform;
 
-import java.io.File;
-import java.util.Objects;
-
+import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -10,14 +9,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.*;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ProxyUtil;
-import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
@@ -32,14 +25,7 @@ import org.mineacademy.fo.menu.MenuListener;
 import org.mineacademy.fo.menu.tool.RegionTool;
 import org.mineacademy.fo.menu.tool.Tool;
 import org.mineacademy.fo.menu.tool.ToolsListener;
-import org.mineacademy.fo.model.BStatsBukkit;
-import org.mineacademy.fo.model.DiscordListener;
-import org.mineacademy.fo.model.HookManager;
-import org.mineacademy.fo.model.LitebansTask;
-import org.mineacademy.fo.model.PacketListener;
-import org.mineacademy.fo.model.SimpleScoreboard;
-import org.mineacademy.fo.model.Tuple;
-import org.mineacademy.fo.model.Variables;
+import org.mineacademy.fo.model.*;
 import org.mineacademy.fo.platform.AutoRegisterScanner.AutoRegisterHandler;
 import org.mineacademy.fo.platform.AutoRegisterScanner.FindInstance;
 import org.mineacademy.fo.proxy.ProxyListener;
@@ -49,12 +35,13 @@ import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
 
-import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.text.Component;
+import java.io.File;
+import java.util.Objects;
+import java.util.regex.Matcher;
 
 /**
  * Represents a Bukkit plugin.
- *
+ * <p>
  * This class extends {@link JavaPlugin} and plugin
  * authors should extend this class when creating a new plugin.
  */
@@ -227,16 +214,20 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 */
 	private void setVersion() {
 		final String bukkitVersion = Bukkit.getBukkitVersion(); // 1.27.2-R0.1-SNAPSHOT
-		final String versionString = bukkitVersion.split("\\-")[0]; // 1.27.2
-		final String[] versions = versionString.split("\\.");
-		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version '" + bukkitVersion + "', expected '-' and a version number");
+		final Matcher matcher = MinecraftVersion.VERSION_PATTERN.matcher(bukkitVersion);
+		ValidCore.checkBoolean(matcher.find(), "Foundation find no numeric version prefix in '" + bukkitVersion + "'");
+		final String[] parts = matcher.group(1).split("\\.");
+		ValidCore.checkBoolean(parts.length == 2 || parts.length == 3, "Foundation cannot read Bukkit version '" + bukkitVersion + "', expected <major>.<minor>[.<patch>]");
+		try {
+			final int major = Integer.parseInt(parts[0]);
+			final int minor = Integer.parseInt(parts[1]);
+			final int patch = parts.length == 3 ? Integer.parseInt(parts[2]) : 0;
+			final MinecraftVersion.V current = major == 1 && minor <= 3 ? V.v1_3_AND_BELOW : V.parse(major, minor);
+			MinecraftVersion.setVersion(current, patch);
 
-		final int version = Integer.parseInt(versions[1]); // 20
-
-		final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
-		final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
-
-		MinecraftVersion.setVersion(current, subversion);
+		} catch (NumberFormatException ex) {
+			throw new FoException("Cannot parse Bukkit version '" + bukkitVersion + "'", ex);
+		}
 	}
 
 	@Override
@@ -336,18 +327,14 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						return true;
-					}
-
-					else if (PacketListener.class.isAssignableFrom(clazz)) {
+					} else if (PacketListener.class.isAssignableFrom(clazz)) {
 						// Automatically registered by means of adding packet adapters
 						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
 						((PacketListener) instance).onRegister();
 
 						return true;
-					}
-
-					else if (DiscordListener.class.isAssignableFrom(clazz)) {
+					} else if (DiscordListener.class.isAssignableFrom(clazz)) {
 						// Automatically registered in its constructor
 						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
@@ -371,9 +358,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 						}
 
 						return true;
-					}
-
-					else if (Tool.class.isAssignableFrom(clazz)) {
+					} else if (Tool.class.isAssignableFrom(clazz)) {
 						// Automatically registered in its constructor that is called when we find instance
 						this.enforceModeFor(clazz, mode, FindInstance.SINGLETON);
 
@@ -824,7 +809,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 	/**
 	 * Disables this plugin
-	 *
+	 * <p>
 	 * Attempting to disable a plugin that is not enabled will have no effect
 	 */
 	@Override
