@@ -546,11 +546,12 @@ public final class Variables {
 				else if (rawValue instanceof UUID)
 					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
 
-				else if (!(rawValue instanceof String) && !(rawValue instanceof Number))
-					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
-							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
+					CommonCore.logTimed(60 * 30, "Unexpected type in Variables#placeholders() for {" + key + "}: " + rawValue.getClass().getSimpleName() + ". Using toString(). This message shows once per 30min.");
 
-				else
+					replacedValue = SimpleComponent.fromPlain(rawValue.toString());
+
+				} else
 					replacedValue = SimpleComponent.fromMiniSection(rawValue.toString());
 
 				break;
@@ -662,8 +663,9 @@ public final class Variables {
 					replacedValue = rawValue.toString();
 
 				else if (!(rawValue instanceof String) && !(rawValue instanceof Number)) {
-					throw new IllegalArgumentException("Expected String in Variables#placeholders() in {" + key
-							+ "}, got " + rawValue.getClass().getSimpleName() + ": was " + rawValue);
+					CommonCore.logTimed(60 * 30, "Unexpected type in Variables#placeholders() for {" + key + "}: " + rawValue.getClass().getSimpleName() + ". Using toString(). This message shows once per 30min.");
+
+					replacedValue = rawValue.toString();
 
 				} else
 					replacedValue = rawValue.toString();
