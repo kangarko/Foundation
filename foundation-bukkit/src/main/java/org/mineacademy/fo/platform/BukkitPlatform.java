@@ -676,8 +676,19 @@ final class BukkitPlatform extends FoundationPlatform {
 		return Remain.runTaskTimerAsync(delayTicks, repeatTicks, runnable);
 	}
 
+	/**
+	 * The maximum size of a plugin message on Bukkit in bytes.
+	 */
+	private static final int BUKKIT_MAX_MESSAGE_SIZE = 32766;
+
 	@Override
 	public void sendPluginMessage(final UUID senderUid, final String channel, final byte[] array) {
+		if (array.length > BUKKIT_MAX_MESSAGE_SIZE) {
+			CommonCore.log("Outgoing proxy plugin message on channel '" + channel + "' was too large for Bukkit (" + array.length + " bytes, max " + BUKKIT_MAX_MESSAGE_SIZE + "), not sending.");
+
+			return;
+		}
+
 		final Player player = Remain.getPlayerByUUID(senderUid);
 
 		if (player != null && player.isOnline())
