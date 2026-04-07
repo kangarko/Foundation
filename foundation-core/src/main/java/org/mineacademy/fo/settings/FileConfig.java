@@ -227,6 +227,11 @@ public abstract class FileConfig extends ConfigSection {
 			}
 
 		} catch (final FileNotFoundException ex) {
+			final String message = ex.getMessage();
+
+			if (message != null && message.contains("Permission denied"))
+				throw new FoException(ex, "Permission denied writing " + this.file + ". Run: chown -R <user> " + this.file.getParentFile() + " && chmod -R 755 " + this.file.getParentFile(), false);
+
 			throw new FoException(ex, "Unable to access " + this.file + ", did you delete it or used PlugMan?", false);
 
 		} catch (final IOException ex) {
