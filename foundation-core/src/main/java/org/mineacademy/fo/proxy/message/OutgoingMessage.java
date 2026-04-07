@@ -238,7 +238,7 @@ public final class OutgoingMessage extends Message {
 					throw new IllegalArgumentException("Unknown data type to write as plugin message: " + data.getClass());
 
 			} catch (final Throwable t) {
-				CommonCore.throwError(t,
+				CommonCore.error(t,
 						"Error writing data in proxy plugin message!",
 						"Message: " + message,
 						"Channel: " + channel,
@@ -277,6 +277,9 @@ public final class OutgoingMessage extends Message {
 		final ProxyMessage message = this.getMessage();
 		final byte[] byteArray = this.toByteArray(senderUid, Platform.getCustomServerName());
 
+		if (byteArray == null)
+			return;
+
 		if (byteArray.length >= MAX_MESSAGE_SIZE) {
 			CommonCore.log("Outgoing proxy message '" + message + "' was oversized, not sending. Max length: " + MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
 
@@ -308,6 +311,10 @@ public final class OutgoingMessage extends Message {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
 			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
+
+			if (byteArray == null)
+				return;
+
 			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
 
 			if (server.isEmpty()) {
@@ -363,6 +370,9 @@ public final class OutgoingMessage extends Message {
 				}
 
 				final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, otherServer.getName());
+
+				if (byteArray == null)
+					return;
 
 				if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
 					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
