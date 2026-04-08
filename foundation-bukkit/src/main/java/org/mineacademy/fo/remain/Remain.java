@@ -369,13 +369,16 @@ public final class Remain {
 		}
 
 		try {
-			fieldPlayerConnection = Remain.getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
-					.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : "playerConnection");
+			if (MinecraftVersion.atLeast(V.v1_21)) {
+				fieldPlayerConnection = ReflectionUtil.lookupClass("net.minecraft.server.level.ServerPlayer")
+						.getField("connection");
+			} else {
+				fieldPlayerConnection = Remain.getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
+						.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : "playerConnection");
+			}
 
 		} catch (final Throwable t) {
-
-			if (MinecraftVersion.olderThan(V.v1_21))
-				CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
+			CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_12))
@@ -387,12 +390,15 @@ public final class Remain {
 			}
 
 		try {
-			sendPacket = Remain.getNMSClass("PlayerConnection", "net.minecraft.server.network.PlayerConnection")
-					.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+			if (MinecraftVersion.atLeast(V.v1_21)) {
+				sendPacket = ReflectionUtil.lookupClass("net.minecraft.server.network.ServerCommonPacketListenerImpl")
+						.getMethod("send", ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet"));
+			} else {
+				sendPacket = Remain.getNMSClass("PlayerConnection", "net.minecraft.server.network.PlayerConnection")
+						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+			}
 		} catch (final Throwable t) {
-
-			if (MinecraftVersion.olderThan(V.v1_21))
-				CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
+			CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_16)) {
