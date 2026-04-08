@@ -1297,7 +1297,7 @@ public final class Remain {
 				return f.get(nmsStatistic).toString();
 			}
 
-			return (String) nmsStatistic.getClass().getMethod(MinecraftVersion.atLeast(V.v1_18) ? "d" : "getName").invoke(nmsStatistic);
+			return (String) nmsStatistic.getClass().getMethod(MinecraftVersion.atLeast(V.v1_21) ? "getName" : MinecraftVersion.atLeast(V.v1_18) ? "d" : "getName").invoke(nmsStatistic);
 		} catch (final Throwable t) {
 			throw new FoException(t, "Error getting NMS statistic name from " + stat);
 		}
@@ -2534,10 +2534,14 @@ public final class Remain {
 	public static Item spawnItem(final Location location, final ItemStack item, final Consumer<Item> modifier) {
 		try {
 
-			final Class<?> nmsWorldClass = Remain.getNMSClass("World", "net.minecraft.world.level.World");
+			final Class<?> nmsWorldClass = MinecraftVersion.atLeast(V.v1_21)
+					? ReflectionUtil.lookupClass("net.minecraft.world.level.Level")
+					: Remain.getNMSClass("World", "net.minecraft.world.level.World");
 			final Class<?> nmsStackClass = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
 			final Class<?> nmsEntityClass = Remain.getNMSClass("Entity", "net.minecraft.world.entity.Entity");
-			final Class<?> nmsItemClass = Remain.getNMSClass("EntityItem", "net.minecraft.world.entity.item.EntityItem");
+			final Class<?> nmsItemClass = MinecraftVersion.atLeast(V.v1_21)
+					? ReflectionUtil.lookupClass("net.minecraft.world.entity.item.ItemEntity")
+					: Remain.getNMSClass("EntityItem", "net.minecraft.world.entity.item.EntityItem");
 
 			final Constructor<?> entityConstructor = nmsItemClass.getConstructor(nmsWorldClass, double.class, double.class, double.class, nmsStackClass);
 
@@ -2563,7 +2567,8 @@ public final class Remain {
 				modifier.accept((Item) bukkitItem);
 
 			{ // add to the world + call event
-				final Method addEntity = location.getWorld().getClass().getMethod("addEntity", nmsEntityClass, SpawnReason.class);
+				final String addEntityMethod = MinecraftVersion.atLeast(V.v1_21) ? "addEntityToWorld" : "addEntity";
+				final Method addEntity = location.getWorld().getClass().getMethod(addEntityMethod, nmsEntityClass, SpawnReason.class);
 				addEntity.invoke(location.getWorld(), nmsEntity, SpawnReason.CUSTOM);
 			}
 
