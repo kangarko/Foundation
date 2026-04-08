@@ -3412,24 +3412,33 @@ public final class Remain {
 			final Class<?> gameProfileClass = ReflectionUtil.lookupClass("com.mojang.authlib.GameProfile");
 			final Class<?> propertyClass = ReflectionUtil.lookupClass("com.mojang.authlib.properties.Property");
 
-			final Object fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class).newInstance(uuid, "aaaaa");
 			final Object propertyInstance = propertyClass.getConstructor(String.class, String.class).newInstance("textures", base64);
+			Object fakeProfileInstance;
 
-			final Method getProperties = fakeProfileInstance.getClass().getMethod("getProperties");
-			final Object propertyMap = getProperties.invoke(fakeProfileInstance);
+			try {
+				fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class).newInstance(uuid, "aaaaa");
 
-			final Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
-			putMethod.invoke(propertyMap, "textures", propertyInstance);
+				final Method getProperties = fakeProfileInstance.getClass().getMethod("getProperties");
+				final Object propertyMap = getProperties.invoke(fakeProfileInstance);
+
+				propertyMap.getClass().getMethod("put", Object.class, Object.class).invoke(propertyMap, "textures", propertyInstance);
+
+			} catch (final ReflectiveOperationException ex2) {
+				final Class<?> propertyMapClass = ReflectionUtil.lookupClass("com.mojang.authlib.properties.PropertyMap");
+				final com.google.common.collect.Multimap<String, Object> mutableMap = com.google.common.collect.LinkedHashMultimap.create();
+
+				mutableMap.put("textures", propertyInstance);
+
+				final Object newPropertyMap = propertyMapClass.getConstructor(com.google.common.collect.Multimap.class).newInstance(mutableMap);
+				fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class, propertyMapClass).newInstance(uuid, "aaaaa", newPropertyMap);
+			}
 
 			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1) {
-				// For Minecraft 1.21.1 and later, create a ResolvableProfile
 				final Class<?> resolvableProfileClass = ReflectionUtil.lookupClass("net.minecraft.world.item.component.ResolvableProfile");
 				final Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
 
 				return fakeResolvableProfileInstance;
 			} else
-
-				// For 1.21 and older versions, return the GameProfile instance
 				return fakeProfileInstance;
 
 		} catch (final ReflectiveOperationException ex) {
