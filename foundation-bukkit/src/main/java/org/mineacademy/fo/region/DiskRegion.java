@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -80,7 +79,7 @@ public final class DiskRegion extends YamlConfig {
 	/*
 	 * Create a new region from command
 	 */
-	private DiskRegion(final String name, @Nullable final VisualizedRegion border) {
+	private DiskRegion(final String name, final VisualizedRegion border) {
 		this.border = border;
 
 		final SimpleCommandGroup defaultGroup = Platform.getPlugin().getDefaultCommandGroup();

@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -1183,7 +1182,7 @@ public final class HookManager {
 	 * @param playerId the player whose nickname you want to set.
 	 * @param nick     the nickname to set.
 	 */
-	public static void setNick(@NonNull final UUID playerId, @Nullable String nick) {
+	public static void setNick(@NonNull final UUID playerId, String nick) {
 		nick = SimpleComponent.fromMiniAmpersand(nick).toLegacySection(null, false);
 
 		if (isEssentialsLoaded())
@@ -1243,7 +1242,7 @@ public final class HookManager {
 	 * @param component the message.
 	 * @return
 	 */
-	public static SimpleComponent replaceFontImages(@Nullable final Player player, final SimpleComponent component) {
+	public static SimpleComponent replaceFontImages(final Player player, final SimpleComponent component) {
 		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImages(player, component) : component;
 	}
 
@@ -1264,7 +1263,7 @@ public final class HookManager {
 	 * @param message the message.
 	 * @return
 	 */
-	public static String replaceFontImagesLegacy(@Nullable final Player player, final String message) {
+	public static String replaceFontImagesLegacy(final Player player, final String message) {
 		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImagesLegacy(player, message) : message;
 	}
 
@@ -1555,7 +1554,7 @@ public final class HookManager {
 	 * @return
 	 */
 	@Deprecated
-	public static String replacePlaceholders(final @Nullable OfflinePlayer player, String message) {
+	public static String replacePlaceholders(final OfflinePlayer player, String message) {
 		if (message == null || "".equals(message.trim()))
 			return message;
 
@@ -1613,7 +1612,7 @@ public final class HookManager {
 	 * @param component
 	 * @return
 	 */
-	public static SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer one, @Nullable final FoundationPlayer two, final SimpleComponent component) {
+	public static SimpleComponent replaceRelationPlaceholders(final FoundationPlayer one, final FoundationPlayer two, final SimpleComponent component) {
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, component) : component;
 	}
 
@@ -2538,7 +2537,6 @@ class VaultHook {
 	// Permissions
 	// ------------------------------------------------------------------------------
 
-	@Nullable
 	Boolean hasPerm(final Player player, final String permission) {
 		if (this.permissions == null)
 			return null;
@@ -2765,7 +2763,7 @@ final class PlaceholderAPIHook {
 		return this.setPlaceholders(player, text, this.getHooks(), Variables.BRACKET_VARIABLE_PATTERN.matcher(text));
 	}
 
-	private String setPlaceholders(@Nullable final OfflinePlayer player, String message, final Map<String, Object> hooks, final Matcher matcher) {
+	private String setPlaceholders(final OfflinePlayer player, String message, final Map<String, Object> hooks, final Matcher matcher) {
 		while (matcher.find()) {
 			String variable = matcher.group(1);
 			boolean frontSpace = false;
@@ -2911,7 +2909,7 @@ final class PlaceholderAPIHook {
 		}
 	}
 
-	SimpleComponent replaceRelationPlaceholders(@Nullable final FoundationPlayer firstAudience, @Nullable final FoundationPlayer secondAudience, final SimpleComponent component) {
+	SimpleComponent replaceRelationPlaceholders(final FoundationPlayer firstAudience, final FoundationPlayer secondAudience, final SimpleComponent component) {
 		final Map<String, Object> hooks = this.getHooks();
 		final boolean canReplace = firstAudience.isPlayer() && secondAudience.isPlayer();
 
@@ -3024,7 +3022,7 @@ final class PlaceholderAPIHook {
 		 * is provided.
 		 */
 		@Override
-		public String onRequest(@Nullable final OfflinePlayer offlinePlayer, @NonNull String identifier) {
+		public String onRequest(final OfflinePlayer offlinePlayer, @NonNull String identifier) {
 			final FoundationPlayer audience = offlinePlayer != null && offlinePlayer.isOnline() ? Platform.toPlayer(offlinePlayer.getPlayer()) : null;
 			final boolean frontSpace = identifier.startsWith("+");
 			final boolean backSpace = identifier.endsWith("+");
@@ -3081,7 +3079,7 @@ class MVdWPlaceholderHook {
 	MVdWPlaceholderHook() {
 	}
 
-	String replacePlaceholders(@Nullable final OfflinePlayer player, final String message) {
+	String replacePlaceholders(final OfflinePlayer player, final String message) {
 
 		if (player == null)
 			return message;
@@ -3998,7 +3996,7 @@ class DiscordSRVHook {
 		return this.sendMessage(null, channel, message);
 	}
 
-	boolean sendMessage(@Nullable final CommandSender sender, final String channel, final String message) {
+	boolean sendMessage(final CommandSender sender, final String channel, final String message) {
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// The channel is not configured in the config.yml of Discord,
@@ -4045,7 +4043,7 @@ class DiscordSRVHook {
 		return true;
 	}
 
-	private boolean sendMessage0(@Nullable final CommandSender sender, @NonNull final TextChannel textChannel, String message) {
+	private boolean sendMessage0(final CommandSender sender, @NonNull final TextChannel textChannel, String message) {
 		message = CompChatColor.stripColorCodes(message);
 
 		if (message.replace(" ", "").isEmpty())
@@ -4321,15 +4319,15 @@ class ItemsAdderHook {
 	ItemsAdderHook() {
 	}
 
-	SimpleComponent replaceFontImages(@Nullable final Player player, final SimpleComponent component) {
+	SimpleComponent replaceFontImages(final Player player, final SimpleComponent component) {
 		return this.doReplaceFontImages(player, component);
 	}
 
-	String replaceFontImagesLegacy(@Nullable final Player player, final String message) {
+	String replaceFontImagesLegacy(final Player player, final String message) {
 		return this.doReplaceFontImages(player, message);
 	}
 
-	private <T> T doReplaceFontImages(@Nullable final Player player, final T messageOrComponent) {
+	private <T> T doReplaceFontImages(final Player player, final T messageOrComponent) {
 		if (this.replaceFontImagesString == null && this.replaceFontImagesAdventure == null && !this.failed) {
 			try {
 				this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");

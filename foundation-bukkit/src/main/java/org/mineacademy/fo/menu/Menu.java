@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -100,7 +99,6 @@ public abstract class Menu {
 	 */
 	@Getter
 	@Setter
-	@Nullable
 	private static SimpleSound sound = SimpleSound.fromSound(CompSound.BLOCK_NOTE_BLOCK_HAT, .4F);
 
 	/**
@@ -183,7 +181,6 @@ public abstract class Menu {
 	 * @deprecated probably not the best design choice
 	 */
 	@Deprecated
-	@Nullable
 	private final Button quantityButton;
 
 	/**
@@ -265,7 +262,6 @@ public abstract class Menu {
 	 * @param player
 	 * @return
 	 */
-	@Nullable
 	public static final Menu getLastClosedMenu(final Player player) {
 		if (player.hasMetadata(TAG_MENU_LAST_CLOSED)) {
 			final Menu menu = (Menu) player.getMetadata(TAG_MENU_LAST_CLOSED).get(0).value();
@@ -395,7 +391,6 @@ public abstract class Menu {
 	 *             item as button when the button is the same item with the same meta
 	 */
 	@Deprecated
-	@Nullable
 	protected final Button getButton(final ItemStack fromItem) {
 		this.registerButtonsIfHasnt();
 
@@ -418,7 +413,6 @@ public abstract class Menu {
 	 * @param slot
 	 * @return
 	 */
-	@Nullable
 	protected final Button getButton(final int slot) {
 		this.registerButtonsIfHasnt();
 
@@ -1102,7 +1096,7 @@ public abstract class Menu {
 	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
 	 * by default
 	 */
-	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor, final InventoryAction action) {
+	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
 		return this.isActionAllowed(location, slot, clicked, cursor);
 	}
 
@@ -1118,7 +1112,7 @@ public abstract class Menu {
 	 * @return if the action is cancelled in the {@link InventoryClickEvent}, false
 	 * by default
 	 */
-	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, @Nullable final ItemStack clicked, @Nullable final ItemStack cursor) {
+	protected boolean isActionAllowed(final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor) {
 		return false;
 	}
 

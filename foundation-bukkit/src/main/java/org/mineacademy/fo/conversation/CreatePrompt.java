@@ -2,7 +2,6 @@ package org.mineacademy.fo.conversation;
 
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationContext;
@@ -111,7 +110,6 @@ public abstract class CreatePrompt<T> extends SimplePrompt {
 	@Override
 	protected final String getFailedValidationText(final ConversationContext context, final String invalidInput) {
 
-		@Nullable
 		final String existing = this.findByName(invalidInput);
 		final String name = ChatUtil.capitalize(this.objectName);
 

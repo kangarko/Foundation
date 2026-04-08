@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
@@ -383,7 +382,7 @@ public abstract class Button {
 	 * @param setter
 	 * @return
 	 */
-	public static Button makeDecimalPrompt(final ItemCreator item, final String question, final String menuTitle, final RangedValue minMaxRange, @Nullable final Supplier<Object> getter, final Consumer<Double> setter) {
+	public static Button makeDecimalPrompt(final ItemCreator item, final String question, final String menuTitle, final RangedValue minMaxRange, final Supplier<Object> getter, final Consumer<Double> setter) {
 		return new Button() {
 
 			@Override
@@ -454,7 +453,7 @@ public abstract class Button {
 	 * @param onPromptFinish
 	 * @return
 	 */
-	public static Button makeStringPrompt(final ItemCreator creator, final String question, @Nullable final String menuTitle, final Consumer<String> onPromptFinish) {
+	public static Button makeStringPrompt(final ItemCreator creator, final String question, final String menuTitle, final Consumer<String> onPromptFinish) {
 		return new Button() {
 
 			@Override

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -71,26 +70,22 @@ public final class ItemCreator {
 	 */
 	@Setter
 	@Getter
-	@Nullable
 	private static String lorePrefix = "&7";
 
 	/**
 	 * The {@link ItemStack}, if any, to start building with. Either this, or {@link #material} must be set.
 	 */
-	@Nullable
 	private ItemStack item;
 
 	/**
 	 * The item meta, if any, to start building with. Parameters above
 	 * will override this.
 	 */
-	@Nullable
 	private ItemMeta meta;
 
 	/**
 	 * The {@link CompMaterial}, if any, to start building with. Either this, or {@link #item} must be set.
 	 */
-	@Nullable
 	private CompMaterial material;
 
 	/**
@@ -133,7 +128,6 @@ public final class ItemCreator {
 	 * The color in case your item is either of {@link LeatherArmorMeta},
 	 * or from a selected list of compatible items such as stained glass, wool, etc.
 	 */
-	@Nullable
 	private CompColor color;
 
 	/**
@@ -144,7 +138,6 @@ public final class ItemCreator {
 	/**
 	 * The custom model data of the item
 	 */
-	@Nullable
 	private Integer modelData;
 
 	/**
@@ -156,25 +149,21 @@ public final class ItemCreator {
 	/**
 	 * The skull owner, in case the item is a skull.
 	 */
-	@Nullable
 	private String skullOwner;
 
 	/**
 	 * The skull encoded as base64, in case the item is a skull.
 	 */
-	@Nullable
 	private String skullBase64;
 
 	/**
 	 * The skull UUID, in case the item is a skull.
 	 */
-	@Nullable
 	private UUID skullUid;
 
 	/**
 	 * The skull URL, in case the item is a skull.
 	 */
-	@Nullable
 	private String skullUrl;
 
 	/**
@@ -185,7 +174,6 @@ public final class ItemCreator {
 	/**
 	 * If this is a book, you can set its new pages here.
 	 */
-	@Nullable
 	private List<String> bookPages = null;
 
 	/**
@@ -196,13 +184,11 @@ public final class ItemCreator {
 	/**
 	 * If this a book, you can set its author here.
 	 */
-	@Nullable
 	private String bookAuthor;
 
 	/**
 	 * If this a book, you can set its title here.
 	 */
-	@Nullable
 	private String bookTitle;
 
 	// ----------------------------------------------------------------------------------------

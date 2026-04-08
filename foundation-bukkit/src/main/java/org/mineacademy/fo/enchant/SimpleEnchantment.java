@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
@@ -253,7 +252,6 @@ public abstract class SimpleEnchantment implements Listener {
 	 *
 	 * @return
 	 */
-	@Nullable
 	public final Enchantment toBukkit() {
 		if (this.isAvailable()) {
 			final Enchantment enchantment = this.handle.toBukkit();
