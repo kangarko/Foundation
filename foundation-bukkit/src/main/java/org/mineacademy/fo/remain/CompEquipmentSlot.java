@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain;
 import java.util.HashSet;
 import java.util.Set;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Enderman;
@@ -222,7 +221,7 @@ public enum CompEquipmentSlot {
 
 			/*case BODY:
 				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-
+			
 				((Horse) entity).getInventory().setArmor(item);
 				break;*/
 		}

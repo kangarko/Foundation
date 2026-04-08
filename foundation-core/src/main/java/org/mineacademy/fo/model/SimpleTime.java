@@ -86,7 +86,7 @@ public final class SimpleTime implements ConfigStringSerializable {
 	 * @return
 	 */
 	public boolean isOverLimitMs(final long limitMs) {
-		return (System.currentTimeMillis() - limitMs) > this.getTimeMilliseconds();
+		return System.currentTimeMillis() - limitMs > this.getTimeMilliseconds();
 	}
 
 	/**
@@ -96,7 +96,7 @@ public final class SimpleTime implements ConfigStringSerializable {
 	 * @return
 	 */
 	public boolean isUnderLimitMs(final long limitMs) {
-		return (System.currentTimeMillis() - limitMs) < this.getTimeMilliseconds();
+		return System.currentTimeMillis() - limitMs < this.getTimeMilliseconds();
 	}
 
 	/**

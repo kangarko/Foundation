@@ -73,7 +73,7 @@ public final class MinecraftVersion {
 
 		@Override
 		public String toString() {
-			return (this.versionNumber / 100) + "." + (this.versionNumber % 100);
+			return this.versionNumber / 100 + "." + this.versionNumber % 100;
 		}
 	}
 
@@ -189,7 +189,7 @@ public final class MinecraftVersion {
 
 		int numericCount = 0;
 
-		for (final String part : allParts) {
+		for (final String part : allParts)
 			try {
 				Integer.parseInt(part);
 				numericCount++;
@@ -197,7 +197,6 @@ public final class MinecraftVersion {
 			} catch (final NumberFormatException e) {
 				break;
 			}
-		}
 
 		ValidCore.checkBoolean(numericCount == 2 || numericCount == 3, "Cannot read version '" + rawVersionString + "', expected 2-3 numeric version parts");
 

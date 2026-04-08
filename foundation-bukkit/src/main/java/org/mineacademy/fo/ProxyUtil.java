@@ -1,6 +1,5 @@
 package org.mineacademy.fo;
 
-
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;

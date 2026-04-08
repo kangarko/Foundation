@@ -139,7 +139,7 @@ public class SimpleDatabase {
 				this.isSQLite = true;
 			}
 
-			else if (url.startsWith("jdbc:mysql://")) {
+			else if (url.startsWith("jdbc:mysql://"))
 				try {
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.6.0");
 
@@ -151,8 +151,6 @@ public class SimpleDatabase {
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-java", "8.0.33");
 					Class.forName("com.mysql.jdbc.Driver");
 				}
-			}
-
 			else if (url.startsWith("jdbc:mariadb://")) {
 				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.13" : "3.5.8");
 
@@ -197,7 +195,7 @@ public class SimpleDatabase {
 		} catch (final Throwable throwable) {
 			final String message = CommonCore.getOrEmpty(throwable.getMessage());
 
-			if (throwable instanceof SQLNonTransientConnectionException && message.equals("Too many connections")) {
+			if (throwable instanceof SQLNonTransientConnectionException && message.equals("Too many connections"))
 				CommonCore.throwErrorUnreported(throwable,
 						"Too many connections to the database!",
 						"URL: " + url,
@@ -208,8 +206,6 @@ public class SimpleDatabase {
 						"SHOW STATUS WHERE `variable_name` = 'Threads_connected';",
 						"and:",
 						"SHOW PROCESSLIST;");
-			}
-
 			else if (throwable instanceof UnsatisfiedLinkError)
 				CommonCore.throwErrorUnreported(throwable,
 						"Failed to load the database driver",
@@ -439,7 +435,7 @@ public class SimpleDatabase {
 		for (final TableRow column : creator.getColumns()) {
 			String dataType = column.getDataType().toLowerCase();
 
-			if (this.isSQLite) {
+			if (this.isSQLite)
 				if (dataType.equals("datetime") || dataType.equals("longtext"))
 					dataType = "text";
 
@@ -451,7 +447,6 @@ public class SimpleDatabase {
 
 				else if (creator.getPrimaryColumn() != null && creator.getPrimaryColumn().equals(column.getName()))
 					dataType = "INTEGER PRIMARY KEY";
-			}
 
 			columns += (columns.isEmpty() ? "" : ", ") + "`" + column.getName() + "` " + dataType;
 
@@ -531,7 +526,7 @@ public class SimpleDatabase {
 			try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
 				int index = 1;
 
-				for (final Object value : columnsAndValues.values()) {
+				for (final Object value : columnsAndValues.values())
 					if (value == null || value.equals("NULL"))
 						preparedStatement.setNull(index++, java.sql.Types.NULL);
 
@@ -549,7 +544,6 @@ public class SimpleDatabase {
 
 						preparedStatement.setObject(index++, converted);
 					}
-				}
 
 				Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
@@ -586,7 +580,7 @@ public class SimpleDatabase {
 			try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
 				int index = 1;
 
-				for (final Object value : columnsAndValues.values()) {
+				for (final Object value : columnsAndValues.values())
 					if (value == null || value.equals("NULL"))
 						preparedStatement.setNull(index++, java.sql.Types.NULL);
 
@@ -595,7 +589,6 @@ public class SimpleDatabase {
 
 					else
 						preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
-				}
 
 				Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
@@ -646,7 +639,7 @@ public class SimpleDatabase {
 							if (value instanceof JsonArray)
 								value = ((JsonArray) value).toString();
 
-							value = value == null || "NULL".equals(value) ? null : value instanceof Boolean ? ((boolean) value) ? 1 : 0 : value;
+							value = value == null || "NULL".equals(value) ? null : value instanceof Boolean ? (boolean) value ? 1 : 0 : value;
 
 							Debugger.debug("mysql", "Setting item " + index + " in statement to: " + value);
 							preparedStatement.setObject(index++, value);

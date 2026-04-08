@@ -24,6 +24,7 @@ public final class BungeeCommandImpl extends net.md_5.bungee.api.plugin.Command 
 	 *
 	 * @param delegate
 	 */
+	@Deprecated
 	public BungeeCommandImpl(final SimpleCommandCore delegate) {
 		super(delegate.getLabel(), null /* we check for perm in the delegate so it's null here */, CommonCore.toArray(delegate.getAliases()));
 
@@ -33,6 +34,7 @@ public final class BungeeCommandImpl extends net.md_5.bungee.api.plugin.Command 
 	/**
 	 * Delegates execution to the Foundation command.
 	 */
+	@Deprecated
 	@Override
 	public void execute(final CommandSender sender, final String[] args) {
 		this.delegate.delegateExecute(Platform.toPlayer(sender), this.delegate.getLabel(), args);
@@ -41,6 +43,7 @@ public final class BungeeCommandImpl extends net.md_5.bungee.api.plugin.Command 
 	/**
 	 * Delegates tab completion to the Foundation command.
 	 */
+	@Deprecated
 	@Override
 	public Iterable<String> onTabComplete(final CommandSender sender, final String[] args) {
 		return this.delegate.delegateTabComplete(Platform.toPlayer(sender), this.delegate.getLabel(), args);

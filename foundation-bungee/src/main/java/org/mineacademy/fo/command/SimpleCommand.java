@@ -9,6 +9,7 @@ import org.mineacademy.fo.exception.CommandException;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 /**
@@ -61,7 +62,7 @@ public abstract class SimpleCommand extends SimpleCommandCore implements SharedB
 	 * @return
 	 */
 	protected final List<String> completeLastWordServerNames() {
-		return CommonCore.tabComplete(this.getLastArg(), Remain.getServers().stream().map(server -> server.getName()).collect(Collectors.toList()));
+		return CommonCore.tabComplete(this.getLastArg(), Remain.getServers().stream().map(ServerInfo::getName).collect(Collectors.toList()));
 	}
 
 	/**

@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;

@@ -62,7 +62,7 @@ public final class ItemUtil {
 		final boolean firstAir = CompMaterial.isAir(first.getType());
 		final boolean secondAir = CompMaterial.isAir(second.getType());
 
-		if ((firstAir && !secondAir) || (!firstAir && secondAir))
+		if (firstAir && !secondAir || !firstAir && secondAir)
 			return false;
 
 		if (firstAir && secondAir)
@@ -82,14 +82,14 @@ public final class ItemUtil {
 			final ItemMeta firstMeta = first.getItemMeta();
 			final ItemMeta secondMeta = second.getItemMeta();
 
-			if ((firstMeta == null && secondMeta != null) || (secondMeta == null && firstMeta != null))
+			if (firstMeta == null && secondMeta != null || secondMeta == null && firstMeta != null)
 				return false;
 
 			if (firstMeta != null && secondMeta != null) {
 				final String fName = firstMeta.getDisplayName();
 				final String sName = secondMeta.getDisplayName();
 
-				if ((fName != null && !fName.equals(sName)) || !listMatchPlain(firstMeta.getLore(), secondMeta.getLore()))
+				if (fName != null && !fName.equals(sName) || !listMatchPlain(firstMeta.getLore(), secondMeta.getLore()))
 					return false;
 			}
 		}

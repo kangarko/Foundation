@@ -103,6 +103,7 @@ public enum CompParticle {
 	/**
 	 * @deprecated removed in 1.20.5
 	 */
+	@Deprecated
 	ITEM_TAKE("take", "ITEM_TAKE", null) {
 		@Override
 		public boolean isRemoved() {
@@ -150,6 +151,7 @@ public enum CompParticle {
 	/**
 	 * @deprecated removed somewhere in 1.19
 	 */
+	@Deprecated
 	SPELL_MOB_AMBIENT("mobSpellAmbient", "SPELL_MOB_AMBIENT", "AMBIENT_ENTITY_EFFECT") {
 		@Override
 		public boolean isRemoved() {
@@ -328,7 +330,7 @@ public enum CompParticle {
 	 * @return
 	 */
 	public Particle getParticle() {
-		return (Particle) bukkitEnumParticle;
+		return (Particle) this.bukkitEnumParticle;
 	}
 
 	/**
@@ -527,12 +529,11 @@ public enum CompParticle {
 			else
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 
-		} else if (this.packetConstructor != null) {
+		} else if (this.packetConstructor != null)
 			if (data == null)
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra));
 			else
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
-		}
 	}
 
 	/*
@@ -589,7 +590,7 @@ public enum CompParticle {
 		name = name.toUpperCase();
 
 		for (final CompParticle particle : values())
-			if (particle.name().equals(name) || (particle.nameLegacy != null && particle.nameLegacy.equals(name)) || (particle.nameModern != null && particle.nameModern.equals(name)))
+			if (particle.name().equals(name) || particle.nameLegacy != null && particle.nameLegacy.equals(name) || particle.nameModern != null && particle.nameModern.equals(name))
 				return particle;
 
 		throw new IllegalArgumentException("Unknown CompParticle from name: " + name);

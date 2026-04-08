@@ -14,7 +14,7 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 
 	/**
 	 * Adds a new Compound to the end of the List and returns it.
-	 * 
+	 *
 	 * @return The added {@link NBTListCompound}
 	 */
 	@Override
@@ -25,7 +25,7 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 	/**
 	 * Adds a copy of the Compound to the end of the List and returns it. When null
 	 * is given, a new Compound will be created
-	 * 
+	 *
 	 * @param comp
 	 * @return
 	 */
@@ -57,8 +57,8 @@ public class NBTCompoundList extends NBTList<ReadWriteNBT> implements ReadWriteN
 
 	/**
 	 * Adds a new Compound to the end of the List.
-	 * 
-	 * 
+	 *
+	 *
 	 * @deprecated Please use addCompound!
 	 * @param empty
 	 * @return True, if compound was added

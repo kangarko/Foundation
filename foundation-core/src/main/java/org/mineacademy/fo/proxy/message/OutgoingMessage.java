@@ -248,8 +248,7 @@ public final class OutgoingMessage extends Message {
 					}
 
 					out.writeUTF(json);
-				}
-				else if (data instanceof SerializedMap)
+				} else if (data instanceof SerializedMap)
 					out.writeUTF(((SerializedMap) data).toJson());
 				else if (data instanceof UUID)
 					out.writeUTF(((UUID) data).toString());

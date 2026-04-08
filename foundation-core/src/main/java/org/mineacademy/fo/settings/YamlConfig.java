@@ -668,7 +668,7 @@ public class YamlConfig extends FileConfig {
 			final Object value = entry.getValue();
 
 			// Ensure the values selectively quoted
-			return new NodeTuple(this.represent(key), (value instanceof String) ? super.representScalar(Tag.STR, (String) value, ScalarStyle.DOUBLE_QUOTED) : this.represent(value));
+			return new NodeTuple(this.represent(key), value instanceof String ? super.representScalar(Tag.STR, (String) value, ScalarStyle.DOUBLE_QUOTED) : this.represent(value));
 		}
 	}
 

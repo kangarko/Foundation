@@ -83,7 +83,7 @@ public final class ItemFrameBounceSlider implements Slider<Map<Integer, ItemStac
 
 		for (int index = 0; index < this.frameSize; index++) {
 			final int row = index / 9;
-			final int column = (index % 9) + 1;
+			final int column = index % 9 + 1;
 
 			if (row == 0 || row == rowCount - 1)
 				items.put(index, this.fillerItem);

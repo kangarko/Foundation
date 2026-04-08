@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -21,7 +20,6 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.MenuCloseEvent;
 import org.mineacademy.fo.event.MenuOpenEvent;
@@ -469,8 +467,8 @@ public abstract class Menu {
 		ValidCore.checkNotNull(this.size, "Size not set in " + this + " (call setSize in your constructor)");
 		ValidCore.checkNotNull(this.title, "Title not set in " + this + " (call setTitle in your constructor)");
 
-		Valid.checkBoolean(this.size % 9 == 0, "Menu size must be a multiple of 9, got " + this.size + " in " + this);
-		Valid.checkBoolean(this.size >= 9 && this.size <= 54, "Menu size must be between 9 and 54, got " + this.size + " in " + this);
+		ValidCore.checkBoolean(this.size % 9 == 0, "Menu size must be a multiple of 9, got " + this.size + " in " + this);
+		ValidCore.checkBoolean(this.size >= 9 && this.size <= 54, "Menu size must be between 9 and 54, got " + this.size + " in " + this);
 
 		this.viewer = player;
 		this.registerButtonsIfHasnt();
@@ -677,7 +675,7 @@ public abstract class Menu {
 			if (item != null && CompMaterial.isAir(item))
 				item = null;
 
-			Valid.checkBoolean(slot >= 0 && slot < this.size, "The getItemAt() method returned item with slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Item: " + item);
+			ValidCore.checkBoolean(slot >= 0 && slot < this.size, "The getItemAt() method returned item with slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Item: " + item);
 			items.put(slot, item);
 		}
 
@@ -689,7 +687,7 @@ public abstract class Menu {
 			if (button.getSlot() != -1) {
 				final int slot = button.getSlot();
 
-				Valid.checkBoolean(slot >= 0 && slot < this.size, "Button's getSlot() returned slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Button: " + button + ", item: " + button.getItem());
+				ValidCore.checkBoolean(slot >= 0 && slot < this.size, "Button's getSlot() returned slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Button: " + button + ", item: " + button.getItem());
 				items.put(slot, button.getItem());
 
 			} else if (position != null) {
@@ -715,7 +713,7 @@ public abstract class Menu {
 
 				this.registeredButtonPositions.put(slot, button);
 
-				Valid.checkBoolean(slot >= 0 && slot < this.size, "@Position annotation returned slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Annotation: " + position + ", button: " + button + ", item: " + button.getItem());
+				ValidCore.checkBoolean(slot >= 0 && slot < this.size, "@Position annotation returned slot " + slot + " outside the menu size of " + this.size + " in " + this + ". Annotation: " + position + ", button: " + button + ", item: " + button.getItem());
 				items.put(slot, button.getItem());
 			}
 		}

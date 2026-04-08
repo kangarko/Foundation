@@ -57,6 +57,6 @@ final class BungeeServer extends FoundationServer {
 
 	@Override
 	public String toString() {
-		return "BungeeServer{name=" + getName() + ",address=" + getAddress() + "}";
+		return "BungeeServer{name=" + this.getName() + ",address=" + this.getAddress() + "}";
 	}
 }

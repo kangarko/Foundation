@@ -11,7 +11,6 @@ import java.util.Collection;
 
 import javax.imageio.ImageIO;
 
-import lombok.Setter;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
@@ -20,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import net.kyori.adventure.text.format.TextColor;
 
 /**
@@ -132,8 +132,7 @@ public final class ChatImage {
 	public ChatImage drawFromHead(final String playerName) throws IOException {
 		return this.drawFromUrl(Variables.builder().placeholderArray(
 				"player_name", playerName,
-				"image_height", this.height
-		).replaceLegacy(avatarApiUrl));
+				"image_height", this.height).replaceLegacy(avatarApiUrl));
 	}
 
 	/**

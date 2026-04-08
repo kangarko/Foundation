@@ -423,7 +423,7 @@ public abstract class SimpleCommandGroup {
 				pages.setPages(lines);
 
 				// Allow "? <page>" page parameter
-				final int page = (this.args.length > 1 && ValidCore.isInteger(this.args[1]) ? Integer.parseInt(this.args[1]) : 1);
+				final int page = this.args.length > 1 && ValidCore.isInteger(this.args[1]) ? Integer.parseInt(this.args[1]) : 1;
 
 				pages.send(this.audience, page);
 

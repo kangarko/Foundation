@@ -942,12 +942,11 @@ public abstract class CommonCore {
 
 		final StringBuilder out = new StringBuilder();
 
-		for (int i = 0; i < array.length; i++) {
+		for (int i = 0; i < array.length; i++)
 			if (i == array.length - 1)
 				out.append(" " + Lang.plain("part-and") + " ").append(array[i]);
 			else
 				out.append(i == 0 ? "" : ", ").append(array[i]);
-		}
 
 		return out.toString();
 	}
@@ -1134,7 +1133,7 @@ public abstract class CommonCore {
 		final StringBuilder builder = new StringBuilder();
 		boolean first = true;
 
-		for (final T element : safeList) {
+		for (final T element : safeList)
 			if (element != null) {
 				if (!first)
 					builder.append(delimiter);
@@ -1143,7 +1142,6 @@ public abstract class CommonCore {
 
 				builder.append(stringer.toString(element));
 			}
-		}
 		return builder.toString();
 	}
 

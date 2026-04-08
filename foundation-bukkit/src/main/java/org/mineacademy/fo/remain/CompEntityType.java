@@ -11,7 +11,7 @@ import java.util.TreeSet;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 
 import lombok.NonNull;
@@ -250,7 +250,7 @@ public final class CompEntityType {
 			else
 				try {
 					for (final World other : Bukkit.getWorlds())
-						if ((boolean) isEnabled.invoke(other, type) == true) {
+						if (((boolean) isEnabled.invoke(other, type))) {
 							enabledByFeature = true;
 
 							break;
@@ -268,7 +268,7 @@ public final class CompEntityType {
 					if (cause instanceof IllegalArgumentException || cause instanceof NoSuchMethodError || cause instanceof NoSuchElementException) {
 						// ignore
 					} else
-						Common.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
+						CommonCore.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
 
 					enabledByFeature = true;
 				}

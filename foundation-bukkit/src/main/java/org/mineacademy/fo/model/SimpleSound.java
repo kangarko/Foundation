@@ -88,10 +88,9 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 * @param player
 	 */
 	public void play(final Player player) {
-		if (this.enabled) {
-
+		if (this.enabled)
 			try {
-				if(this.customSoundName != null)
+				if (this.customSoundName != null)
 					player.playSound(player.getLocation(), this.customSoundName, this.volume, this.getPitch());
 				else {
 					ValidCore.checkNotNull(this.sound);
@@ -100,7 +99,6 @@ public final class SimpleSound implements ConfigStringSerializable {
 			} catch (final NoSuchMethodError err) {
 				// Legacy MC
 			}
-		}
 	}
 
 	/**
@@ -109,10 +107,9 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 * @param location
 	 */
 	public void play(final Location location) {
-		if (this.enabled) {
-
+		if (this.enabled)
 			try {
-				if(this.customSoundName != null)
+				if (this.customSoundName != null)
 					location.getWorld().playSound(location, this.customSoundName, this.volume, this.getPitch());
 				else {
 					ValidCore.checkNotNull(this.sound);
@@ -121,7 +118,6 @@ public final class SimpleSound implements ConfigStringSerializable {
 			} catch (final NoSuchMethodError err) {
 				// Legacy MC
 			}
-		}
 	}
 
 	/**
@@ -174,7 +170,7 @@ public final class SimpleSound implements ConfigStringSerializable {
 		String soundName = customSound ? soundNameRaw.substring("custom:".length()) : soundNameRaw.toUpperCase();
 
 		// If the sound is custom and does not start with "minecraft:", we prefix it with "minecraft:"
-		if(customSound && !soundName.startsWith("minecraft:"))
+		if (customSound && !soundName.startsWith("minecraft:"))
 			soundName = "minecraft:" + soundName; // Ensure custom sounds are prefixed with minecraft:
 
 		// If the sound is not custom, we try to get the CompSound from the name
@@ -184,13 +180,13 @@ public final class SimpleSound implements ConfigStringSerializable {
 			throw new FoException("Sound '" + values[0] + "' does not exists (in your Minecraft version " + MinecraftVersion.getFullVersion() + ")! Pick one from mineacademy.org/sounds", false);
 
 		// If the sound is custom and does not exist, we set it to a dummy sound
-		else if(compSound == null)
+		else if (compSound == null)
 			compSound = CompSound.UI_BUTTON_CLICK; // Dummy sound for custom sounds
 
 		final SimpleSound sound = new SimpleSound();
 
 		sound.sound = compSound;
-		if(customSound)
+		if (customSound)
 			sound.customSoundName = soundName;
 
 		if (values.length == 1) {

@@ -439,12 +439,11 @@ public final class Lang {
 			final String path = "lang/" + SimpleSettings.LOCALE + ".json";
 			final File localFile = FileUtil.getFile(path);
 
-			if (!localFile.exists()) {
+			if (!localFile.exists())
 				if (createFileIfNotExists)
 					FileUtil.createIfNotExists(path);
 				else
 					return localFile;
-			}
 
 			JsonObject localJson;
 

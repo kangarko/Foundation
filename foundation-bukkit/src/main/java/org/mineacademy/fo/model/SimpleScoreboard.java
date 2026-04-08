@@ -301,7 +301,7 @@ public class SimpleScoreboard {
 	 * @param entries
 	 */
 	public final void addRows(final List<String> entries) {
-		ValidCore.checkBoolean((this.rows.size() + entries.size()) <= 15, "You are trying to add too many rows (the limit is 15)");
+		ValidCore.checkBoolean(this.rows.size() + entries.size() <= 15, "You are trying to add too many rows (the limit is 15)");
 		final List<String> lines = new ArrayList<>();
 
 		for (final String line : entries)

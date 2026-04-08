@@ -3,7 +3,6 @@ package org.mineacademy.fo.menu;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;

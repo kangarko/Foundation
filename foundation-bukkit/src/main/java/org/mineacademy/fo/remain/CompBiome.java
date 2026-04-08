@@ -393,6 +393,7 @@ public enum CompBiome {
 	/**
 	 * @deprecated removed in 1.18
 	 */
+	@Deprecated
 	TALL_BIRCH_FOREST(OLD_GROWTH_BIRCH_FOREST, "MUTATED_BIRCH_FOREST", "BIRCH_FOREST_MOUNTAINS") {
 		@Override
 		public int getId() {
@@ -402,6 +403,7 @@ public enum CompBiome {
 	/**
 	 * @deprecated removed in 1.18
 	 */
+	@Deprecated
 	TALL_BIRCH_HILLS(OLD_GROWTH_BIRCH_FOREST, "MUTATED_BIRCH_FOREST_HILLS", "MESA_PLATEAU_FOREST_MOUNTAINS") {
 		@Override
 		public int getId() {

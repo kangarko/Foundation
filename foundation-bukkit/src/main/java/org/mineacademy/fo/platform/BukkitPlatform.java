@@ -41,7 +41,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -652,7 +651,7 @@ final class BukkitPlatform extends FoundationPlatform {
 			if (ex.getMessage().startsWith("Plugin attempted to register") && ex.getMessage().endsWith("while not enabled")) {
 				// ignore
 			} else
-				Common.error(ex, "Error registering " + listener.getClass().getSimpleName());
+				CommonCore.error(ex, "Error registering " + listener.getClass().getSimpleName());
 		}
 	}
 

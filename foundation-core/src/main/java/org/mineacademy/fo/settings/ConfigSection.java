@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.login.Configuration;
+
 import org.mineacademy.fo.ValidCore;
 
 import lombok.Getter;
@@ -90,7 +92,7 @@ public class ConfigSection {
 			for (final Map.Entry<String, SectionPathData> entry : sec.map.entrySet()) {
 				output.add(createPath(section, entry.getKey(), this));
 
-				if ((deep) && (entry.getValue().getData() instanceof ConfigSection)) {
+				if (deep && entry.getValue().getData() instanceof ConfigSection) {
 					final ConfigSection subsection = (ConfigSection) entry.getValue().getData();
 					this.mapChildrenKeys(output, subsection, deep);
 				}
@@ -392,7 +394,7 @@ public class ConfigSection {
 	 * You may use this method for any given memory section.
 	 */
 	private static String createPath(final ConfigSection section, final String key) {
-		return createPath(section, key, (section == null) ? null : section.root);
+		return createPath(section, key, section == null ? null : section.root);
 	}
 
 	/*
@@ -409,14 +411,14 @@ public class ConfigSection {
 
 		final StringBuilder builder = new StringBuilder();
 
-		for (ConfigSection parent = section; (parent != null) && (parent != relativeTo); parent = parent.getParent()) {
+		for (ConfigSection parent = section; parent != null && parent != relativeTo; parent = parent.getParent()) {
 			if (builder.length() > 0)
 				builder.insert(0, PATH_SEPARATOR);
 
 			builder.insert(0, parent.path);
 		}
 
-		if ((key != null) && (key.length() > 0)) {
+		if (key != null && key.length() > 0) {
 			if (builder.length() > 0)
 				builder.append(PATH_SEPARATOR);
 

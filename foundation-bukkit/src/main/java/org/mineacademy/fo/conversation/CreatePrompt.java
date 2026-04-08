@@ -2,7 +2,6 @@ package org.mineacademy.fo.conversation;
 
 import java.util.regex.Pattern;
 
-
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;

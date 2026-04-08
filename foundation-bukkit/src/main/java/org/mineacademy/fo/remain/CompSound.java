@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
@@ -2120,7 +2119,7 @@ public enum CompSound {
 			else {
 				boolean number = false;
 				// A few sounds have numbers in them.
-				if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (number = (ch >= '0' && ch <= '9'))) {
+				if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || (number = ch >= '0' && ch <= '9')) {
 					if (appendUnderline) {
 						chs[count++] = '_';
 						appendUnderline = false;

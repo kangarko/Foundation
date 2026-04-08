@@ -631,7 +631,7 @@ public class NBTReflectionUtil {
 			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4)) {
 				if (nbt instanceof Optional)
 					nbt = ((Optional<?>) nbt).orElse(null);
-				if ((nbt == null) || new NBTStringList(comp, key, NBTType.NBTTagString, nbt).isEmpty())
+				if (nbt == null || new NBTStringList(comp, key, NBTType.NBTTagString, nbt).isEmpty())
 					return NBTType.NBTTagEnd;
 				Object compound = ReflectionMethod.LIST_GET.run(nbt, 0);
 				if (compound instanceof Optional)
@@ -710,7 +710,7 @@ public class NBTReflectionUtil {
 	 */
 	public static void remove(NBTCompound comp, String key) {
 		final Object rootnbttag = comp.getCompound();
-		if ((rootnbttag == null) || !validCompound(comp))
+		if (rootnbttag == null || !validCompound(comp))
 			return;
 		final Object workingtag = getToCompount(rootnbttag, comp);
 		ReflectionMethod.COMPOUND_REMOVE_KEY.run(workingtag, key);
