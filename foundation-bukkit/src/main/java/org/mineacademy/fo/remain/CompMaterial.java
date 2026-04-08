@@ -2644,7 +2644,7 @@ public enum CompMaterial {
 		if (compmaterial == null)
 			compmaterial = fromString(material);
 
-		ValidCore.checkNotNull(compmaterial, "Could not convert item to CompMaterial. Item: " + item);
+		ValidCore.checkNotNull(compmaterial, "Could not convert item to CompMaterial. Material: " + material + ", data: " + data);
 
 		return compmaterial;
 	}
