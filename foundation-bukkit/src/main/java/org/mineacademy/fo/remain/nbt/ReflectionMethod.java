@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.CommonCore;
 
 /**
  * This class caches method reflections, keeps track of method name changes
@@ -16,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
  * @author tr7zw
  *
  */
+
 enum ReflectionMethod {
 
 	COMPOUND_SET_FLOAT(ClassWrapper.NMS_NBTTAGCOMPOUND, new Class[] { String.class, float.class },
@@ -345,55 +347,54 @@ enum ReflectionMethod {
 		this.removedAfter = removedAfter;
 		this.parentClassWrapper = targetClass;
 		// Special Case for Modded 1.7.10
-		final boolean specialCase = (MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE")
-				&& MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4); // COMPOUND_MERGE is only present on
+		final boolean specialCase = MinecraftVersion.isForgePresent() && this.name().equals("COMPOUND_MERGE")
+				&& MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4; // COMPOUND_MERGE is only present on
 																																														// Crucible, not on vanilla 1.7.10
 		if (!specialCase && (!MinecraftVersion.isAtLeastVersion(addedSince)
-				|| (this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter))))
+				|| this.removedAfter != null && MinecraftVersion.isNewerThan(removedAfter)))
 			return;
-		compatible = true;
+		this.compatible = true;
 		final MinecraftVersion server = MinecraftVersion.getVersion();
 		Since target = methodnames[0];
-		for (final Since s : methodnames) {
+		for (final Since s : methodnames)
 			if (s.version.getVersionId() <= server.getVersionId()
 					&& target.version.getVersionId() < s.version.getVersionId())
 				target = s;
-		}
-		targetVersion = target;
-		String targetMethodName = targetVersion.name;
+		this.targetVersion = target;
+		String targetMethodName = this.targetVersion.name;
 		try {
-			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4) {
+			if (MinecraftVersion.isForgePresent() && MinecraftVersion.getVersion() == MinecraftVersion.MC1_7_R4)
 				targetMethodName = Forge1710Mappings.getMethodMapping().getOrDefault(this.name(), targetMethodName);
-			} else if (targetVersion.version.isMojangMapping()) {
+			else if (this.targetVersion.version.isMojangMapping()) {
 				try {
 					// check for mojang mapped method
-					final String name = targetVersion.name.split("\\(")[0];
-					method = targetClass.getClazz().getMethod(name, args);
-					method.setAccessible(true);
-					loaded = true;
-					methodName = name;
+					final String name = this.targetVersion.name.split("\\(")[0];
+					this.method = targetClass.getClazz().getMethod(name, args);
+					this.method.setAccessible(true);
+					this.loaded = true;
+					this.methodName = name;
 					return;
 				} catch (final NoSuchMethodException ignore) {
 					// not mojang mapped
 				}
 				targetMethodName = MojangToMapping.getMapping().getOrDefault(
-						targetClass.getMojangName() + "#" + targetVersion.name, "Unmapped" + targetVersion.name);
+						targetClass.getMojangName() + "#" + this.targetVersion.name, "Unmapped" + this.targetVersion.name);
 			}
-			method = targetClass.getClazz().getDeclaredMethod(targetMethodName, args);
-			method.setAccessible(true);
-			loaded = true;
-			methodName = targetVersion.name;
+			this.method = targetClass.getClazz().getDeclaredMethod(targetMethodName, args);
+			this.method.setAccessible(true);
+			this.loaded = true;
+			this.methodName = this.targetVersion.name;
 		} catch (NullPointerException | NoSuchMethodException | SecurityException ex) {
 			try {
-				if (targetVersion.version.isMojangMapping())
+				if (this.targetVersion.version.isMojangMapping())
 					targetMethodName = MojangToMapping.getMapping().getOrDefault(
-							targetClass.getMojangName() + "#" + targetVersion.name, "Unmapped" + targetVersion.name);
-				method = targetClass.getClazz().getMethod(targetMethodName, args);
-				method.setAccessible(true);
-				loaded = true;
-				methodName = targetVersion.name;
+							targetClass.getMojangName() + "#" + this.targetVersion.name, "Unmapped" + this.targetVersion.name);
+				this.method = targetClass.getClazz().getMethod(targetMethodName, args);
+				this.method.setAccessible(true);
+				this.loaded = true;
+				this.methodName = this.targetVersion.name;
 			} catch (NullPointerException | NoSuchMethodException | SecurityException ex2) {
-				System.out.println("[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this);
+				CommonCore.error(ex2, "[NBTAPI] Unable to find the method '" + targetMethodName + "' in '" + (targetClass.getClazz() == null ? targetClass.getMojangName() : targetClass.getClazz().getSimpleName()) + "' Args: " + Arrays.toString(args) + " Enum: " + this); // NOSONAR This gets loaded before the logger is loaded
 			}
 		}
 	}
@@ -410,12 +411,12 @@ enum ReflectionMethod {
 	 * @return Value returned by the method
 	 */
 	public Object run(Object target, Object... args) {
-		if (method == null)
+		if (this.method == null)
 			throw new NbtApiException("Method not loaded! '" + this + "'");
 		try {
-			return method.invoke(target, args);
+			return this.method.invoke(target, args);
 		} catch (final Exception ex) {
-			throw new NbtApiException("Error while calling the method '" + methodName + "', loaded: " + loaded
+			throw new NbtApiException("Error while calling the method '" + this.methodName + "', loaded: " + this.loaded
 					+ ", Enum: " + this + ", Passed Class: " + (target == null ? "null" : target.getClass()) + " Args: " + (args == null ? "null" : Arrays.toString(args)) +
 					" Classes: " + (args == null ? "null" : Arrays.asList(args).stream().map(a -> a == null ? "NULL" : a.getClass().getName()).collect(Collectors.toList())), ex);
 		}
@@ -425,32 +426,32 @@ enum ReflectionMethod {
 	 * @return The MethodName, used in this Minecraft Version
 	 */
 	public String getMethodName() {
-		return methodName;
+		return this.methodName;
 	}
 
 	/**
 	 * @return Has this method been linked
 	 */
 	public boolean isLoaded() {
-		return loaded;
+		return this.loaded;
 	}
 
 	/**
 	 * @return Is this method available in this Minecraft Version
 	 */
 	public boolean isCompatible() {
-		return compatible;
+		return this.compatible;
 	}
 
 	public Since getSelectedVersionInfo() {
-		return targetVersion;
+		return this.targetVersion;
 	}
 
 	/**
 	 * @return Get Wrapper of the parent class
 	 */
 	public ClassWrapper getParentClassWrapper() {
-		return parentClassWrapper;
+		return this.parentClassWrapper;
 	}
 
 	public static class Since {
