@@ -39,20 +39,20 @@ final class PathUtil {
 		}
 
 		public String getPath() {
-			return path;
+			return this.path;
 		}
 
 		public int getIndex() {
-			return index;
+			return this.index;
 		}
 
 		public boolean hasIndex() {
-			return index != null;
+			return this.index != null;
 		}
 
 		@Override
 		public String toString() {
-			return "PathSegment [path=" + path + ", index=" + index + "]";
+			return "PathSegment [path=" + this.path + ", index=" + this.index + "]";
 		}
 
 	}

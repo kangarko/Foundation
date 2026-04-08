@@ -46,23 +46,21 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	protected NBTItem(ItemStack item, boolean directApply, boolean readOnly, boolean finalizer) {
 		super(null, null, readOnly);
-		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0) {
+		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0)
 			throw new NullPointerException("ItemStack can't be null/air/amount of 0! This is not a NBTAPI bug!");
-		}
 		this.finalizer = finalizer;
 		if (finalizer) {
 			this.bukkitItem = item;
 			this.originalSrcStack = item;
 			this.directApply = false;
 		} else if (readOnly) {
-			bukkitItem = item;
+			this.bukkitItem = item;
 			this.directApply = false;
 		} else {
 			this.directApply = directApply;
-			bukkitItem = item.clone();
-			if (directApply) {
+			this.bukkitItem = item.clone();
+			if (directApply)
 				this.originalSrcStack = item;
-			}
 		}
 	}
 
@@ -77,63 +75,55 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	@Deprecated
 	public NBTItem(ItemStack item, boolean directApply) {
 		super(null, null);
-		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0) {
+		if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0)
 			throw new NullPointerException("ItemStack can't be null/air/amount of 0! This is not a NBTAPI bug!");
-		}
 		this.finalizer = false;
 		this.directApply = directApply;
-		bukkitItem = item.clone();
-		if (directApply) {
+		this.bukkitItem = item.clone();
+		if (directApply)
 			this.originalSrcStack = item;
-		}
 	}
 
 	@Override
 	public Object getCompound() {
-		if (closed) {
+		if (this.closed)
 			throw new NbtApiException("Tried using closed NBT data!");
+		if (this.isReadOnly() && (this.cachedCompound != null
+				|| ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(this.bukkitItem.getClass()))) {
+			if (this.cachedCompound == null)
+				this.cachedCompound = NBTReflectionUtil
+						.getItemRootNBTTagCompound(NBTReflectionUtil.getCraftItemHandle(this.bukkitItem));
+			return this.cachedCompound;
 		}
-		if (isReadOnly() && (cachedCompound != null
-				|| ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(bukkitItem.getClass()))) {
-			if (cachedCompound == null) {
-				cachedCompound = NBTReflectionUtil
-						.getItemRootNBTTagCompound(NBTReflectionUtil.getCraftItemHandle(bukkitItem));
-			}
-			return cachedCompound;
+		if (this.finalizer) {
+			if (this.cachedCompound == null)
+				this.updateCachedCompound();
+			return this.cachedCompound;
 		}
-		if (finalizer) {
-			if (cachedCompound == null) {
-				updateCachedCompound();
-			}
-			return cachedCompound;
-		}
-		return NBTReflectionUtil.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
+		return NBTReflectionUtil.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem));
 	}
 
 	private void updateCachedCompound() {
-		if (finalizer) {
-			cachedCompound = NBTReflectionUtil
-					.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem));
-		}
+		if (this.finalizer)
+			this.cachedCompound = NBTReflectionUtil
+					.getItemRootNBTTagCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem));
 	}
 
 	protected void finalizeChanges() {
-		if (!finalizer || cachedCompound == null) {
+		if (!this.finalizer || this.cachedCompound == null)
 			return;
-		}
 		// There was data, but not anymore, delete the tag from the itemstack
-		if (NBTReflectionUtil.getKeys(this).isEmpty()) {
-			cachedCompound = null;
-		}
-		if (ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(originalSrcStack.getClass())) {
-			final Object nmsStack = NBTReflectionUtil.getCraftItemHandle(originalSrcStack);
-			NBTReflectionUtil.setItemStackCompound(nmsStack, cachedCompound);
-			bukkitItem = originalSrcStack;
+		if (NBTReflectionUtil.getKeys(this).isEmpty())
+			this.cachedCompound = null;
+		if (ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(this.originalSrcStack.getClass())) {
+			final Object nmsStack = NBTReflectionUtil.getCraftItemHandle(this.originalSrcStack);
+			NBTReflectionUtil.setItemStackCompound(nmsStack, this.cachedCompound);
+			this.bukkitItem = this.originalSrcStack;
 		} else {
-			final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
-			NBTReflectionUtil.setItemStackCompound(stack, cachedCompound);
-			bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
-			originalSrcStack.setItemMeta(bukkitItem.getItemMeta());
+			final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem);
+			NBTReflectionUtil.setItemStackCompound(stack, this.cachedCompound);
+			this.bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
+			this.originalSrcStack.setItemMeta(this.bukkitItem.getItemMeta());
 		}
 	}
 
@@ -144,32 +134,28 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 
 	@Override
 	protected boolean isClosed() {
-		return closed;
+		return this.closed;
 	}
 
-	
 	@Override
 	protected void setCompound(Object compound) {
-		if (isReadOnly()) {
+		if (this.isReadOnly())
 			throw new NbtApiException("Tried setting data in read only mode!");
-		}
-		if (closed) {
+		if (this.closed)
 			throw new NbtApiException("Tried using closed NBT data!");
-		}
-		if (finalizer) {
-			cachedCompound = compound;
+		if (this.finalizer) {
+			this.cachedCompound = compound;
 			return;
 		}
-		if (compound != null && ((Set<String>) ReflectionMethod.COMPOUND_GET_KEYS.run(compound)).isEmpty()) {
+		if (compound != null && ((Set<String>) ReflectionMethod.COMPOUND_GET_KEYS.run(compound)).isEmpty())
 			compound = null;
-		}
-		if (ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(bukkitItem.getClass())) {
-			final Object nmsStack = NBTReflectionUtil.getCraftItemHandle(bukkitItem);
+		if (ClassWrapper.CRAFT_ITEMSTACK.getClazz().isAssignableFrom(this.bukkitItem.getClass())) {
+			final Object nmsStack = NBTReflectionUtil.getCraftItemHandle(this.bukkitItem);
 			NBTReflectionUtil.setItemStackCompound(nmsStack, compound);
 		} else {
-			final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, bukkitItem);
+			final Object stack = ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, this.bukkitItem);
 			NBTReflectionUtil.setItemStackCompound(stack, compound);
-			bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
+			this.bukkitItem = (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, stack);
 		}
 	}
 
@@ -184,9 +170,8 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Deprecated
 	public void applyNBT(ItemStack item) {
-		if (item == null || item.getType() == Material.AIR) {
+		if (item == null || item.getType() == Material.AIR)
 			throw new NullPointerException("ItemStack can't be null/Air! This is not a NBTAPI bug!");
-		}
 		final NBTItem nbti = new NBTItem(new ItemStack(item.getType()));
 		nbti.mergeCompound(this);
 		item.setItemMeta(nbti.getItem().getItemMeta());
@@ -211,9 +196,8 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Deprecated
 	public void mergeCustomNBT(ItemStack item) {
-		if (item == null || item.getType() == Material.AIR) {
+		if (item == null || item.getType() == Material.AIR)
 			throw new NullPointerException("ItemStack can't be null/Air!");
-		}
 		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 			// 1.20.5+ doesn't have any vanilla tags
 			NBT.modify(item, nbt -> {
@@ -223,7 +207,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 		}
 		final ItemMeta meta = item.getItemMeta();
 		NBTReflectionUtil.getUnhandledNBTTags(meta)
-				.putAll(NBTReflectionUtil.getUnhandledNBTTags(bukkitItem.getItemMeta()));
+				.putAll(NBTReflectionUtil.getUnhandledNBTTags(this.bukkitItem.getItemMeta()));
 		item.setItemMeta(meta);
 	}
 
@@ -235,12 +219,11 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	@Override
 	@Deprecated
 	public boolean hasCustomNbtData() {
-		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 			// 1.20.5+ doesn't have any vanilla tags
-			return hasNBTData();
-		}
-		finalizeChanges();
-		final ItemMeta meta = bukkitItem.getItemMeta();
+			return this.hasNBTData();
+		this.finalizeChanges();
+		final ItemMeta meta = this.bukkitItem.getItemMeta();
 		return !NBTReflectionUtil.getUnhandledNBTTags(meta).isEmpty();
 	}
 
@@ -250,27 +233,27 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	@Override
 	@Deprecated
 	public void clearCustomNBT() {
-		finalizeChanges();
+		this.finalizeChanges();
 		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
 			// 1.20.5+ doesn't have any vanilla tags
-			setCompound(null);
+			this.setCompound(null);
 			return;
 		}
-		final ItemMeta meta = bukkitItem.getItemMeta();
+		final ItemMeta meta = this.bukkitItem.getItemMeta();
 		NBTReflectionUtil.getUnhandledNBTTags(meta).clear();
-		bukkitItem.setItemMeta(meta);
-		updateCachedCompound();
+		this.bukkitItem.setItemMeta(meta);
+		this.updateCachedCompound();
 	}
 
 	/**
 	 * @return The modified ItemStack
 	 */
 	public ItemStack getItem() {
-		return bukkitItem;
+		return this.bukkitItem;
 	}
 
 	protected void setItem(ItemStack item) {
-		bukkitItem = item;
+		this.bukkitItem = item;
 	}
 
 	/**
@@ -281,7 +264,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Override
 	public boolean hasNBTData() {
-		return getCompound() != null;
+		return this.getCompound() != null;
 	}
 
 	/**
@@ -296,17 +279,16 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Override
 	public void modifyMeta(BiConsumer<ReadableNBT, ItemMeta> handler) {
-		finalizeChanges();
-		final ItemMeta meta = bukkitItem.getItemMeta();
-		handler.accept(new NBTContainer(getResolvedObject()).setReadOnly(true), meta);
-		bukkitItem.setItemMeta(meta);
-		updateCachedCompound();
-		if (directApply) {
-			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		this.finalizeChanges();
+		final ItemMeta meta = this.bukkitItem.getItemMeta();
+		handler.accept(new NBTContainer(this.getResolvedObject()).setReadOnly(true), meta);
+		this.bukkitItem.setItemMeta(meta);
+		this.updateCachedCompound();
+		if (this.directApply) {
+			if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 				throw new NbtApiException(
 						"Direct apply mode meta changes don't work anymore in 1.20.5+. Please switch to the modern NBT.modify sytnax!");
-			}
-			applyNBT(originalSrcStack);
+			this.applyNBT(this.originalSrcStack);
 		}
 	}
 
@@ -322,15 +304,14 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 */
 	@Override
 	public <T extends ItemMeta> void modifyMeta(Class<T> type, BiConsumer<ReadableNBT, T> handler) {
-		finalizeChanges();
-		
-		final T meta = (T) bukkitItem.getItemMeta();
-		handler.accept(new NBTContainer(getResolvedObject()).setReadOnly(true), meta);
-		bukkitItem.setItemMeta(meta);
-		updateCachedCompound();
-		if (directApply) {
-			applyNBT(originalSrcStack);
-		}
+		this.finalizeChanges();
+
+		final T meta = (T) this.bukkitItem.getItemMeta();
+		handler.accept(new NBTContainer(this.getResolvedObject()).setReadOnly(true), meta);
+		this.bukkitItem.setItemMeta(meta);
+		this.updateCachedCompound();
+		if (this.directApply)
+			this.applyNBT(this.originalSrcStack);
 	}
 
 	/**
@@ -374,9 +355,8 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 		final NBTCompoundList list = container.getCompoundList("items");
 		for (int i = 0; i < items.length; i++) {
 			final ItemStack item = items[i];
-			if (item == null || item.getType() == Material.AIR) {
+			if (item == null || item.getType() == Material.AIR)
 				continue;
-			}
 			final NBTListCompound entry = list.addCompound();
 			entry.setInteger("Slot", i);
 			entry.mergeCompound(convertItemtoNBT(item));
@@ -398,31 +378,26 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	@Nullable
 	@Deprecated
 	public static ItemStack[] convertNBTtoItemArray(NBTCompound comp) {
-		if (!comp.hasTag("size")) {
+		if (!comp.hasTag("size"))
 			return null;
-		}
 		final ItemStack[] rebuild = new ItemStack[comp.getInteger("size")];
-		for (int i = 0; i < rebuild.length; i++) { // not using Arrays.fill, since then it's all the same instance
+		for (int i = 0; i < rebuild.length; i++)
 			rebuild[i] = new ItemStack(Material.AIR);
-		}
-		if (!comp.hasTag("items")) {
+		if (!comp.hasTag("items"))
 			return rebuild;
-		}
 		final NBTCompoundList list = comp.getCompoundList("items");
-		for (final ReadWriteNBT lcomp : list) {
+		for (final ReadWriteNBT lcomp : list)
 			if (lcomp instanceof NBTCompound) {
 				final int slot = lcomp.getInteger("Slot");
 				rebuild[slot] = convertNBTtoItem((NBTCompound) lcomp);
 			}
-		}
 		return rebuild;
 	}
 
 	@Override
 	protected void saveCompound() {
-		if (directApply) {
-			applyNBT(originalSrcStack);
-		}
+		if (this.directApply)
+			this.applyNBT(this.originalSrcStack);
 	}
 
 }
