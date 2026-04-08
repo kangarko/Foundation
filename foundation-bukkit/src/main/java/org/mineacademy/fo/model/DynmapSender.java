@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.util.Set;
 import java.util.UUID;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -13,7 +12,7 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.dynmap.bukkit.DynmapPlugin;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.Platform;
 
@@ -126,7 +125,7 @@ public final class DynmapSender implements CommandSender {
 				DynmapPlugin.plugin.sendBroadcastToWeb(this.name, message);
 
 			} catch (final NoClassDefFoundError ex) {
-				Common.warning("DynMap plugin is missing, not sending: " + message);
+				CommonCore.warning("DynMap plugin is missing, not sending: " + message);
 			}
 		});
 	}

@@ -24,6 +24,7 @@ public final class BukkitCommandImpl extends Command {
 	 *
 	 * @param delegate
 	 */
+	@Deprecated
 	public BukkitCommandImpl(final SimpleCommandCore delegate) {
 		super(delegate.getLabel());
 
@@ -43,6 +44,7 @@ public final class BukkitCommandImpl extends Command {
 	/**
 	 * Delegates execution to the Foundation command.
 	 */
+	@Deprecated
 	@Override
 	public boolean execute(final CommandSender sender, final String commandLabel, final String[] args) {
 		this.delegate.delegateExecute(Platform.toPlayer(sender), commandLabel, args);
@@ -53,6 +55,7 @@ public final class BukkitCommandImpl extends Command {
 	/**
 	 * Delegates tab completion to the Foundation command.
 	 */
+	@Deprecated
 	@Override
 	public List<String> tabComplete(final CommandSender sender, final String label, final String[] args) throws IllegalArgumentException {
 		return this.delegate.delegateTabComplete(Platform.toPlayer(sender), label, args);

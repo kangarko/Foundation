@@ -29,6 +29,7 @@ public final class LitebansTask extends BukkitRunnable {
 	private Object apiInstance;
 	private Method methodPrepareStatement;
 
+	@Deprecated
 	LitebansTask() {
 		final Class<?> classDatabase;
 
@@ -50,6 +51,7 @@ public final class LitebansTask extends BukkitRunnable {
 		}
 	}
 
+	@Deprecated
 	@Override
 	public void run() {
 		if (this.methodPrepareStatement == null)
@@ -61,13 +63,13 @@ public final class LitebansTask extends BukkitRunnable {
 			statement.execute();
 
 			try (final ResultSet resultSet = statement.getResultSet()) {
-				while(resultSet.next()) {
+				while (resultSet.next()) {
 					final String uuid = resultSet.getString("UUID");
 					final boolean active = resultSet.getBoolean("ACTIVE");
 					final long until = resultSet.getLong("UNTIL");
 
-					if(active) {
-						if(until > 0 && until < System.currentTimeMillis())
+					if (active) {
+						if (until > 0 && until < System.currentTimeMillis())
 							continue;
 
 						this.mutedPlayersByUniqueId.put(uuid, until);
@@ -97,10 +99,12 @@ public final class LitebansTask extends BukkitRunnable {
 		}
 	}
 
+	@Deprecated
 	public boolean isMuted(UUID uuid) {
 		return this.mutedPlayersByUniqueId.containsKey(uuid.toString());
 	}
 
+	@Deprecated
 	public long getUnmuteTime(UUID uuid) {
 		return this.mutedPlayersByUniqueId.getOrDefault(uuid.toString(), 0L);
 	}

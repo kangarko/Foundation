@@ -10,13 +10,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.ValidCore;
@@ -119,7 +117,7 @@ public final class DiskRegion extends YamlConfig {
 		else {
 			this.border = new VisualizedRegion();
 
-			Common.warning("Incomplete region " + this.getFileName() + ", a region on disk must have both Primary and Secodanry location keys in its yml file.");
+			CommonCore.warning("Incomplete region " + this.getFileName() + ", a region on disk must have both Primary and Secodanry location keys in its yml file.");
 		}
 	}
 

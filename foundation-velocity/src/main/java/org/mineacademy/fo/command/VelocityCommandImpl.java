@@ -22,6 +22,7 @@ public final class VelocityCommandImpl implements com.velocitypowered.api.comman
 	 *
 	 * @param delegate
 	 */
+	@Deprecated
 	public VelocityCommandImpl(final SimpleCommandCore delegate) {
 		this.delegate = delegate;
 	}
@@ -29,6 +30,7 @@ public final class VelocityCommandImpl implements com.velocitypowered.api.comman
 	/**
 	 * Delegates execution to the Foundation command.
 	 */
+	@Deprecated
 	@Override
 	public void execute(final Invocation invocation) {
 		this.delegate.delegateExecute(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());
@@ -37,6 +39,7 @@ public final class VelocityCommandImpl implements com.velocitypowered.api.comman
 	/**
 	 * Delegates tab completion to the Foundation command.
 	 */
+	@Deprecated
 	@Override
 	public List<String> suggest(final Invocation invocation) {
 		return this.delegate.delegateTabComplete(Platform.toPlayer(invocation.source()), invocation.alias(), invocation.arguments());

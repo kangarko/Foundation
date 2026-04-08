@@ -1064,7 +1064,7 @@ public abstract class SimpleCommandCore {
 				part = Variables
 						.builder(this.audience)
 						.placeholders(this.preparePlaceholders())
-						.replaceLegacy(this.tellPrefix != null && !"".equals(tellPrefix) ? this.tellPrefix + part : part);
+						.replaceLegacy(this.tellPrefix != null && !"".equals(this.tellPrefix) ? this.tellPrefix + part : part);
 
 				part = this.preprocessMessage(part);
 
@@ -1083,7 +1083,7 @@ public abstract class SimpleCommandCore {
 			component = Variables
 					.builder(this.audience)
 					.placeholders(this.preparePlaceholders())
-					.replaceComponent(this.tellPrefix != null && !"".equals(tellPrefix) ? SimpleComponent.fromMiniAmpersand(this.tellPrefix).append(component) : component);
+					.replaceComponent(this.tellPrefix != null && !"".equals(this.tellPrefix) ? SimpleComponent.fromMiniAmpersand(this.tellPrefix).append(component) : component);
 
 			component = this.preprocessComponent(component);
 

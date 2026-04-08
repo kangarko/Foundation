@@ -51,6 +51,6 @@ public final class BukkitServer extends FoundationServer {
 
 	@Override
 	public String toString() {
-		return "BukkitServer{name=" + getName() + ",address=" + getAddress() + "}";
+		return "BukkitServer{name=" + this.getName() + ",address=" + this.getAddress() + "}";
 	}
 }

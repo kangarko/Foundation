@@ -2,7 +2,6 @@ package org.mineacademy.fo.event;
 
 import java.lang.reflect.Method;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -196,7 +195,7 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	 * @param falseMessage
 	 */
 	protected final void checkPerm(final String permission, final SimpleComponent falseMessage) {
-		this.checkBoolean(this.findPlayer().hasPermission(permission), falseMessage.replaceBracket( "permission", SimpleComponent.fromPlain(permission)));
+		this.checkBoolean(this.findPlayer().hasPermission(permission), falseMessage.replaceBracket("permission", SimpleComponent.fromPlain(permission)));
 	}
 
 	/**

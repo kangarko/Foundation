@@ -307,7 +307,7 @@ public enum CompAttribute {
 			if (this.bukkitAttribute != null) {
 				AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
 
-				if (instance == null) {
+				if (instance == null)
 					try {
 						entity.registerAttribute((Attribute) this.bukkitAttribute);
 						instance = entity.getAttribute((Attribute) this.bukkitAttribute);
@@ -319,7 +319,6 @@ public enum CompAttribute {
 						// Only Paper supports registering attributes
 						throw new IllegalStateException("Attribute " + this + " cannot be set for " + entity);
 					}
-				}
 
 				instance.setBaseValue(value);
 			}

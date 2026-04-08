@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -489,6 +488,7 @@ public abstract class DiscordListener implements Listener {
 		/**
 		 * Reload the listener
 		 */
+		@Deprecated
 		public void resubscribe() {
 			DiscordSRV.api.unsubscribe(this);
 			DiscordSRV.api.subscribe(this);
@@ -499,6 +499,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * https://github.com/kangarko/ChatControl/issues/703
 		 */
+		@Deprecated
 		public void registerHook() {
 			try {
 				DiscordSRV.getPlugin().getPluginHooks().add(BukkitPlugin::getInstance);
@@ -513,6 +514,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
+		@Deprecated
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceived(final DiscordGuildMessagePreProcessEvent event) {
 			synchronized (BukkitPlugin.getInstance()) {
@@ -538,6 +540,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
+		@Deprecated
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageReceivedLate(final DiscordGuildMessagePostProcessEvent event) {
 			synchronized (BukkitPlugin.getInstance()) {
@@ -564,6 +567,7 @@ public abstract class DiscordListener implements Listener {
 		 *
 		 * @param event
 		 */
+		@Deprecated
 		@Subscribe(priority = ListenerPriority.HIGH)
 		public void onMessageSend(final GameChatMessagePreProcessEvent event) {
 			synchronized (BukkitPlugin.getInstance()) {

@@ -76,14 +76,13 @@ final class BungeePlayer extends FoundationPlayer {
 	private byte createBossBarFlag(final Set<net.kyori.adventure.bossbar.BossBar.Flag> flags) {
 		byte bit = 0;
 
-		for (final net.kyori.adventure.bossbar.BossBar.Flag flag : flags) {
+		for (final net.kyori.adventure.bossbar.BossBar.Flag flag : flags)
 			if (flag == net.kyori.adventure.bossbar.BossBar.Flag.DARKEN_SCREEN)
 				bit |= 1;
 			else if (flag == net.kyori.adventure.bossbar.BossBar.Flag.PLAY_BOSS_MUSIC)
 				bit |= 1 << 1;
 			else if (flag == net.kyori.adventure.bossbar.BossBar.Flag.CREATE_WORLD_FOG)
 				bit |= 1 << 2;
-		}
 
 		return bit;
 	}
@@ -195,12 +194,11 @@ final class BungeePlayer extends FoundationPlayer {
 
 	@Override
 	public void resetTitle() {
-		if (this.isPlayer) {
+		if (this.isPlayer)
 			if (this.player.getPendingConnection().getVersion() > ProtocolConstants.MINECRAFT_1_8)
 				this.audience.resetTitle();
 			else
 				this.showTitle("", ""); // fix adventure for some reason only resetting title but not subtitle
-		}
 	}
 
 	@Override

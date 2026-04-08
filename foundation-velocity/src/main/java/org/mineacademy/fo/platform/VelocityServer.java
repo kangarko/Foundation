@@ -59,6 +59,6 @@ final class VelocityServer extends FoundationServer {
 
 	@Override
 	public String toString() {
-		return "VelocityServer{name=" + getName() + ",address=" + getAddress() + "}";
+		return "VelocityServer{name=" + this.getName() + ",address=" + this.getAddress() + "}";
 	}
 }

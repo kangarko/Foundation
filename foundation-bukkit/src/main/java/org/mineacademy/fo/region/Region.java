@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -439,7 +438,7 @@ public class Region implements ConfigSerializable {
 		final boolean isPrimary = click == ClickType.LEFT;
 
 		if (isPrimary) {
-			if (location == null || (this.hasPrimary() && this.isPrimary(location) && toggle)) {
+			if (location == null || this.hasPrimary() && this.isPrimary(location) && toggle) {
 				this.setPrimary(null);
 
 				return false;
@@ -450,7 +449,7 @@ public class Region implements ConfigSerializable {
 				return true;
 			}
 
-		} else if (location == null || (this.hasSecondary() && this.isSecondary(location) && toggle)) {
+		} else if (location == null || this.hasSecondary() && this.isSecondary(location) && toggle) {
 			this.setSecondary(null);
 
 			return false;
@@ -468,10 +467,10 @@ public class Region implements ConfigSerializable {
 		if (obj instanceof Region) {
 			final Region otherRegion = (Region) obj;
 
-			if ((otherRegion.name != null && this.name == null) || (otherRegion.name == null && this.name != null))
+			if (otherRegion.name != null && this.name == null || otherRegion.name == null && this.name != null)
 				return false;
 
-			if ((otherRegion.name != null && !otherRegion.name.equals(this.name)) || (otherRegion.name != null && !this.name.equals(otherRegion.name)))
+			if (otherRegion.name != null && !otherRegion.name.equals(this.name) || otherRegion.name != null && !this.name.equals(otherRegion.name))
 				return false;
 
 			return Valid.locationEquals(otherRegion.getPrimary(), this.primary) && Valid.locationEquals(otherRegion.getSecondary(), this.secondary);

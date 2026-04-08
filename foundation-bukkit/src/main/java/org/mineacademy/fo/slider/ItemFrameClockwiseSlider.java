@@ -56,7 +56,7 @@ public class ItemFrameClockwiseSlider implements Slider<Map<Integer, ItemStack>>
 
 		for (int index = 0; index < this.frameSize; index++) {
 			final int row = index / 9;
-			final int column = (index % 9) + 1;
+			final int column = index % 9 + 1;
 
 			if (row == 0 || row == rowCount - 1 || column == 1 || column == 9)
 				items.put(index, this.fillerItem);

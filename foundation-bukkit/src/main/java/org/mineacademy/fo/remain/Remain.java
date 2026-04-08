@@ -454,7 +454,7 @@ public final class Remain {
 
 			fromJSONToNMSComponentmethod = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
-		} else {
+		} else
 			try {
 				final Class<?> chatSerializer = Class.forName("net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
 
@@ -488,7 +488,6 @@ public final class Remain {
 					}
 				}
 			}
-		}
 
 		if (MinecraftVersion.olderThan(V.v1_13))
 			try {
@@ -841,7 +840,7 @@ public final class Remain {
 
 	/**
 	 * Returns the World#isEnabled() method which takes an entity type
-	 * 
+	 *
 	 * @return
 	 */
 	public static Method getIsEnabledFeatureWorldMethod() {
@@ -1912,7 +1911,7 @@ public final class Remain {
 	 * @param style
 	 */
 	public static void sendToastToAudience(@NonNull final List<FoundationPlayer> receivers, @NonNull final Function<FoundationPlayer, String> message, @NonNull final CompMaterial icon, @NonNull final CompToastStyle style) {
-		Valid.checkBoolean(!CompMaterial.isAir(icon), "Toast icon cannot be air!");
+		ValidCore.checkBoolean(!CompMaterial.isAir(icon), "Toast icon cannot be air!");
 
 		if (hasAdvancements)
 			Platform.runTaskAsync(() -> {
@@ -2682,7 +2681,7 @@ public final class Remain {
 		final Class<?> nmsItemStack = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
 		final Object nmsItemStackObj = ReflectionUtil.invoke(asNMSCopyMethod, null, item);
 
-		if (MinecraftVersion.newerThan(V.v1_20) || (MinecraftVersion.atLeast(V.v1_20) && MinecraftVersion.getSubversion() > 4)) {
+		if (MinecraftVersion.newerThan(V.v1_20) || MinecraftVersion.atLeast(V.v1_20) && MinecraftVersion.getSubversion() > 4) {
 			if (Remain.isPaper()) {
 				final Class<?> providerClass = ReflectionUtil.lookupClass("net.minecraft.core.HolderLookup$Provider");
 				final Method saveMethod = ReflectionUtil.getMethod(nmsItemStack, "saveOptional", providerClass);
@@ -2697,7 +2696,7 @@ public final class Remain {
 
 		} else {
 			final Class<?> nbtTagCompound = Remain.getNMSClass("NBTTagCompound", "net.minecraft.nbt.NBTTagCompound");
-			final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.equals(V.v1_18) || MinecraftVersion.equals(V.v1_19) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() < 5) ? "b" : "save", nbtTagCompound);
+			final Method saveItemstackMethod = ReflectionUtil.getMethod(nmsItemStack, MinecraftVersion.equals(V.v1_18) || MinecraftVersion.equals(V.v1_19) || MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() < 5 ? "b" : "save", nbtTagCompound);
 
 			ValidCore.checkNotNull(saveItemstackMethod, "Unable to find " + nmsItemStack + "#save() method for server version " + Bukkit.getBukkitVersion());
 
@@ -3677,7 +3676,7 @@ final class AdvancementAccessor {
 
 		final JsonObject icon = new JsonObject();
 
-		if (MinecraftVersion.atLeast(V.v1_21) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5))
+		if (MinecraftVersion.atLeast(V.v1_21) || MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5)
 			icon.addProperty("id", this.icon);
 		else
 			icon.addProperty("item", this.icon);

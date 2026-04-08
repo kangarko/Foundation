@@ -116,7 +116,7 @@ public final class SimpleBook implements ConfigSerializable {
 
 		if (this.pages != null)
 			for (final String page : this.pages)
-				pages.add((translateColors ? variables.replaceComponent(SimpleComponent.fromMiniAmpersand(page)).toAdventure(audience) : Component.text(page.replace(CompChatColor.COLOR_CHAR + "", "&"))));
+				pages.add(translateColors ? variables.replaceComponent(SimpleComponent.fromMiniAmpersand(page)).toAdventure(audience) : Component.text(page.replace(CompChatColor.COLOR_CHAR + "", "&")));
 
 		audience.openBook(Book.book(title, author, pages));
 	}

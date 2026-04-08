@@ -747,7 +747,7 @@ public final class ReflectionUtil {
 	 * @return {@code true} if the class is an enum or implements the `Keyed` interface, {@code false} otherwise
 	 */
 	public static boolean isEnumLike(final Class<?> clazz) {
-		return clazz.isEnum() || (orgBukkitKeyed != null && orgBukkitKeyed.isAssignableFrom(clazz));
+		return clazz.isEnum() || orgBukkitKeyed != null && orgBukkitKeyed.isAssignableFrom(clazz);
 	}
 
 	/**

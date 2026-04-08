@@ -486,7 +486,7 @@ public final class BlockUtil {
 	 */
 	public static boolean isLogOnGround(Block treeBaseBlock) {
 		// Validates the block passed in is actually a log
-		if (!(CompMaterial.isLog(treeBaseBlock.getType())))
+		if (!CompMaterial.isLog(treeBaseBlock.getType()))
 			return false;
 
 		// Reach for the bottom most tree-like block

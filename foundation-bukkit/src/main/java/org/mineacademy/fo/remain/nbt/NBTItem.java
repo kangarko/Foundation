@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain.nbt;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,7 +27,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Constructor for NBTItems. The ItemStack will be cloned! Deprecated: Please
 	 * use the NBT class to work with items. It's up to 400% faster and provides
 	 * less ways to mess up code.
-	 * 
+	 *
 	 * @param item
 	 */
 	@Deprecated
@@ -67,7 +66,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Constructor for NBTItems. The ItemStack will be cloned! If directApply is
 	 * true, all changed will be mapped to the original item. Changes to the NBTItem
 	 * will overwrite changes done to the original item in that case.
-	 * 
+	 *
 	 * @param item
 	 * @param directApply
 	 */
@@ -212,7 +211,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 
 	/**
 	 * True, if the item has any tags now known for this item type.
-	 * 
+	 *
 	 * @return true when custom tags are present
 	 */
 	@Override
@@ -258,7 +257,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	/**
 	 * Returns true if the item has NBT data. This needs to be checked before
 	 * calling methods like remove, otherwise the value might be wrong!
-	 * 
+	 *
 	 * @return Does the ItemStack have a NBTCompound.
 	 */
 	@Override
@@ -270,10 +269,10 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
 	 * Supported operations while inside this scope: - any get/set method of
 	 * {@link ItemMeta} - any getter on {@link NBTItem}
-	 * 
+	 *
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 * 
+	 *
 	 * @param handler
 	 */
 	@Override
@@ -295,10 +294,10 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Gives save access to the {@link ItemMeta} of the internal {@link ItemStack}.
 	 * Supported operations while inside this scope: - any get/set method of
 	 * {@link ItemMeta} - any getter on {@link NBTItem}
-	 * 
+	 *
 	 * All changes made to the {@link NBTItem} during this scope will be reverted at
 	 * the end.
-	 * 
+	 *
 	 * @param handler
 	 */
 	@Override
@@ -316,7 +315,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	/**
 	 * Helper method that converts {@link ItemStack} to {@link NBTContainer} with
 	 * all it's data like Material, Damage, Amount and Tags.
-	 * 
+	 *
 	 * @param item
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
@@ -328,7 +327,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	/**
 	 * Helper method to do the inverse of "convertItemtoNBT". Creates an
 	 * {@link ItemStack} using the {@link NBTCompound}
-	 * 
+	 *
 	 * @param comp
 	 * @return ItemStack using the {@link NBTCompound}'s data
 	 */
@@ -342,7 +341,7 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Helper method that converts {@link ItemStack}[] to {@link NBTContainer} with
 	 * all its data like Material, Damage, Amount and Tags. This is a custom
 	 * implementation and won't work with vanilla code(Shulker content etc).
-	 * 
+	 *
 	 * @param items
 	 * @return Standalone {@link NBTContainer} with the Item's data
 	 */
@@ -366,10 +365,10 @@ public class NBTItem extends NBTCompound implements ReadWriteItemNBT {
 	 * Helper method to do the inverse of "convertItemArraytoNBT". Creates an
 	 * {@link ItemStack}[] using the {@link NBTCompound}. This is a custom
 	 * implementation and won't work with vanilla code (Shulker content, etc.).
-	 * 
+	 *
 	 * Will return null for invalid data. Empty slots in the array are filled with
 	 * AIR Stacks!
-	 * 
+	 *
 	 * @param comp
 	 * @return ItemStack[] using the {@link NBTCompound}'s data
 	 */

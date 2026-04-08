@@ -39,7 +39,7 @@ public interface SharedVelocityCommandCore {
 	 */
 	default Player findPlayer(final String name, final SimpleComponent falseMessage) throws CommandException {
 		final Player player = this.findPlayerInternal(name);
-		this.checkBoolean(player != null && player.isActive() && !PlayerUtil.isVanished(player), falseMessage.replaceBracket( "player", name));
+		this.checkBoolean(player != null && player.isActive() && !PlayerUtil.isVanished(player), falseMessage.replaceBracket("player", name));
 
 		return player;
 	}

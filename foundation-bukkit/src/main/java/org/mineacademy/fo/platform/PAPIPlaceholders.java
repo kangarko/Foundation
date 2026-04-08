@@ -23,13 +23,12 @@ final class PAPIPlaceholders extends SimpleExpansion {
 	protected String onReplace(final FoundationPlayer audience, final String identifier) {
 		OfflinePlayer player = null;
 
-		if (audience != null) {
+		if (audience != null)
 			if (audience.isPlayer())
 				player = audience.getPlayer();
 
 			else if (audience.isDiscord())
 				player = ((DiscordSender) audience.getSender()).getOfflinePlayer();
-		}
 
 		return HookManager.getPlaceholderAPIValue(player, identifier);
 	}

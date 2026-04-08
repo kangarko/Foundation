@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -30,7 +29,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
@@ -397,19 +395,18 @@ public class JsonItemStack {
 				throw new FoException("Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
 						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson, false);
 			} catch (final IllegalArgumentException ex) {
-				if (ex.getMessage().contains("Failed to get")) {
-					Common.warning("Failed to convert JSON into ItemStack using native method, falling back to legacy. Custom stuff will be removed. "
+				if (ex.getMessage().contains("Failed to get"))
+					CommonCore.warning("Failed to convert JSON into ItemStack using native method, falling back to legacy. Custom stuff will be removed. "
 							+ "This is because the ItemStack is no longer valid (this is NOT issue in our plugin, "
 							+ "rather the itemstack contained custom data which got corrupted or you deleted your resourcepack or other plugin)! JSON: " + string);
-
-				} else if (ex.getMessage() != null && ex.getMessage().contains("Not a number")) {
+				else if (ex.getMessage() != null && ex.getMessage().contains("Not a number")) {
 					final String sanitized = string.replace("\"Infinity\"", "1.0E10").replace("\"-Infinity\"", "-1.0E10").replace("\"NaN\"", "0");
 
 					try {
 						return Bukkit.getUnsafe().deserializeItemFromJson(CommonCore.GSON.fromJson(sanitized, JsonObject.class));
 
 					} catch (final IllegalArgumentException retryEx) {
-						Common.warning("Failed to deserialize item even after sanitizing Infinity/NaN values: " + retryEx.getMessage());
+						CommonCore.warning("Failed to deserialize item even after sanitizing Infinity/NaN values: " + retryEx.getMessage());
 					}
 				} else
 					throw ex;
@@ -490,7 +487,7 @@ public class JsonItemStack {
 		final JsonObject extraJson = metaJson.has("extra-meta") ? metaJson.get("extra-meta").getAsJsonObject() : null;
 
 		if (extraJson != null) {
-			if (meta instanceof SkullMeta) {
+			if (meta instanceof SkullMeta)
 				try {
 					final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
 
@@ -499,8 +496,7 @@ public class JsonItemStack {
 				} catch (final UnsupportedOperationException ex) {
 					// Silence
 				}
-
-			} else if (meta instanceof BannerMeta) {
+			else if (meta instanceof BannerMeta) {
 				final BannerMeta bmeta = (BannerMeta) meta;
 				final String baseColor = extraJson.has("base-color") ? extraJson.get("base-color").getAsString() : null;
 				final JsonArray patterns = extraJson.has("patterns") ? extraJson.get("patterns").getAsJsonArray() : null;

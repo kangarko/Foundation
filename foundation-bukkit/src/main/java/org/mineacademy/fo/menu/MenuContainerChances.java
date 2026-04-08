@@ -278,8 +278,8 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 
 			final double chance = this.editedDropChances.getOrDefault(slot, this.getDropChance(slot));
 
-			if (click.name().startsWith("SHIFT_")) {
-				new SimpleDecimalPrompt("Enter the chance to run this command from 0.00% to 100%. Current: " + (chance * 100) + "%.", newChance -> {
+			if (click.name().startsWith("SHIFT_"))
+				new SimpleDecimalPrompt("Enter the chance to run this command from 0.00% to 100%. Current: " + chance * 100 + "%.", newChance -> {
 					newChance /= 100;
 
 					// Save drop chance
@@ -294,7 +294,7 @@ public abstract class MenuContainerChances extends Menu implements MenuQuantitab
 						MenuContainerChances.this.displayTo(player);
 					}
 				}.show(player);
-			} else {
+			else {
 				final double next = this.getNextQuantityDouble(click);
 				final double newChance = MathUtil.range(chance + next, 0.D, 1.D);
 

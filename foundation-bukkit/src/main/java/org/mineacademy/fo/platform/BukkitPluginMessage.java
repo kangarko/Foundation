@@ -28,6 +28,7 @@ final class BukkitPluginMessage implements PluginMessageListener {
 	@Getter
 	private static final BukkitPluginMessage instance = new BukkitPluginMessage();
 
+	@Deprecated
 	@Override
 	public void onPluginMessageReceived(final String channel, final Player player, final byte[] data) {
 		synchronized (BukkitPlugin.getInstance()) {

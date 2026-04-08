@@ -83,7 +83,7 @@ public final class Valid extends ValidCore {
 		if (first == null && sec == null)
 			return true;
 
-		if ((first == null && sec == null) || (first != null && sec == null))
+		if (first == null && sec == null || first != null && sec == null)
 			return false;
 
 		try {

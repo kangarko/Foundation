@@ -179,7 +179,7 @@ public final class RangedValue implements ConfigStringSerializable {
 		if (split.length == 1)
 			parts = new String[] { (firstNegative ? "-" : "") + line };
 		else
-			parts = new String[] { (firstNegative ? "-" : "") + split[0], (secondNegative ? "-" + split[2] : split[1]) };
+			parts = new String[] { (firstNegative ? "-" : "") + split[0], secondNegative ? "-" + split[2] : split[1] };
 
 		if (!(parts.length == 1 || parts.length == 2))
 			throw new IllegalArgumentException("Malformed value " + line);

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

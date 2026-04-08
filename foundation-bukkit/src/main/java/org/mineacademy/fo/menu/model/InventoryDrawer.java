@@ -7,7 +7,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.remain.CompMaterial;
 
@@ -103,7 +103,7 @@ public final class InventoryDrawer {
 	 * @param item
 	 */
 	public void setItem(final int slot, final ItemStack item) {
-		Valid.checkBoolean(slot < this.content.length, "Cannot set item to slot " + slot + " as inventore has only a size of " + this.size + "! Item: " + item);
+		ValidCore.checkBoolean(slot < this.content.length, "Cannot set item to slot " + slot + " as inventore has only a size of " + this.size + "! Item: " + item);
 
 		this.content[slot] = item;
 	}
@@ -159,7 +159,7 @@ public final class InventoryDrawer {
 	 * @return
 	 */
 	public Inventory build(final InventoryHolder holder) {
-		final String localTitle = MinecraftVersion.newerThan(V.v1_8) ? this.title : (this.title.length() > 30 ? this.title.substring(0, 30) : this.title);
+		final String localTitle = MinecraftVersion.newerThan(V.v1_8) ? this.title : this.title.length() > 30 ? this.title.substring(0, 30) : this.title;
 
 		// Automatically append the black color in the menu, can be overriden by colors
 		final Inventory inv = Bukkit.createInventory(holder, this.size, CompChatColor.translateColorCodes("<black>" + localTitle));

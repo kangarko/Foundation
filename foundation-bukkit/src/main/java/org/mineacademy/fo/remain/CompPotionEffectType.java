@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.ReflectionUtil;

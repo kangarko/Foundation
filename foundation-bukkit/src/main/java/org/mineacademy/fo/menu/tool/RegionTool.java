@@ -176,12 +176,12 @@ public final class RegionTool extends VisualTool {
 			CreateRegionPrompt.showToOrHint(player);
 		else
 			Messenger.success(player, primary
-					? (removed
+					? removed
 							? Lang.component("command-region-remove-primary")
-							: Lang.component("command-region-set-primary"))
-					: (removed
+							: Lang.component("command-region-set-primary")
+					: removed
 							? Lang.component("command-region-remove-secondary")
-							: Lang.component("command-region-set-secondary")));
+							: Lang.component("command-region-set-secondary"));
 
 	}
 
