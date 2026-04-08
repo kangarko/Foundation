@@ -3,6 +3,7 @@ package org.mineacademy.fo.proxy.message;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -224,8 +225,30 @@ public final class OutgoingMessage extends Message {
 					out.writeBoolean((Boolean) data);
 				else if (data instanceof String)
 					out.writeUTF((String) data);
-				else if (data instanceof SimpleComponent)
-					out.writeUTF(((SimpleComponent) data).serialize().toJson());
+				else if (data instanceof SimpleComponent) {
+					SimpleComponent component = (SimpleComponent) data;
+					String json = component.serialize().toJson();
+
+					// BungeeCord plugin channel has a 32766 byte limit for the entire message.
+					// DataOutputStream.writeUTF additionally has a 65535 byte per-string limit.
+					// Strip hover events first, then fall back to plain text with truncation.
+					if (json.getBytes(StandardCharsets.UTF_8).length > 30000) {
+						component = component.stripHoverEvents();
+						json = component.serialize().toJson();
+
+						if (json.getBytes(StandardCharsets.UTF_8).length > 30000) {
+							String plain = component.toPlain();
+
+							// Truncate if plain text itself exceeds the limit
+							while (plain.getBytes(StandardCharsets.UTF_8).length > 29000)
+								plain = plain.substring(0, plain.length() / 2) + " [truncated]";
+
+							json = SimpleComponent.fromPlain(plain).serialize().toJson();
+						}
+					}
+
+					out.writeUTF(json);
+				}
 				else if (data instanceof SerializedMap)
 					out.writeUTF(((SerializedMap) data).toJson());
 				else if (data instanceof UUID)
@@ -308,6 +331,7 @@ public final class OutgoingMessage extends Message {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
 			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
+
 			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
 
 			if (server.isEmpty()) {

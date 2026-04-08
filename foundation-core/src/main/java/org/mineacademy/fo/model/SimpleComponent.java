@@ -914,6 +914,44 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
+	 * Return a copy of this component with all hover events stripped recursively.
+	 * Colors, formatting, and click events are preserved.
+	 *
+	 * @return
+	 */
+	public SimpleComponent stripHoverEvents() {
+		final List<ConditionalComponent> stripped = new ArrayList<>();
+
+		for (final ConditionalComponent part : this.subcomponents)
+			stripped.add(new ConditionalComponent(
+					stripHoverEventsRecursive(part.getComponent()),
+					part.getViewPermission(),
+					part.getViewCondition(),
+					part.getViewVariable()));
+
+		return new SimpleComponent(stripped, this.lastStyle);
+	}
+
+	/*
+	 * Recursively strip hover events from an Adventure component tree.
+	 */
+	private static Component stripHoverEventsRecursive(Component component) {
+		if (component.hoverEvent() != null)
+			component = component.hoverEvent(null);
+
+		if (!component.children().isEmpty()) {
+			final List<Component> newChildren = new ArrayList<>();
+
+			for (final Component child : component.children())
+				newChildren.add(stripHoverEventsRecursive(child));
+
+			component = component.children(newChildren);
+		}
+
+		return component;
+	}
+
+	/**
 	 * @see org.mineacademy.fo.model.ConfigSerializable#serialize()
 	 */
 	@Override
