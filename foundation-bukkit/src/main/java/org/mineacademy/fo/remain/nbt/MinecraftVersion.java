@@ -44,7 +44,8 @@ enum MinecraftVersion {
 	MC1_21_R3(1213, true),
 	MC1_21_R4(1214, true),
 	MC1_21_R5(1215, true),
-	MC1_21_R6(1216, true);
+	MC1_21_R6(1216, true),
+	MC26_1_R1(26101, true);
 
 	private static MinecraftVersion version;
 
@@ -74,6 +75,8 @@ enum MinecraftVersion {
 			this.put("1.21.6", MC1_21_R5);
 			this.put("1.21.7", MC1_21_R5);
 			this.put("1.21.8", MC1_21_R5);
+			this.put("26.1", MC26_1_R1);
+			this.put("26.1.1", MC26_1_R1);
 		}
 	};
 
@@ -154,7 +157,28 @@ enum MinecraftVersion {
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 
 		} catch (final Exception ex) {
-			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0], MinecraftVersion.UNKNOWN);
+			// Extract only numeric version parts from Bukkit version
+			// Old format: 1.21.1-R0.1-SNAPSHOT -> 1.21.1
+			// New format: 26.1.1.build.29-alpha -> 26.1.1
+			final String rawVersion = Bukkit.getServer().getBukkitVersion().split("-")[0];
+			final String[] parts = rawVersion.split("\\.");
+			final StringBuilder numericVersion = new StringBuilder();
+
+			for (final String part : parts) {
+				try {
+					Integer.parseInt(part);
+
+					if (numericVersion.length() > 0)
+						numericVersion.append(".");
+
+					numericVersion.append(part);
+
+				} catch (final NumberFormatException e) {
+					break;
+				}
+			}
+
+			version = VERSION_TO_REVISION.getOrDefault(numericVersion.toString(), MinecraftVersion.UNKNOWN);
 		}
 
 		return version;

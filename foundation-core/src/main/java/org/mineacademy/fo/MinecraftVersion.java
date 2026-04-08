@@ -13,50 +13,46 @@ public final class MinecraftVersion {
 	private static V current = null;
 
 	/**
-	 * The subversion such as 8 in 1.8.8 or 8 in 1.21.8.
+	 * The subversion such as 8 in 1.8.8 or 1 in 26.1.1.
 	 */
 	private static int subversion = -1;
 
 	/**
 	 * The version wrapper.
+	 *
+	 * All entries use uniform encoding: major * 100 + minor.
+	 * Example: 1.21 = 121, 1.8 = 108, 26.1 = 2601.
 	 */
 	public enum V {
-		v1_21(21),
-		v1_20(20),
-		v1_19(19),
-		v1_18(18),
-		v1_17(17),
-		v1_16(16),
-		v1_15(15),
-		v1_14(14),
-		v1_13(13),
-		v1_12(12),
-		v1_11(11),
-		v1_10(10),
-		v1_9(9),
-		v1_8(8),
-		v1_7(7),
-		v1_6(6),
-		v1_5(5),
-		v1_4(4),
-		v1_3_AND_BELOW(3);
+		v26_1(2601),
+		v1_21(121),
+		v1_20(120),
+		v1_19(119),
+		v1_18(118),
+		v1_17(117),
+		v1_16(116),
+		v1_15(115),
+		v1_14(114),
+		v1_13(113),
+		v1_12(112),
+		v1_11(111),
+		v1_10(110),
+		v1_9(109),
+		v1_8(108),
+		v1_7(107),
+		v1_6(106),
+		v1_5(105),
+		v1_4(104),
+		v1_3_AND_BELOW(103);
 
-		/**
-		 * The numeric version (the second part of the 1.x number).
-		 */
-		private final int minorVersionNumber;
+		private final int versionNumber;
 
-		/**
-		 * Creates new enum for a Minecraft version.
-		 *
-		 * @param version
-		 */
 		V(final int version) {
-			this.minorVersionNumber = version;
+			this.versionNumber = version;
 		}
 
 		/**
-		 * Attempts to get the version from number.
+		 * Attempts to get the version from the encoded version number (major * 100 + minor).
 		 *
 		 * @deprecated internal use only
 		 * @param number
@@ -66,18 +62,18 @@ public final class MinecraftVersion {
 		@Deprecated
 		public static V parse(final int number) {
 			for (final V v : values())
-				if (v.minorVersionNumber == number)
+				if (v.versionNumber == number)
 					return v;
+
+			if (number > values()[0].versionNumber)
+				return values()[0];
 
 			throw new FoException("Invalid version number: " + number);
 		}
 
-		/**
-		 * @see java.lang.Enum#toString()
-		 */
 		@Override
 		public String toString() {
-			return "1." + this.minorVersionNumber;
+			return (this.versionNumber / 100) + "." + (this.versionNumber % 100);
 		}
 	}
 
@@ -126,7 +122,7 @@ public final class MinecraftVersion {
 	 */
 	private static int compareWith(final V version) {
 		try {
-			return getCurrent().minorVersionNumber - version.minorVersionNumber;
+			return getCurrent().versionNumber - version.versionNumber;
 
 		} catch (final Throwable t) {
 			t.printStackTrace();
@@ -136,7 +132,7 @@ public final class MinecraftVersion {
 	}
 
 	/**
-	 * Return the full version such as 1.20.6.
+	 * Return the full version such as 1.20.6 or 26.1.1.
 	 *
 	 * @return
 	 */
@@ -177,6 +173,42 @@ public final class MinecraftVersion {
 	 */
 	public static boolean hasVersion() {
 		return current != null;
+	}
+
+	/**
+	 * Parse a raw version string (e.g. "1.21.1-R0.1-SNAPSHOT" or "26.1.1.build.29-alpha")
+	 * and set the current version.
+	 *
+	 * @deprecated internal use only
+	 * @param rawVersionString
+	 */
+	@Deprecated
+	public static void parseAndSet(final String rawVersionString) {
+		final String afterDash = rawVersionString.split("\\-")[0];
+		final String[] allParts = afterDash.split("\\.");
+
+		int numericCount = 0;
+
+		for (final String part : allParts) {
+			try {
+				Integer.parseInt(part);
+				numericCount++;
+
+			} catch (final NumberFormatException e) {
+				break;
+			}
+		}
+
+		ValidCore.checkBoolean(numericCount == 2 || numericCount == 3, "Cannot read version '" + rawVersionString + "', expected 2-3 numeric version parts");
+
+		final int major = Integer.parseInt(allParts[0]);
+		final int minor = Integer.parseInt(allParts[1]);
+		final int versionNumber = major * 100 + minor;
+
+		final V resolved = versionNumber <= V.v1_3_AND_BELOW.versionNumber ? V.v1_3_AND_BELOW : V.parse(versionNumber);
+		final int sub = numericCount == 3 ? Integer.parseInt(allParts[2]) : 0;
+
+		setVersion(resolved, sub);
 	}
 
 	/**

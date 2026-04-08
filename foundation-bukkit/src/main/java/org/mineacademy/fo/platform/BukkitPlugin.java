@@ -226,17 +226,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 * Set the game version based on the Bukkit version.
 	 */
 	private void setVersion() {
-		final String bukkitVersion = Bukkit.getBukkitVersion(); // 1.27.2-R0.1-SNAPSHOT
-		final String versionString = bukkitVersion.split("\\-")[0]; // 1.27.2
-		final String[] versions = versionString.split("\\.");
-		ValidCore.checkBoolean(versions.length == 2 || versions.length == 3, "Foundation cannot read Bukkit version '" + bukkitVersion + "', expected '-' and a version number");
-
-		final int version = Integer.parseInt(versions[1]); // 20
-
-		final MinecraftVersion.V current = version <= 3 ? V.v1_3_AND_BELOW : V.parse(version);
-		final int subversion = versions.length == 3 ? Integer.parseInt(versions[2]) : 0;
-
-		MinecraftVersion.setVersion(current, subversion);
+		MinecraftVersion.parseAndSet(Bukkit.getBukkitVersion());
 	}
 
 	@Override
