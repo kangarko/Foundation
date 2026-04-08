@@ -418,6 +418,9 @@ public class SimpleScoreboard {
 	 * @return
 	 */
 	private String replaceTheme(final String row) {
+		if (this.primaryTheme == null && this.secondaryTheme == null)
+			return row;
+
 		final CompChatColor primary = CommonCore.getOrDefault(this.primaryTheme, CompChatColor.RESET);
 		final String[] split = row.split("\\:");
 
