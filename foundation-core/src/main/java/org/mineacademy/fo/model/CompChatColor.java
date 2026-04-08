@@ -32,12 +32,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 public final class CompChatColor implements TextColor, ConfigStringSerializable {
 
 	/**
-	 * Patterns to identify domains inside and outside of Mini Tags to prevent converting "legacy color codes" inside links to mini tags
-	 * in convertLegacyToMini() method.
+	 * Pattern to identify URLs with optional leading color codes in convertLegacyToMini().
 	 */
-	private static final Pattern GENERIC_DOMAIN_PATTERN = Pattern.compile("(?<![\\d.])(?:(?!\\d+\\.\\d*[a-df-zA-DF-Z]|\\d*\\.\\d+[a-df-zA-DF-Z])[a-zA-Z0-9\\-.*])+\\s?(\\.|\\*|dot|\\(dot\\)|-|\\(\\*\\)|;|:|,)\\s?(c(| +)o(| +)m|o(| +)r(| +)g|n(| +)e(| +)t|(?<! )c(| +)z|(?<! )c(| +)o|(?<! )u(| +)k|(?<! )s(| +)k|b(| +)i(| +)z|(?<! )m(| +)o(| +)b(| +)i|(?<! )x(| +)x(| +)x|(?<! )e(| +)u|(?<! )m(| +)e|(?<! )i(| +)o|(?<! )o(| +)n(| +)l(| +)i(| +)n(| +)e|(?<! )x(| +)y(| +)z|(?<! )f(| +)r|(?<! )b(| +)e|(?<! )d(| +)e|(?<! )c(| +)a|(?<! )a(| +)l|(?<! )a(| +)i|(?<! )d(| +)e(| +)v|(?<! )a(| +)p(| +)p|(?<! )i(| +)n|(?<! )i(| +)s|(?<! )g(| +)g|(?<! )t(| +)o|(?<! )p(| +)h|(?<! )n(| +)l|(?<! )i(| +)d|(?<! )i(| +)n(| +)c|(?<! )u(| +)s|(?<! )p(| +)w|(?<! )p(| +)r(| +)o|(?<! )t(| +)v|(?<! )c(| +)x|(?<! )m(| +)x|(?<! )f(| +)m|(?<! )c(| +)c|(?<! )v(| +)i(| +)p|(?<! )f(| +)u(| +)n|(?<! )i(| +)c(| +)u)\\b"),
-			COLOR_CODE_PATTERN = Pattern.compile("(?i)(?:[§&][0-9a-fk-or])+"),
-			URL_PATTERN = Pattern.compile("(?i)^((?:[§&][0-9a-fk-or])+)?(https?://\\S+)$");
+	private static final Pattern URL_PATTERN = Pattern.compile("(?i)^((?:[§&][0-9a-fk-or])+)?(https?://\\S+)$");
 
 	/**
 	 * The special character which prefixes all chat colour codes. Use this if
@@ -832,9 +829,14 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	 * @return
 	 */
 	public static String convertLegacyToMini(final String message, final boolean supportAmpersand) {
+
+		// No legacy codes present, skip all processing
+		if (!message.contains("§") && (!supportAmpersand || !message.contains("&")))
+			return message;
+
 		final StringBuilder result = new StringBuilder();
 
-		// Split the message by spaces so we can ignore domains
+		// Split by spaces to handle URLs separately (preserve color codes inside URLs as-is)
 		final String[] parts = message.split(" ", -1);
 
 		for (int idx = 0; idx < parts.length; idx++) {
@@ -847,12 +849,9 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				final String colorPrefix = urlMatcher.group(1); // Optional color codes before URL
 				final String url = urlMatcher.group(2); // The actual URL
 
-				if (colorPrefix != null && !colorPrefix.isEmpty()) {
-					// URL has color codes at the start, convert only the color part
+				if (colorPrefix != null && !colorPrefix.isEmpty())
 					result.append(CompChatColor.convertLegacyToMini(colorPrefix, supportAmpersand));
-				}
 
-				// Append URL as-is without processing color codes inside it
 				result.append(url);
 
 				if (idx < parts.length - 1)
@@ -861,73 +860,6 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				continue;
 			}
 
-			if (GENERIC_DOMAIN_PATTERN.matcher(part).find()) {
-
-				if (part.startsWith("<") && part.endsWith(">")) {
-					// Domain inside <click_url> tag, should be ignored
-					result.append(part);
-					if (idx < parts.length - 1)
-						result.append(' ');
-					continue;
-				}
-
-				// Domain-like text detected. Convert any legacy color codes (§X/&X) to MiniMessage
-				// while preserving the domain text and existing MiniMessage tags as-is.
-				// Legacy color codes are never part of actual domains so they're always safe to convert.
-				for (int i = 0; i < part.length(); i++) {
-
-					// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
-					if (i + 13 < part.length() && (part.charAt(i) == '§' || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
-						final char prefix = part.charAt(i);
-						final StringBuilder hex = new StringBuilder("#");
-						boolean isValidHexSequence = true;
-
-						for (int j = 2; j <= 12; j += 2) {
-							if (part.charAt(i + j) == prefix)
-								hex.append(part.charAt(i + j + 1));
-							else {
-								isValidHexSequence = false;
-								break;
-							}
-						}
-
-						if (isValidHexSequence) {
-							result.append('<').append(hex).append('>');
-							i += 13;
-							continue;
-						}
-					}
-
-					// Support &#RRGGBB and §#RRGGBB hex colors
-					if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§') && part.charAt(i + 1) == '#') {
-						final String hexCode = part.substring(i + 2, i + 8);
-
-						if (hexCode.matches("[0-9a-fA-F]{6}")) {
-							result.append("<#").append(hexCode).append('>');
-							i += 7;
-							continue;
-						}
-					}
-
-					if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§')) {
-						final String code = part.substring(i, i + 2);
-
-						if (LEGACY_TO_MINI.containsKey(code)) {
-							result.append(LEGACY_TO_MINI.get(code));
-							i++;
-							continue;
-						}
-					}
-
-					result.append(part.charAt(i));
-				}
-
-				if (idx < parts.length - 1)
-					result.append(' ');
-				continue;
-			}
-
-			// Untouched original code below since no domains were identified in this part
 			for (int i = 0; i < part.length(); i++) {
 
 				// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
