@@ -616,10 +616,10 @@ public abstract class FileConfig extends ConfigSection {
 			return def;
 
 		else if (object instanceof List)
-			return CommonCore.join((List<?>) object, "\n");
+			return CommonCore.join((List<?>) object, "\n").replace("\\n", "\n");
 
 		else if (object instanceof String[])
-			return CommonCore.join(Arrays.asList((String[]) object), "\n");
+			return CommonCore.join(Arrays.asList((String[]) object), "\n").replace("\\n", "\n");
 
 		else if (object.getClass().isArray())
 			return CommonCore.join((Object[]) object);
@@ -628,7 +628,7 @@ public abstract class FileConfig extends ConfigSection {
 			return String.valueOf(object);
 
 		else if (object instanceof String)
-			return (String) object;
+			return ((String) object).replace("\\n", "\n");
 
 		throw new FoException("Excepted String at '" + this.buildPathPrefix(path) + "' in, got (" + object.getClass() + "): " + object + " - If you used {} brackets or colors in it, put quotes '' around the key!", false);
 	}
@@ -943,7 +943,7 @@ public abstract class FileConfig extends ConfigSection {
 		final List<String> result = new ArrayList<>();
 
 		for (final Object object : list)
-			result.add(String.valueOf(object));
+			result.add(String.valueOf(object).replace("\\n", "\n"));
 
 		return result;
 	}
