@@ -122,7 +122,7 @@ public class SimpleDatabase {
 
 		try {
 			if (url.startsWith("jdbc:sqlite")) {
-				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.51.1.0");
+				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.51.3.0");
 
 				Class.forName("org.sqlite.JDBC");
 
@@ -154,7 +154,7 @@ public class SimpleDatabase {
 			}
 
 			else if (url.startsWith("jdbc:mariadb://")) {
-				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.12" : "3.5.7");
+				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.13" : "3.5.8");
 
 				Class.forName("org.mariadb.jdbc.Driver");
 

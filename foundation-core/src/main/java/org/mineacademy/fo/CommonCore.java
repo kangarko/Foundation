@@ -30,7 +30,6 @@ import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.ConfigStringSerializable;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.FoundationPlayer;
-import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.FoundationServer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
