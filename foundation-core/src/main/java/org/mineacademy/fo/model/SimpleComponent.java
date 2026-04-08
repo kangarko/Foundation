@@ -1067,7 +1067,7 @@ public final class SimpleComponent implements ConfigSerializable {
 			message = message.replaceAll("(\\\\){2,}(?=<[^/])", "\\\\"); // New RegExp normalizes backslashes before opening tags only
 
 			// See resetColors() below for explainer
-			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>").replace("\\n", "\n"));
+			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>"));
 
 		} catch (final Throwable t) {
 			if (MinecraftVersion.equals(V.v1_16))
