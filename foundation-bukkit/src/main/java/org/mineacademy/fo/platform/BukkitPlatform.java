@@ -680,7 +680,7 @@ final class BukkitPlatform extends FoundationPlatform {
 	public void sendPluginMessage(final UUID senderUid, final String channel, final byte[] array) {
 		final Player player = Remain.getPlayerByUUID(senderUid);
 
-		if (player != null && player.isOnline())
+		if (player != null && player.isOnline() && BukkitPlugin.getInstance().isEnabled())
 			player.sendPluginMessage(BukkitPlugin.getInstance(), channel, array);
 	}
 
