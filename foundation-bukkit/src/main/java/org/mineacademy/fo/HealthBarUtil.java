@@ -1,6 +1,5 @@
 package org.mineacademy.fo;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -64,7 +63,7 @@ public final class HealthBarUtil {
 	 * @param component
 	 * @param damage
 	 */
-	public static void display(final Player displayTo, final LivingEntity displayAbout, @Nullable final SimpleComponent component, final double damage) {
+	public static void display(final Player displayTo, final LivingEntity displayAbout, final SimpleComponent component, final double damage) {
 		final int maxHealth = Remain.getMaxHealth(displayAbout);
 		final int health = Remain.getHealth(displayAbout);
 

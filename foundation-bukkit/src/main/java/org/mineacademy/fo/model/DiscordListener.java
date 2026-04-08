@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -312,7 +311,7 @@ public abstract class DiscordListener implements Listener {
 	 * @param channelName
 	 * @param message
 	 */
-	public final void sendWebhookMessage(@Nullable final CommandSender sender, final String channelName, final String message) {
+	public final void sendWebhookMessage(final CommandSender sender, final String channelName, final String message) {
 		final List<TextChannel> channels = this.findChannels(channelName);
 		final TextChannel channel = channels.isEmpty() ? null : channels.get(0);
 

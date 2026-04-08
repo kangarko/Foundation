@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.mineacademy.fo.ChatUtil;
@@ -392,7 +391,6 @@ public class RegionSubCommand extends SimpleSubCommand {
 		 * @param argument
 		 * @return
 		 */
-		@Nullable
 		private static Param find(String argument) {
 			argument = argument.toLowerCase();
 

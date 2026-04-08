@@ -3,7 +3,6 @@ package org.mineacademy.fo.remain;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -73,7 +72,7 @@ public enum CompEquipmentSlot {
 	 * @param itemCreator
 	 * @param dropChance
 	 */
-	public void applyTo(final LivingEntity entity, final ItemCreator itemCreator, @Nullable final Double dropChance) {
+	public void applyTo(final LivingEntity entity, final ItemCreator itemCreator, final Double dropChance) {
 		this.applyTo(entity, itemCreator.make(), dropChance);
 	}
 
@@ -95,7 +94,7 @@ public enum CompEquipmentSlot {
 	 * @param material
 	 * @param dropChance
 	 */
-	public void applyTo(final LivingEntity entity, final CompMaterial material, @Nullable final Double dropChance) {
+	public void applyTo(final LivingEntity entity, final CompMaterial material, final Double dropChance) {
 		this.applyTo(entity, material.toItem(), dropChance);
 	}
 
@@ -117,7 +116,7 @@ public enum CompEquipmentSlot {
 	 * @param material
 	 * @param dropChance
 	 */
-	public void applyTo(final LivingEntity entity, final Material material, @Nullable final Double dropChance) {
+	public void applyTo(final LivingEntity entity, final Material material, final Double dropChance) {
 		this.applyTo(entity, new ItemStack(material), dropChance);
 	}
 
@@ -148,7 +147,7 @@ public enum CompEquipmentSlot {
 	 * @param item
 	 * @param dropChance
 	 */
-	public void applyTo(@NonNull final LivingEntity entity, ItemStack item, @Nullable final Double dropChance) {
+	public void applyTo(@NonNull final LivingEntity entity, ItemStack item, final Double dropChance) {
 		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
 		ValidCore.checkNotNull(equipment);
 

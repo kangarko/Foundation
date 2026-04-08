@@ -2,7 +2,6 @@ package org.mineacademy.fo.event;
 
 import java.lang.reflect.Method;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -51,7 +50,6 @@ public abstract class SimpleListener<T extends Event> implements Listener, Event
 	/**
 	 * The optional player implementation for some helper methods
 	 */
-	@Nullable
 	private Player player;
 
 	/**

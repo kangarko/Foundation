@@ -3,7 +3,6 @@ package org.mineacademy.fo.model;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -42,7 +41,6 @@ public final class DynmapSender implements CommandSender {
 	/**
 	 * The associated online player
 	 */
-	@Nullable
 	private final Player onlinePlayer;
 
 	@Override

@@ -3,7 +3,6 @@ package org.mineacademy.fo.menu;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -170,7 +169,7 @@ public abstract class MenuContainer extends Menu {
 	 * @param item
 	 * @return
 	 */
-	protected ItemStack onItemClick(final int slot, final ClickType clickType, @Nullable final ItemStack item) {
+	protected ItemStack onItemClick(final int slot, final ClickType clickType, final ItemStack item) {
 		return item;
 	}
 

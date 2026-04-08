@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -101,7 +100,7 @@ public final class VisualizedRegion extends Region {
 	 * @param color
 	 * @param durationTicks
 	 */
-	public void showParticles(final Player player, @Nullable final Color color, final int durationTicks) {
+	public void showParticles(final Player player, final Color color, final int durationTicks) {
 		this.showParticles(player, color);
 
 		Platform.runTask(durationTicks, () -> {
@@ -125,7 +124,7 @@ public final class VisualizedRegion extends Region {
 	 * @param player
 	 * @param color
 	 */
-	public void showParticles(final Player player, @Nullable final Color color) {
+	public void showParticles(final Player player, final Color color) {
 		ValidCore.checkBoolean(!this.canSeeParticles(player), "Player " + player.getName() + " already sees region " + this);
 		ValidCore.checkBoolean(this.isWhole(), "Cannot show particles of an incomplete region " + this);
 

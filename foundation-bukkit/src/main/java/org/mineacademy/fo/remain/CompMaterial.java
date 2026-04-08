@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -2170,7 +2169,7 @@ public enum CompMaterial {
 	 * @param item
 	 * @return
 	 */
-	public static boolean isAir(@Nullable final ItemStack item) {
+	public static boolean isAir(final ItemStack item) {
 		return item == null || isAir(item.getType());
 	}
 

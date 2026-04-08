@@ -1,6 +1,5 @@
 package org.mineacademy.fo;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.debug.Debugger;
@@ -64,7 +63,7 @@ public final class ProxyUtil {
 	 * @param datas
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessageAs(@Nullable final FoundationPlayer audience, final ProxyMessage message, final T... datas) {
+	public static <T> void sendPluginMessageAs(final FoundationPlayer audience, final ProxyMessage message, final T... datas) {
 		sendPluginMessageAs((Player) audience.getPlayer(), message, datas);
 	}
 
@@ -82,7 +81,7 @@ public final class ProxyUtil {
 	 * @param datas
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessageAs(@Nullable final Player player, final ProxyMessage message, final T... datas) {
+	public static <T> void sendPluginMessageAs(final Player player, final ProxyMessage message, final T... datas) {
 		final ProxyListener proxy = BukkitPlugin.getInstance().getDefaultProxyListener();
 		ValidCore.checkNotNull(proxy, "Cannot call sendPluginMessageAs() without channel name because " + BukkitPlugin.getInstance().getName() + " does not have any class extending ProxyListener with @AutoMessage");
 
@@ -119,7 +118,7 @@ public final class ProxyUtil {
 	 * @param dataArray
 	 */
 	@SafeVarargs
-	public static <T> void sendPluginMessage(@Nullable Player sender, final String channel, final ProxyMessage message, final T... dataArray) {
+	public static <T> void sendPluginMessage(Player sender, final String channel, final ProxyMessage message, final T... dataArray) {
 		synchronized (LOCK) {
 			if (sender == null)
 				sender = findFirstPlayer();

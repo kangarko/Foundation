@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -39,7 +38,6 @@ public final class DiscordSender implements CommandSender {
 	 */
 	@Deprecated
 	private final Object cache;
-	@Nullable
 	private final OfflinePlayer offlinePlayer;
 	private final User user;
 	private final MessageChannel channel;
