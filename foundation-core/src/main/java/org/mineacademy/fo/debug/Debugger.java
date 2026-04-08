@@ -120,7 +120,7 @@ public final class Debugger {
 				return;
 			}
 
-		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError)) {
+		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError) && !hasZipFileError(throwable)) {
 			final Throwable finalThrowable = throwable;
 
 			final StackTraceElement[] elements = finalThrowable.getStackTrace();
@@ -239,6 +239,19 @@ public final class Debugger {
 				.replace("\n", "\\n")
 				.replace("\r", "\\r")
 				.replace("\t", "\\t");
+	}
+
+	private static boolean hasZipFileError(Throwable throwable) {
+		Throwable cause = throwable;
+
+		do {
+			final String msg = cause.getMessage();
+
+			if (msg != null && (msg.contains("zip file closed") || msg.contains("has thrown a zip file error")))
+				return true;
+		} while ((cause = cause.getCause()) != null);
+
+		return false;
 	}
 
 	private static void saveErrorLocally(Throwable throwable, final String... messages) {
