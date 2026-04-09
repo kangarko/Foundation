@@ -150,7 +150,7 @@
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>5.5.0-SNAPSHOT-6c6bde5</version>
+			<version>5.5.0-SNAPSHOT-fd855ed</version>
 			<!--<scope>provided</scope>-->
 		</dependency>
 		<dependency>
