@@ -2249,14 +2249,21 @@ public final class Remain {
 	 * @param data
 	 */
 	public static void setData(final Block block, final int data) {
-		try {
-			Block.class.getMethod("setData", byte.class).invoke(block, (byte) data);
+		if (MinecraftVersion.atLeast(V.v1_13)) {
+			final org.bukkit.block.data.BlockData blockData = block.getBlockData();
 
-		} catch (final NoSuchMethodException ex) {
-			block.setBlockData(Bukkit.getUnsafe().fromLegacy(block.getType(), (byte) data), true);
+			if (blockData instanceof org.bukkit.block.data.Ageable) {
+				((org.bukkit.block.data.Ageable) blockData).setAge(data);
+				block.setBlockData(blockData, true);
+			} else
+				block.setBlockData(Bukkit.getUnsafe().fromLegacy(block.getType(), (byte) data), true);
 
-		} catch (final ReflectiveOperationException ex) {
-			ex.printStackTrace();
+		} else {
+			try {
+				Block.class.getMethod("setData", byte.class).invoke(block, (byte) data);
+			} catch (final ReflectiveOperationException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 
