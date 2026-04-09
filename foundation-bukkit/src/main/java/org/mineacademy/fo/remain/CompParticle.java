@@ -388,7 +388,7 @@ public enum CompParticle {
 	 * @param location
 	 */
 	public void spawn(final Location location) {
-		this.spawn(location, 0, 0, 0, 0, 0, 0, null);
+		this.spawn(location, 0, 0, 0, 0, 1, 0, null);
 	}
 
 	/**
@@ -452,6 +452,9 @@ public enum CompParticle {
 		if (this.bukkitEnumParticle != null) {
 			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+
+			else if (data == null)
+				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 
 			else
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
