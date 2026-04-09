@@ -41,6 +41,8 @@ import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.Remain;
 
+import org.bukkit.util.Vector;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -76,6 +78,65 @@ public final class EntityUtil {
 		Collections.sort(found, (first, second) -> Double.compare(first.getLocation().distance(center), second.getLocation().distance(center)));
 
 		return found.isEmpty() ? null : found.get(0);
+	}
+
+	/**
+	 * Check if a ray from origin along direction intersects an axis-aligned bounding box
+	 * centered at targetFeet with the given half-width and height. Uses the slab method.
+	 *
+	 * @param origin the ray origin (e.g. eye location)
+	 * @param direction the normalized ray direction
+	 * @param targetFeet the base (feet) position of the AABB
+	 * @param halfWidth half the width of the AABB (e.g. 0.3 for a player)
+	 * @param height the height of the AABB (e.g. 1.8 for a player)
+	 * @return the distance along the ray to the hit point, or -1 if no intersection
+	 */
+	public static double rayIntersectsAABB(final Vector origin, final Vector direction, final Vector targetFeet, final double halfWidth, final double height) {
+		final double minX = targetFeet.getX() - halfWidth;
+		final double minY = targetFeet.getY();
+		final double minZ = targetFeet.getZ() - halfWidth;
+		final double maxX = targetFeet.getX() + halfWidth;
+		final double maxY = targetFeet.getY() + height;
+		final double maxZ = targetFeet.getZ() + halfWidth;
+
+		double tMin = Double.NEGATIVE_INFINITY;
+		double tMax = Double.POSITIVE_INFINITY;
+
+		final double dx = direction.getX();
+		final double dy = direction.getY();
+		final double dz = direction.getZ();
+		final double ox = origin.getX();
+		final double oy = origin.getY();
+		final double oz = origin.getZ();
+
+		if (dx != 0) {
+			final double t1 = (minX - ox) / dx;
+			final double t2 = (maxX - ox) / dx;
+			tMin = Math.max(tMin, Math.min(t1, t2));
+			tMax = Math.min(tMax, Math.max(t1, t2));
+		} else if (ox < minX || ox > maxX)
+			return -1;
+
+		if (dy != 0) {
+			final double t1 = (minY - oy) / dy;
+			final double t2 = (maxY - oy) / dy;
+			tMin = Math.max(tMin, Math.min(t1, t2));
+			tMax = Math.min(tMax, Math.max(t1, t2));
+		} else if (oy < minY || oy > maxY)
+			return -1;
+
+		if (dz != 0) {
+			final double t1 = (minZ - oz) / dz;
+			final double t2 = (maxZ - oz) / dz;
+			tMin = Math.max(tMin, Math.min(t1, t2));
+			tMax = Math.min(tMax, Math.max(t1, t2));
+		} else if (oz < minZ || oz > maxZ)
+			return -1;
+
+		if (tMax < 0 || tMin > tMax)
+			return -1;
+
+		return tMin >= 0 ? tMin : tMax;
 	}
 
 	/**
