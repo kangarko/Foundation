@@ -70,11 +70,11 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import org.bukkit.util.Vector;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
+import org.bukkit.util.Vector;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.EntityUtil;
@@ -270,6 +270,11 @@ public final class Remain {
 	private static boolean hasAdventureChatEvent = true;
 
 	/**
+	 * Does the current server have Paper's PlayerProfile API (Paper 1.12.2+)?
+	 */
+	private static boolean hasPaperProfile = false;
+
+	/**
 	 * Does the current server version support spawn egg meta?
 	 */
 	private static boolean hasSpawnEggMeta = true;
@@ -344,6 +349,7 @@ public final class Remain {
 		}
 
 		isPaper = ReflectionUtil.isClassAvailable("co.aikar.timings.Timing");
+		hasPaperProfile = isPaper && ReflectionUtil.isClassAvailable("com.destroystokyo.paper.profile.PlayerProfile");
 		isFolia = ReflectionUtil.isClassAvailable("io.papermc.paper.threadedregions.RegionizedServer");
 		isThermos = ReflectionUtil.isClassAvailable("thermos.ThermosRemapper");
 		isUsingMojangMappings = ReflectionUtil.isClassAvailable("net.minecraft.server.level.ServerPlayer");
@@ -3424,7 +3430,7 @@ public final class Remain {
 	 */
 	public static Skull setSkullBlockBase64(final Skull block, final String base64) {
 
-		if (isPaper) {
+		if (hasPaperProfile) {
 			block.setPlayerProfile(createPaperProfileFromBase64(base64));
 
 			return block;
@@ -3455,7 +3461,7 @@ public final class Remain {
 	 */
 	public static SkullMeta setSkullMetaBase64(final SkullMeta meta, final String base64) {
 
-		if (isPaper) {
+		if (hasPaperProfile) {
 			meta.setPlayerProfile(createPaperProfileFromBase64(base64));
 
 			return meta;
