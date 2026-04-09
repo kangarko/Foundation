@@ -453,7 +453,7 @@ public enum CompParticle {
 			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
 
-			else if (data == null)
+			else if (data == null || data.length == 0)
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 
 			else
@@ -475,7 +475,7 @@ public enum CompParticle {
 	 * @param location
 	 */
 	public void spawn(final Player player, final Location location) {
-		this.spawn(player, location, 0d, 0d, 0d, 0d, 0, 0d, null);
+		this.spawn(player, location, 0d, 0d, 0d, 0d, 1, 0d, null);
 	}
 
 	/**
@@ -528,14 +528,17 @@ public enum CompParticle {
 			return;
 
 		// Minecraft 1.12 and up
-		if (this.bukkitEnumParticle != null && this != REDSTONE) {
-			if (data == null)
+		if (this.bukkitEnumParticle != null) {
+			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
+				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+
+			else if (data == null || data.length == 0)
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 			else
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 
 		} else if (this.packetConstructor != null)
-			if (data == null)
+			if (data == null || data.length == 0)
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra));
 			else
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
