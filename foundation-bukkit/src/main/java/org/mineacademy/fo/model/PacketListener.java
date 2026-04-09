@@ -1,5 +1,7 @@
 package org.mineacademy.fo.model;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -163,6 +165,58 @@ public abstract class PacketListener {
 		}
 
 		return profiles;
+	}
+
+	/**
+	 * Sets the hoverable player text in the server list ping.
+	 * This bypasses a ProtocolLib bug where AutoWrapper picks a
+	 * non-canonical NMS NameAndId record constructor on MC 1.21.10+,
+	 * causing an NPE when calling WrappedServerPing#setPlayers.
+	 *
+	 * @param ping
+	 * @param hoverTexts
+	 */
+	protected void setServerListPlayers(final WrappedServerPing ping, final String... hoverTexts) {
+		final List<WrappedGameProfile> profiles = this.compileHoverText(hoverTexts);
+
+		try {
+			ping.setPlayers(profiles);
+
+		} catch (final IllegalStateException ex) {
+			if (ex.getMessage() != null && ex.getMessage().contains("NameAndId"))
+				this.setPlayersViaReflection(ping, profiles);
+			else
+				throw ex;
+		}
+	}
+
+	private void setPlayersViaReflection(final WrappedServerPing ping, final List<WrappedGameProfile> profiles) {
+		try {
+			final Class<?> nameAndIdClass = Class.forName("net.minecraft.server.players.NameAndId");
+			final Constructor<?> canonicalCtor = nameAndIdClass.getConstructor(UUID.class, String.class);
+
+			final List<Object> nmsProfiles = new ArrayList<>();
+
+			for (final WrappedGameProfile profile : profiles)
+				nmsProfiles.add(canonicalCtor.newInstance(profile.getUUID(), profile.getName()));
+
+			final Field implField = WrappedServerPing.class.getDeclaredField("impl");
+			implField.setAccessible(true);
+
+			final Object serverPingRecord = implField.get(ping);
+
+			final Field playerSampleField = serverPingRecord.getClass().getDeclaredField("playerSample");
+			playerSampleField.setAccessible(true);
+
+			final Object playerSample = playerSampleField.get(serverPingRecord);
+
+			final Field sampleField = playerSample.getClass().getDeclaredField("sample");
+			sampleField.setAccessible(true);
+			sampleField.set(playerSample, nmsProfiles);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException("Failed to set server list players via reflection bypass", ex);
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
