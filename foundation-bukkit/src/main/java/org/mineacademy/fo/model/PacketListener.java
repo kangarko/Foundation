@@ -2,9 +2,12 @@ package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -179,15 +182,21 @@ public abstract class PacketListener {
 	protected void setServerListPlayers(final WrappedServerPing ping, final String... hoverTexts) {
 		final List<WrappedGameProfile> profiles = this.compileHoverText(hoverTexts);
 
-		try {
-			ping.setPlayers(profiles);
-
-		} catch (final IllegalStateException ex) {
-			if (ex.getMessage() != null && ex.getMessage().contains("NameAndId"))
-				this.setPlayersViaReflection(ping, profiles);
-			else
-				throw ex;
+		if (MinecraftVersion.atLeast(V.v1_21)) {
+			this.setPlayersViaReflection(ping, profiles);
+			return;
 		}
+
+		ping.setPlayers(profiles);
+	}
+
+	protected void writeServerPing(final PacketEvent event, final WrappedServerPing ping) {
+		if (MinecraftVersion.olderThan(V.v1_21)) {
+			event.getPacket().getServerPings().write(0, ping);
+			return;
+		}
+
+		this.writeServerPingNms(event, ping);
 	}
 
 	private void setPlayersViaReflection(final WrappedServerPing ping, final List<WrappedGameProfile> profiles) {
@@ -197,8 +206,14 @@ public abstract class PacketListener {
 
 			final List<Object> nmsProfiles = new ArrayList<>();
 
-			for (final WrappedGameProfile profile : profiles)
-				nmsProfiles.add(canonicalCtor.newInstance(profile.getUUID(), profile.getName()));
+			for (final WrappedGameProfile profile : profiles) {
+				String name = profile.getName();
+
+				if (name == null)
+					name = "";
+
+				nmsProfiles.add(canonicalCtor.newInstance(profile.getUUID(), name));
+			}
 
 			final Field implField = WrappedServerPing.class.getDeclaredField("impl");
 			implField.setAccessible(true);
@@ -216,6 +231,79 @@ public abstract class PacketListener {
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException("Failed to set server list players via reflection bypass", ex);
+		}
+	}
+
+	private void writeServerPingNms(final PacketEvent event, final WrappedServerPing ping) {
+		try {
+			final Field implField = WrappedServerPing.class.getDeclaredField("impl");
+			implField.setAccessible(true);
+			final Object impl = implField.get(ping);
+
+			List<?> nmsSample = new ArrayList<>();
+
+			final Field playerSampleField = impl.getClass().getDeclaredField("playerSample");
+			playerSampleField.setAccessible(true);
+			final Object playerSample = playerSampleField.get(impl);
+
+			if (playerSample != null) {
+				final Field sampleField = playerSample.getClass().getDeclaredField("sample");
+				sampleField.setAccessible(true);
+				final Object sample = sampleField.get(playerSample);
+
+				if (sample instanceof List)
+					nmsSample = (List<?>) sample;
+			}
+
+			final Object nmsPacket = event.getPacket().getHandle();
+			final RecordComponent[] packetRCs = nmsPacket.getClass().getRecordComponents();
+			final Object nmsStatus = packetRCs[0].getAccessor().invoke(nmsPacket);
+			final RecordComponent[] statusRCs = nmsStatus.getClass().getRecordComponents();
+
+			final Object[] statusValues = new Object[statusRCs.length];
+
+			for (int i = 0; i < statusRCs.length; i++)
+				statusValues[i] = statusRCs[i].getAccessor().invoke(nmsStatus);
+
+			final WrappedChatComponent motd = ping.getMotD();
+
+			if (motd != null)
+				statusValues[0] = motd.getHandle();
+
+			if (statusValues[1] instanceof Optional && ((Optional<?>) statusValues[1]).isPresent()) {
+				final Object origPlayers = ((Optional<?>) statusValues[1]).get();
+				final RecordComponent[] playerRCs = origPlayers.getClass().getRecordComponents();
+				final Class<?>[] playerTypes = Arrays.stream(playerRCs).map(RecordComponent::getType).toArray(Class[]::new);
+
+				final Object newPlayers = origPlayers.getClass()
+						.getDeclaredConstructor(playerTypes)
+						.newInstance(ping.getPlayersMaximum(), ping.getPlayersOnline(), nmsSample);
+
+				statusValues[1] = Optional.of(newPlayers);
+			}
+
+			if (statusValues[2] instanceof Optional && ((Optional<?>) statusValues[2]).isPresent()) {
+				final Object origVersion = ((Optional<?>) statusValues[2]).get();
+				final RecordComponent[] versionRCs = origVersion.getClass().getRecordComponents();
+				final Class<?>[] versionTypes = Arrays.stream(versionRCs).map(RecordComponent::getType).toArray(Class[]::new);
+
+				final Object newVersion = origVersion.getClass()
+						.getDeclaredConstructor(versionTypes)
+						.newInstance(ping.getVersionName(), ping.getVersionProtocol());
+
+				statusValues[2] = Optional.of(newVersion);
+			}
+
+			final Class<?>[] statusTypes = Arrays.stream(statusRCs).map(RecordComponent::getType).toArray(Class[]::new);
+			final Object newStatus = nmsStatus.getClass().getDeclaredConstructor(statusTypes).newInstance(statusValues);
+
+			final Class<?>[] packetTypes = Arrays.stream(packetRCs).map(RecordComponent::getType).toArray(Class[]::new);
+			final Object newPacket = nmsPacket.getClass().getDeclaredConstructor(packetTypes).newInstance(newStatus);
+
+			event.setPacket(new PacketContainer(event.getPacketType(), newPacket));
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException("Failed to write server ping via NMS reflection", ex);
 		}
 	}
 
