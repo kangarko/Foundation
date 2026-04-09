@@ -250,22 +250,36 @@ public final class EntityUtil {
 	public static void removeVehiclesAndPassengers(final Entity entity) {
 		Entity vehicle = entity.getVehicle();
 
+		if (vehicle != null)
+			entity.leaveVehicle();
+
 		while (vehicle != null) {
 			final Entity copyOf = vehicle;
 			vehicle = vehicle.getVehicle();
 
-			copyOf.remove();
+			if (copyOf instanceof Player)
+				copyOf.eject();
+			else
+				copyOf.remove();
 		}
 
 		try {
-			for (final Entity passenger : entity.getPassengers())
-				passenger.remove();
+			for (final Entity passenger : entity.getPassengers()) {
+				entity.removePassenger(passenger);
+
+				if (!(passenger instanceof Player))
+					passenger.remove();
+			}
 
 		} catch (final NoSuchMethodError err) {
 			final Entity passenger = entity.getPassenger();
 
-			if (passenger != null)
-				passenger.remove();
+			if (passenger != null) {
+				entity.eject();
+
+				if (!(passenger instanceof Player))
+					passenger.remove();
+			}
 		}
 	}
 
