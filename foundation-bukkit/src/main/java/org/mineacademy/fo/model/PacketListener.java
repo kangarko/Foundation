@@ -2,9 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +13,7 @@ import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
@@ -256,14 +255,14 @@ public abstract class PacketListener {
 			}
 
 			final Object nmsPacket = event.getPacket().getHandle();
-			final RecordComponent[] packetRCs = nmsPacket.getClass().getRecordComponents();
-			final Object nmsStatus = packetRCs[0].getAccessor().invoke(nmsPacket);
-			final RecordComponent[] statusRCs = nmsStatus.getClass().getRecordComponents();
+			final Object[] packetRCs = ReflectionUtil.getRecordComponents(nmsPacket.getClass());
+			final Object nmsStatus = ReflectionUtil.getRecordComponentAccessor(packetRCs[0]).invoke(nmsPacket);
+			final Object[] statusRCs = ReflectionUtil.getRecordComponents(nmsStatus.getClass());
 
 			final Object[] statusValues = new Object[statusRCs.length];
 
 			for (int i = 0; i < statusRCs.length; i++)
-				statusValues[i] = statusRCs[i].getAccessor().invoke(nmsStatus);
+				statusValues[i] = ReflectionUtil.getRecordComponentAccessor(statusRCs[i]).invoke(nmsStatus);
 
 			final WrappedChatComponent motd = ping.getMotD();
 
@@ -272,8 +271,8 @@ public abstract class PacketListener {
 
 			if (statusValues[1] instanceof Optional && ((Optional<?>) statusValues[1]).isPresent()) {
 				final Object origPlayers = ((Optional<?>) statusValues[1]).get();
-				final RecordComponent[] playerRCs = origPlayers.getClass().getRecordComponents();
-				final Class<?>[] playerTypes = Arrays.stream(playerRCs).map(RecordComponent::getType).toArray(Class[]::new);
+				final Object[] playerRCs = ReflectionUtil.getRecordComponents(origPlayers.getClass());
+				final Class<?>[] playerTypes = ReflectionUtil.getRecordComponentTypes(playerRCs);
 
 				final Object newPlayers = origPlayers.getClass()
 						.getDeclaredConstructor(playerTypes)
@@ -284,8 +283,8 @@ public abstract class PacketListener {
 
 			if (statusValues[2] instanceof Optional && ((Optional<?>) statusValues[2]).isPresent()) {
 				final Object origVersion = ((Optional<?>) statusValues[2]).get();
-				final RecordComponent[] versionRCs = origVersion.getClass().getRecordComponents();
-				final Class<?>[] versionTypes = Arrays.stream(versionRCs).map(RecordComponent::getType).toArray(Class[]::new);
+				final Object[] versionRCs = ReflectionUtil.getRecordComponents(origVersion.getClass());
+				final Class<?>[] versionTypes = ReflectionUtil.getRecordComponentTypes(versionRCs);
 
 				final Object newVersion = origVersion.getClass()
 						.getDeclaredConstructor(versionTypes)
@@ -294,10 +293,10 @@ public abstract class PacketListener {
 				statusValues[2] = Optional.of(newVersion);
 			}
 
-			final Class<?>[] statusTypes = Arrays.stream(statusRCs).map(RecordComponent::getType).toArray(Class[]::new);
+			final Class<?>[] statusTypes = ReflectionUtil.getRecordComponentTypes(statusRCs);
 			final Object newStatus = nmsStatus.getClass().getDeclaredConstructor(statusTypes).newInstance(statusValues);
 
-			final Class<?>[] packetTypes = Arrays.stream(packetRCs).map(RecordComponent::getType).toArray(Class[]::new);
+			final Class<?>[] packetTypes = ReflectionUtil.getRecordComponentTypes(packetRCs);
 			final Object newPacket = nmsPacket.getClass().getDeclaredConstructor(packetTypes).newInstance(newStatus);
 
 			event.setPacket(new PacketContainer(event.getPacketType(), newPacket));
