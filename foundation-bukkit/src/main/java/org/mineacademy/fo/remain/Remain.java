@@ -55,6 +55,7 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -1139,20 +1140,32 @@ public final class Remain {
 	 */
 	public static LivingEntity getHitEntity(final ProjectileHitEvent event) {
 		try {
-
-			// Try getting the hit entity directly
 			if (event.getHitEntity() instanceof LivingEntity)
 				return (LivingEntity) event.getHitEntity();
 
 		} catch (final Throwable t) {
+			final Projectile projectile = event.getEntity();
+			final Vector velocity = projectile.getVelocity();
+			final Location impactPoint = projectile.getLocation().add(velocity);
+			final Entity shooter = projectile.getShooter() instanceof Entity ? (Entity) projectile.getShooter() : null;
+			final double scanRadius = Math.max(2, velocity.length() + 1);
 
-			// If this fails, try getting the entity to which the projectile was attached,
-			// imperfect, but mostly works.
-			final double radius = 0.5;
+			LivingEntity closest = null;
+			double closestDist = Double.MAX_VALUE;
 
-			for (final Entity nearby : event.getEntity().getNearbyEntities(radius, radius, radius))
-				if (nearby instanceof LivingEntity)
-					return (LivingEntity) nearby;
+			for (final Entity nearby : projectile.getNearbyEntities(scanRadius, scanRadius, scanRadius)) {
+				if (!(nearby instanceof LivingEntity) || nearby.equals(shooter) || nearby.equals(projectile))
+					continue;
+
+				final double dist = nearby.getLocation().distanceSquared(impactPoint);
+
+				if (dist < closestDist) {
+					closestDist = dist;
+					closest = (LivingEntity) nearby;
+				}
+			}
+
+			return closest;
 		}
 
 		return null;
