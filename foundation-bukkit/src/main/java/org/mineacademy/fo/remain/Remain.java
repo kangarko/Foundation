@@ -70,6 +70,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.util.Vector;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
@@ -1302,6 +1303,66 @@ public final class Remain {
 			}
 
 			return found;
+		}
+	}
+
+	/**
+	 * Perform a ray trace from a start location along a direction, returning the closest
+	 * hit entity within maxDistance, or null.
+	 *
+	 * On MC 1.13+ uses native World.rayTraceEntities(). Falls back to manual AABB
+	 * intersection against nearby entities for older versions.
+	 *
+	 * @param start the eye/start location
+	 * @param direction the normalized direction vector
+	 * @param maxDistance the maximum distance to check
+	 * @return the closest hit entity, or null
+	 */
+	public static Entity rayTraceEntities(final Location start, final Vector direction, final double maxDistance) {
+		return rayTraceEntities(start, direction, maxDistance, null);
+	}
+
+	/**
+	 * Perform a ray trace from a start location along a direction, returning the closest
+	 * hit entity within maxDistance that matches the filter, or null.
+	 *
+	 * On MC 1.13+ uses native World.rayTraceEntities(). Falls back to manual AABB
+	 * intersection against nearby entities for older versions.
+	 *
+	 * @param start the eye/start location
+	 * @param direction the normalized direction vector
+	 * @param maxDistance the maximum distance to check
+	 * @param filter predicate to filter entities, or null for all entities
+	 * @return the closest hit entity, or null
+	 */
+	public static Entity rayTraceEntities(final Location start, final Vector direction, final double maxDistance, final java.util.function.Predicate<Entity> filter) {
+		try {
+			final org.bukkit.util.RayTraceResult result = start.getWorld().rayTraceEntities(start, direction, maxDistance, 0.0, filter);
+
+			return result != null ? result.getHitEntity() : null;
+
+		} catch (final Throwable t) {
+			Entity closest = null;
+			double closestDist = Double.MAX_VALUE;
+
+			for (final Entity entity : getNearbyEntities(start, maxDistance)) {
+				if (filter != null && !filter.test(entity))
+					continue;
+
+				final Location feet = entity.getLocation();
+				final double halfWidth = entity.getWidth() / 2.0;
+				final double height = entity.getHeight();
+
+				final double hitDist = EntityUtil.rayIntersectsAABB(start.toVector(), direction, feet.toVector(), halfWidth, height);
+
+				if (hitDist < 0 || hitDist > maxDistance || hitDist >= closestDist)
+					continue;
+
+				closestDist = hitDist;
+				closest = entity;
+			}
+
+			return closest;
 		}
 	}
 
