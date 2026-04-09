@@ -355,9 +355,10 @@ public final class BlockUtil {
 		final int maxX = minX | 15;
 		final int maxY = chunk.getWorld().getMaxHeight();
 		final int maxZ = minZ | 15;
+		final int minY = MinecraftVersion.atLeast(V.v1_18) ? chunk.getWorld().getMinHeight() : 0;
 
 		for (int x = minX; x <= maxX; ++x)
-			for (int y = 0; y <= maxY; ++y)
+			for (int y = minY; y <= maxY; ++y)
 				for (int z = minZ; z <= maxZ; ++z)
 					blocks.add(chunk.getBlock(x, y, z));
 
@@ -583,7 +584,9 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlockNoSnow(final World world, final int x, final int z) {
-		for (int y = world.getMaxHeight() - 1; y > 0; y--) {
+		final int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+
+		for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
 			final Block block = world.getBlockAt(x, y, z);
 
 			if (!CompMaterial.isAir(block) && !block.getType().toString().equals("BARRIER")) {
@@ -705,7 +708,9 @@ public final class BlockUtil {
 	public static int findHighestNetherAirBlock(@NonNull final World world, final int x, final int z) {
 		ValidCore.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
 
-		for (int y = 0; y < world.getMaxHeight(); y++) {
+		final int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+
+		for (int y = minHeight; y < world.getMaxHeight(); y++) {
 			final Block block = world.getBlockAt(x, y, z);
 			final Block above = block.getRelative(BlockFace.UP);
 			final Block below = block.getRelative(BlockFace.DOWN);

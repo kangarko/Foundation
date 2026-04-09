@@ -13,6 +13,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.BlockUtil;
+import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.SerializeUtil;
 import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
@@ -318,7 +319,9 @@ public class Region implements ConfigSerializable {
 
 		highestAvailableLookup:
 		{
-			for (; sameHeight ? y < location.getWorld().getMaxHeight() : y > 1; y = y + (sameHeight ? 1 : -1)) {
+			final int minHeight = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18) ? location.getWorld().getMinHeight() : 0;
+
+			for (; sameHeight ? y < location.getWorld().getMaxHeight() : y > minHeight; y = y + (sameHeight ? 1 : -1)) {
 				final Block block = location.getWorld().getBlockAt(x, y, z);
 
 				if (sameHeight) {
