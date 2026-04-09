@@ -353,7 +353,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 							if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null)
 								BukkitEnchantPacketListener.getInstance().onRegister();
-							else
+							else if (MinecraftVersion.olderThan(V.v1_21))
 								CommonCore.warning("Custom enchantments require ProtocolLib for lore to be added properly.");
 						}
 
