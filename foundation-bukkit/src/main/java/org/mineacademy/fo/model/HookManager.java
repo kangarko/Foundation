@@ -93,6 +93,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.ai.EntityTarget;
+import net.citizensnpcs.api.ai.tree.Behavior;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.kyori.adventure.text.Component;
@@ -176,13 +177,13 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("Citizens"))
 			try {
-				Class.forName("net.citizensnpcs.api.ai.BehaviorController");
+				Class.forName("net.citizensnpcs.api.ai.tree.Behavior");
 
 				citizensHook = new CitizensHook();
 
 			} catch (final ClassNotFoundException ex) {
 				CommonCore.logFramed("Failed to hook into Citizens!",
-						"Ensure you're using the latest Citizens build.",
+						"Ensure you're using Citizens 2.0.33+.",
 						"If yes, report this issue to github.com/kangarko/" + Platform.getPlugin().getName() + "/issues");
 			}
 
@@ -1865,6 +1866,27 @@ public final class HookManager {
 	public static void destroyNPC(final Entity entity) {
 		if (isCitizensLoaded())
 			citizensHook.destroyNPC(entity);
+	}
+
+	/**
+	 * Adds behaviors to a Citizens NPC, supporting both modern (BehaviorController) and legacy (GoalController) Citizens API.
+	 *
+	 * @param npc the NPC object
+	 * @param behaviors the Behavior instances to add
+	 */
+	public static void addNPCBehaviors(final Object npc, final Object... behaviors) {
+		if (isCitizensLoaded())
+			citizensHook.addBehaviors(npc, behaviors);
+	}
+
+	/**
+	 * Clears all behaviors from a Citizens NPC, supporting both modern and legacy Citizens API.
+	 *
+	 * @param npc the NPC object
+	 */
+	public static void clearNPCBehaviors(final Object npc) {
+		if (isCitizensLoaded())
+			citizensHook.clearBehaviors(npc);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -3942,6 +3964,22 @@ class CMIHook {
 
 class CitizensHook {
 
+	private final boolean modernCitizens;
+
+	CitizensHook() {
+		boolean modern;
+
+		try {
+			Class.forName("net.citizensnpcs.api.ai.BehaviorController");
+
+			modern = true;
+		} catch (final ClassNotFoundException ex) {
+			modern = false;
+		}
+
+		this.modernCitizens = modern;
+	}
+
 	boolean isNPC(final Entity entity) {
 		try {
 			final NPCRegistry reg = CitizensAPI.getNPCRegistry();
@@ -3982,6 +4020,45 @@ class CitizensHook {
 		} catch (final NoClassDefFoundError err) {
 			CommonCore.logTimed(60 * 30, "Unable to destroy NPC " + entity + ", got " + err + ". This error only shows once per 30min.");
 		}
+	}
+
+	void addBehaviors(final Object npcObject, final Object... behaviors) {
+		try {
+			final Object controller = this.getController(npcObject);
+
+			if (this.modernCitizens) {
+				final java.lang.reflect.Method addBehavior = controller.getClass().getMethod("addBehavior", Behavior.class);
+
+				for (final Object behavior : behaviors)
+					addBehavior.invoke(controller, behavior);
+
+			} else {
+				final java.lang.reflect.Method addBehavior = controller.getClass().getMethod("addBehavior", Behavior.class, int.class);
+
+				for (int i = 0; i < behaviors.length; i++)
+					addBehavior.invoke(controller, behaviors[i], i + 1);
+			}
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new RuntimeException("Failed to add behaviors to Citizens NPC", ex);
+		}
+	}
+
+	void clearBehaviors(final Object npcObject) {
+		try {
+			final Object controller = this.getController(npcObject);
+
+			controller.getClass().getMethod("clear").invoke(controller);
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new RuntimeException("Failed to clear behaviors on Citizens NPC", ex);
+		}
+	}
+
+	private Object getController(final Object npcObject) throws ReflectiveOperationException {
+		final String methodName = this.modernCitizens ? "getDefaultBehaviorController" : "getDefaultGoalController";
+
+		return npcObject.getClass().getMethod(methodName).invoke(npcObject);
 	}
 }
 
