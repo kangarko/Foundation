@@ -73,7 +73,7 @@ public final class BlockUtil {
 	 */
 	public static Set<Location> getBoundingBox(@NonNull final Chunk chunk) {
 		final int minX = chunk.getX() << 4;
-		final int minY = 0;
+		final int minY = MinecraftVersion.atLeast(V.v1_18) ? chunk.getWorld().getMinHeight() : 0;
 		final int minZ = chunk.getZ() << 4;
 
 		final int maxX = minX | 15;
