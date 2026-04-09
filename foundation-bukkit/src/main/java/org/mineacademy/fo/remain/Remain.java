@@ -319,6 +319,11 @@ public final class Remain {
 	private static boolean hasPlayerOpenSignMethod = true;
 
 	/**
+	 * Return true if Player has openVirtualSign method (Paper 1.21.7+).
+	 */
+	private static boolean hasPlayerOpenVirtualSignMethod = false;
+
+	/**
 	 * The safeguard NMS prefix used in Bukkit 1.4 to 1.20.4.
 	 *
 	 * @deprecated internal use only and no longer needed on Minecraft 1.20.5 and greater
@@ -453,6 +458,17 @@ public final class Remain {
 			Player.class.getMethod("openSign", org.bukkit.block.Sign.class);
 		} catch (final Throwable ex) {
 			hasPlayerOpenSignMethod = false;
+		}
+
+		try {
+			final Class<?> positionClass = Class.forName("io.papermc.paper.math.Position");
+			final Class<?> sideClass = Class.forName("org.bukkit.block.sign.Side");
+
+			Player.class.getMethod("openVirtualSign", positionClass, sideClass);
+
+			hasPlayerOpenVirtualSignMethod = true;
+		} catch (final Throwable ex) {
+			// Not available
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_17)) {
@@ -745,6 +761,13 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static void freezeEnchantRegistry() {
+		if (MinecraftVersion.newerThan(V.v1_20)) {
+			final Object enchantmentRegistry = getEnchantRegistry();
+
+			ReflectionUtil.setField(enchantmentRegistry, "frozen", true);
+			return;
+		}
+
 		if (MinecraftVersion.atLeast(V.v1_19)) {
 			final Object enchantmentRegistry = getEnchantRegistry();
 			final Method freezeMethod = ReflectionUtil.getMethod(enchantmentRegistry.getClass(), Remain.isUsingMojangMappings() ? "freeze" : "l");
@@ -777,6 +800,16 @@ public final class Remain {
 	 * Helper to get the registry object
 	 */
 	private static Object getEnchantRegistry() {
+		if (MinecraftVersion.newerThan(V.v1_20)) {
+			final Class<?> craftRegistryClass = ReflectionUtil.lookupClass("org.bukkit.craftbukkit.CraftRegistry");
+			final Class<?> resourceKeyClass = ReflectionUtil.lookupClass("net.minecraft.resources.ResourceKey");
+			final Class<?> registriesClass = ReflectionUtil.lookupClass("net.minecraft.core.registries.Registries");
+			final Object enchantmentKey = ReflectionUtil.getStaticFieldContent(registriesClass, "ENCHANTMENT");
+			final Method method = ReflectionUtil.getMethod(craftRegistryClass, "getMinecraftRegistry", resourceKeyClass);
+
+			return ReflectionUtil.invoke(method, null, enchantmentKey);
+		}
+
 		final Class<?> registryClass = ReflectionUtil.lookupClass("net.minecraft.core.registries.BuiltInRegistries");
 		final Object enchantmentRegistry = ReflectionUtil.getStaticFieldContent(registryClass, Remain.isUsingMojangMappings() ? "ENCHANTMENT" : MinecraftVersion.equals(V.v1_19) ? "g" : "f");
 
@@ -790,26 +823,31 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static void unfreezeEnchantRegistry() {
+		if (MinecraftVersion.newerThan(V.v1_20)) {
+			final Object enchantmentRegistry = getEnchantRegistry();
+
+			ReflectionUtil.setField(enchantmentRegistry, "frozen", false);
+
+			enchantRegistryUnfrozen = true;
+			return;
+		}
+
 		if (MinecraftVersion.atLeast(V.v1_19)) {
 			final boolean mojMap = Remain.isUsingMojangMappings();
 			final Object enchantmentRegistry = getEnchantRegistry();
 
 			try {
-				// works fine in versions (1.19.3 and up)
-				ReflectionUtil.setField(enchantmentRegistry, mojMap ? "frozen" : "l", false); // MappedRegistry#frozen
-				ReflectionUtil.setField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>()); // MappedRegistry#unregisteredIntrusiveHolders
+				ReflectionUtil.setField(enchantmentRegistry, mojMap ? "frozen" : "l", false);
+				ReflectionUtil.setField(enchantmentRegistry, mojMap ? "unregisteredIntrusiveHolders" : "m", new IdentityHashMap<>());
 
 			} catch (final Throwable t) {
 				try {
-					// in (1.19 - 1.19.2) the obfuscation is different.
-					ReflectionUtil.setField(enchantmentRegistry, mojMap ? "frozen" : "ca", false); // MappedRegistry#frozen
-					// unregisteredIntrusiveHolders does not exist in this version
+					ReflectionUtil.setField(enchantmentRegistry, mojMap ? "frozen" : "ca", false);
 
 				} catch (final Throwable tt) {
 					// Unable to unfreeze (i.e. 1.20.2, we only support the latest subversion)
 				}
 			}
-
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_20)) {
@@ -3610,6 +3648,15 @@ public final class Remain {
 	 */
 	public static boolean hasPlayerOpenSignMethod() {
 		return hasPlayerOpenSignMethod;
+	}
+
+	/**
+	 * Return true if the Player class has the openVirtualSign method (Paper 1.21.7+)
+	 *
+	 * @return
+	 */
+	public static boolean hasPlayerOpenVirtualSignMethod() {
+		return hasPlayerOpenVirtualSignMethod;
 	}
 }
 
