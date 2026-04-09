@@ -39,10 +39,9 @@ final class BukkitEnchantPacketListener extends PacketListener {
 	@Override
 	public void onRegister() {
 
-		// MC 1.21+ syncs enchantment registry (including description Component) to the client,
-		// so the client natively renders custom enchant names in the tooltip. Injecting fake
-		// lore would cause duplicates.
-		if (MinecraftVersion.atLeast(V.v1_21))
+		// MC 1.20.5+ uses data components with ItemEnchantments.addToTooltip() to natively
+		// render custom enchant names in the tooltip. Injecting fake lore would cause duplicates.
+		if (MinecraftVersion.atLeast(V.v1_21) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5))
 			return;
 
 		// To ensure, the client isn't trying to create an item with our fake enchantment lore
