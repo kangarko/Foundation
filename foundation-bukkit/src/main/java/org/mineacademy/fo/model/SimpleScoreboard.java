@@ -15,7 +15,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.BukkitPlugin;
 
@@ -23,12 +22,13 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * A simple way of rendering custom scoreboards for players with close to no flickering.
- * Using &c takes 2 characters. Since the text gets split two times, text with colors = (total - (2 * 2)) = (total - 4)
+ * A simple way of rendering custom scoreboards for players with zero flickering.
+ * Uses fixed invisible entries per line and updates only team prefix/suffix.
+ * Using &c takes 2 characters. Since the text gets split once, text with colors = (total - 2)
  * Maximum line lengths:
- * - 1.8: 66 with color, 70 without color
- * - 1.13: 98 with color, 104 without color
- * - 1.18: 32889 with color, 32895 without color
+ * - 1.8: 30 with color, 32 without color
+ * - 1.13: 126 with color, 128 without color
+ * - 1.18: 65532 with color, 65534 without color
  * Maximum title lengths:
  * - 1.8: 30 with color, 32 without color
  * - 1.13: 126 with color, 128 without color
@@ -42,6 +42,11 @@ public class SimpleScoreboard {
 	// ------------------------------------------------------------------------------------------------------------
 
 	private static final String COLOR_CHAR = "\u00A7";
+
+	/**
+	 * Pre-compiled pattern for stripping useless color codes before spaces in {@link #copyColors(String, int...)}
+	 */
+	private static final Pattern SPACE_COLOR_PATTERN = Pattern.compile("^( )+(" + COLOR_CHAR + ")");
 
 	/**
 	 * Unique chat color identifiers for specific team entries
@@ -59,7 +64,6 @@ public class SimpleScoreboard {
 	 */
 	private final boolean atLeast1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
 	private final boolean atLeast1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
-	private final boolean below1_13 = MinecraftVersion.olderThan(V.v1_13);
 
 	/**
 	 * Stored scoreboard lines
@@ -302,12 +306,9 @@ public class SimpleScoreboard {
 	 */
 	public final void addRows(final List<String> entries) {
 		ValidCore.checkBoolean(this.rows.size() + entries.size() <= 15, "You are trying to add too many rows (the limit is 15)");
-		final List<String> lines = new ArrayList<>();
 
 		for (final String line : entries)
-			lines.add(line == null ? "" : CompChatColor.translateColorCodes(line));
-
-		this.rows.addAll(lines);
+			this.rows.add(line == null ? "" : CompChatColor.translateColorCodes(line));
 	}
 
 	/**
@@ -319,7 +320,7 @@ public class SimpleScoreboard {
 	public final void setRow(final int index, final String value) {
 		ValidCore.checkBoolean(index < this.rows.size(), "The row for index " + index + " is currently not existing. Please use addRows()!");
 
-		this.rows.set(index, value == null ? "" : value);
+		this.rows.set(index, value == null ? "" : CompChatColor.translateColorCodes(value));
 	}
 
 	/**
@@ -453,7 +454,6 @@ public class SimpleScoreboard {
 	private void reloadEntries(final Player player) throws IllegalArgumentException {
 		final String colorizedTitle = CompChatColor.translateColorCodes(this.title);
 		final Scoreboard scoreboard = player.getScoreboard();
-		final List<String> rowsDone = new ArrayList<>();
 		Objective mainboard = scoreboard.getObjective("mainboard");
 
 		if (mainboard == null) {
@@ -467,64 +467,34 @@ public class SimpleScoreboard {
 			mainboard.setDisplayName(colorizedTitle);
 
 		for (int lineNumber = 0; lineNumber < 15; lineNumber++) {
-			final int scoreboardLineNumber = this.rows.size() - lineNumber;
-			Team line = scoreboard.getTeam("line" + scoreboardLineNumber);
+			final String entry = COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r";
+			Team line = scoreboard.getTeam("line" + lineNumber);
 
 			if (lineNumber < this.rows.size()) {
 
-				if (line == null)
-					line = scoreboard.registerNewTeam("line" + scoreboardLineNumber);
+				if (line == null) {
+					line = scoreboard.registerNewTeam("line" + lineNumber);
+					line.addEntry(entry);
+				}
 
 				final String scoreboardLineRaw = this.rows.get(lineNumber).replace("{player}", player.getName());
 				final String finishedRow = CompChatColor.translateColorCodes(this.replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
-				final boolean rowUsed = rowsDone.contains(finishedRow);
-				final int[] splitPoints = { this.atLeast1_13 ? 64 : 16, this.atLeast1_18 ? 32767 : 40, this.atLeast1_13 ? 64 : 16 };
+				final int maxLength = this.atLeast1_18 ? 32767 : (this.atLeast1_13 ? 64 : 16);
+				final List<String> parts = this.copyColors(finishedRow, maxLength, maxLength);
 
-				if (rowUsed)
-					splitPoints[1] = splitPoints[1] - 2;
-
-				final List<String> copy = this.copyColors(finishedRow, splitPoints);
-				final String prefix = copy.isEmpty() ? "" : copy.get(0);
-				String entry = copy.size() < 2 ? COLOR_CHAR + COLORS[lineNumber] + COLOR_CHAR + "r" : copy.get(1) + (rowUsed ? COLOR_CHAR + COLORS[lineNumber] : "");
-
-				if (this.below1_13 && entry.length() > 16)
-					entry = entry.substring(0, 16);
-
-				final String suffix = copy.size() < 3 ? "" : copy.get(2);
-				String oldEntry = null;
+				final String prefix = parts.isEmpty() ? "" : parts.get(0);
+				final String suffix = parts.size() < 2 ? "" : parts.get(1);
 
 				if (!line.getPrefix().equals(prefix))
 					line.setPrefix(prefix);
 
-				if (line.getEntries().size() > 1)
-					for (final String teamEntry : line.getEntries()) {
-						line.removeEntry(teamEntry);
-						scoreboard.resetScores(teamEntry);
-					}
-
-				if (!line.getEntries().contains(entry)) {
-					if (!line.getEntries().isEmpty()) {
-						oldEntry = new ArrayList<>(line.getEntries()).get(0);
-
-						line.removeEntry(oldEntry);
-					}
-
-					line.addEntry(entry);
-				}
-
 				if (!line.getSuffix().equals(suffix))
 					line.setSuffix(suffix);
 
-				if (oldEntry != null)
-					scoreboard.resetScores(oldEntry);
-
-				mainboard.getScore(entry).setScore(scoreboardLineNumber);
-				rowsDone.add(finishedRow);
+				mainboard.getScore(entry).setScore(this.rows.size() - lineNumber);
 
 			} else if (line != null) {
-				for (final String oldEntry : line.getEntries())
-					scoreboard.resetScores(oldEntry);
-
+				scoreboard.resetScores(entry);
 				line.unregister();
 			}
 		}
@@ -537,14 +507,13 @@ public class SimpleScoreboard {
 	 */
 	private List<String> copyColors(String text, final int... splitPoints) {
 		// Removes useless colors in front of only spaces (e.g. [§a     §aText] becomes [     §aText])
-		final Pattern spaceMatcher = Pattern.compile("^( )+(" + COLOR_CHAR + ")");
 		final List<String> splitText = new ArrayList<>();
 
 		for (final int splitPoint : splitPoints) {
 			final String lastEntry = splitText.isEmpty() ? "" : splitText.get(splitText.size() - 1);
 			final String lastColor = CompChatColor.getLastColors(lastEntry);
 
-			final boolean addColor = !text.startsWith(COLOR_CHAR) && !lastColor.isEmpty() && !spaceMatcher.matcher(text).find();
+			final boolean addColor = !text.startsWith(COLOR_CHAR) && !lastColor.isEmpty() && !SPACE_COLOR_PATTERN.matcher(text).find();
 			final int realSplitPoint = Math.min(splitPoint - (addColor ? 2 : 0), text.length());
 			String line = (addColor ? lastColor : "") + text.substring(0, realSplitPoint);
 
