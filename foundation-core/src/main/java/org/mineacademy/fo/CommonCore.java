@@ -816,10 +816,10 @@ public abstract class CommonCore {
 	 */
 	public static final Pattern compilePattern(final String regex) {
 		if (Platform.getPlugin().isRegexCaseInsensitive())
-			return Pattern.compile(regex, Platform.getPlugin().isRegexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : Pattern.CASE_INSENSITIVE);
+			return Pattern.compile(regex, Platform.getPlugin().isRegexUnicode() ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.UNICODE_CHARACTER_CLASS : Pattern.CASE_INSENSITIVE);
 
 		else
-			return Platform.getPlugin().isRegexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE) : Pattern.compile(regex);
+			return Platform.getPlugin().isRegexUnicode() ? Pattern.compile(regex, Pattern.UNICODE_CASE | Pattern.UNICODE_CHARACTER_CLASS) : Pattern.compile(regex);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
