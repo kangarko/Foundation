@@ -918,7 +918,15 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				result.append(" ");
 		}
 
-		return result.toString();
+		// Strip any remaining § characters that were not converted to MiniMessage tags
+		// (e.g. inside URLs like "...§dl=1" or followed by invalid codes like "§z").
+		// MiniMessage throws on any raw § so these must be removed.
+		String output = result.toString();
+
+		if (output.contains("§"))
+			output = output.replace("§", "");
+
+		return output;
 	}
 
 	/**
