@@ -39,6 +39,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.title.TitlePart;
@@ -544,7 +545,10 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param component
 	 */
 	public final void sendMessageWithPrefix(final SimpleComponent prefix, SimpleComponent component) {
-		final String plainMessage = component.toPlain(this);
+
+		// Build adventure component once to avoid resolving conditional parts twice
+		final Component builtComponent = component.toAdventure(this);
+		final String plainMessage = PlainTextComponentSerializer.plainText().serialize(builtComponent);
 
 		if (plainMessage.equals("none"))
 			return;
@@ -578,7 +582,12 @@ public abstract class FoundationPlayer implements Audience {
 			this.sendMessage(SimpleComponent.fromSection(centeredLegacyMessage));
 
 		} else if (!plainMessage.equals("none"))
-			this.sendMessage(component.toAdventure(this));
+
+			// Reuse the already-built adventure component when no prefix was prepended
+			if (prefix == null)
+				this.sendMessage(builtComponent);
+			else
+				this.sendMessage(component.toAdventure(this));
 	}
 
 	/**
