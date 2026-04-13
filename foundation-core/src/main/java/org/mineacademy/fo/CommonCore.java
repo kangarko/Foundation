@@ -1730,14 +1730,14 @@ public abstract class CommonCore {
 	 * @return
 	 */
 	public static Runnable wrapRunnableInExceptionCatcher(@NonNull final Runnable original) {
-		final StackTraceElement[] outerElements = new Throwable().getStackTrace();
+		final Throwable outerThrowable = new Throwable();
 
 		return () -> {
 			try {
 				original.run();
 
 			} catch (final Throwable throwable) {
-				logCombinedError(throwable, outerElements);
+				logCombinedError(throwable, outerThrowable.getStackTrace());
 			}
 		};
 	}
