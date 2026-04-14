@@ -116,6 +116,7 @@ public final class HookManager {
 	// Store hook classes separately below, avoiding no such method/field errors
 	// ------------------------------------------------------------------------------------------------------------
 
+	private static AdvancedBanHook advancedBanHook;
 	private static AdvancedVanishHook advancedVanishHook;
 	private static AuthMeHook authMeHook;
 	private static BanManagerHook banManagerHook;
@@ -159,6 +160,9 @@ public final class HookManager {
 	 * Detect various plugins and load their methods into this library so you can use it later.
 	 */
 	public static void loadDependencies() {
+
+		if (Platform.isPluginInstalled("AdvancedBan"))
+			advancedBanHook = new AdvancedBanHook();
 
 		if (Platform.isPluginInstalled("AdvancedVanish"))
 			advancedVanishHook = new AdvancedVanishHook();
@@ -332,6 +336,15 @@ public final class HookManager {
 	// ------------------------------------------------------------------------------------------------------------
 	// Methods for determining which plugins were loaded after you call the load method
 	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Is AdvancedBan loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isAdvancedBanLoaded() {
+		return advancedBanHook != null;
+	}
 
 	/**
 	 * Is AdvancedVanish loaded?
@@ -962,13 +975,16 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return true if the player is muted in BanManager, CMI, EssentialsX
-	 * or LiteBans, or false if none of these plugins are present.
+	 * Return true if the player is muted in AdvancedBan, BanManager, CMI,
+	 * EssentialsX or LiteBans, or false if none of these plugins are present.
 	 *
 	 * @param uniqueId the player's unique id to check.
 	 * @return
 	 */
 	public static boolean isMuted(final UUID uniqueId) {
+		if (isAdvancedBanLoaded() && advancedBanHook.isMuted(uniqueId))
+			return true;
+
 		if (isEssentialsLoaded() && essentialsHook.isMuted(uniqueId))
 			return true;
 
@@ -993,13 +1009,16 @@ public final class HookManager {
 	 * NOTE that the player can be muted and the unmute time can be 0
 	 * for plugins who do not report such value.
 	 *
-	 * Supported plugins for mute: Essentials, CMI, BanManager, LiteBans.
+	 * Supported plugins for mute: AdvancedBan, Essentials, CMI, BanManager, LiteBans.
 	 * Whereof only CMI and LiteBans report the unmute time as well.
 	 *
 	 * @param uniqueId
 	 * @return
 	 */
 	public static Tuple<Boolean, Long> getUnmuteTime(final UUID uniqueId) {
+		if (isAdvancedBanLoaded() && advancedBanHook.isMuted(uniqueId))
+			return new Tuple<>(true, 0L);
+
 		if (isEssentialsLoaded() && essentialsHook.isMuted(uniqueId))
 			return new Tuple<>(true, 0L);
 
@@ -1962,6 +1981,31 @@ public final class HookManager {
 // and getting data from them. Due to often changes we do not keep these documented.
 //
 // ------------------------------------------------------------------------------------------------------------
+
+class AdvancedBanHook {
+
+	/*
+	 * Return true if the given player is muted.
+	 */
+	boolean isMuted(final UUID uniqueId) {
+		try {
+			final Class<?> managerClass = ReflectionUtil.lookupClass("me.leoko.advancedban.manager.PunishmentManager");
+			final Method getMethod = ReflectionUtil.getMethod(managerClass, "get");
+			final Object manager = ReflectionUtil.invoke(getMethod, null);
+
+			final Method isMutedMethod = ReflectionUtil.getMethod(managerClass, "isMuted", String.class);
+			final String dashlessUuid = uniqueId.toString().replace("-", "");
+
+			return ReflectionUtil.invoke(isMutedMethod, manager, dashlessUuid);
+
+		} catch (final Throwable t) {
+			if (!t.toString().contains("Could not find class"))
+				CommonCore.log("Unable to check if " + uniqueId + " is muted at AdvancedBan. Is the API hook outdated? Got: " + t);
+
+			return false;
+		}
+	}
+}
 
 class AdvancedVanishHook {
 
