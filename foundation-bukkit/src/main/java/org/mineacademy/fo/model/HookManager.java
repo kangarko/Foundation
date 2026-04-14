@@ -116,6 +116,7 @@ public final class HookManager {
 	// Store hook classes separately below, avoiding no such method/field errors
 	// ------------------------------------------------------------------------------------------------------------
 
+	private static AdvancedBanHook advancedBanHook;
 	private static AdvancedVanishHook advancedVanishHook;
 	private static AuthMeHook authMeHook;
 	private static BanManagerHook banManagerHook;
@@ -159,6 +160,9 @@ public final class HookManager {
 	 * Detect various plugins and load their methods into this library so you can use it later.
 	 */
 	public static void loadDependencies() {
+
+		if (Platform.isPluginInstalled("AdvancedBan"))
+			advancedBanHook = new AdvancedBanHook();
 
 		if (Platform.isPluginInstalled("AdvancedVanish"))
 			advancedVanishHook = new AdvancedVanishHook();
@@ -332,6 +336,15 @@ public final class HookManager {
 	// ------------------------------------------------------------------------------------------------------------
 	// Methods for determining which plugins were loaded after you call the load method
 	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Is AdvancedBan loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isAdvancedBanLoaded() {
+		return advancedBanHook != null;
+	}
 
 	/**
 	 * Is AdvancedVanish loaded?
@@ -962,13 +975,16 @@ public final class HookManager {
 	}
 
 	/**
-	 * Return true if the player is muted in BanManager, CMI, EssentialsX
+	 * Return true if the player is muted in AdvancedBan, BanManager, CMI, EssentialsX
 	 * or LiteBans, or false if none of these plugins are present.
 	 *
 	 * @param uniqueId the player's unique id to check.
 	 * @return
 	 */
 	public static boolean isMuted(final UUID uniqueId) {
+		if (isAdvancedBanLoaded() && advancedBanHook.isMuted(uniqueId))
+			return true;
+
 		if (isEssentialsLoaded() && essentialsHook.isMuted(uniqueId))
 			return true;
 
@@ -993,13 +1009,20 @@ public final class HookManager {
 	 * NOTE that the player can be muted and the unmute time can be 0
 	 * for plugins who do not report such value.
 	 *
-	 * Supported plugins for mute: Essentials, CMI, BanManager, LiteBans.
-	 * Whereof only CMI and LiteBans report the unmute time as well.
+	 * Supported plugins for mute: AdvancedBan, Essentials, CMI, BanManager, LiteBans.
+	 * Whereof only AdvancedBan, CMI and LiteBans report the unmute time as well.
 	 *
 	 * @param uniqueId
 	 * @return
 	 */
 	public static Tuple<Boolean, Long> getUnmuteTime(final UUID uniqueId) {
+		if (isAdvancedBanLoaded()) {
+			final long unmuteTime = advancedBanHook.getUnmuteTime(uniqueId);
+
+			if (unmuteTime != 0)
+				return new Tuple<>(true, unmuteTime);
+		}
+
 		if (isEssentialsLoaded() && essentialsHook.isMuted(uniqueId))
 			return new Tuple<>(true, 0L);
 
@@ -2816,9 +2839,14 @@ final class PlaceholderAPIHook {
 				if (value != null) {
 					value = Matcher.quoteReplacement(CompChatColor.translateColorCodes(value));
 
-					final String lastColors = backSpace ? CompChatColor.getLastColors(value) : "";
+					String lastColors = backSpace ? CompChatColor.getLastColors(value)
+							.replace(CompChatColor.UNDERLINE.toString(), "")
+							.replace(CompChatColor.STRIKETHROUGH.toString(), "")
+							.replace(CompChatColor.MAGIC.toString(), "") : "";
 
-					message = message.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? "" : (frontSpace ? " " : "") + value + (backSpace ? CompChatColor.RESET + lastColors + " " : ""));
+					message = message.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? ""
+							: (frontSpace && !value.startsWith(" ") ? " " : "") + value
+							+ (backSpace && !value.endsWith(" ") ? CompChatColor.RESET + lastColors + " " : ""));
 				}
 			}
 		}
@@ -3051,7 +3079,12 @@ final class PlaceholderAPIHook {
 			final boolean backSpace = identifier.endsWith("+");
 
 			identifier = frontSpace ? identifier.substring(1) : identifier;
-			identifier = backSpace ? identifier.substring(0, identifier.length() - 1) : identifier;
+
+			if (!identifier.isEmpty() && backSpace)
+				identifier = identifier.substring(0, identifier.length() - 1);
+
+			if (identifier.isEmpty())
+				return null;
 
 			try {
 				for (final SimpleExpansion expansion : Variables.getExpansions()) {
@@ -3059,9 +3092,13 @@ final class PlaceholderAPIHook {
 
 					if (value != null) {
 						final boolean emptyColorless = CompChatColor.stripColorCodes(value).isEmpty();
-						final String lastColors = backSpace && !emptyColorless ? CompChatColor.getLastColors(value) : "";
+						String lastColors = backSpace && !emptyColorless ? CompChatColor.getLastColors(value)
+								.replace(CompChatColor.UNDERLINE.toString(), "")
+								.replace(CompChatColor.STRIKETHROUGH.toString(), "")
+								.replace(CompChatColor.MAGIC.toString(), "") : "";
 
-						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value + (!value.isEmpty() && backSpace && !emptyColorless ? CompChatColor.RESET + lastColors + " " : "");
+						return (!value.isEmpty() && frontSpace && !emptyColorless ? " " : "") + value
+								+ (!value.isEmpty() && backSpace && !emptyColorless ? CompChatColor.RESET + lastColors + " " : "");
 					}
 				}
 
@@ -4158,6 +4195,51 @@ class DiscordSRVHook {
 		}
 
 		return true;
+	}
+}
+
+class AdvancedBanHook {
+
+	boolean isMuted(final UUID uniqueId) {
+		return getUnmuteTime(uniqueId) != 0;
+	}
+
+	long getUnmuteTime(final UUID uniqueId) {
+		try {
+			final Player player = Bukkit.getPlayer(uniqueId);
+
+			if (player == null)
+				return 0;
+
+			// Use AdvancedBan's own UUID resolver to get the correct identifier.
+			// In online mode this returns the dashless UUID, in offline mode it returns the player name.
+			final Class<?> uuidManagerClass = ReflectionUtil.lookupClass("me.leoko.advancedban.manager.UUIDManager");
+			final Object uuidManager = ReflectionUtil.invokeStatic(uuidManagerClass, "get");
+			final Method getUUID = ReflectionUtil.getMethod(uuidManagerClass, "getUUID", String.class);
+			final String abIdentifier = ReflectionUtil.invoke(getUUID, uuidManager, player.getName());
+
+			if (abIdentifier == null)
+				return 0;
+
+			final Class<?> managerClass = ReflectionUtil.lookupClass("me.leoko.advancedban.manager.PunishmentManager");
+			final Object manager = ReflectionUtil.invokeStatic(managerClass, "get");
+			final Method getMute = ReflectionUtil.getMethod(managerClass, "getMute", String.class);
+			final Object punishment = ReflectionUtil.invoke(getMute, manager, abIdentifier);
+
+			if (punishment == null)
+				return 0;
+
+			final Method getEnd = ReflectionUtil.getMethod(punishment.getClass(), "getEnd");
+			final long end = ReflectionUtil.invoke(getEnd, punishment);
+
+			return end == -1 ? -1 : end;
+
+		} catch (final Throwable t) {
+			if (!t.toString().contains("Could not find class"))
+				CommonCore.log("Unable to check if " + uniqueId + " is muted at AdvancedBan. Is the API hook outdated? Got: " + t);
+
+			return 0;
+		}
 	}
 }
 
