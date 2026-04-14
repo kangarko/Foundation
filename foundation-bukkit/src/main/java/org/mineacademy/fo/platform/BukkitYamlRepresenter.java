@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.settings.YamlConfig;
 import org.snakeyaml.engine.v2.api.DumpSettings;
@@ -43,6 +44,14 @@ class BukkitYamlRepresenter extends YamlConfig.YamlRepresenter {
 				values.putAll(serializable.serialize());
 
 			} catch (final Throwable ex) {
+				if (ex instanceof IllegalStateException && ex.getMessage() != null && ex.getMessage().contains("not registered")) {
+					CommonCore.warning("Failed to serialize " + serializable.getClass().getSimpleName()
+							+ ", typically caused by a custom datapack/resource pack using unregistered registry entries."
+							+ " This component will be skipped during save. Error: " + ex.getMessage());
+
+					return super.representData(new LinkedHashMap<>());
+				}
+
 				throw new FoException(ex, "Error serializing Bukkit's " + serializable.getClass().getSimpleName() + " from data " + data);
 			}
 
