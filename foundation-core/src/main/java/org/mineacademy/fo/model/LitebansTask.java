@@ -4,11 +4,11 @@ import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.scheduler.BukkitRunnable;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 
@@ -17,17 +17,20 @@ import lombok.Getter;
 /**
  * A task that fetches mutes from LiteBans and caches them in memory.
  *
- * @deprecated internal use only, see {@link HookManager} for public API
+ * Works on all platforms (Bukkit, BungeeCord, Velocity).
+ *
+ * @deprecated internal use only, on Bukkit see HookManager for public API
  */
 @Deprecated
-public final class LitebansTask extends BukkitRunnable {
+public final class LitebansTask implements Runnable {
 
 	@Getter
 	private final static LitebansTask instance = new LitebansTask();
 
-	private final Map<String, Long> mutedPlayersByUniqueId = new HashMap<>();
+	private volatile Map<String, Long> mutedPlayersByUniqueId = Collections.emptyMap();
 	private Object apiInstance;
 	private Method methodPrepareStatement;
+	private volatile boolean cancelled = false;
 
 	@Deprecated
 	LitebansTask() {
@@ -54,10 +57,10 @@ public final class LitebansTask extends BukkitRunnable {
 	@Deprecated
 	@Override
 	public void run() {
-		if (this.methodPrepareStatement == null)
+		if (this.cancelled || this.methodPrepareStatement == null)
 			return;
 
-		this.mutedPlayersByUniqueId.clear();
+		final Map<String, Long> freshMap = new HashMap<>();
 
 		try (PreparedStatement statement = ReflectionUtil.invoke(this.methodPrepareStatement, this.apiInstance, "SELECT * FROM {mutes}")) {
 			statement.execute();
@@ -72,7 +75,7 @@ public final class LitebansTask extends BukkitRunnable {
 						if (until > 0 && until < System.currentTimeMillis())
 							continue;
 
-						this.mutedPlayersByUniqueId.put(uuid, until);
+						freshMap.put(uuid, until);
 					}
 				}
 			}
@@ -90,13 +93,11 @@ public final class LitebansTask extends BukkitRunnable {
 			} else {
 				CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
 
-				try {
-					this.cancel();
-				} catch (final Throwable tt) {
-					// Not scheduled yet, ignore
-				}
+				this.cancelled = true;
 			}
 		}
+
+		this.mutedPlayersByUniqueId = freshMap;
 	}
 
 	@Deprecated
