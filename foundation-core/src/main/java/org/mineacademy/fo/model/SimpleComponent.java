@@ -520,7 +520,14 @@ public final class SimpleComponent implements ConfigSerializable {
 
 		copy.add(ConditionalComponent.fromPlain(text));
 
-		return new SimpleComponent(copy, Style.empty());
+		Style resetStyle = this.lastStyle != null && this.lastStyle.color() != null
+				? Style.style(this.lastStyle.color())
+				: Style.empty();
+
+		for (final TextDecoration decoration : TextDecoration.values())
+			resetStyle = resetStyle.decoration(decoration, State.FALSE);
+
+		return new SimpleComponent(copy, resetStyle);
 	}
 
 	/**
