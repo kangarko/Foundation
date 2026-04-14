@@ -4034,7 +4034,12 @@ class CitizensHook {
 
 	Entity getNPCTarget(final Entity entity) {
 		try {
-			final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+			final NPCRegistry reg = CitizensAPI.getNPCRegistry();
+
+			if (reg == null)
+				return null;
+
+			final NPC npc = reg.getNPC(entity);
 
 			if (npc != null) {
 				final EntityTarget target = npc.getNavigator().getEntityTarget();
@@ -4052,7 +4057,12 @@ class CitizensHook {
 
 	void destroyNPC(final Entity entity) {
 		try {
-			final NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+			final NPCRegistry reg = CitizensAPI.getNPCRegistry();
+
+			if (reg == null)
+				return;
+
+			final NPC npc = reg.getNPC(entity);
 
 			if (npc != null)
 				npc.destroy();

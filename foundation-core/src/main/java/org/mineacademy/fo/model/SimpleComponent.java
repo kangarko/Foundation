@@ -519,8 +519,6 @@ public final class SimpleComponent implements ConfigSerializable {
 	public SimpleComponent appendPlainReset(final String text) {
 		final List<ConditionalComponent> copy = new ArrayList<>(this.subcomponents);
 
-		copy.add(ConditionalComponent.fromPlain(text));
-
 		Style resetStyle = this.lastStyle != null && this.lastStyle.color() != null
 				? Style.style(this.lastStyle.color())
 				: Style.empty();
@@ -539,6 +537,8 @@ public final class SimpleComponent implements ConfigSerializable {
 		resetStyle = resetStyle.decoration(TextDecoration.UNDERLINED, State.FALSE);
 		resetStyle = resetStyle.decoration(TextDecoration.STRIKETHROUGH, State.FALSE);
 		resetStyle = resetStyle.decoration(TextDecoration.OBFUSCATED, State.FALSE);
+
+		copy.add(new ConditionalComponent(Component.text(text, resetStyle)));
 
 		return new SimpleComponent(copy, resetStyle);
 	}
