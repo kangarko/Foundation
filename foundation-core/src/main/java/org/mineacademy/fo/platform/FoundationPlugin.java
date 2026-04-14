@@ -16,6 +16,7 @@ import org.mineacademy.fo.filter.Filter;
 import org.mineacademy.fo.library.Library;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
+import org.mineacademy.fo.model.LitebansTask;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -238,6 +239,9 @@ public interface FoundationPlugin {
 
 		Platform.runTaskTimerAsync(20, SimpleDatabase.RowQueueWriter.getInstance());
 		Platform.runTaskTimerAsync(20, BossBarTask.getInstance());
+
+		if (Platform.isPluginInstalled("LiteBans"))
+			Platform.runTaskTimerAsync(20 * 2, LitebansTask.getInstance());
 
 		Platform.runTaskAsync(new BuiltByBitUpdateCheck());
 	}
