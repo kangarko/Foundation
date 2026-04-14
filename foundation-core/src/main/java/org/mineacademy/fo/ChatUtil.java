@@ -245,7 +245,7 @@ public final class ChatUtil {
 			}
 
 			// Handle other color codes like &x or §x
-			else if (!foundFirstLetter && (letter == '&' || letter == '§')) {
+			else if (!foundFirstLetter && (letter == '&' || letter == CompChatColor.COLOR_CHAR)) {
 				result.append(letter);
 
 				if (i + 1 < message.length())

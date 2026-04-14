@@ -125,7 +125,7 @@ public abstract class FoundationPlayer implements Audience {
 			command = command.charAt(0) == '/' && command.charAt(1) != '/' ? command.substring(1) : command;
 
 			if (this.isPlayer())
-				this.performPlayerCommand0(command.replace("§", "&"));
+				this.performPlayerCommand0(command.replace(String.valueOf(CompChatColor.COLOR_CHAR), "&"));
 			else
 				Platform.dispatchConsoleCommand(this, command);
 		}

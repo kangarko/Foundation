@@ -915,6 +915,25 @@ public final class SimpleComponent implements ConfigSerializable {
 		return text;
 	}
 
+	/**
+	 * Return true if any subcomponent has a receiver-dependent condition
+	 * (viewPermission, viewCondition, or viewVariable).
+	 *
+	 * When false, {@link #toAdventure(FoundationPlayer)} returns the same
+	 * result regardless of receiver, so callers can build once and reuse.
+	 *
+	 * @return
+	 */
+	public boolean hasReceiverConditions() {
+		for (final ConditionalComponent part : this.subcomponents)
+			if ((part.viewPermission != null && !part.viewPermission.isEmpty())
+					|| (part.viewCondition != null && !part.viewCondition.isEmpty())
+					|| part.viewVariable != null)
+				return true;
+
+		return false;
+	}
+
 	/*
 	 * Helper method to modify the last component.
 	 */
@@ -1090,12 +1109,24 @@ public final class SimpleComponent implements ConfigSerializable {
 			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>"));
 
 		} catch (final Throwable t) {
-			if (MinecraftVersion.equals(V.v1_16))
-				CommonCore.throwErrorUnreported(t, "Error parsing mini message tags in: " + message);
-			else
-				CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
+			if (t.getMessage() != null && t.getMessage().contains("Legacy formatting codes")) {
+				try {
+					mini = MINIMESSAGE_PARSER.deserialize(message.replace(String.valueOf(CompChatColor.COLOR_CHAR), "").replace("<reset>", "<#180f0d>"));
 
-			return null;
+				} catch (final Throwable t2) {
+					CommonCore.throwErrorUnreported(t2, "Error parsing mini message tags in: " + message);
+
+					return null;
+				}
+
+			} else {
+				if (MinecraftVersion.equals(V.v1_16))
+					CommonCore.throwErrorUnreported(t, "Error parsing mini message tags in: " + message);
+				else
+					CommonCore.throwError(t, "Error parsing mini message tags in: " + message);
+
+				return null;
+			}
 		}
 
 		mini = resetColors(mini);

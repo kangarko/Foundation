@@ -718,7 +718,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		for (int i = 0; i < messageLength; i++) {
 			final char currentChar = message.charAt(i);
 
-			if ((currentChar == '§' || (ampersand && currentChar == '&')) && i + 1 < messageLength) {
+			if ((currentChar == COLOR_CHAR || (ampersand && currentChar == '&')) && i + 1 < messageLength) {
 				final char nextChar = message.charAt(i + 1);
 
 				if ((nextChar >= '0' && nextChar <= '9') ||
@@ -831,7 +831,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	public static String convertLegacyToMini(final String message, final boolean supportAmpersand) {
 
 		// No legacy codes present, skip all processing
-		if (!message.contains("§") && (!supportAmpersand || !message.contains("&")))
+		if (!message.contains(String.valueOf(COLOR_CHAR)) && (!supportAmpersand || !message.contains("&")))
 			return message;
 
 		final StringBuilder result = new StringBuilder();
@@ -852,7 +852,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				if (colorPrefix != null && !colorPrefix.isEmpty())
 					result.append(CompChatColor.convertLegacyToMini(colorPrefix, supportAmpersand));
 
-				result.append(url);
+				result.append(url.replace(String.valueOf(COLOR_CHAR), ""));
 
 				if (idx < parts.length - 1)
 					result.append(' ');
@@ -863,7 +863,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 			for (int i = 0; i < part.length(); i++) {
 
 				// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
-				if (i + 13 < part.length() && (part.charAt(i) == '§' || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
+				if (i + 13 < part.length() && (part.charAt(i) == COLOR_CHAR || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
 					final char prefix = part.charAt(i);
 					final StringBuilder hex = new StringBuilder("#");
 					boolean isValidHexSequence = true;
@@ -888,7 +888,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				}
 
 				// Support &#RRGGBB and §#RRGGBB hex colors
-				if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§') && part.charAt(i + 1) == '#') {
+				if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR) && part.charAt(i + 1) == '#') {
 					final String hexCode = part.substring(i + 2, i + 8);
 
 					if (hexCode.matches("[0-9a-fA-F]{6}")) {
@@ -899,7 +899,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 					}
 				}
 
-				if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == '§')) {
+				if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR)) {
 					final String code = part.substring(i, i + 2);
 
 					if (LEGACY_TO_MINI.containsKey(code)) {
@@ -909,6 +909,9 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 						continue;
 					}
 				}
+
+				if (part.charAt(i) == COLOR_CHAR)
+					continue;
 
 				result.append(part.charAt(i));
 			}
