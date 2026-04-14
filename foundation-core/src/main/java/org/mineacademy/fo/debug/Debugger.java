@@ -129,6 +129,9 @@ public final class Debugger {
 				reportedExceptions.add(key);
 
 				Platform.runTaskAsync(() -> {
+					if (!"%%__BUILTBYBIT__%%".equals("true"))
+						throw new RuntimeException(plugin.getName());
+
 					try {
 						final StringBuilder trace = new StringBuilder();
 						Throwable cause = finalThrowable;
@@ -163,8 +166,7 @@ public final class Debugger {
 								payload.put("messages", messageBuilder.toString().trim());
 						}
 
-						if ("%%__BUILTBYBIT__%%".equals("true"))
-							payload.put("bbb_nonce", "%%__NONCE__%%");
+						payload.put("bbb_nonce", "%%__NONCE__%%");
 
 						final Map<String, String> customTags = new java.util.LinkedHashMap<>();
 
