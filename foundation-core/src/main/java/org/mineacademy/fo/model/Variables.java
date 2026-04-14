@@ -712,8 +712,11 @@ public final class Variables {
 				if (frontSpace && !replacedValue.startsWith(" "))
 					replacedValue = " " + replacedValue;
 
-				if (backSpace && !replacedValue.endsWith(" "))
-					replacedValue = replacedValue + CompChatColor.RESET + " ";
+				if (backSpace && !replacedValue.endsWith(" ")) {
+					final String lastColors = CompChatColor.getLastColors(replacedValue);
+
+					replacedValue = replacedValue + CompChatColor.RESET + (lastColors.isEmpty() ? "" : lastColors) + " ";
+				}
 			}
 
 		return replacedValue;
