@@ -508,9 +508,10 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Append plain text without inheriting the current component's style.
-	 * Used for neutral separator spaces (e.g. the '+' operator) that must
-	 * not carry decorations like underline or bold from the preceding value.
+	 * Append plain text that preserves color, bold, and italic from the
+	 * preceding style but resets underline, strikethrough, and obfuscated.
+	 * Used for the '+' variable suffix space that should not show visible
+	 * formatting artifacts on whitespace.
 	 *
 	 * @param text
 	 * @return
@@ -524,8 +525,20 @@ public final class SimpleComponent implements ConfigSerializable {
 				? Style.style(this.lastStyle.color())
 				: Style.empty();
 
-		for (final TextDecoration decoration : TextDecoration.values())
-			resetStyle = resetStyle.decoration(decoration, State.FALSE);
+		if (this.lastStyle != null) {
+			final State bold = this.lastStyle.decoration(TextDecoration.BOLD);
+			final State italic = this.lastStyle.decoration(TextDecoration.ITALIC);
+
+			if (bold == State.TRUE)
+				resetStyle = resetStyle.decoration(TextDecoration.BOLD, State.TRUE);
+
+			if (italic == State.TRUE)
+				resetStyle = resetStyle.decoration(TextDecoration.ITALIC, State.TRUE);
+		}
+
+		resetStyle = resetStyle.decoration(TextDecoration.UNDERLINED, State.FALSE);
+		resetStyle = resetStyle.decoration(TextDecoration.STRIKETHROUGH, State.FALSE);
+		resetStyle = resetStyle.decoration(TextDecoration.OBFUSCATED, State.FALSE);
 
 		return new SimpleComponent(copy, resetStyle);
 	}
