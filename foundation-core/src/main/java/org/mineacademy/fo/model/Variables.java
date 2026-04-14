@@ -513,11 +513,14 @@ public final class Variables {
 			frontSpace = true;
 		}
 
-		if (variable.charAt(variable.length() - 1) == '+') {
+		if (!variable.isEmpty() && variable.charAt(variable.length() - 1) == '+') {
 			variable = variable.substring(0, variable.length() - 1);
 
 			backSpace = true;
 		}
+
+		if (variable.isEmpty())
+			return null;
 
 		for (final Map.Entry<String, Object> entry : this.placeholdersV2.entrySet()) {
 			final String key = entry.getKey();
@@ -607,13 +610,14 @@ public final class Variables {
 			frontSpace = true;
 		}
 
-		final int length = variable.length();
-
-		if (variable.charAt(length - 1) == '+') {
+		if (!variable.isEmpty() && variable.charAt(variable.length() - 1) == '+') {
 			variable = variable.substring(0, variable.length() - 1);
 
 			backSpace = true;
 		}
+
+		if (variable.isEmpty())
+			return null;
 
 		for (final Map.Entry<String, Object> entry : this.placeholdersV2.entrySet()) {
 			final String key = entry.getKey();
@@ -713,7 +717,10 @@ public final class Variables {
 					replacedValue = " " + replacedValue;
 
 				if (backSpace && !replacedValue.endsWith(" ")) {
-					final String lastColors = CompChatColor.getLastColors(replacedValue);
+					String lastColors = CompChatColor.getLastColors(replacedValue)
+							.replace(CompChatColor.UNDERLINE.toString(), "")
+							.replace(CompChatColor.STRIKETHROUGH.toString(), "")
+							.replace(CompChatColor.MAGIC.toString(), "");
 
 					replacedValue = replacedValue + CompChatColor.RESET + lastColors + " ";
 				}
