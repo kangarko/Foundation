@@ -717,7 +717,34 @@ public final class Variables {
 					replacedValue = " " + replacedValue;
 
 				if (backSpace && !replacedValue.endsWith(" ")) {
-					String lastColors = CompChatColor.getLastColors(replacedValue)
+					// Forward-scan to collect all active color and formatting codes from the prefix
+					// We cannot use getLastColors() here because it stops at the first color code
+					// when scanning backward, losing format codes (e.g. bold) that appear before the color
+					final String translated = CompChatColor.translateColorCodes(replacedValue);
+					String activeColor = "";
+					final StringBuilder activeFormats = new StringBuilder();
+
+					for (int i = 0; i < translated.length() - 1; i++) {
+						if (translated.charAt(i) == CompChatColor.COLOR_CHAR) {
+							final char c = translated.charAt(i + 1);
+							final CompChatColor color = CompChatColor.getByChar(c);
+
+							if (color != null) {
+								if (color.equals(CompChatColor.RESET)) {
+									activeColor = "";
+									activeFormats.setLength(0);
+								} else if (color.isColor()) {
+									activeColor = color.toString();
+								} else if (activeFormats.indexOf(color.toString()) == -1) {
+									activeFormats.append(color.toString());
+								}
+
+								i++;
+							}
+						}
+					}
+
+					final String lastColors = (activeColor + activeFormats.toString())
 							.replace(CompChatColor.UNDERLINE.toString(), "")
 							.replace(CompChatColor.STRIKETHROUGH.toString(), "")
 							.replace(CompChatColor.MAGIC.toString(), "");
