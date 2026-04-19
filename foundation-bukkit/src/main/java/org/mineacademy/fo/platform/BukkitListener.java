@@ -23,6 +23,7 @@ import org.mineacademy.fo.Messenger;
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
+import org.mineacademy.fo.model.LitebansTask;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.remain.CompMetadata;
@@ -53,6 +54,7 @@ final class BukkitListener implements Listener {
 	public void onQuit(final PlayerQuitEvent event) {
 		final Player player = event.getPlayer();
 
+		LitebansTask.getInstance().onPlayerQuit(player.getUniqueId());
 		SimpleScoreboard.clearBoardsFor(player);
 		Visualizer.stopVisualizing(player);
 	}
@@ -220,6 +222,8 @@ final class BukkitListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onJoin(final PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
+
+		LitebansTask.getInstance().onPlayerJoin(player.getUniqueId());
 
 		final FoundationPlayer audience = Platform.toPlayer(player);
 

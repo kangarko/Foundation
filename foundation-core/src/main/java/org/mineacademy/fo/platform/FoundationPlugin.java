@@ -241,7 +241,7 @@ public interface FoundationPlugin {
 		Platform.runTaskTimerAsync(20, BossBarTask.getInstance());
 
 		if (Platform.isPluginInstalled("LiteBans"))
-			Platform.runTaskTimerAsync(20 * 30, LitebansTask.getInstance());
+			LitebansTask.getInstance().enable();
 
 		Platform.runTaskAsync(new BuiltByBitUpdateCheck());
 	}
