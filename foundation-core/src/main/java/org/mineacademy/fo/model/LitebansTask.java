@@ -1,44 +1,54 @@
 package org.mineacademy.fo.model;
 
-import java.lang.reflect.Method;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.mineacademy.fo.CommonCore;
-import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.platform.Platform;
 
-import lombok.Getter;
+import litebans.api.Database;
+import litebans.api.Entry;
+import litebans.api.Events;
 
 /**
- * A task that fetches mutes from LiteBans and caches them in memory.
+ * Event-driven LiteBans integration. Listens for mute add/remove events via
+ * the official LiteBans API and performs a single async lookup per player join
+ * to cover pre-existing mutes. Replaces the old polling-based approach that
+ * exhausted the connection pool when multiple MineAcademy plugins were loaded.
  *
  * Works on all platforms (Bukkit, BungeeCord, Velocity).
  *
  * @deprecated internal use only, on Bukkit see HookManager for public API
  */
 @Deprecated
-public final class LitebansTask implements Runnable {
+public final class LitebansTask {
 
-	@Getter
 	private final static LitebansTask instance = new LitebansTask();
 
-	private volatile Map<String, Long> mutedPlayersByUniqueId = Collections.emptyMap();
-	private Object apiInstance;
-	private Method methodPrepareStatement;
-	private volatile boolean cancelled = false;
-	private volatile int failureBackoff = 0;
+	private final ConcurrentMap<String, Long> mutedPlayersByUniqueId = new ConcurrentHashMap<>();
 
-	@Deprecated
-	LitebansTask() {
-		final Class<?> classDatabase;
+	private volatile boolean enabled = false;
+
+	private volatile Object registeredListener;
+
+	private LitebansTask() {
+	}
+
+	public static LitebansTask getInstance() {
+		return instance;
+	}
+
+	/**
+	 * Register the LiteBans events listener. No-op if the LiteBans API is not on the classpath.
+	 * Safe to call from any thread. Idempotent.
+	 */
+	public void enable() {
+		if (this.enabled)
+			return;
 
 		try {
-			classDatabase = Class.forName("litebans.api.Database");
+			Class.forName("litebans.api.Events");
 
 		} catch (final ClassNotFoundException ex) {
 			CommonCore.log("LiteBans API not found, skipping integration.");
@@ -47,77 +57,134 @@ public final class LitebansTask implements Runnable {
 		}
 
 		try {
-			this.apiInstance = ReflectionUtil.invokeStatic(classDatabase, "get");
-			this.methodPrepareStatement = ReflectionUtil.getMethod(classDatabase, "prepareStatement", String.class);
+			this.registeredListener = LitebansHook.registerListener(this.mutedPlayersByUniqueId);
+			this.enabled = true;
 
 		} catch (final Throwable t) {
-			CommonCore.log("Failed to hook into LiteBans, got: " + t.getMessage() + " (unless you explicitly need this integration, you can ignore this error)");
+			CommonCore.error(t, "Failed to hook into LiteBans, got: " + t.getMessage() + " (unless you explicitly need this integration, you can ignore this error)");
 		}
 	}
 
-	@Deprecated
-	@Override
-	public void run() {
-		if (this.cancelled || this.methodPrepareStatement == null)
+	/**
+	 * Unregister the LiteBans events listener and clear the cache.
+	 */
+	public void disable() {
+		if (!this.enabled)
 			return;
 
-		if (this.failureBackoff > 0) {
-			this.failureBackoff--;
+		try {
+			LitebansHook.unregisterListener(this.registeredListener);
 
-			return;
+		} catch (final Throwable t) {
+			CommonCore.error(t, "Failed to unregister LiteBans listener");
 		}
 
-		final Map<String, Long> freshMap = new HashMap<>();
+		this.mutedPlayersByUniqueId.clear();
+		this.registeredListener = null;
+		this.enabled = false;
+	}
 
-		try (PreparedStatement statement = ReflectionUtil.invoke(this.methodPrepareStatement, this.apiInstance, "SELECT * FROM {mutes}")) {
-			statement.execute();
+	/**
+	 * Called when a player joins. Performs a single async lookup to seed the cache
+	 * for pre-existing mutes (entries added before our listener was registered, or
+	 * on other network nodes with broadcast sync disabled).
+	 *
+	 * Safe to call from the main thread: schedules an async task internally.
+	 */
+	public void onPlayerJoin(final UUID uniqueId) {
+		if (!this.enabled)
+			return;
 
-			try (final ResultSet resultSet = statement.getResultSet()) {
-				while (resultSet.next()) {
-					final String uuid = resultSet.getString("UUID");
-					final boolean active = resultSet.getBoolean("ACTIVE");
-					final long until = resultSet.getLong("UNTIL");
+		Platform.runTaskAsync(() -> {
+			try {
+				LitebansHook.lookupAndCache(this.mutedPlayersByUniqueId, uniqueId);
 
-					if (active) {
-						if (until > 0 && until < System.currentTimeMillis())
-							continue;
+			} catch (final Throwable t) {
+				CommonCore.error(t, "Failed to look up LiteBans mute for " + uniqueId);
+			}
+		});
+	}
 
-						freshMap.put(uuid, until);
-					}
+	/**
+	 * Called when a player quits. Evicts the cache entry to keep memory bounded.
+	 */
+	public void onPlayerQuit(final UUID uniqueId) {
+		this.mutedPlayersByUniqueId.remove(uniqueId.toString());
+	}
+
+	@Deprecated
+	public boolean isMuted(final UUID uniqueId) {
+		final Long until = this.mutedPlayersByUniqueId.get(uniqueId.toString());
+
+		if (until == null)
+			return false;
+
+		if (until > 0 && until < System.currentTimeMillis()) {
+			this.mutedPlayersByUniqueId.remove(uniqueId.toString());
+
+			return false;
+		}
+
+		return true;
+	}
+
+	@Deprecated
+	public long getUnmuteTime(final UUID uniqueId) {
+		final Long until = this.mutedPlayersByUniqueId.get(uniqueId.toString());
+
+		return until == null ? 0L : until;
+	}
+
+	/**
+	 * All direct references to litebans.api.* are confined to this nested class.
+	 * The JVM only loads this class (and thus the LiteBans classes) when a method
+	 * here is first invoked, which only happens after we verified via Class.forName
+	 * that the LiteBans API is present on the classpath.
+	 */
+	private static final class LitebansHook {
+
+		static Object registerListener(final ConcurrentMap<String, Long> cache) {
+			final Events.Listener listener = new Events.Listener() {
+
+				@Override
+				public void entryAdded(final Entry entry) {
+					applyEntry(cache, entry);
 				}
-			}
 
-		} catch (final IllegalStateException | SQLException ex) {
-			this.failureBackoff = 10;
+				@Override
+				public void entryRemoved(final Entry entry) {
+					if ("mute".equals(entry.getType()) && entry.getUuid() != null)
+						cache.remove(entry.getUuid());
+				}
+			};
 
-			return;
+			Events.get().register(listener);
 
-		} catch (Throwable t) {
-			while (t.getCause() != null)
-				t = t.getCause();
-
-			if (t instanceof IllegalStateException || t instanceof SQLException) {
-				this.failureBackoff = 10;
-
-			} else {
-				CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
-
-				this.cancelled = true;
-			}
-
-			return;
+			return listener;
 		}
 
-		this.mutedPlayersByUniqueId = freshMap;
-	}
+		static void unregisterListener(final Object listener) {
+			if (listener instanceof Events.Listener)
+				Events.get().unregister((Events.Listener) listener);
+		}
 
-	@Deprecated
-	public boolean isMuted(UUID uuid) {
-		return this.mutedPlayersByUniqueId.containsKey(uuid.toString());
-	}
+		static void lookupAndCache(final ConcurrentMap<String, Long> cache, final UUID uniqueId) {
+			if (Database.get().isPlayerMuted(uniqueId, null)) {
+				final Entry mute = Database.get().getMute(uniqueId, null, null);
 
-	@Deprecated
-	public long getUnmuteTime(UUID uuid) {
-		return this.mutedPlayersByUniqueId.getOrDefault(uuid.toString(), 0L);
+				if (mute != null)
+					applyEntry(cache, mute);
+			} else
+				cache.remove(uniqueId.toString());
+		}
+
+		static void applyEntry(final ConcurrentMap<String, Long> cache, final Entry entry) {
+			if (!"mute".equals(entry.getType()) || !entry.isActive() || entry.getUuid() == null)
+				return;
+
+			final long until = entry.isPermanent() ? 0L : entry.getDateEnd();
+
+			cache.put(entry.getUuid(), until);
+		}
 	}
 }
