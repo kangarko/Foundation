@@ -31,6 +31,7 @@ public final class LitebansTask implements Runnable {
 	private Object apiInstance;
 	private Method methodPrepareStatement;
 	private volatile boolean cancelled = false;
+	private volatile int failureBackoff = 0;
 
 	@Deprecated
 	LitebansTask() {
@@ -60,6 +61,12 @@ public final class LitebansTask implements Runnable {
 		if (this.cancelled || this.methodPrepareStatement == null)
 			return;
 
+		if (this.failureBackoff > 0) {
+			this.failureBackoff--;
+
+			return;
+		}
+
 		final Map<String, Long> freshMap = new HashMap<>();
 
 		try (PreparedStatement statement = ReflectionUtil.invoke(this.methodPrepareStatement, this.apiInstance, "SELECT * FROM {mutes}")) {
@@ -81,20 +88,24 @@ public final class LitebansTask implements Runnable {
 			}
 
 		} catch (final IllegalStateException | SQLException ex) {
-			// Ignore
+			this.failureBackoff = 10;
+
+			return;
 
 		} catch (Throwable t) {
 			while (t.getCause() != null)
 				t = t.getCause();
 
 			if (t instanceof IllegalStateException || t instanceof SQLException) {
-				// ignore
+				this.failureBackoff = 10;
 
 			} else {
 				CommonCore.error(t, "Error while fetching mutes from LiteBans, aborting. Is the integration outdated?");
 
 				this.cancelled = true;
 			}
+
+			return;
 		}
 
 		this.mutedPlayersByUniqueId = freshMap;
