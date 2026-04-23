@@ -2006,7 +2006,7 @@ public final class Remain {
 						final String colorized = CompChatColor.translateColorCodes(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon.toString().toLowerCase(), style);
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized, icon, style);
 
 							if (receiver.isOnline())
 								accessor.show(receiver);
@@ -2048,7 +2048,7 @@ public final class Remain {
 						final String colorized = CompChatColor.translateColorCodes(message.apply(receiver));
 
 						if (!colorized.isEmpty()) {
-							final AdvancementAccessor accessor = new AdvancementAccessor(colorized.replace("|", "\n"), icon.toString().toLowerCase(), style);
+							final AdvancementAccessor accessor = new AdvancementAccessor(colorized.replace("|", "\n"), icon, style);
 							final Player playerReceiver = receiver.getPlayer();
 
 							if (playerReceiver.isOnline())
@@ -2123,7 +2123,7 @@ public final class Remain {
 
 			if (!colorized.isEmpty())
 				if (hasAdvancements)
-					Platform.runTask(() -> new AdvancementAccessor(colorized, icon.toString().toLowerCase(), toastStyle).show(receiver));
+					Platform.runTask(() -> new AdvancementAccessor(colorized, icon, toastStyle).show(receiver));
 
 				else
 					receiver.sendMessage(colorized);
@@ -3804,11 +3804,27 @@ final class AdvancementAccessor {
 	private final String message;
 	private final CompToastStyle toastStyle;
 
-	AdvancementAccessor(final String message, final String icon, final CompToastStyle toastStyle) {
+	AdvancementAccessor(final String message, final CompMaterial icon, final CompToastStyle toastStyle) {
 		this.key = new NamespacedKey(BukkitPlugin.getInstance(), UUID.randomUUID().toString());
 		this.message = message;
-		this.icon = icon;
+		this.icon = resolveItemIcon(icon).toString().toLowerCase();
 		this.toastStyle = toastStyle;
+	}
+
+	/*
+	 * Block-only materials (BLACK_WALL_BANNER, PISTON_HEAD, POTTED_*) exist in the
+	 * Material enum but have no item registry entry, so passing their key to
+	 * Bukkit.getUnsafe().loadAdvancement() makes the codec throw JsonParseException
+	 * and crashes the toast task. Fall back to BOOK with a warning so the user fixes
+	 * their config. Material#isItem() only exists on 1.13+, older versions had a
+	 * lenient codec and cannot hit this crash.
+	 */
+	private static CompMaterial resolveItemIcon(final CompMaterial icon) {
+		if (!MinecraftVersion.atLeast(V.v1_13) || icon.getMaterial().isItem())
+			return icon;
+
+		CommonCore.warning("Toast icon '" + icon + "' is a block-only material with no item form, falling back to BOOK. Pick a material that can exist as an item.");
+		return CompMaterial.BOOK;
 	}
 
 	public void show(final Player player) {
