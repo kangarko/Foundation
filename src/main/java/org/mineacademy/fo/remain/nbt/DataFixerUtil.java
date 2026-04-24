@@ -5,7 +5,7 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 
-public class DataFixerUtil {
+final class DataFixerUtil {
 
 	// https://minecraft.wiki/w/Data_version
 	public static final int VERSION1_12R1 = 1343;
@@ -23,6 +23,9 @@ public class DataFixerUtil {
 	public static final int VERSION1_21R3 = 4189;
 	public static final int VERSION1_21R4 = 4323;
 	public static final int VERSION1_21R5 = 4435;
+	public static final int VERSION1_21R6 = 4554;
+	public static final int VERSION1_21R7 = 4671;
+	public static final int VERSION_26_1 = 4786;
 	// There was a mixup between version numbers and revisions, kept for compatibility, use the above revision numbers
 	@Deprecated
 	public static final int VERSION1_12_2 = 1343;
@@ -68,9 +71,16 @@ public class DataFixerUtil {
 
 	public static ReadWriteNBT fixUpItemData(ReadWriteNBT nbt, int fromVersion, int toVersion)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		return NBT.wrapNMSTag(fixUpRawItemData(
+		final ReadWriteNBT tag = NBT.wrapNMSTag(fixUpRawItemData(
 				NBTReflectionUtil.getToCompount(((NBTCompound) nbt).getCompound(), (NBTCompound) nbt), fromVersion,
 				toVersion));
+		tag.setInteger("DataVersion", toVersion);
+		return tag;
+	}
+
+	public static ReadWriteNBT fixUpItemData(ReadWriteNBT nbt, int fromVersion)
+			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		return fixUpItemData(nbt, fromVersion, getCurrentVersion());
 	}
 
 	/**
@@ -83,35 +93,40 @@ public class DataFixerUtil {
 	 * @return
 	 */
 	public static int getCurrentVersion() {
-		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5)) {
+		if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC26_1))
+			return VERSION_26_1;
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R7))
+			return VERSION1_21R7;
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R6))
+			return VERSION1_21R6;
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R5))
 			return VERSION1_21R5;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R4))
 			return VERSION1_21R4;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R3)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R3))
 			return VERSION1_21R3;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R2)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R2))
 			return VERSION1_21R2;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_21_R1))
 			return VERSION1_21R1;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 			return VERSION1_20R4;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R3)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R3))
 			return VERSION1_20R3;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R1))
 			return VERSION1_20R1;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R3)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R3))
 			return VERSION1_19R3;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R1))
 			return VERSION1_19R1;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_18_R1))
 			return VERSION1_18R1;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1))
 			return VERSION1_17R1;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1))
 			return VERSION1_16R1;
-		} else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_12_R1)) {
+		else if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_12_R1))
 			return VERSION1_12R1;
-		}
 		throw new NbtApiException(
 				"Trying to update data *to* a version before 1.12.2? Something is probably going wrong, contact the plugin author.");
 	}

@@ -9,7 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 
-final class NBTJsonUtil {
+public class NBTJsonUtil {
 
 	/**
 	 * 1.20.3-1.21.4 only. Used to convert items into Json, used in Chat Hover Components.
@@ -18,6 +18,7 @@ final class NBTJsonUtil {
 	 * @return
 	 * @throws NbtApiException
 	 */
+
 	public static JsonElement itemStackToJson(ItemStack itemStack) {
 		try {
 			final Codec<Object> itemStackCodec = (Codec<Object>) ClassWrapper.NMS_ITEMSTACK.getClazz()

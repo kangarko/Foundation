@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -19,7 +17,6 @@ import org.mineacademy.fo.Common;
  * @author tr7zw
  *
  */
-
 public class NBT {
 
 	private NBT() {
@@ -40,22 +37,24 @@ public class NBT {
 		try {
 			// boiled down version of the plugin selfcheck without tests
 			if (MinecraftVersion.getVersion() == MinecraftVersion.UNKNOWN) {
+				NbtApiException.confirmedBroken = true;
 				return false;
 			}
-			for (final ClassWrapper c : ClassWrapper.values()) {
+			for (final ClassWrapper c : ClassWrapper.values())
 				if (c.isEnabled() && c.getClazz() == null) {
+					NbtApiException.confirmedBroken = true;
 					return false;
 				}
-			}
-			for (final ReflectionMethod method : ReflectionMethod.values()) {
+			for (final ReflectionMethod method : ReflectionMethod.values())
 				if (method.isCompatible() && !method.isLoaded()) {
+					NbtApiException.confirmedBroken = true;
 					return false;
 				}
-			}
-
+			// not settings NbtApiException.confirmedBroken = false, as no actual tests were done.
+			// This just means the version was found, and all reflections seem to work.
 			return true;
-
 		} catch (final Exception ex) {
+			NbtApiException.confirmedBroken = true;
 			Common.error(ex, "[NBTAPI] Error during the selfcheck!");
 
 			return false;
@@ -87,9 +86,8 @@ public class NBT {
 	public static <T> T get(ItemStack item, Function<ReadableItemNBT, T> getter) {
 		final NBTItem nbt = new NBTItem(item, false, true, false);
 		final T ret = getter.apply(nbt);
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		nbt.setClosed();
 		return ret;
 	}
@@ -99,7 +97,6 @@ public class NBT {
 	 * Consumer on the NBT of the item
 	 *
 	 * @param item The itemstack you want to get the NBT from
-	 * @param getter
 	 */
 	public static void get(ItemStack item, Consumer<ReadableItemNBT> getter) {
 		final NBTItem nbt = new NBTItem(item, false, true, false);
@@ -118,9 +115,8 @@ public class NBT {
 	public static <T> T get(Entity entity, Function<ReadableNBT, T> getter) {
 		final NBTEntity nbt = new NBTEntity(entity, true);
 		final T ret = getter.apply(nbt);
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		nbt.setClosed();
 		return ret;
 	}
@@ -130,7 +126,6 @@ public class NBT {
 	 * Consumer on the NBT of the Entity
 	 *
 	 * @param entity The entity to get the NBT from
-	 * @param getter
 	 */
 	public static void get(Entity entity, Consumer<ReadableNBT> getter) {
 		final NBTEntity nbt = new NBTEntity(entity, true);
@@ -151,9 +146,8 @@ public class NBT {
 	public static <T> T get(BlockState blockState, Function<ReadableNBT, T> getter) {
 		final NBTTileEntity nbt = new NBTTileEntity(blockState, true);
 		final T ret = getter.apply(nbt);
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		nbt.setClosed();
 		return ret;
 	}
@@ -163,7 +157,6 @@ public class NBT {
 	 * Consumer on the NBT of the BlockEntity
 	 *
 	 * @param blockState The block state of the block you want to get the NBT from.
-	 * @param getter
 	 */
 	public static void get(BlockState blockState, Consumer<ReadableNBT> getter) {
 		final NBTTileEntity nbt = new NBTTileEntity(blockState, true);
@@ -183,9 +176,8 @@ public class NBT {
 	 */
 	public static <T> T getPersistentData(Entity entity, Function<ReadableNBT, T> getter) {
 		final T ret = getter.apply(new NBTEntity(entity).getPersistentDataContainer());
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		return ret;
 	}
 
@@ -201,9 +193,8 @@ public class NBT {
 	 */
 	public static <T> T getPersistentData(BlockState blockState, Function<ReadableNBT, T> getter) {
 		final T ret = getter.apply(new NBTTileEntity(blockState).getPersistentDataContainer());
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		return ret;
 	}
 
@@ -219,9 +210,8 @@ public class NBT {
 		final NBTItem nbti = new NBTItem(item, false, false, true);
 		final T val = function.apply(nbti);
 		nbti.finalizeChanges();
-		if (val instanceof ReadableNBT || val instanceof ReadableNBTList<?>) {
+		if (val instanceof ReadableNBT || val instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		nbti.setClosed();
 		return val;
 	}
@@ -253,9 +243,8 @@ public class NBT {
 		final NBTContainer cont = new NBTContainer(nbtEnt.getCompound());
 		final T ret = function.apply(cont);
 		nbtEnt.setCompound(cont.getCompound());
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		nbtEnt.setClosed();
 		return ret;
 	}
@@ -269,9 +258,8 @@ public class NBT {
 	 * @param consumer The consumer that will be used to modify the components.
 	 */
 	public static void modifyComponents(ItemStack item, Consumer<ReadWriteNBT> consumer) {
-		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 			throw new NbtApiException("This method only works for 1.20.5+!");
-		}
 		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
 		consumer.accept(nbti.getOrCreateCompound("components"));
 		final ItemStack tmp = NBT.itemStackFromNBT(nbti);
@@ -288,9 +276,8 @@ public class NBT {
 	 * @return The return type is the same as the return type of the function.
 	 */
 	public static <T> T modifyComponents(ItemStack item, Function<ReadWriteNBT, T> function) {
-		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 			throw new NbtApiException("This method only works for 1.20.5+!");
-		}
 		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
 		final T ret = function.apply(nbti.getOrCreateCompound("components"));
 		final ItemStack tmp = NBT.itemStackFromNBT(nbti);
@@ -307,9 +294,8 @@ public class NBT {
 	 * @param consumer The consumer that will be used to read the components.
 	 */
 	public static void getComponents(ItemStack item, Consumer<ReadableNBT> consumer) {
-		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 			throw new NbtApiException("This method only works for 1.20.5+!");
-		}
 		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
 		consumer.accept(nbti.getOrCreateCompound("components"));
 	}
@@ -324,9 +310,8 @@ public class NBT {
 	 * @return The return type is the same as the return type of the function.
 	 */
 	public static <T> T getComponents(ItemStack item, Function<ReadableNBT, T> function) {
-		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4)) {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_20_R4))
 			throw new NbtApiException("This method only works for 1.20.5+!");
-		}
 		final ReadWriteNBT nbti = NBT.itemStackToNBT(item);
 		return function.apply(nbti.getOrCreateCompound("components"));
 	}
@@ -357,9 +342,8 @@ public class NBT {
 	 */
 	public static <T> T modifyPersistentData(Entity entity, Function<ReadWriteNBT, T> function) {
 		final T ret = function.apply(new NBTEntity(entity).getPersistentDataContainer());
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		return ret;
 	}
 
@@ -387,9 +371,8 @@ public class NBT {
 		final NBTContainer cont = new NBTContainer(blockEnt.getCompound());
 		final T ret = function.apply(cont);
 		blockEnt.setCompound(cont.getCompound());
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		blockEnt.setClosed();
 		return ret;
 	}
@@ -422,9 +405,8 @@ public class NBT {
 	 */
 	public static <T> T modifyPersistentData(BlockState blockState, Function<ReadWriteNBT, T> function) {
 		final T ret = function.apply(new NBTTileEntity(blockState).getPersistentDataContainer());
-		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>) {
+		if (ret instanceof ReadableNBT || ret instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		return ret;
 	}
 
@@ -456,7 +438,6 @@ public class NBT {
 	 * @param compound The NBT tag to convert to an ItemStack
 	 * @return An ItemStack
 	 */
-	@Nullable
 	public static ItemStack itemStackFromNBT(ReadableNBT compound) {
 		return NBTItem.convertNBTtoItem((NBTCompound) compound);
 	}
@@ -477,7 +458,6 @@ public class NBT {
 	 * @param compound The NBT tag to convert to an ItemStack array.
 	 * @return An array of ItemStacks.
 	 */
-	@Nullable
 	public static ItemStack[] itemStackArrayFromNBT(ReadableNBT compound) {
 		return NBTItem.convertNBTtoItemArray((NBTCompound) compound);
 	}
@@ -527,7 +507,6 @@ public class NBT {
 	 * exists, the data will be loaded, otherwise a new file gets created.
 	 *
 	 * @param file
-	 * @return
 	 * @throws IOException
 	 */
 	public static NBTFileHandle getFileHandle(File file) throws IOException {
@@ -609,9 +588,8 @@ public class NBT {
 		final NBTItem nbti = new NBTItem(item, false, false, true);
 		final T val = function.apply(new ProxyBuilder<>(nbti, wrapper).build());
 		nbti.finalizeChanges();
-		if (val instanceof ReadableNBT || val instanceof ReadableNBTList<?>) {
+		if (val instanceof ReadableNBT || val instanceof ReadableNBTList<?>)
 			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
-		}
 		nbti.setClosed();
 		return val;
 	}

@@ -2,6 +2,7 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 
@@ -13,7 +14,8 @@ import org.bukkit.Bukkit;
  * @author tr7zw
  *
  */
-enum MinecraftVersion {
+
+public enum MinecraftVersion {
 	UNKNOWN(Integer.MAX_VALUE), // Use the newest known mappings
 	MC1_7_R4(174),
 	MC1_8_R3(183),
@@ -44,7 +46,9 @@ enum MinecraftVersion {
 	MC1_21_R3(1213, true),
 	MC1_21_R4(1214, true),
 	MC1_21_R5(1215, true),
-	MC1_21_R6(1216, true);
+	MC1_21_R6(1216, true),
+	MC1_21_R7(1217, true),
+	MC26_1(2601, true);
 
 	private static MinecraftVersion version;
 
@@ -74,6 +78,10 @@ enum MinecraftVersion {
 			this.put("1.21.6", MC1_21_R5);
 			this.put("1.21.7", MC1_21_R5);
 			this.put("1.21.8", MC1_21_R5);
+			this.put("1.21.9", MC1_21_R6);
+			this.put("1.21.10", MC1_21_R6);
+			this.put("1.21.11", MC1_21_R7);
+			this.put("26.1", MC26_1);
 		}
 	};
 
@@ -90,7 +98,7 @@ enum MinecraftVersion {
 	 * @return A simple comparable Integer, representing the version.
 	 */
 	public int getVersionId() {
-		return versionId;
+		return this.versionId;
 	}
 
 	/**
@@ -98,7 +106,7 @@ enum MinecraftVersion {
 	 *         internally
 	 */
 	public boolean isMojangMapping() {
-		return mojangMapping;
+		return this.mojangMapping;
 	}
 
 	/**
@@ -108,13 +116,12 @@ enum MinecraftVersion {
 	 * @return
 	 */
 	public String getPackageName() {
-		if (this == UNKNOWN) {
+		if (this == UNKNOWN)
 			try {
 				return Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 			} catch (final Exception ex) {
 				// ignore, paper without remap, will fail
 			}
-		}
 		return this.name().replace("MC", "v");
 	}
 
@@ -147,14 +154,26 @@ enum MinecraftVersion {
 	public static MinecraftVersion getVersion() {
 		if (version != null)
 			return version;
-
 		try {
 			final String ver = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
 			version = MinecraftVersion.valueOf(ver.replace("v", "MC"));
 
 		} catch (final Exception ex) {
-			version = VERSION_TO_REVISION.getOrDefault(Bukkit.getServer().getBukkitVersion().split("-")[0], MinecraftVersion.UNKNOWN);
+			version = VERSION_TO_REVISION.get(Bukkit.getServer().getBukkitVersion().split("-")[0]);
+
+			if (version == null) {
+				// check for modern versions with the new versioning scheme, also the new paper version format
+				final String versionString = Bukkit.getServer().getBukkitVersion().split("-")[0].split(".build")[0];
+				for (final Entry<String, MinecraftVersion> entry : VERSION_TO_REVISION.entrySet())
+					if (versionString.startsWith(entry.getKey()) && version == null)
+						version = entry.getValue();
+					// pick the highest revision that matches the version string, in case 26.1.3 is somehow different to 26.1
+					else if (versionString.startsWith(entry.getKey()) && entry.getValue().getVersionId() > version.getVersionId())
+						version = entry.getValue();
+			}
+			if (version == null)
+				version = UNKNOWN;
 		}
 
 		return version;
@@ -210,6 +229,7 @@ enum MinecraftVersion {
 
 		try {
 			Class.forName("net.neoforged.neoforge.common.NeoForge");
+
 			isNeoForgePresent = true;
 		} catch (final Exception ex) {
 			isNeoForgePresent = false;
@@ -227,10 +247,12 @@ enum MinecraftVersion {
 
 		try {
 			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+
 			isFoliaPresent = true;
 		} catch (final Exception ex) {
 			isFoliaPresent = false;
 		}
+
 		return isFoliaPresent;
 	}
 }

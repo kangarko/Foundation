@@ -24,7 +24,7 @@ public class NBTUUIDList extends NBTList<UUID> {
 		try {
 			final Constructor<?> con = ClassWrapper.NMS_NBTTAGINTARRAY.getClazz().getDeclaredConstructor(int[].class);
 			con.setAccessible(true);
-			return con.newInstance(UUIDUtil.uuidToIntArray(object));
+			return con.newInstance(uuidToIntArray(object));
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
 			throw new NbtApiException("Error while wrapping the Object " + object + " to it's NMS object!", e);
@@ -34,11 +34,11 @@ public class NBTUUIDList extends NBTList<UUID> {
 	@Override
 	public UUID get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
-			ReflectionMethod.COMPOUND_SET.run(tmpContainer.getCompound(), "tmp", obj);
-			final int[] val = tmpContainer.getIntArray("tmp");
-			tmpContainer.removeKey("tmp");
-			return UUIDUtil.uuidFromIntArray(val);
+			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
+			ReflectionMethod.COMPOUND_SET.run(this.tmpContainer.getCompound(), "tmp", obj);
+			final int[] val = this.tmpContainer.getIntArray("tmp");
+			this.tmpContainer.removeKey("tmp");
+			return uuidFromIntArray(val);
 		} catch (final NumberFormatException nf) {
 			return null;
 		} catch (final Exception ex) {
@@ -46,4 +46,18 @@ public class NBTUUIDList extends NBTList<UUID> {
 		}
 	}
 
+	public static UUID uuidFromIntArray(int[] is) {
+		return new UUID((long) is[0] << 32 | is[1] & 4294967295L,
+				(long) is[2] << 32 | is[3] & 4294967295L);
+	}
+
+	public static int[] uuidToIntArray(UUID uUID) {
+		final long l = uUID.getMostSignificantBits();
+		final long m = uUID.getLeastSignificantBits();
+		return leastMostToIntArray(l, m);
+	}
+
+	private static int[] leastMostToIntArray(long l, long m) {
+		return new int[] { (int) (l >> 32), (int) l, (int) (m >> 32), (int) m };
+	}
 }

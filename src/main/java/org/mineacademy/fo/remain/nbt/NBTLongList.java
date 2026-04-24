@@ -30,7 +30,7 @@ public class NBTLongList extends NBTList<Long> {
 	@Override
 	public Long get(int index) {
 		try {
-			final Object obj = ReflectionMethod.LIST_GET.run(listObject, index);
+			final Object obj = ReflectionMethod.LIST_GET.run(this.listObject, index);
 			return Long.valueOf(obj.toString().replace("L", ""));
 		} catch (final NumberFormatException nf) {
 			return 0L;
