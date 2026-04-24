@@ -2,8 +2,6 @@ package org.mineacademy.fo.remain.nbt;
 
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.inventory.ItemStack;
 
 public interface ReadWriteNBT extends ReadableNBT {
@@ -11,14 +9,14 @@ public interface ReadWriteNBT extends ReadableNBT {
 	/**
 	 * Merges all data from comp into this compound. This is done in one action, so
 	 * it also works with Tiles/Entities
-	 * 
+	 *
 	 * @param comp
 	 */
 	void mergeCompound(ReadableNBT comp);
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -26,7 +24,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -34,7 +32,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -42,7 +40,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -50,7 +48,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -58,7 +56,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -66,7 +64,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -74,7 +72,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -82,7 +80,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -90,9 +88,9 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * Requires 1.16+
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -100,7 +98,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Setter
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -108,7 +106,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Save an ItemStack as a compound under a given key
-	 * 
+	 *
 	 * @param key
 	 * @param item
 	 */
@@ -116,7 +114,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Save an ItemStack Array as a compound under a given key
-	 * 
+	 *
 	 * @param key
 	 * @param items
 	 */
@@ -137,7 +135,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * The same as addCompound, just with a name that better reflects what it does
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -148,13 +146,12 @@ public interface ReadWriteNBT extends ReadableNBT {
 	 * @return The Compound instance or null
 	 */
 	@Override
-	@Nullable
 	ReadWriteNBT getCompound(String name);
 
 	/**
 	 * Returns the resolved and creates compounds as required.
 	 * <p>
-	 * 
+	 *
 	 * @param key Path key, seperated by '.'. For example: "foo.bar.baz". Dots can
 	 *            be escaped with a backslash.
 	 * @return The resolved compound.
@@ -163,7 +160,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 
 	/**
 	 * Set an Object to a key via the provided handler.
-	 * 
+	 *
 	 * @param <T>
 	 * @param key
 	 * @param value
@@ -174,7 +171,7 @@ public interface ReadWriteNBT extends ReadableNBT {
 	/**
 	 * Set a key to the given Enum value. It gets stored as a String. Passing null
 	 * as value will call removeKey(key) instead.
-	 * 
+	 *
 	 * @param <E>
 	 * @param key
 	 * @param value
@@ -206,7 +203,6 @@ public interface ReadWriteNBT extends ReadableNBT {
 	ReadWriteNBTCompoundList getCompoundList(String name);
 
 	@Override
-	@Nullable
 	ReadWriteNBT resolveCompound(String key);
 
 	/**

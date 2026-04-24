@@ -2,6 +2,9 @@ package org.mineacademy.fo.remain.nbt;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
+import org.mineacademy.fo.Valid;
 
 /**
  * NBT class to access vanilla tags from Entities. Entities don't support custom
@@ -24,32 +27,29 @@ public class NBTEntity extends NBTCompound {
 	 */
 	protected NBTEntity(Entity entity, boolean readonly) {
 		super(null, null);
-		if (entity == null) {
+		if (entity == null)
 			throw new NullPointerException("Entity can't be null!");
-		}
 		this.readonly = readonly;
-		ent = entity;
-		if (readonly) {
-			this.compound = getCompound();
-		} else {
+		this.ent = entity;
+		if (readonly)
+			this.compound = this.getCompound();
+		else
 			this.compound = null;
-		}
 	}
 
 	/**
 	 * Deprecated: Please use the NBT class
-	 * 
+	 *
 	 * @param entity Any valid Bukkit Entity
 	 */
 	@Deprecated
 	public NBTEntity(Entity entity) {
 		super(null, null);
-		if (entity == null) {
+		if (entity == null)
 			throw new NullPointerException("Entity can't be null!");
-		}
 		this.readonly = false;
 		this.compound = null;
-		ent = entity;
+		this.ent = entity;
 	}
 
 	@Override
@@ -59,44 +59,43 @@ public class NBTEntity extends NBTCompound {
 
 	@Override
 	protected boolean isClosed() {
-		return closed;
+		return this.closed;
 	}
 
 	@Override
 	protected boolean isReadOnly() {
-		return readonly;
+		return this.readonly;
 	}
 
 	@Override
 	public Object getCompound() {
 		// this runs before async check, since it's just a copy
-		if (readonly && compound != null) {
-			return compound;
-		}
+		if (this.readonly && this.compound != null)
+			return this.compound;
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
-		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(ent));
+		return NBTReflectionUtil.getEntityNBTTagCompound(NBTReflectionUtil.getNMSEntity(this.ent));
 	}
 
 	@Override
 	protected void setCompound(Object compound) {
-		if (readonly) {
+		if (this.readonly)
 			throw new NbtApiException("Tried setting data in read only mode!");
-		}
 		if (!Bukkit.isPrimaryThread())
 			throw new NbtApiException("Entity NBT needs to be accessed sync!");
-		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(ent));
+		NBTReflectionUtil.setEntityNBTTag(compound, NBTReflectionUtil.getNMSEntity(this.ent));
 	}
 
 	/**
 	 * Gets the NBTCompound used by spigots PersistentDataAPI. This method is only
 	 * available for 1.14+!
-	 * 
+	 *
 	 * @return NBTCompound containing the data of the PersistentDataAPI
 	 */
 	public NBTCompound getPersistentDataContainer() {
-		CheckUtil.assertAvailable(MinecraftVersion.MC1_14_R1);
-		return new NBTPersistentDataContainer(ent.getPersistentDataContainer());
+		Valid.checkBoolean(MinecraftVersion.atLeast(V.v1_14), "PersistentDataContainer is only available for 1.14+!");
+
+		return new NBTPersistentDataContainer(this.ent.getPersistentDataContainer());
 	}
 
 }
