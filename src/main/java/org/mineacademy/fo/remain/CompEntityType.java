@@ -11,8 +11,8 @@ import java.util.TreeSet;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
-import org.mineacademy.fo.Common;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.ValidCore;
 
 import lombok.NonNull;
 
@@ -250,7 +250,7 @@ public final class CompEntityType {
 			else
 				try {
 					for (final World other : Bukkit.getWorlds())
-						if ((boolean) isEnabled.invoke(other, type) == true) {
+						if (((boolean) isEnabled.invoke(other, type))) {
 							enabledByFeature = true;
 
 							break;
@@ -268,7 +268,7 @@ public final class CompEntityType {
 					if (cause instanceof IllegalArgumentException || cause instanceof NoSuchMethodError || cause instanceof NoSuchElementException) {
 						// ignore
 					} else
-						Common.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
+						CommonCore.throwError(ex, "Failed to check if " + type + " has required data pack"); // print error in case of a future breakage we can spot
 
 					enabledByFeature = true;
 				}
@@ -278,7 +278,7 @@ public final class CompEntityType {
 
 			// Add all name aliases
 			for (final String bukkitFieldName : bukkitFieldNames) {
-				Valid.checkBoolean(!BY_NAME.containsKey(bukkitFieldName), "Duplicate entity type name: " + bukkitFieldName);
+				ValidCore.checkBoolean(!BY_NAME.containsKey(bukkitFieldName), "Duplicate entity type name: " + bukkitFieldName);
 
 				BY_NAME.put(bukkitFieldName, type);
 			}
@@ -291,7 +291,7 @@ public final class CompEntityType {
 
 			// Cache by ID
 			if (id != -1) {
-				Valid.checkBoolean(!BY_ID.containsKey(id), "Duplicate entity type id: " + id);
+				ValidCore.checkBoolean(!BY_ID.containsKey(id), "Duplicate entity type id: " + id);
 
 				BY_ID.put(id, type);
 				ID_TO_ENTITY.put(type, id);
@@ -299,7 +299,7 @@ public final class CompEntityType {
 
 			// Cache by spawn egg
 			if (spawnEggMaterial != null && spawnEggMaterial.getMaterial() != null) {
-				Valid.checkBoolean(!SPAWN_EGG_TO_ENTITY.containsKey(spawnEggMaterial), "Duplicate spawn egg material: " + spawnEggMaterial);
+				ValidCore.checkBoolean(!SPAWN_EGG_TO_ENTITY.containsKey(spawnEggMaterial), "Duplicate spawn egg material: " + spawnEggMaterial);
 
 				// CompMaterial is never null, but legacy versions do not hold all spawn eggs
 				if (CompMaterial.isMonsterEgg(spawnEggMaterial.getMaterial())) {
@@ -407,7 +407,7 @@ public final class CompEntityType {
 	 * @return
 	 */
 	public static EntityType fromId(final int id) {
-		Valid.checkBoolean(id != -1, "Cannot get entity type from id -1");
+		ValidCore.checkBoolean(id != -1, "Cannot get entity type from id -1");
 
 		return BY_ID.get(id);
 	}

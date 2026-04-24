@@ -3,8 +3,6 @@ package org.mineacademy.fo.remain;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Location;
@@ -14,6 +12,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.plugin.SimplePlugin;
@@ -1892,6 +1891,70 @@ public enum CompSound {
 	ENTITY_ZOMBIE_NAUTILUS_AMBIENT_LAND,
 	ENTITY_ZOMBIE_NAUTILUS_DASH_READY,
 	ENTITY_PARCHED_AMBIENT,
+	ENTITY_BABY_CAT_AMBIENT,
+	ENTITY_BABY_CAT_BEG_FOR_FOOD,
+	ENTITY_BABY_CAT_DEATH,
+	ENTITY_BABY_CAT_EAT,
+	ENTITY_BABY_CAT_HISS,
+	ENTITY_BABY_CAT_HURT,
+	ENTITY_BABY_CAT_PURR,
+	ENTITY_BABY_CAT_PURREOW,
+	ENTITY_BABY_CAT_STRAY_AMBIENT,
+	ENTITY_BABY_CHICKEN_AMBIENT,
+	ENTITY_BABY_CHICKEN_DEATH,
+	ENTITY_BABY_CHICKEN_HURT,
+	ENTITY_BABY_CHICKEN_STEP,
+	ENTITY_BABY_HORSE_AMBIENT,
+	ENTITY_BABY_HORSE_ANGRY,
+	ENTITY_BABY_HORSE_BREATHE,
+	ENTITY_BABY_HORSE_DEATH,
+	ENTITY_BABY_HORSE_EAT,
+	ENTITY_BABY_HORSE_HURT,
+	ENTITY_BABY_HORSE_LAND,
+	ENTITY_BABY_HORSE_STEP,
+	ENTITY_BABY_PIG_AMBIENT,
+	ENTITY_BABY_PIG_DEATH,
+	ENTITY_BABY_PIG_EAT,
+	ENTITY_BABY_PIG_HURT,
+	ENTITY_BABY_PIG_STEP,
+	ENTITY_BABY_WOLF_AMBIENT,
+	ENTITY_BABY_WOLF_DEATH,
+	ENTITY_BABY_WOLF_GROWL,
+	ENTITY_BABY_WOLF_HURT,
+	ENTITY_BABY_WOLF_PANT,
+	ENTITY_BABY_WOLF_STEP,
+	ENTITY_BABY_WOLF_WHINE,
+	ENTITY_CAT_ROYAL_AMBIENT,
+	ENTITY_CAT_ROYAL_BEG_FOR_FOOD,
+	ENTITY_CAT_ROYAL_DEATH,
+	ENTITY_CAT_ROYAL_EAT,
+	ENTITY_CAT_ROYAL_HISS,
+	ENTITY_CAT_ROYAL_HURT,
+	ENTITY_CAT_ROYAL_PURR,
+	ENTITY_CAT_ROYAL_PURREOW,
+	ENTITY_CAT_ROYAL_STRAY_AMBIENT,
+	ENTITY_CHICKEN_PICKY_AMBIENT,
+	ENTITY_CHICKEN_PICKY_DEATH,
+	ENTITY_CHICKEN_PICKY_HURT,
+	ENTITY_COW_MOODY_AMBIENT,
+	ENTITY_COW_MOODY_DEATH,
+	ENTITY_COW_MOODY_HURT,
+	ENTITY_COW_MOODY_STEP,
+	ENTITY_PIG_BIG_AMBIENT,
+	ENTITY_PIG_BIG_DEATH,
+	ENTITY_PIG_BIG_EAT,
+	ENTITY_PIG_BIG_HURT,
+	ENTITY_PIG_EAT,
+	ENTITY_PIG_MINI_AMBIENT,
+	ENTITY_PIG_MINI_DEATH,
+	ENTITY_PIG_MINI_EAT,
+	ENTITY_PIG_MINI_HURT,
+	BLOCK_NOTE_BLOCK_TRUMPET,
+	BLOCK_NOTE_BLOCK_TRUMPET_EXPOSED,
+	BLOCK_NOTE_BLOCK_TRUMPET_OXIDIZED,
+	BLOCK_NOTE_BLOCK_TRUMPET_WEATHERED,
+	ITEM_GOLDEN_DANDELION_UNUSE,
+	ITEM_GOLDEN_DANDELION_USE,
 	;
 
 	/**
@@ -2068,7 +2131,7 @@ public enum CompSound {
 	 * @return
 	 */
 	public Sound getSound() {
-		return Common.getOrDefault(this.sound, CompSound.ENTITY_PLAYER_LEVELUP.sound);
+		return CommonCore.getOrDefault(this.sound, CompSound.ENTITY_PLAYER_LEVELUP.sound);
 	}
 
 	/**
@@ -2103,7 +2166,6 @@ public enum CompSound {
 	 *
 	 * @return a matched CompSound.
 	 */
-	@Nullable
 	public static CompSound fromName(@NonNull String soundName) {
 		soundName = soundName.replace(".", "_");
 
@@ -2121,7 +2183,7 @@ public enum CompSound {
 			else {
 				boolean number = false;
 				// A few sounds have numbers in them.
-				if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (number = (ch >= '0' && ch <= '9'))) {
+				if (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || (number = ch >= '0' && ch <= '9')) {
 					if (appendUnderline) {
 						chs[count++] = '_';
 						appendUnderline = false;

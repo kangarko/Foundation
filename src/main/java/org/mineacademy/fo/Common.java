@@ -76,8 +76,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * Our main utility class hosting a large variety of different convenience functions
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Common {
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
+public class Common {
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Constants

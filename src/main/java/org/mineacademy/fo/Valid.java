@@ -23,7 +23,7 @@ import lombok.NonNull;
  * Utility class for checking conditions and throwing our safe exception that is
  * logged into file.
  */
-public final class Valid {
+public class Valid {
 
 	/**
 	 * Matching valid integers

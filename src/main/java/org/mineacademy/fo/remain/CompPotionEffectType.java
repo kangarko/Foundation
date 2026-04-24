@@ -8,8 +8,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.potion.PotionEffectType;
 import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.ReflectionUtil;
@@ -257,7 +255,6 @@ public final class CompPotionEffectType {
 	 * @param name
 	 * @return
 	 */
-	@Nullable
 	public static PotionEffectType getByName(final String name) {
 		return byName.get(name.replace("minecraft:", "").toUpperCase());
 	}
@@ -277,7 +274,6 @@ public final class CompPotionEffectType {
 	 * @param type
 	 * @return
 	 */
-	@Nullable
 	public static String getLoreName(final PotionEffectType type) {
 		return loreName.get(type);
 	}

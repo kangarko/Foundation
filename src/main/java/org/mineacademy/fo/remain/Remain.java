@@ -1,7 +1,6 @@
 package org.mineacademy.fo.remain;
 
 import static org.mineacademy.fo.ReflectionUtil.getNMSClass;
-import static org.mineacademy.fo.ReflectionUtil.getOBCClass;
 
 import java.io.File;
 import java.io.InputStream;
@@ -123,6 +122,16 @@ public final class Remain {
 	 * The Google Json instance
 	 */
 	private final static Gson gson = new Gson();
+
+	/**
+	 * The full package name for NMS.
+	 */
+	private static final String NMS = "net.minecraft.server";
+
+	/**
+	 * The package name for Craftbukkit.
+	 */
+	private static final String CRAFTBUKKIT = "org.bukkit.craftbukkit";
 
 	// ----------------------------------------------------------------------------------------------------
 	// Methods below
@@ -283,6 +292,15 @@ public final class Remain {
 	@Getter
 	private static boolean enchantRegistryUnfrozen = false;
 
+	/**
+	 * The safeguard NMS prefix used in Bukkit 1.4 to 1.20.4.
+	 *
+	 * @deprecated internal use only and no longer needed on Minecraft 1.20.5 and greater
+	 */
+	@Deprecated
+	@Getter
+	private static String nmsVersion = "";
+
 	// Singleton
 	private Remain() {
 	}
@@ -291,6 +309,14 @@ public final class Remain {
 	 * Initialize all fields and methods automatically when we set the plugin
 	 */
 	static {
+		// Initialize safeguard prefix first
+		{
+			final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
+			final String curr = packageName.substring(packageName.lastIndexOf('.') + 1);
+
+			nmsVersion = !"craftbukkit".equals(curr) && !"".equals(packageName) ? curr : "";
+		}
+
 		final boolean atLeast1_4 = MinecraftVersion.atLeast(V.v1_4);
 
 		try {
@@ -1322,6 +1348,23 @@ public final class Remain {
 	}
 
 	/**
+	 * Return the biome at the given location
+	 *
+	 * @param block
+	 * @return
+	 */
+	public static Biome getBiome(final Block block) {
+		try {
+			final Method getBiome = ReflectionUtil.getMethod(Block.class, "getBiome");
+
+			return ReflectionUtil.invoke(getBiome, block);
+
+		} catch (final NoSuchMethodError err) {
+			return getBiome(block.getLocation());
+		}
+	}
+
+	/**
 	 * Creates new plugin command from given label
 	 *
 	 * @param label
@@ -1592,6 +1635,82 @@ public final class Remain {
 		});
 	}
 
+	// ----------------------------------------------------------------------------------------------------
+	// NMS-related
+	// ----------------------------------------------------------------------------------------------------
+
+	/**
+	 * Find a class automatically for older MC version (such as type EntityPlayer for oldName
+	 * and we automatically find the proper NMS import) or if MC 1.17+ is used then type
+	 * the full class path such as net.minecraft.server.level.EntityPlayer and we use that instead.
+	 *
+	 * @param oldName
+	 * @param fullName1_17
+	 * @return
+	 */
+	public static Class<?> getNMSClass(final String oldName, final String fullName1_17) {
+		return MinecraftVersion.atLeast(V.v1_17) ? ReflectionUtil.lookupClass(fullName1_17) : getNMSClass(oldName);
+	}
+
+	/**
+	 * Find a class in net.minecraft.server package, adding the version
+	 * automatically (or empty on 1.20.5+).
+	 *
+	 * @deprecated Minecraft 1.17+ has a different path name,
+	 *             use {@link #getNMSClass(String, String)} instead
+	 *
+	 * @param name
+	 * @return
+	 */
+	@Deprecated
+	public static Class<?> getNMSClass(final String name) {
+		String safeguardPrefix = Remain.getNmsVersion();
+
+		if (!safeguardPrefix.isEmpty())
+			safeguardPrefix += ".";
+
+		return ReflectionUtil.lookupClass(NMS + "." + safeguardPrefix + name);
+	}
+
+	/**
+	 * Find a class in org.bukkit.craftbukkit package, adding the version
+	 * automatically (or empty on 1.20.5+).
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static Class<?> getOBCClass(final String name) {
+		String version = Remain.getNmsVersion();
+
+		if (!version.isEmpty())
+			version += ".";
+
+		return ReflectionUtil.lookupClass(CRAFTBUKKIT + "." + version + name);
+	}
+
+	/**
+	 * Return a constructor for the given NMS class name (such as EntityZombie).
+	 *
+	 * @param nmsClassPath
+	 * @param params
+	 * @return
+	 */
+	public static Constructor<?> getConstructorNMS(final String nmsClassPath, final Class<?>... params) {
+		return ReflectionUtil.getConstructor(getNMSClass(nmsClassPath), params);
+	}
+
+	/**
+	 * Makes a new instance of the given NMS class with arguments.
+	 *
+	 * @param <T>
+	 * @param nmsPath
+	 * @param params
+	 * @return
+	 */
+	public static <T> T instantiateNMS(final String nmsPath, final Object... params) {
+		return (T) ReflectionUtil.instantiate(getNMSClass(nmsPath), params);
+	}
+
 	/**
 	 * Opens the sign for the player. On legacy versions, ProtocolLib is
 	 * required to save the edits to the sign after updating it.
@@ -1701,7 +1820,7 @@ public final class Remain {
 
 			try {
 				if (MinecraftVersion.atLeast(V.v1_17)) {
-					final String nmsVersion = MinecraftVersion.getServerVersion();
+					final String nmsVersion = getNmsVersion();
 
 					final boolean is1_17 = MinecraftVersion.equals(V.v1_17);
 					final boolean is1_18 = MinecraftVersion.equals(V.v1_18);

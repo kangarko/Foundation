@@ -307,7 +307,7 @@ public enum CompAttribute {
 			if (this.bukkitAttribute != null) {
 				AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
 
-				if (instance == null) {
+				if (instance == null)
 					try {
 						entity.registerAttribute((Attribute) this.bukkitAttribute);
 						instance = entity.getAttribute((Attribute) this.bukkitAttribute);
@@ -319,7 +319,6 @@ public enum CompAttribute {
 						// Only Paper supports registering attributes
 						throw new IllegalStateException("Attribute " + this + " cannot be set for " + entity);
 					}
-				}
 
 				instance.setBaseValue(value);
 			}
@@ -331,7 +330,7 @@ public enum CompAttribute {
 			final Object instance = this.getLegacyAttributeInstance(entity);
 
 			if (instance == null)
-				throw new FoException("Attribute " + this + " cannot be set for " + entity);
+				throw new FoException("Attribute " + this + " cannot be set for " + entity, false);
 
 			ReflectionUtil.invoke(ReflectionUtil.getMethod(instance.getClass(), "setValue", double.class), instance, value);
 		}
@@ -365,12 +364,12 @@ public enum CompAttribute {
 
 	private Object getLegacyAttributeInstance(final Entity entity) {
 		final Object nmsEntity = ReflectionUtil.invoke("getHandle", entity);
-		final Class<?> genericAttribute = ReflectionUtil.getNMSClass("GenericAttributes", "net.minecraft.world.entity.ai.attributes.GenericAttributes");
+		final Class<?> genericAttribute = Remain.getNMSClass("GenericAttributes", "net.minecraft.world.entity.ai.attributes.GenericAttributes");
 
 		final Object iAttribute = ReflectionUtil.getStaticFieldContent(genericAttribute, this.getNmsName());
 
-		final Class<?> nmsLiving = ReflectionUtil.getNMSClass("EntityLiving", "N/A");
-		final Method method = ReflectionUtil.getMethod(nmsLiving, "getAttributeInstance", ReflectionUtil.getNMSClass("IAttribute", "N/A"));
+		final Class<?> nmsLiving = Remain.getNMSClass("EntityLiving", "N/A");
+		final Method method = ReflectionUtil.getMethod(nmsLiving, "getAttributeInstance", Remain.getNMSClass("IAttribute", "N/A"));
 
 		return ReflectionUtil.invoke(method, nmsEntity, iAttribute);
 	}

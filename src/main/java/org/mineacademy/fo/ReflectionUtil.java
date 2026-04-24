@@ -104,7 +104,7 @@ public final class ReflectionUtil {
 	 */
 	@Deprecated
 	public static Class<?> getNMSClass(final String name) {
-		String version = MinecraftVersion.getServerVersion();
+		String version = Remain.getNmsVersion();
 
 		if (!version.isEmpty())
 			version += ".";
@@ -120,7 +120,7 @@ public final class ReflectionUtil {
 	 * @return
 	 */
 	public static Class<?> getOBCClass(final String name) {
-		String version = MinecraftVersion.getServerVersion();
+		String version = Remain.getNmsVersion();
 
 		if (!version.isEmpty())
 			version += ".";
