@@ -19,7 +19,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <lombok.version>1.18.42</lombok.version>
+        <lombok.version>1.18.46</lombok.version>
     </properties>
 
     <repositories>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.25.3</version>
+            <version>2.25.4</version>
             <scope>provided</scope>
         </dependency>
 
@@ -80,7 +80,7 @@
         <dependency>
 		    <groupId>io.papermc.paper</groupId>
 		    <artifactId>paper-api</artifactId>
-		    <version>1.21.11-R0.1-SNAPSHOT</version>
+		    <version>[26.1.2.build,)</version>
 		</dependency>
 
         <!-- MineAcademy guaranteed availability repos for plugins -->
@@ -92,12 +92,12 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>BentoBox</artifactId>
-            <version>3.11.1</version>
+            <version>3.13.0</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>CitizensAPI</artifactId>
-            <version>2.0.41-SNAPSHOT</version>
+            <version>2.0.42-SNAPSHOT-20260404</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
@@ -112,7 +112,7 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>EssentialsX</artifactId>
-            <version>2.22.0-dev+57-7775662</version>
+            <version>2.22.0-dev+93-1038b3a</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
@@ -137,12 +137,12 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>MultiverseCore</artifactId>
-            <version>5.5.2-pre</version>
+            <version>5.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>MythicMobs</artifactId>
-            <version>5.11.1-de409cac</version>
+            <version>5.11.2</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
@@ -152,17 +152,17 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>PlaceholderAPI</artifactId>
-            <version>2.11.7</version>
+            <version>2.12.2</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>5.4.1-SNAPSHOT-1257506</version>
+            <version>5.5.0-SNAPSHOT-fd855ed</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>Residence</artifactId>
-            <version>6.0.1.4</version>
+            <version>6.0.1.6</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>Towny</artifactId>
-            <version>0.102.0.6</version>
+            <version>0.102.0.13</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
@@ -187,7 +187,7 @@
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
             <artifactId>WorldEdit</artifactId>
-            <version>7.4.1-SNAPSHOT+7388-aa778af</version>
+            <version>7.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.mineacademy.plugin</groupId>
@@ -205,10 +205,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
