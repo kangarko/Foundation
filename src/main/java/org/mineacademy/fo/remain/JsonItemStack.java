@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -31,9 +29,9 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
-import org.mineacademy.fo.Common;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 
 import com.google.gson.JsonArray;
@@ -61,8 +59,8 @@ public class JsonItemStack {
 	 *
 	 * @return The JSON string
 	 */
-	public static String toJson(@Nullable final ItemStack itemStack) {
-		return Common.GSON.toJson(toJsonObject(itemStack));
+	public static String toJson(final ItemStack itemStack) {
+		return CommonCore.GSON.toJson(toJsonObject(itemStack));
 	}
 
 	/**
@@ -71,7 +69,7 @@ public class JsonItemStack {
 	 * @param item
 	 * @return
 	 */
-	public static JsonObject toJsonObject(@Nullable final ItemStack item) {
+	public static JsonObject toJsonObject(final ItemStack item) {
 		if (item == null || CompMaterial.isAir(item))
 			return null;
 
@@ -339,7 +337,7 @@ public class JsonItemStack {
 					final Method getBaseColor = ReflectionUtil.getMethod(bannerMeta.getClass(), "getBaseColor");
 
 					if (getBaseColor != null) {
-						final DyeColor baseColor = ((DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta));
+						final DyeColor baseColor = (DyeColor) ReflectionUtil.invoke(getBaseColor, bannerMeta);
 
 						if (baseColor != null) {
 							final String baseColorName = ReflectionUtil.getEnumName(baseColor);
@@ -383,22 +381,39 @@ public class JsonItemStack {
 	 *
 	 * @return The {@link ItemStack} or null if not succeed
 	 */
-	public static ItemStack fromJson(@Nullable final String string) {
+	public static ItemStack fromJson(final String string) {
 		if (string == null || string.isEmpty() || "{}".equals(string) || "null".equals(string))
 			return null;
 
-		final JsonObject itemJson = Common.GSON.fromJson(string, JsonObject.class);
+		final JsonObject itemJson = CommonCore.GSON.fromJson(string, JsonObject.class);
 
 		if (itemJson.has("id"))
 			try {
 				return Bukkit.getUnsafe().deserializeItemFromJson(itemJson);
 
 			} catch (final NoSuchMethodError err) {
-				throw new FoException(err, "Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
-						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson);
+				throw new FoException("Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
+						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson, false);
+			} catch (final IllegalArgumentException ex) {
+				if (ex.getMessage().contains("Failed to get"))
+					CommonCore.warning("Failed to convert JSON into ItemStack using native method, falling back to legacy. Custom stuff will be removed. "
+							+ "This is because the ItemStack is no longer valid (this is NOT issue in our plugin, "
+							+ "rather the itemstack contained custom data which got corrupted or you deleted your resourcepack or other plugin)! JSON: " + string);
+				else if (ex.getMessage() != null && ex.getMessage().contains("Not a number")) {
+					final String sanitized = string.replace("\"Infinity\"", "1.0E10").replace("\"-Infinity\"", "-1.0E10").replace("\"NaN\"", "0");
+
+					try {
+						return Bukkit.getUnsafe().deserializeItemFromJson(CommonCore.GSON.fromJson(sanitized, JsonObject.class));
+
+					} catch (final IllegalArgumentException retryEx) {
+						CommonCore.warning("Failed to deserialize item even after sanitizing Infinity/NaN values: " + retryEx.getMessage());
+					}
+				} else
+					throw ex;
 			}
 
-		Valid.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
+		// Fail-safe (manual attempt at loading)
+		ValidCore.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
 
 		final String type = itemJson.get("type").getAsString();
 		final Integer durability = itemJson.has("durability") ? itemJson.get("durability").getAsInt() : null;
@@ -439,7 +454,7 @@ public class JsonItemStack {
 		if (enchants != null)
 			for (final JsonElement enchantElement : enchants) {
 				final String enchant = enchantElement.getAsString();
-				Valid.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
+				ValidCore.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
 
 				try {
 					final String[] split = enchant.split(":");
@@ -472,7 +487,7 @@ public class JsonItemStack {
 		final JsonObject extraJson = metaJson.has("extra-meta") ? metaJson.get("extra-meta").getAsJsonObject() : null;
 
 		if (extraJson != null) {
-			if (meta instanceof SkullMeta) {
+			if (meta instanceof SkullMeta)
 				try {
 					final String owner = extraJson.has("owner") ? extraJson.get("owner").getAsString() : null;
 
@@ -481,8 +496,7 @@ public class JsonItemStack {
 				} catch (final UnsupportedOperationException ex) {
 					// Silence
 				}
-
-			} else if (meta instanceof BannerMeta) {
+			else if (meta instanceof BannerMeta) {
 				final BannerMeta bmeta = (BannerMeta) meta;
 				final String baseColor = extraJson.has("base-color") ? extraJson.get("base-color").getAsString() : null;
 				final JsonArray patterns = extraJson.has("patterns") ? extraJson.get("patterns").getAsJsonArray() : null;
@@ -509,7 +523,7 @@ public class JsonItemStack {
 
 					for (final JsonElement patternJson : patterns) {
 						final String pattern = patternJson.getAsString();
-						Valid.checkBoolean(pattern.contains(":"), "Expected : when parsing banner patterns from JSON item, got: " + pattern + ". Full item: " + itemJson);
+						ValidCore.checkBoolean(pattern.contains(":"), "Expected : when parsing banner patterns from JSON item, got: " + pattern + ". Full item: " + itemJson);
 
 						if (pattern.contains(":")) {
 							final String[] splitPattern = pattern.split(":");
@@ -537,7 +551,7 @@ public class JsonItemStack {
 
 					for (final JsonElement enchantElement : storedEnchants) {
 						final String enchant = enchantElement.getAsString();
-						Valid.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
+						ValidCore.checkBoolean(enchant.contains(":"), "Expected : when parsing enchants from JSON item, got: " + enchants + ". Full item: " + itemJson);
 
 						try {
 							final String[] splitEnchant = enchant.split(":");
@@ -591,7 +605,7 @@ public class JsonItemStack {
 				if (effects != null)
 					for (final JsonElement effectElement : effects) {
 						final String effect = effectElement.getAsString();
-						Valid.checkBoolean(effect.contains(":"), "Expected : when parsing effects from JSON item, got: " + effects + ". Full item: " + itemJson);
+						ValidCore.checkBoolean(effect.contains(":"), "Expected : when parsing effects from JSON item, got: " + effects + ". Full item: " + itemJson);
 
 						try {
 							final String[] splitPotions = effect.split(":");

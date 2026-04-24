@@ -986,6 +986,18 @@ public final class ItemCreator {
 
 	/**
 	 * Get a new item creator from material
+	 * @deprecated call {@link #of(CompMaterial)} instead for upcoming Foundation v7 migration.
+	 *
+	 * @param mat existing material
+	 * @return the new item creator
+	 */
+	@Deprecated
+	public static ItemCreator fromMaterial(final CompMaterial mat) {
+		return of(mat);
+	}
+
+	/**
+	 * Get a new item creator from material
 	 *
 	 * @param mat existing material
 	 * @return the new item creator

@@ -165,8 +165,8 @@ final class NmsAccessor {
 	 */
 	static {
 		try {
-			final Class<?> nmsEntity = ReflectionUtil.getNMSClass("Entity", "net.minecraft.world.entity.Entity");
-			final Class<?> ofcWorld = ReflectionUtil.getOBCClass("CraftWorld");
+			final Class<?> nmsEntity = Remain.getNMSClass("Entity", "net.minecraft.world.entity.Entity");
+			final Class<?> ofcWorld = Remain.getOBCClass("CraftWorld");
 
 			olderThan18 = MinecraftVersion.olderThan(V.v1_8);
 
@@ -187,7 +187,7 @@ final class NmsAccessor {
 			} else if (MinecraftVersion.newerThan(V.v1_7))
 				addEntity = ReflectionUtil.getMethod(ofcWorld, "addEntity", nmsEntity, SpawnReason.class);
 			else
-				addEntity = ReflectionUtil.getNMSClass("World", "net.minecraft.world.level.World").getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
+				addEntity = Remain.getNMSClass("World", "net.minecraft.world.level.World").getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();

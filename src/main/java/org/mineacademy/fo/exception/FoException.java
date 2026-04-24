@@ -34,10 +34,40 @@ public class FoException extends RuntimeException {
 
 	/**
 	 * Create a new exception and logs it
+	 * @deprecated Is a shim method for compatibility with Foundation v7.
+	 * 
+	 * @param t
+	 * @param ignoredParam
+	 */
+	@Deprecated
+	public FoException(Throwable t, boolean ignoredParam) {
+		super(t);
+
+		if (errorSavedAutomatically)
+			Debugger.saveError(t);
+	}
+
+	/**
+	 * Create a new exception and logs it
 	 *
 	 * @param message
 	 */
 	public FoException(String message) {
+		super(message);
+
+		if (errorSavedAutomatically)
+			Debugger.saveError(this, message);
+	}
+
+	/**
+	 * Create a new exception and logs it
+	 *
+	 * @deprecated Is a shim method for compatibility with Foundation v7.
+	 * @param message
+	 * @param ignoredParam
+	 */
+	@Deprecated
+	public FoException(String message, boolean ignoredParam) {
 		super(message);
 
 		if (errorSavedAutomatically)

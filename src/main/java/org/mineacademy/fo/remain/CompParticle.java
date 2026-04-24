@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
-import org.mineacademy.fo.Valid;
+import org.mineacademy.fo.ValidCore;
 
 import lombok.SneakyThrows;
 
@@ -102,6 +102,7 @@ public enum CompParticle {
 	/**
 	 * @deprecated removed in 1.20.5
 	 */
+	@Deprecated
 	ITEM_TAKE("take", "ITEM_TAKE", null) {
 		@Override
 		public boolean isRemoved() {
@@ -149,6 +150,7 @@ public enum CompParticle {
 	/**
 	 * @deprecated removed somewhere in 1.19
 	 */
+	@Deprecated
 	SPELL_MOB_AMBIENT("mobSpellAmbient", "SPELL_MOB_AMBIENT", "AMBIENT_ENTITY_EFFECT") {
 		@Override
 		public boolean isRemoved() {
@@ -186,7 +188,9 @@ public enum CompParticle {
 	WHITE_SMOKE("WHITE_SMOKE", "WHITE_SMOKE"),
 	TINTED_LEAVES("TINTED_LEAVES", "TINTED_LEAVES"),
 	FIREFLY("FIREFLY", "FIREFLY"),
-	COPPER_FIRE_FLAME("COPPER_FIRE_FLAME", "COPPER_FIRE_FLAME");
+	COPPER_FIRE_FLAME("COPPER_FIRE_FLAME", "COPPER_FIRE_FLAME"),
+	PAUSE_MOB_GROWTH("PAUSE_MOB_GROWTH", "PAUSE_MOB_GROWTH"),
+	RESET_MOB_GROWTH("RESET_MOB_GROWTH", "RESET_MOB_GROWTH");
 
 	/**
 	 * Hardcoded values for best performance
@@ -252,7 +256,7 @@ public enum CompParticle {
 				final Class<?> packetClass;
 
 				try {
-					packetClass = ReflectionUtil.getNMSClass("PacketPlayOutWorldParticles", "N/A");
+					packetClass = Remain.getNMSClass("PacketPlayOutWorldParticles", "N/A");
 
 				} catch (final org.mineacademy.fo.ReflectionUtil.ReflectionException ex) {
 
@@ -270,7 +274,7 @@ public enum CompParticle {
 				}
 
 				else {
-					final Class<? extends Enum> particleClass = (Class<? extends Enum>) ReflectionUtil.getNMSClass("EnumParticle");
+					final Class<? extends Enum> particleClass = (Class<? extends Enum>) Remain.getNMSClass("EnumParticle");
 
 					this.nmsEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
 
@@ -327,7 +331,7 @@ public enum CompParticle {
 	 * @return
 	 */
 	public Particle getParticle() {
-		return (Particle) bukkitEnumParticle;
+		return (Particle) this.bukkitEnumParticle;
 	}
 
 	/**
@@ -339,7 +343,7 @@ public enum CompParticle {
 	 * @param particleSize
 	 */
 	public void spawn(final Location location, final Color color, final float particleSize) {
-		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
+		ValidCore.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
 
 		if (atLeast1_13)
 			location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, 1, 0, 0, 0, 0, new DustOptions(color, particleSize));
@@ -363,7 +367,7 @@ public enum CompParticle {
 	 * @param particleSize
 	 */
 	public void spawn(final Player player, final Location location, final Color color, final float particleSize) {
-		Valid.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
+		ValidCore.checkBoolean(this == REDSTONE, "Can only send colors for REDSTONE particle, not: " + this);
 
 		if (atLeast1_13)
 			player.spawnParticle((Particle) this.bukkitEnumParticle, location, 1, 0, 0, 0, 0, new DustOptions(color, particleSize));
@@ -383,7 +387,7 @@ public enum CompParticle {
 	 * @param location
 	 */
 	public void spawn(final Location location) {
-		this.spawn(location, 0, 0, 0, 0, 0, 0, null);
+		this.spawn(location, 0, 0, 0, 0, 1, 0, null);
 	}
 
 	/**
@@ -393,7 +397,7 @@ public enum CompParticle {
 	 * @param data
 	 */
 	public final void spawn(final Location location, final CompMaterial data) {
-		Valid.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
+		ValidCore.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
 
 		if (atLeast1_12) {
 			if (atLeast1_13)
@@ -448,6 +452,9 @@ public enum CompParticle {
 			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
 
+			else if (data == null || data.length == 0)
+				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
+
 			else
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 		}
@@ -467,7 +474,7 @@ public enum CompParticle {
 	 * @param location
 	 */
 	public void spawn(final Player player, final Location location) {
-		this.spawn(player, location, 0d, 0d, 0d, 0d, 0, 0d, null);
+		this.spawn(player, location, 0d, 0d, 0d, 0d, 1, 0d, null);
 	}
 
 	/**
@@ -489,7 +496,7 @@ public enum CompParticle {
 	 * @param data
 	 */
 	public final void spawn(final Player player, final Location location, final CompMaterial data) {
-		Valid.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
+		ValidCore.checkBoolean(this == ITEM_CRACK || this == BLOCK_CRACK || this == BLOCK_DUST || this == FALLING_DUST, "Can only call particle spawn with data on crack or dust particles, not: " + this);
 
 		if (atLeast1_12) {
 			if (atLeast1_13)
@@ -520,18 +527,20 @@ public enum CompParticle {
 			return;
 
 		// Minecraft 1.12 and up
-		if (this.bukkitEnumParticle != null && this != REDSTONE) {
-			if (data == null)
+		if (this.bukkitEnumParticle != null) {
+			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
+				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+
+			else if (data == null || data.length == 0)
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 			else
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 
-		} else if (this.packetConstructor != null) {
-			if (data == null)
+		} else if (this.packetConstructor != null)
+			if (data == null || data.length == 0)
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra));
 			else
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
-		}
 	}
 
 	/*
@@ -588,7 +597,7 @@ public enum CompParticle {
 		name = name.toUpperCase();
 
 		for (final CompParticle particle : values())
-			if (particle.name().equals(name) || (particle.nameLegacy != null && particle.nameLegacy.equals(name)) || (particle.nameModern != null && particle.nameModern.equals(name)))
+			if (particle.name().equals(name) || particle.nameLegacy != null && particle.nameLegacy.equals(name) || particle.nameModern != null && particle.nameModern.equals(name))
 				return particle;
 
 		throw new IllegalArgumentException("Unknown CompParticle from name: " + name);
