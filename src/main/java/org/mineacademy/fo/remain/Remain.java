@@ -447,11 +447,19 @@ public final class Remain {
 
 			getHandle = getOBCClass("entity.CraftPlayer").getMethod("getHandle");
 
-			fieldPlayerConnection = getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
-					.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : atLeast1_4 ? "playerConnection" : "netServerHandler");
+			if (MinecraftVersion.atLeast(V.v1_21))
+				fieldPlayerConnection = ReflectionUtil.lookupClass("net.minecraft.server.level.ServerPlayer")
+						.getField("connection");
+			else
+				fieldPlayerConnection = getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
+						.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : atLeast1_4 ? "playerConnection" : "netServerHandler");
 
-			sendPacket = getNMSClass(atLeast1_4 ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
-					.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
+			if (MinecraftVersion.atLeast(V.v1_21))
+				sendPacket = ReflectionUtil.lookupClass("net.minecraft.server.network.ServerCommonPacketListenerImpl")
+						.getMethod("send", ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet"));
+			else
+				sendPacket = getNMSClass(atLeast1_4 ? "PlayerConnection" : "NetServerHandler", "net.minecraft.server.network.PlayerConnection")
+						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 
 			if (MinecraftVersion.olderThan(V.v1_12))
 				try {
@@ -462,13 +470,7 @@ public final class Remain {
 				}
 
 		} catch (final Throwable t) {
-			if (isUsingMojangMappings) {
-				Bukkit.getLogger().warning("Mojang mappings detected, failing NMS gracefully. Continuing loading but please note that, this is unsupported and only intended for testing.");
-
-				t.printStackTrace();
-			}
-
-			else if (!isThermos && MinecraftVersion.atLeast(V.v1_7)) {
+			if (!isThermos && !isUsingMojangMappings && MinecraftVersion.atLeast(V.v1_7)) {
 				Bukkit.getLogger().warning("Unable to setup reflection. Plugin will partially function.");
 				Bukkit.getLogger().warning("Ignore this if using Cauldron. Otherwise report the errors below to the developers of " + SimplePlugin.getNamed() + ".");
 

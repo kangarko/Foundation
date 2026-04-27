@@ -189,19 +189,13 @@ public abstract class SimplePlugin extends JavaPlugin implements Listener {
 
 	static {
 
-		if (MinecraftVersion.olderThan(V.v1_4) && !ReflectionUtil.isClassAvailable("org.bukkit.Sound")) {
-			Bukkit.getLogger().severe("Ancient MC version detected, please follow install steps here: https://mineacademy.org/oldmcsupport");
-			Bukkit.getLogger().severe("Please note that many features won't work and due to time constraints we can't provide support for such old Minecraft versions.");
-
-			throw new RuntimeException("Ancient MC detected, see above for installation steps.");
-		}
-
 		// Add console filters early - no reload support
 		FoundationFilter.inject();
 	}
 
 	@Override
 	public final void onLoad() {
+		MinecraftVersion.parseAndSet(Bukkit.getBukkitVersion());
 
 		// Set the instance
 		try {
