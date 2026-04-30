@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -98,6 +99,14 @@ public abstract class LibraryManager {
 	 * Map of isolated class loaders and theirs id
 	 */
 	protected final Map<String, IsolatedClassLoader> isolatedLibraries = new HashMap<>();
+
+	/**
+	 * Set of library identity keys that have already been fully loaded.
+	 * Used by {@link #loadLibrary(Library)} to make repeated calls a no-op,
+	 * which avoids re-running the (very expensive) transitive Maven POM resolver
+	 * on every database reconnect or other hot-path callsite.
+	 */
+	private final Set<String> loadedLibraries = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Creates a new library manager.
@@ -641,16 +650,31 @@ public abstract class LibraryManager {
 	 * @see #downloadLibrary(Library)
 	 */
 	public void loadLibrary(final Library library) {
-		final Path file = this.downloadLibrary(requireNonNull(library, "library"));
+		requireNonNull(library, "library");
 
-		if (library.resolveTransitiveDependencies())
-			this.resolveTransitiveLibraries(library);
+		final String key = (library.isIsolatedLoad() ? "iso:" + library.getLoaderId() : "global")
+				+ "|" + (library.getRelocatedPath() != null ? library.getRelocatedPath() : library.getPath());
 
-		if (library.isIsolatedLoad())
-			this.addToIsolatedClasspath(library, file);
+		if (this.loadedLibraries.contains(key))
+			return;
 
-		else
-			this.addToClasspath(file);
+		synchronized (this.loadedLibraries) {
+			if (this.loadedLibraries.contains(key))
+				return;
+
+			final Path file = this.downloadLibrary(library);
+
+			if (library.resolveTransitiveDependencies())
+				this.resolveTransitiveLibraries(library);
+
+			if (library.isIsolatedLoad())
+				this.addToIsolatedClasspath(library, file);
+
+			else
+				this.addToClasspath(file);
+
+			this.loadedLibraries.add(key);
+		}
 	}
 
 	/**
