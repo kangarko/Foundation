@@ -1,7 +1,7 @@
 package org.mineacademy.fo.database;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.mineacademy.fo.CommonCore;
@@ -121,45 +122,63 @@ public class SimpleDatabase {
 		this.isSQLite = false;
 
 		try {
+			String driverClassName;
+			String resolvedUrl = url;
+
 			if (url.startsWith("jdbc:sqlite")) {
 				Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.51.3.0");
 
-				Class.forName("org.sqlite.JDBC");
+				driverClassName = "org.sqlite.JDBC";
+				this.isSQLite = true;
 
 				final String headlessUrl = url.replace("jdbc:sqlite://", "");
 
-				if (headlessUrl.split("\\.").length == 2 && !headlessUrl.contains("\\") && !headlessUrl.contains("/")) {
-					final String path = FileUtil.getFile(headlessUrl).getPath();
-
-					this.connection = DriverManager.getConnection("jdbc:sqlite:" + path);
-
-				} else
-					this.connection = DriverManager.getConnection(url);
-
-				this.isSQLite = true;
+				if (headlessUrl.split("\\.").length == 2 && !headlessUrl.contains("\\") && !headlessUrl.contains("/"))
+					resolvedUrl = "jdbc:sqlite:" + FileUtil.getFile(headlessUrl).getPath();
 			}
 
-			else if (url.startsWith("jdbc:mysql://"))
+			else if (url.startsWith("jdbc:mysql://")) {
 				try {
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.6.0");
-
 					Class.forName("com.mysql.cj.jdbc.Driver");
+
+					driverClassName = "com.mysql.cj.jdbc.Driver";
 
 				} catch (final Throwable t) {
 					CommonCore.warning("Your database driver is outdated, switching to MySQL legacy JDBC Driver. You can ignore this but if you encounter issues, update Java.");
 
 					Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-java", "8.0.33");
-					Class.forName("com.mysql.jdbc.Driver");
+
+					driverClassName = "com.mysql.jdbc.Driver";
 				}
-			else if (url.startsWith("jdbc:mariadb://")) {
+
+			} else if (url.startsWith("jdbc:mariadb://")) {
 				Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", CommonCore.getJavaVersion() <= 11 ? "2.7.13" : "3.5.8");
 
-				Class.forName("org.mariadb.jdbc.Driver");
+				driverClassName = "org.mariadb.jdbc.Driver";
 
 			} else
 				throw new FoException("Unknown database driver '" + url + "'. Only SQLite, MySQL and MariaDB (which supports MariaDB automatically) are supported at this time.", false);
 
-			this.connection = user != null && password != null ? DriverManager.getConnection(url, user, password) : DriverManager.getConnection(url);
+			// Instantiate the driver directly instead of going through DriverManager.
+			// DriverManager iterates ALL globally registered drivers and picks the first that accepts the URL,
+			// which means a third-party plugin shading a broken/obfuscated JDBC driver (e.g. a relocated MariaDB
+			// driver also accepts jdbc:mysql:// URLs) can hijack our connection attempt and crash the server.
+			final Class<?> driverClass = Class.forName(driverClassName, true, this.getClass().getClassLoader());
+			final Driver driver = (Driver) driverClass.getDeclaredConstructor().newInstance();
+
+			final Properties properties = new Properties();
+
+			if (user != null)
+				properties.setProperty("user", user);
+
+			if (password != null)
+				properties.setProperty("password", password);
+
+			this.connection = driver.connect(resolvedUrl, properties);
+
+			if (this.connection == null)
+				throw new FoException("JDBC driver '" + driverClassName + "' rejected the connection URL '" + resolvedUrl + "'. Please verify the URL syntax for your database type.", false);
 
 			String databaseName = url.substring(url.lastIndexOf("/") + 1);
 			databaseName = databaseName.contains("?") ? databaseName.substring(0, databaseName.indexOf("?")) : databaseName;
