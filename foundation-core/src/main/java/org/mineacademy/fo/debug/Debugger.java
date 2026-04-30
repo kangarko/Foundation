@@ -250,6 +250,13 @@ public final class Debugger {
 
 			if (msg != null && (msg.contains("zip file closed") || msg.contains("has thrown a zip file error")))
 				return true;
+
+			// Plugin JAR was moved, deleted, quarantined or remapped by Paper while running.
+			// Treat as an environment issue, not a plugin bug, so we do not spam crash reports.
+			if (cause instanceof java.nio.file.NoSuchFileException || cause instanceof java.io.FileNotFoundException) {
+				if (msg != null && (msg.contains(".jar") || msg.contains(".paper-remapped")))
+					return true;
+			}
 		} while ((cause = cause.getCause()) != null);
 
 		return false;

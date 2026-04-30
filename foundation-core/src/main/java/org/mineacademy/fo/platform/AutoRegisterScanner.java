@@ -342,6 +342,17 @@ final class AutoRegisterScanner {
 					classes.add(clazz);
 			}
 
+		} catch (final IOException ioException) {
+			// The plugin JAR became unreachable while the server is running. This typically
+			// happens when Paper rebuilds its remapped JAR cache, an antivirus quarantines
+			// the file, the JAR was moved/deleted, or when running a corrupted/cracked copy.
+			// We cannot rescan classes in that case. Abort the reload with a clear message
+			// and do NOT auto-report this — it is an environment issue, not a plugin bug.
+			throw new FoException("Cannot rescan classes from " + Platform.getPlugin().getFile().getName()
+					+ " (" + ioException.getClass().getSimpleName() + ": " + ioException.getMessage() + "). "
+					+ "Please restart your server. If this persists, ensure the JAR exists in your plugins/ folder, "
+					+ "is not being modified by an antivirus, and that you are using a legitimate copy.", false);
+
 		} catch (final Throwable t) {
 			CommonCore.sneaky(t);
 		}
