@@ -1,5 +1,6 @@
 package org.mineacademy.fo.model;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,6 +28,14 @@ public final class LitebansTask {
 	private final static LitebansTask instance = new LitebansTask();
 
 	private final ConcurrentMap<String, Long> mutedPlayersByUniqueId = new ConcurrentHashMap<>();
+
+	/**
+	 * UUIDs whose join-time async lookup has not yet succeeded. Triggers a
+	 * synchronous fallback lookup on the next {@link #isMuted(UUID)} call,
+	 * and is cleared the moment any successful lookup or live entryAdded
+	 * event populates the cache for the player.
+	 */
+	private final Set<String> pendingLookupUniqueIds = ConcurrentHashMap.newKeySet();
 
 	private volatile boolean enabled = false;
 
@@ -80,14 +89,20 @@ public final class LitebansTask {
 		}
 
 		this.mutedPlayersByUniqueId.clear();
+		this.pendingLookupUniqueIds.clear();
 		this.registeredListener = null;
 		this.enabled = false;
 	}
 
 	/**
-	 * Called when a player joins. Performs a single async lookup to seed the cache
-	 * for pre-existing mutes (entries added before our listener was registered, or
-	 * on other network nodes with broadcast sync disabled).
+	 * Called when a player joins. Schedules a single async lookup to seed the cache
+	 * for pre-existing mutes (entries added before our listener was registered, on
+	 * offline players, or on other network nodes with broadcast sync disabled).
+	 *
+	 * Transient LiteBans DB failures (e.g. {@code SQLNonTransientConnectionException}
+	 * from an idle pool socket closed by the MariaDB server) leave the UUID marked
+	 * pending so {@link #isMuted(UUID)} performs a synchronous fallback lookup on
+	 * the next chat event rather than silently letting a muted player through.
 	 *
 	 * Safe to call from the main thread: schedules an async task internally.
 	 */
@@ -95,32 +110,58 @@ public final class LitebansTask {
 		if (!this.enabled)
 			return;
 
-		Platform.runTaskAsync(() -> {
-			try {
-				LitebansHook.lookupAndCache(this.mutedPlayersByUniqueId, uniqueId);
+		this.pendingLookupUniqueIds.add(uniqueId.toString());
+		Platform.runTaskAsync(() -> this.tryLookup(uniqueId, false));
+	}
 
-			} catch (final Throwable t) {
-				CommonCore.error(t, "Failed to look up LiteBans mute for " + uniqueId);
-			}
-		});
+	/*
+	 * Run the LiteBans mute lookup. Clears the pending flag on success.
+	 * Async-only failures are warned (so server owners see the DB issue once);
+	 * synchronous-fallback failures are silent because they would otherwise spam
+	 * the console with one warning per chat message during a LiteBans outage.
+	 */
+	private void tryLookup(final UUID uniqueId, final boolean fromSyncFallback) {
+		try {
+			LitebansHook.lookupAndCache(this.mutedPlayersByUniqueId, uniqueId);
+			this.pendingLookupUniqueIds.remove(uniqueId.toString());
+
+		} catch (final Throwable t) {
+			if (!fromSyncFallback)
+				CommonCore.warning("LiteBans mute lookup failed for " + uniqueId + " (" + t.getClass().getSimpleName()
+						+ (t.getMessage() != null ? ": " + t.getMessage() : "")
+						+ "). Will retry on the next mute check for this player.");
+		}
 	}
 
 	/**
 	 * Called when a player quits. Evicts the cache entry to keep memory bounded.
 	 */
 	public void onPlayerQuit(final UUID uniqueId) {
-		this.mutedPlayersByUniqueId.remove(uniqueId.toString());
+		final String key = uniqueId.toString();
+
+		this.mutedPlayersByUniqueId.remove(key);
+		this.pendingLookupUniqueIds.remove(key);
 	}
 
 	@Deprecated
 	public boolean isMuted(final UUID uniqueId) {
-		final Long until = this.mutedPlayersByUniqueId.get(uniqueId.toString());
+		final String key = uniqueId.toString();
+
+		// Synchronous fallback: if the join-time async lookup failed, query LiteBans
+		// now so a transient DB hiccup does not let a muted player chat freely. Chat
+		// events are processed off the main thread on modern Paper / Folia, so a
+		// brief blocking DB call here is acceptable. Self-healing: the pending flag
+		// is cleared on the first success, after which this branch is skipped.
+		if (this.enabled && this.pendingLookupUniqueIds.contains(key))
+			this.tryLookup(uniqueId, true);
+
+		final Long until = this.mutedPlayersByUniqueId.get(key);
 
 		if (until == null)
 			return false;
 
 		if (until > 0 && until < System.currentTimeMillis()) {
-			this.mutedPlayersByUniqueId.remove(uniqueId.toString());
+			this.mutedPlayersByUniqueId.remove(key);
 
 			return false;
 		}
