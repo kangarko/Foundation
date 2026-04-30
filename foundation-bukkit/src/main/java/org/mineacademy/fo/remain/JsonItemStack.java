@@ -394,26 +394,41 @@ public class JsonItemStack {
 			} catch (final NoSuchMethodError err) {
 				throw new FoException("Found Paper-serialized item but your server does not support its deserialization back to ItemStack. "
 						+ "Items stores as JSON might only be turned into ItemStacks on Paper servers with version equals or greater than the server which serialized it. Got: " + itemJson, false);
-			} catch (final IllegalArgumentException ex) {
-				if (ex.getMessage().contains("Failed to get"))
-					CommonCore.warning("Failed to convert JSON into ItemStack using native method, falling back to legacy. Custom stuff will be removed. "
-							+ "This is because the ItemStack is no longer valid (this is NOT issue in our plugin, "
-							+ "rather the itemstack contained custom data which got corrupted or you deleted your resourcepack or other plugin)! JSON: " + string);
-				else if (ex.getMessage() != null && ex.getMessage().contains("Not a number")) {
-					final String sanitized = string.replace("\"Infinity\"", "1.0E10").replace("\"-Infinity\"", "-1.0E10").replace("\"NaN\"", "0");
+			} catch (final Throwable ex) {
+				// Hacked items / NBT-editor items / outdated custom data may make Mojang's codec throw any
+				// kind of exception (IllegalArgumentException "Not a number", NullPointerException from
+				// nested entity_data parsing, etc). Catch broadly so the server can keep loading other rows.
+				final String message = ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage();
+
+				if (message.contains("Not a number")) {
+					final String sanitized = string
+							.replace("\"Infinity\"", "1.0E10").replace("\"-Infinity\"", "-1.0E10").replace("\"NaN\"", "0")
+							.replace("Infinityd", "1.0E10d").replace("-Infinityd", "-1.0E10d")
+							.replace("Infinityf", "1.0E10f").replace("-Infinityf", "-1.0E10f")
+							.replace("NaNd", "0d").replace("NaNf", "0f");
 
 					try {
 						return Bukkit.getUnsafe().deserializeItemFromJson(CommonCore.GSON.fromJson(sanitized, JsonObject.class));
 
-					} catch (final IllegalArgumentException retryEx) {
-						CommonCore.warning("Failed to deserialize item even after sanitizing Infinity/NaN values: " + retryEx.getMessage());
+					} catch (final Throwable retryEx) {
+						CommonCore.warning("Skipping corrupt JSON item — deserialization failed even after sanitizing Infinity/NaN values: " + retryEx.getMessage() + ". JSON: " + string);
+
+						return null;
 					}
-				} else
-					throw ex;
+				}
+
+				CommonCore.warning("Skipping corrupt JSON item — deserialization failed: " + message + ". This usually means the item was created by a hacked client/NBT editor or its custom data is no longer valid (e.g. resourcepack removed). JSON: " + string);
+
+				return null;
 			}
 
-		// Fail-safe (manual attempt at loading)
-		ValidCore.checkBoolean(itemJson.has("type"), "Missing 'type' in JSON item: " + string);
+		// Legacy fallback for old-format items that pre-date Paper's serializeItemAsJson() (use "type" instead of "id").
+		// Be tolerant: silently skip corrupt rows (return null) instead of crashing the entire DB load.
+		if (!itemJson.has("type")) {
+			CommonCore.warning("Skipping JSON item with no 'id' or 'type' field: " + string);
+
+			return null;
+		}
 
 		final String type = itemJson.get("type").getAsString();
 		final Integer durability = itemJson.has("durability") ? itemJson.get("durability").getAsInt() : null;
