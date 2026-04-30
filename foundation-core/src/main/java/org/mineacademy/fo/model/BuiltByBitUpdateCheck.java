@@ -116,31 +116,43 @@ public final class BuiltByBitUpdateCheck implements Runnable {
 	 * Helper method to check if the new version is newer than the current version.
 	 */
 	private static boolean isNewerVersion(String currentVersion, String newVersion) {
-		currentVersion = currentVersion.replaceAll("[^\\d.]", "");
-		newVersion = newVersion.replaceAll("[^\\d.]", "");
+		final int[] current = parseVersion(currentVersion);
+		final int[] latest = parseVersion(newVersion);
 
-		final String[] currentParts = currentVersion.split("\\.");
-		final String[] newParts = newVersion.split("\\.");
-
-		// To handle missing minor or patch, we assign 0 to missing parts.
-		final int currentMajor = Integer.parseInt(currentParts[0]);
-		final int currentMinor = currentParts.length > 1 ? Integer.parseInt(currentParts[1]) : 0;
-		final int currentPatch = currentParts.length > 2 ? Integer.parseInt(currentParts[2]) : 0;
-
-		final int newMajor = Integer.parseInt(newParts[0]);
-		final int newMinor = newParts.length > 1 ? Integer.parseInt(newParts[1]) : 0;
-		final int newPatch = newParts.length > 2 ? Integer.parseInt(newParts[2]) : 0;
-
-		if (newMajor > currentMajor)
+		if (latest[0] > current[0])
 			return true;
-		if (newMajor < currentMajor)
+		if (latest[0] < current[0])
 			return false;
 
-		if (newMinor > currentMinor)
+		if (latest[1] > current[1])
 			return true;
-		if (newMinor < currentMinor)
+		if (latest[1] < current[1])
 			return false;
 
-		return newPatch > currentPatch;
+		return latest[2] > current[2];
+	}
+
+	/*
+	 * Parse a version string into an int[3] of {major, minor, patch}, treating any
+	 * missing or non-numeric segment as 0. Tolerates labels, prefixes, suffixes,
+	 * duplicate or edge dots (e.g. "v1.0", "1.0.0-RC1", "Update .1.2", "1..0", "1.").
+	 */
+	private static int[] parseVersion(String version) {
+		String stripped = version.replaceAll("[^\\d.]", "");
+		stripped = stripped.replaceAll("\\.+", ".");
+		stripped = stripped.replaceAll("^\\.|\\.$", "");
+
+		final int[] parts = { 0, 0, 0 };
+
+		if (stripped.isEmpty())
+			return parts;
+
+		final String[] split = stripped.split("\\.");
+		final int limit = Math.min(split.length, parts.length);
+
+		for (int i = 0; i < limit; i++)
+			parts[i] = Integer.parseInt(split[i]);
+
+		return parts;
 	}
 }
