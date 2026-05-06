@@ -215,6 +215,9 @@ public abstract class SerializeUtilCore {
 			return map;
 		}
 
+		else if (object instanceof Number)
+			return object;
+
 		// Adjust enum serialization at the end
 		else if (object instanceof Enum)
 			return object.getClass().getSimpleName().equals("ChatColor") ? ((Enum<?>) object).name() : object.toString();
