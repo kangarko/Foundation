@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
 import org.mineacademy.fo.exception.FoException;
@@ -255,14 +255,14 @@ public abstract class PacketListener {
 			}
 
 			final Object nmsPacket = event.getPacket().getHandle();
-			final Object[] packetRCs = ReflectionUtil.getRecordComponents(nmsPacket.getClass());
-			final Object nmsStatus = ReflectionUtil.getRecordComponentAccessor(packetRCs[0]).invoke(nmsPacket);
-			final Object[] statusRCs = ReflectionUtil.getRecordComponents(nmsStatus.getClass());
+			final RecordComponent[] packetRCs = nmsPacket.getClass().getRecordComponents();
+			final Object nmsStatus = packetRCs[0].getAccessor().invoke(nmsPacket);
+			final RecordComponent[] statusRCs = nmsStatus.getClass().getRecordComponents();
 
 			final Object[] statusValues = new Object[statusRCs.length];
 
 			for (int i = 0; i < statusRCs.length; i++)
-				statusValues[i] = ReflectionUtil.getRecordComponentAccessor(statusRCs[i]).invoke(nmsStatus);
+				statusValues[i] = statusRCs[i].getAccessor().invoke(nmsStatus);
 
 			final WrappedChatComponent motd = ping.getMotD();
 
@@ -271,8 +271,7 @@ public abstract class PacketListener {
 
 			if (statusValues[1] instanceof Optional && ((Optional<?>) statusValues[1]).isPresent()) {
 				final Object origPlayers = ((Optional<?>) statusValues[1]).get();
-				final Object[] playerRCs = ReflectionUtil.getRecordComponents(origPlayers.getClass());
-				final Class<?>[] playerTypes = ReflectionUtil.getRecordComponentTypes(playerRCs);
+				final Class<?>[] playerTypes = recordComponentTypes(origPlayers.getClass().getRecordComponents());
 
 				final Object newPlayers = origPlayers.getClass()
 						.getDeclaredConstructor(playerTypes)
@@ -283,8 +282,7 @@ public abstract class PacketListener {
 
 			if (statusValues[2] instanceof Optional && ((Optional<?>) statusValues[2]).isPresent()) {
 				final Object origVersion = ((Optional<?>) statusValues[2]).get();
-				final Object[] versionRCs = ReflectionUtil.getRecordComponents(origVersion.getClass());
-				final Class<?>[] versionTypes = ReflectionUtil.getRecordComponentTypes(versionRCs);
+				final Class<?>[] versionTypes = recordComponentTypes(origVersion.getClass().getRecordComponents());
 
 				final Object newVersion = origVersion.getClass()
 						.getDeclaredConstructor(versionTypes)
@@ -293,17 +291,23 @@ public abstract class PacketListener {
 				statusValues[2] = Optional.of(newVersion);
 			}
 
-			final Class<?>[] statusTypes = ReflectionUtil.getRecordComponentTypes(statusRCs);
-			final Object newStatus = nmsStatus.getClass().getDeclaredConstructor(statusTypes).newInstance(statusValues);
-
-			final Class<?>[] packetTypes = ReflectionUtil.getRecordComponentTypes(packetRCs);
-			final Object newPacket = nmsPacket.getClass().getDeclaredConstructor(packetTypes).newInstance(newStatus);
+			final Object newStatus = nmsStatus.getClass().getDeclaredConstructor(recordComponentTypes(statusRCs)).newInstance(statusValues);
+			final Object newPacket = nmsPacket.getClass().getDeclaredConstructor(recordComponentTypes(packetRCs)).newInstance(newStatus);
 
 			event.setPacket(new PacketContainer(event.getPacketType(), newPacket));
 
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException("Failed to write server ping via NMS reflection", ex);
 		}
+	}
+
+	private static Class<?>[] recordComponentTypes(final RecordComponent[] components) {
+		final Class<?>[] types = new Class<?>[components.length];
+
+		for (int i = 0; i < components.length; i++)
+			types[i] = components[i].getType();
+
+		return types;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

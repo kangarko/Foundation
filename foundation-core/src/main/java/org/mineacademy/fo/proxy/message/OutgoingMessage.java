@@ -331,7 +331,7 @@ public final class OutgoingMessage extends Message {
 			final String channel = this.getChannel();
 			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
 
-			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
+			final boolean isSpammyPacket = this.getMessage().name().startsWith("DIRECTORY_");
 
 			if (server.isEmpty()) {
 				if (!isSpammyPacket)
@@ -368,7 +368,7 @@ public final class OutgoingMessage extends Message {
 	public void broadcastExcept(final String ignoredServerName) {
 		synchronized (ProxyListener.DEFAULT_CHANNEL) {
 			final String channel = this.getChannel();
-			final boolean isSpammyPacket = this.getMessage().name().startsWith("SYNCED_CACHE");
+			final boolean isSpammyPacket = this.getMessage().name().startsWith("DIRECTORY_");
 
 			for (final FoundationServer otherServer : Platform.getServers()) {
 				if (otherServer.isEmpty()) {

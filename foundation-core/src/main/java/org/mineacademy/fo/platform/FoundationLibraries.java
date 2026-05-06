@@ -1,6 +1,5 @@
 package org.mineacademy.fo.platform;
 
-import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ReflectionUtil;
 
 /**
@@ -17,7 +16,9 @@ final class FoundationLibraries {
 	public static void load(final FoundationPlugin plugin) {
 		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "3.0.1");
 
-		if (CommonCore.getJavaVersion() >= 15 && !ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
+		// Java 15 removed the bundled Nashorn engine. Foundation requires Java 21+
+		// so the standalone Nashorn JAR is always needed for JS chat-format conditions.
+		if (!ReflectionUtil.isClassAvailable("org.openjdk.nashorn.api.scripting.NashornScriptEngine"))
 			plugin.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.7");
 
 		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
