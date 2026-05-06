@@ -65,6 +65,15 @@ public abstract class FileConfig extends ConfigSection {
 	private String pathPrefix;
 
 	/**
+	 * Set to true when {@link #get(String, Class)} injects a missing key from the
+	 * defaults config into the in-memory map, or when {@link #move(String, String)}
+	 * migrates a key. {@link #loadAndExtract(String, String)} flushes this to disk
+	 * by calling {@link #save()} once before returning, so the "Updating X.yml at..."
+	 * log message actually persists across restarts. Reset by {@link #save()}.
+	 */
+	private boolean defaultsInjected = false;
+
+	/**
 	 * Creates an empty {@link FileConfig} with no default values.
 	 */
 	public FileConfig() {
@@ -111,6 +120,11 @@ public abstract class FileConfig extends ConfigSection {
 
 		} else
 			this.loadFromFile(FileUtil.createIfNotExists(to));
+
+		// Persist any defaults injected during onLoad so the same "Updating X.yml at..."
+		// messages don't reappear on every restart. canSave() lets read-only configs opt out.
+		if (this.defaultsInjected && this.canSave())
+			this.save();
 	}
 
 	/**
@@ -224,6 +238,8 @@ public abstract class FileConfig extends ConfigSection {
 				try (Writer writer = new OutputStreamWriter(new FileOutputStream(this.file), StandardCharsets.UTF_8)) {
 					writer.write(data);
 				}
+
+				this.defaultsInjected = false;
 			}
 
 		} catch (final FileNotFoundException ex) {
@@ -301,6 +317,7 @@ public abstract class FileConfig extends ConfigSection {
 
 		this.setAbsolute(toAbs, oldValue);
 		this.set(fromRel, null);
+		this.defaultsInjected = true;
 
 		CommonCore.log("&7Updating " + this.getFile().getName() + ". Moving &b'&f" + this.buildPathPrefix(fromRel) + "&b' &7to " + "&b'&f" + toAbs + "&b'" + "&r");
 	}
@@ -407,6 +424,7 @@ public abstract class FileConfig extends ConfigSection {
 
 				CommonCore.log("&7Updating " + this.getFile().getName() + " at &b'&f" + path + "&b' &7-> " + (defValue != null ? "&b'&f" + defValue.toString().replace("\n", ", ") + "&b'" : "&ckey removed"));
 
+				this.defaultsInjected = true;
 				this.store(path, defValue);
 				return defValue;
 			}
