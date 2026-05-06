@@ -3,7 +3,6 @@ package org.mineacademy.fo;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.collection.SerializedMap;
@@ -380,22 +379,6 @@ public abstract class ValidCore {
 	 */
 	public static boolean isInRange(final long value, final long min, final long max) {
 		return value >= min && value <= max;
-	}
-
-	/**
-	 * Return true if the given object is a {@link UUID}.
-	 *
-	 * @param object
-	 * @return
-	 */
-	public static boolean isUUID(final Object object) {
-		if (object instanceof String) {
-			final String[] components = object.toString().split("-");
-
-			return components.length == 5;
-		}
-
-		return object instanceof UUID;
 	}
 
 	/**

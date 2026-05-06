@@ -44,7 +44,6 @@ import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.CompMonsterEgg;
 import org.mineacademy.fo.remain.CompProperty;
 import org.mineacademy.fo.remain.Remain;
-import org.mineacademy.fo.remain.nbt.NBTItem;
 
 import com.google.common.collect.MultimapBuilder;
 
@@ -861,20 +860,6 @@ public final class ItemCreator {
 		// Apply Bukkit metadata
 		if (compiledMeta instanceof ItemMeta)
 			compiledItem.setItemMeta((ItemMeta) compiledMeta);
-
-		//
-		// From now on we have to re-set the item
-		//
-
-		// 1.7.10 hack to add glow, requires no enchants
-		if (this.glow && MinecraftVersion.equals(V.v1_7) && (this.enchants == null || this.enchants.isEmpty())) {
-			final NBTItem nbtItem = new NBTItem(compiledItem);
-
-			nbtItem.removeKey("ench");
-			nbtItem.addCompound("ench");
-
-			compiledItem = nbtItem.getItem();
-		}
 
 		// Apply NBT tags
 		for (final Entry<String, String> entry : this.tags.entrySet())

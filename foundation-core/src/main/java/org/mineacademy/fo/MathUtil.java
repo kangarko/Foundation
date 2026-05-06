@@ -31,16 +31,6 @@ public final class MathUtil {
 	private final static DecimalFormat twoDigitsFormat = new DecimalFormat("#.##");
 
 	/**
-	 * Formatter that transforms whole numbers into whole decimals with 3 decimal points
-	 */
-	private final static DecimalFormat threeDigitsFormat = new DecimalFormat("#.###");
-
-	/**
-	 * Formatter that transforms whole numbers into whole decimals with 5 decimal points
-	 */
-	private final static DecimalFormat fiveDigitsFormat = new DecimalFormat("#.#####");
-
-	/**
 	 * Holds all valid roman numbers
 	 */
 	private final static NavigableMap<Integer, String> romanNumbers = new TreeMap<>();
@@ -208,50 +198,6 @@ public final class MathUtil {
 		ValidCore.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
 		return Double.parseDouble(twoDigitsFormat.format(value).replace(",", "."));
-	}
-
-	/**
-	 * Formats the given number into three digits.
-	 *
-	 * @param value
-	 * @return
-	 */
-	public static String formatThreeDigits(final double value) {
-		return threeDigitsFormat.format(value).replace(",", ".");
-	}
-
-	/**
-	 * Formats the given number into three digits as a double.
-	 *
-	 * @param value
-	 * @return
-	 */
-	public static double formatThreeDigitsD(final double value) {
-		ValidCore.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
-
-		return Double.parseDouble(threeDigitsFormat.format(value).replace(",", "."));
-	}
-
-	/**
-	 * Formats the given number into five digits.
-	 *
-	 * @param value
-	 * @return
-	 */
-	public static String formatFiveDigits(final double value) {
-		return fiveDigitsFormat.format(value).replace(",", ".");
-	}
-
-	/**
-	 * Formats the given number into five digits as a double.
-	 *
-	 * @param value
-	 * @return
-	 */
-	public static double formatFiveDigitsD(final double value) {
-		ValidCore.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
-
-		return Double.parseDouble(fiveDigitsFormat.format(value).replace(",", "."));
 	}
 
 	/**

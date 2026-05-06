@@ -26,15 +26,15 @@ public enum CompParticle {
 	/**
 	 * @Deprecated removed in 1.13, use {@value CompParticle#BLOCK_DUST} instead with metadata
 	 */
-	BARRIER("barrier", "BARRIER", null) {
+	BARRIER("BARRIER", null) {
 		@Override
 		public boolean isRemoved() {
 			return true;
 		}
 	},
-	BLOCK_CRACK("blockcrack_", "BLOCK_CRACK", "BLOCK"),
+	BLOCK_CRACK("BLOCK_CRACK", "BLOCK"),
 	BLOCK_CRUMBLE("BLOCK_CRUMBLE", "BLOCK_CRUMBLE"),
-	BLOCK_DUST("blockdust_", "BLOCK_DUST", "BLOCK"),
+	BLOCK_DUST("BLOCK_DUST", "BLOCK"),
 	/**
 	 * Uses BlockData as DataType
 	 */
@@ -45,18 +45,18 @@ public enum CompParticle {
 	CAMPFIRE_SIGNAL_SMOKE("CAMPFIRE_SIGNAL_SMOKE", "CAMPFIRE_SIGNAL_SMOKE"),
 	CHERRY_LEAVES("CHERRY_LEAVES", "CHERRY_LEAVES"),
 	PALE_OAK_LEAVES("CHERRY_LEAVES", "CHERRY_LEAVES"),
-	CLOUD("cloud", "CLOUD", "CLOUD"),
+	CLOUD("CLOUD", "CLOUD"),
 	COMPOSTER("COMPOSTER", "COMPOSTER"),
 	CRIMSON_SPORE("CRIMSON_SPORE", "CRIMSON_SPORE"),
-	CRIT("crit", "CRIT", "CRIT"),
-	CRIT_MAGIC("magicCrit", "CRIT_MAGIC", "ENCHANTED_HIT"),
+	CRIT("CRIT", "CRIT"),
+	CRIT_MAGIC("CRIT_MAGIC", "ENCHANTED_HIT"),
 	CURRENT_DOWN("CURRENT_DOWN", "CURRENT_DOWN"),
 	DAMAGE_INDICATOR("DAMAGE_INDICATOR", "DAMAGE_INDICATOR"),
 	DOLPHIN("DOLPHIN", "DOLPHIN"),
 	// MC 1.8.8+
 	DRAGON_BREATH("DRAGON_BREATH", "DRAGON_BREATH"),
-	DRIP_LAVA("dripLava", "DRIP_LAVA", "DRIPPING_LAVA"),
-	DRIP_WATER("dripWater", "DRIP_WATER", "DRIPPING_WATER"),
+	DRIP_LAVA("DRIP_LAVA", "DRIPPING_LAVA"),
+	DRIP_WATER("DRIP_WATER", "DRIPPING_WATER"),
 	DRIPPING_DRIPSTONE_LAVA("DRIPPING_DRIPSTONE_LAVA", "DRIPPING_DRIPSTONE_LAVA"),
 	DRIPPING_DRIPSTONE_WATER("DRIPPING_DRIPSTONE_WATER", "DRIPPING_DRIPSTONE_WATER"),
 	DRIPPING_HONEY("DRIPPING_HONEY", "DRIPPING_HONEY"),
@@ -69,11 +69,11 @@ public enum CompParticle {
 	DUST_PLUME("DUST_PLUME", "DUST_PLUME"),
 	EGG_CRACK("EGG_CRACK", "EGG_CRACK"),
 	ELECTRIC_SPARK("ELECTRIC_SPARK", "ELECTRIC_SPARK"),
-	ENCHANTMENT_TABLE("enchantmenttable", "ENCHANTMENT_TABLE", "ENCHANT"),
+	ENCHANTMENT_TABLE("ENCHANTMENT_TABLE", "ENCHANT"),
 	END_ROD("END_ROD", "END_ROD"),
-	EXPLOSION_HUGE("hugeexplosion", "EXPLOSION_HUGE", "EXPLOSION_EMITTER"),
-	EXPLOSION_LARGE("largeexplode", "EXPLOSION_LARGE", "EXPLOSION"),
-	EXPLOSION_NORMAL("explode", "EXPLOSION_NORMAL", "POOF"),
+	EXPLOSION_HUGE("EXPLOSION_HUGE", "EXPLOSION_EMITTER"),
+	EXPLOSION_LARGE("EXPLOSION_LARGE", "EXPLOSION"),
+	EXPLOSION_NORMAL("EXPLOSION_NORMAL", "POOF"),
 	FALLING_DRIPSTONE_LAVA("FALLING_DRIPSTONE_LAVA", "FALLING_DRIPSTONE_LAVA"),
 	FALLING_DRIPSTONE_WATER("FALLING_DRIPSTONE_WATER", "FALLING_DRIPSTONE_WATER"),
 	/**
@@ -88,23 +88,23 @@ public enum CompParticle {
 	FALLING_OBSIDIAN_TEAR("FALLING_OBSIDIAN_TEAR", "FALLING_OBSIDIAN_TEAR"),
 	FALLING_SPORE_BLOSSOM("FALLING_SPORE_BLOSSOM", "FALLING_SPORE_BLOSSOM"),
 	FALLING_WATER("FALLING_WATER", "FALLING_WATER"),
-	FIREWORKS_SPARK("fireworksSpark", "FIREWORKS_SPARK", "FIREWORK"),
-	FLAME("flame", "FLAME", "FLAME"),
+	FIREWORKS_SPARK("FIREWORKS_SPARK", "FIREWORK"),
+	FLAME("FLAME", "FLAME"),
 	FLASH("FLASH", "FLASH"),
 	GLOW("GLOW", "GLOW"),
 	GLOW_SQUID_INK("GLOW_SQUID_INK", "GLOW_SQUID_INK"),
 	GUST("GUST", "GUST"),
 	GUST_EMITTER_LARGE("GUST_EMITTER_LARGE", "GUST_EMITTER_LARGE"),
 	GUST_EMITTER_SMALL("GUST_EMITTER_SMALL", "GUST_EMITTER_SMALL"),
-	HEART("heart", "HEART", "HEART"),
+	HEART("HEART", "HEART"),
 	INFESTED("INFESTED", "INFESTED"),
 	ITEM_COBWEB("ITEM_COBWEB", "ITEM_COBWEB"),
-	ITEM_CRACK("iconcrack_", "ITEM_CRACK", "ITEM"),
+	ITEM_CRACK("ITEM_CRACK", "ITEM"),
 	/**
 	 * @deprecated removed in 1.20.5
 	 */
 	@Deprecated
-	ITEM_TAKE("take", "ITEM_TAKE", null) {
+	ITEM_TAKE("ITEM_TAKE", null) {
 		@Override
 		public boolean isRemoved() {
 			return true;
@@ -113,14 +113,14 @@ public enum CompParticle {
 	LANDING_HONEY("LANDING_HONEY", "LANDING_HONEY"),
 	LANDING_LAVA("LANDING_LAVA", "LANDING_LAVA"),
 	LANDING_OBSIDIAN_TEAR("LANDING_OBSIDIAN_TEAR", "LANDING_OBSIDIAN_TEAR"),
-	LAVA("lava", "LAVA", "LAVA"),
-	MOB_APPEARANCE("mobappearance", "MOB_APPEARANCE", "ELDER_GUARDIAN"),
+	LAVA("LAVA", "LAVA"),
+	MOB_APPEARANCE("MOB_APPEARANCE", "ELDER_GUARDIAN"),
 	NAUTILUS("NAUTILUS", "NAUTILUS"),
-	NOTE("note", "NOTE", "NOTE"),
+	NOTE("NOTE", "NOTE"),
 	OMINOUS_SPAWNING("OMINOUS_SPAWNING", "OMINOUS_SPAWNING"),
-	PORTAL("portal", "PORTAL", "PORTAL"),
+	PORTAL("PORTAL", "PORTAL"),
 	RAID_OMEN("RAID_OMEN", "RAID_OMEN"),
-	REDSTONE("reddust", "REDSTONE", "DUST"),
+	REDSTONE("REDSTONE", "DUST"),
 	REVERSE_PORTAL("REVERSE_PORTAL", "REVERSE_PORTAL"),
 	SCRAPE("SCRAPE", "SCRAPE"),
 	/**
@@ -133,40 +133,40 @@ public enum CompParticle {
 	 * Use {@link Integer} as DataType
 	 */
 	SHRIEK("SHRIEK", "SHRIEK"),
-	SLIME("slime", "SLIME", "ITEM_SLIME"),
+	SLIME("SLIME", "ITEM_SLIME"),
 	SMALL_FLAME("SMALL_FLAME", "SMALL_FLAME"),
 	SMALL_GUST("SMALL_GUST", "SMALL_GUST"),
-	SMOKE_LARGE("largesmoke", "SMOKE_LARGE", "LARGE_SMOKE"),
-	SMOKE_NORMAL("smoke", "SMOKE_NORMAL", "SMOKE"),
+	SMOKE_LARGE("SMOKE_LARGE", "LARGE_SMOKE"),
+	SMOKE_NORMAL("SMOKE_NORMAL", "SMOKE"),
 	SNEEZE("SNEEZE", "SNEEZE"),
-	SNOW_SHOVEL("snowshovel", "SNOW_SHOVEL"),
-	SNOWBALL("snowballpoof", "SNOWBALL", "ITEM_SNOWBALL"),
+	SNOW_SHOVEL("SNOW_SHOVEL", "SNOW_SHOVEL"),
+	SNOWBALL("SNOWBALL", "ITEM_SNOWBALL"),
 	SNOWFLAKE("SNOWFLAKE", "SNOWFLAKE"),
 	SONIC_BOOM("SONIC_BOOM", "SONIC_BOOM"),
 	SOUL("SOUL", "SOUL"),
 	SOUL_FIRE_FLAME("SOUL_FIRE_FLAME", "SOUL_FIRE_FLAME"),
-	SPELL("spell", "SPELL", "EFFECT"),
-	SPELL_INSTANT("instantSpell", "SPELL_INSTANT", "INSTANT_EFFECT"),
-	SPELL_MOB("mobSpell", "SPELL_MOB", "ENTITY_EFFECT"),
+	SPELL("SPELL", "EFFECT"),
+	SPELL_INSTANT("SPELL_INSTANT", "INSTANT_EFFECT"),
+	SPELL_MOB("SPELL_MOB", "ENTITY_EFFECT"),
 	/**
 	 * @deprecated removed somewhere in 1.19
 	 */
 	@Deprecated
-	SPELL_MOB_AMBIENT("mobSpellAmbient", "SPELL_MOB_AMBIENT", "AMBIENT_ENTITY_EFFECT") {
+	SPELL_MOB_AMBIENT("SPELL_MOB_AMBIENT", "AMBIENT_ENTITY_EFFECT") {
 		@Override
 		public boolean isRemoved() {
 			return true;
 		}
 	},
-	SPELL_WITCH("witchMagic", "SPELL_WITCH", "WITCH"),
+	SPELL_WITCH("SPELL_WITCH", "WITCH"),
 	SPIT("SPIT", "SPIT"),
 	SPORE_BLOSSOM_AIR("SPORE_BLOSSOM_AIR", "SPORE_BLOSSOM_AIR"),
 	SQUID_INK("SQUID_INK", "SQUID_INK"),
-	SUSPENDED("suspend", "SUSPENDED", "UNDERWATER"),
-	SUSPENDED_DEPTH("depthsuspend", "SUSPENDED_DEPTH", "UNDERWATER"),
+	SUSPENDED("SUSPENDED", "UNDERWATER"),
+	SUSPENDED_DEPTH("SUSPENDED_DEPTH", "UNDERWATER"),
 	SWEEP_ATTACK("SWEEP_ATTACK", "SWEEP_ATTACK"),
 	TOTEM("TOTEM", "TOTEM_OF_UNDYING"),
-	TOWN_AURA("townaura", "TOWN_AURA", "MYCELIUM"),
+	TOWN_AURA("TOWN_AURA", "MYCELIUM"),
 	TRAIL("TRAIL", "TRAIL"),
 	TRIAL_OMEN("TRIAL_OMEN", "TRIAL_OMEN"),
 	TRIAL_SPAWNER_DETECTION("TRIAL_SPAWNER_DETECTION", "TRIAL_SPAWNER_DETECTION"),
@@ -176,13 +176,13 @@ public enum CompParticle {
 	 * Uses {@link Vibration} as DataType
 	 */
 	VIBRATION("VIBRATION", "VIBRATION"),
-	VILLAGER_ANGRY("angryVillager", "VILLAGER_ANGRY", "ANGRY_VILLAGER"),
-	VILLAGER_HAPPY("happyVillager", "VILLAGER_HAPPY", "HAPPY_VILLAGER"),
+	VILLAGER_ANGRY("VILLAGER_ANGRY", "ANGRY_VILLAGER"),
+	VILLAGER_HAPPY("VILLAGER_HAPPY", "HAPPY_VILLAGER"),
 	WARPED_SPORE("WARPED_SPORE", "WARPED_SPORE"),
-	WATER_BUBBLE("bubble", "WATER_BUBBLE", "BUBBLE"),
-	WATER_DROP("droplet", "WATER_DROP", "RAIN"),
-	WATER_SPLASH("splash", "WATER_SPLASH", "SPLASH"),
-	WATER_WAKE("wake", "WATER_WAKE", "FISHING"),
+	WATER_BUBBLE("WATER_BUBBLE", "BUBBLE"),
+	WATER_DROP("WATER_DROP", "RAIN"),
+	WATER_SPLASH("WATER_SPLASH", "SPLASH"),
+	WATER_WAKE("WATER_WAKE", "FISHING"),
 	WAX_OFF("WAX_OFF", "WAX_OFF"),
 	WAX_ON("WAX_ON", "WAX_ON"),
 	WHITE_ASH("WHITE_ASH", "WHITE_ASH"),
@@ -198,12 +198,6 @@ public enum CompParticle {
 	 */
 	private static final boolean atLeast1_13 = MinecraftVersion.atLeast(V.v1_13);
 	private static final boolean atLeast1_12 = MinecraftVersion.atLeast(V.v1_12);
-	private static final boolean atLeast1_8 = MinecraftVersion.atLeast(V.v1_8);
-
-	/**
-	 * The name for Minecraft 1.7.10
-	 */
-	private final String name1_7;
 
 	/**
 	 * The name used until Minecraft 1.20.4
@@ -234,19 +228,8 @@ public enum CompParticle {
 	 */
 	private final Constructor<?> packetConstructor;
 
-	/*
-	 * Construct a new compatible particle class
-	 */
-	CompParticle(final String nameLegacy, final String nameModern) {
-		this(null, nameLegacy, nameModern);
-	}
-
-	/*
-	 * Construct a new compatible particle class
-	 */
 	@SuppressWarnings("rawtypes")
-	CompParticle(final String name1_7, final String nameLegacy, final String nameModern) {
-		this.name1_7 = name1_7;
+	CompParticle(final String nameLegacy, final String nameModern) {
 		this.nameLegacy = nameLegacy;
 		this.nameModern = nameModern;
 
@@ -269,22 +252,15 @@ public enum CompParticle {
 					return;
 				}
 
-				if (MinecraftVersion.equals(V.v1_7)) {
-					this.nmsEnumParticle = null;
-					this.packetConstructor = ReflectionUtil.getConstructor(packetClass, String.class, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE);
-				}
+				final Class<? extends Enum> particleClass = (Class<? extends Enum>) Remain.getNMSClass("EnumParticle");
 
-				else {
-					final Class<? extends Enum> particleClass = (Class<? extends Enum>) Remain.getNMSClass("EnumParticle");
+				this.nmsEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
 
-					this.nmsEnumParticle = ReflectionUtil.lookupEnumSilent(particleClass, this.name());
-
-					// MC 1.8.8 or newer but lacks this given particle type
-					if (this.nmsEnumParticle == null)
-						this.packetConstructor = null;
-					else
-						this.packetConstructor = ReflectionUtil.getConstructor(packetClass, particleClass, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class);
-				}
+				// MC 1.8.8 or newer but lacks this given particle type
+				if (this.nmsEnumParticle == null)
+					this.packetConstructor = null;
+				else
+					this.packetConstructor = ReflectionUtil.getConstructor(packetClass, particleClass, Boolean.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Float.TYPE, Integer.TYPE, int[].class);
 
 			} else {
 				this.nmsEnumParticle = null;
@@ -550,42 +526,20 @@ public enum CompParticle {
 	@SneakyThrows
 	private Object preparePacket(final double posX, final double posY, final double posZ, final double offsetX, final double offsetY, final double offsetZ, final double speed, final int count, final double extra, int... data) {
 
-		if (atLeast1_8) {
+		if (this == BLOCK_CRACK) {
+			int materialId = 0;
+			int materialData = 0;
 
-			if (this == BLOCK_CRACK) {
-				int materialId = 0;
-				int materialData = 0;
+			if (data.length > 0)
+				materialId = data[0];
 
-				if (data.length > 0)
-					materialId = data[0];
+			if (data.length > 1)
+				materialData = data[1];
 
-				if (data.length > 1)
-					materialData = data[1];
-
-				data = new int[] { materialId, materialId | materialData << 12 };
-			}
-
-			return ReflectionUtil.instantiate(this.packetConstructor, this.nmsEnumParticle, true, (float) posX, (float) posY, (float) posZ, (float) offsetX, (float) offsetY, (float) offsetZ, (float) speed, count, data);
+			data = new int[] { materialId, materialId | materialData << 12 };
 		}
 
-		else {
-			String correctedName = this.name1_7;
-
-			if (this == BLOCK_CRACK || this == ITEM_CRACK || this == BLOCK_DUST) {
-				int materialId = 0;
-				int materialData = 0;
-
-				if (data.length > 0)
-					materialId = data[0];
-
-				if (data.length > 1)
-					materialData = data[1];
-
-				correctedName = correctedName + materialId + "_" + materialData;
-			}
-
-			return ReflectionUtil.instantiate(this.packetConstructor, correctedName, (float) posX, (float) posY, (float) posZ, (float) offsetX, (float) offsetY, (float) offsetZ, (float) speed, count);
-		}
+		return ReflectionUtil.instantiate(this.packetConstructor, this.nmsEnumParticle, true, (float) posX, (float) posY, (float) posZ, (float) offsetX, (float) offsetY, (float) offsetZ, (float) speed, count, data);
 	}
 
 	/**

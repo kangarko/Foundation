@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -153,22 +152,6 @@ public final class PlayerUtil {
 	// ------------------------------------------------------------------------------------------------------------
 	// Statistics
 	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Return the total amount of time the player has spent on the server.
-	 * This will get reset if you delete the playerdata folder inside your main world folder.
-	 *
-	 * **For Minecraft 1.12 and older this returns a tick value, otherwise this returns the
-	 * amount of minutes!**
-	 *
-	 * @param player
-	 * @return
-	 */
-	public static long getPlayTimeTicksOrSeconds(final OfflinePlayer player) {
-		final Statistic playTime = Remain.getPlayTimeStatisticName();
-
-		return getStatistic(player, playTime);
-	}
 
 	/**
 	 * Return statistics of ALL offline players ever played.
@@ -688,82 +671,6 @@ public final class PlayerUtil {
 		Remain.setInvisible(player, vanished);
 	}
 
-	// ------------------------------------------------------------------------------------------------------------
-	// Nicks
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Return the player that matches the given nick name and is not vanished
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static Player getPlayerByNickNoVanish(final String name) {
-		return getPlayerByNick(name, false);
-	}
-
-	/**
-	 * Return the player for the given name or nickname
-	 *
-	 * @param name
-	 * @param ignoreVanished
-	 * @return
-	 */
-	public static Player getPlayerByNick(final String name, final boolean ignoreVanished) {
-		final Player found = lookupNickedPlayer0(name);
-
-		if (ignoreVanished && found != null && PlayerUtil.isVanished(found))
-			return null;
-
-		return found;
-	}
-
-	private static Player lookupNickedPlayer0(final String name) {
-		Player found = null;
-		int delta = Integer.MAX_VALUE;
-
-		for (final Player player : Remain.getOnlinePlayers()) {
-
-			if (player.getName().equalsIgnoreCase(name))
-				return player;
-
-			String nick = HookManager.getNickOrNullColorless(player);
-
-			if (nick == null)
-				nick = player.getName();
-
-			if (nick.toLowerCase().startsWith(name.toLowerCase())) {
-				final int curDelta = Math.abs(nick.length() - name.length());
-
-				if (curDelta < delta) {
-					found = player;
-					delta = curDelta;
-				}
-
-				if (curDelta == 0)
-					break;
-			}
-		}
-
-		return found;
-	}
-
-	/**
-	 * Performs an async player lookup then runs the action in a sync runnable
-	 *
-	 * @param name
-	 * @param syncCallback
-	 */
-	public static void lookupOfflinePlayerAsync(final String name, final Consumer<OfflinePlayer> syncCallback) {
-		Platform.runTaskAsync(() -> {
-			// If the given name is a nick, try to get the real name
-			final String parsedName = HookManager.getNameFromNick(name);
-			final OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(parsedName);
-
-			Platform.runTask(() -> syncCallback.accept(offlinePlayer));
-		});
-	}
-
 	// ----------------------------------------------------------------------------------------------------
 	// Animation
 	// ----------------------------------------------------------------------------------------------------
@@ -809,22 +716,6 @@ public final class PlayerUtil {
 	// ----------------------------------------------------------------------------------------------------
 	// Inventory manipulation
 	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Attempts to retrieve the first item that is similar (See {@link ItemUtil#isSimilar(ItemStack, ItemStack)})
-	 * to the given item.
-	 *
-	 * @param player
-	 * @param item   the found item or null if none
-	 * @return
-	 */
-	public static ItemStack getFirstItem(final Player player, final ItemStack item) {
-		for (final ItemStack otherItem : player.getInventory().getContents())
-			if (otherItem != null && ItemUtil.isSimilar(otherItem, item))
-				return otherItem;
-
-		return null;
-	}
 
 	/**
 	 * Take the given material in the given size, return true if the player

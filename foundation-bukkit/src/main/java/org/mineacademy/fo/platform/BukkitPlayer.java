@@ -245,7 +245,7 @@ final class BukkitPlayer extends FoundationPlayer {
 					this.player.resetTitle();
 
 				} catch (final NoSuchMethodError ex) {
-					Remain.resetTitleLegacy(this.player);
+					// We dont support < 1.8.8
 				}
 		}
 	}

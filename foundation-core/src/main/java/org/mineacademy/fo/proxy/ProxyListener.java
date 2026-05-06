@@ -115,14 +115,6 @@ public abstract class ProxyListener {
 	}
 
 	/**
-	 * @deprecated internal use only
-	 */
-	@Deprecated
-	public static final void clearRegisteredListeners() {
-		registeredListeners.clear();
-	}
-
-	/**
 	 * Return all registered listeners
 	 *
 	 * @return

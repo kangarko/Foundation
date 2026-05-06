@@ -480,20 +480,6 @@ public final class Variable extends YamlConfig {
 	/**
 	 * Return a variable, or null if not loaded
 	 *
-	 * @param name
-	 * @param type
-	 *
-	 * @return
-	 */
-	public static Variable findVariableByFileName(@NonNull final String name, final Type type) {
-		final Variable variable = loadedVariables.findItem(name);
-
-		return variable != null && variable.getType() == type ? variable : null;
-	}
-
-	/**
-	 * Return a variable, or null if not loaded
-	 *
 	 * @param key  the placeholder name without {}
 	 * @param type
 	 *
