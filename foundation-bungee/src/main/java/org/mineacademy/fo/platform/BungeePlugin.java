@@ -8,15 +8,19 @@ import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.annotation.AutoRegister;
+import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.command.SimpleCommandGroup;
 import org.mineacademy.fo.command.SimpleSubCommand;
 import org.mineacademy.fo.library.BungeeLibraryManager;
 import org.mineacademy.fo.library.LibraryManager;
 import org.mineacademy.fo.model.BStatsBungee;
+import org.mineacademy.fo.platform.AutoRegisterScanner.AutoRegisterHandler;
+import org.mineacademy.fo.platform.AutoRegisterScanner.FindInstance;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 
 /**
@@ -112,9 +116,38 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.text.minimessage.MiniMessage"))
 				this.loadLibrary("net.kyori", "adventure-text-minimessage", "4.26.1");
 
-			this.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.4.1");
+			if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.platform.bungeecord.BungeeAudiences"))
+				this.loadLibrary("net.kyori", "adventure-platform-bungeecord", "4.4.1");
 
 			BungeePlatform.inject();
+
+			AutoRegisterScanner.setCustomRegisterHandler(new AutoRegisterHandler() {
+
+				@Override
+				public void onPreScan() {
+				}
+
+				@Override
+				public boolean isIgnored(final Class<?> clazz, final boolean printWarnings) {
+					return false;
+				}
+
+				@Override
+				public boolean canAutoRegister(final Class<?> clazz) {
+					return Listener.class.isAssignableFrom(clazz);
+				}
+
+				@Override
+				public boolean autoRegister(final Class<?> clazz, final Tuple<FindInstance, Object> tuple) {
+					if (Listener.class.isAssignableFrom(clazz)) {
+						BungeePlugin.this.registerEvents(tuple.getValue());
+
+						return true;
+					}
+
+					return false;
+				}
+			});
 
 			// Call delegate
 			this.onPluginLoad();
