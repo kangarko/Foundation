@@ -1200,7 +1200,9 @@ public abstract class FileConfig extends ConfigSection {
 		else if (obj.getClass().isArray())
 			obj = Arrays.asList((Object[]) obj);
 
-		ValidCore.checkBoolean(obj instanceof Collection, "Expected a list at " + path + " in " + this.file + ", got " + obj.getClass().getSimpleName() + " instead!");
+		if (!(obj instanceof Collection))
+			throw new FoException("Expected a list at '" + path + "' in " + this.file + ", got " + obj.getClass().getSimpleName() + " instead! Please check your configuration syntax against the default file.", false);
+
 		return new ArrayList<>((Collection<?>) obj);
 	}
 
@@ -1232,7 +1234,14 @@ public abstract class FileConfig extends ConfigSection {
 			throw new FoException("The map at '" + this.buildPathPrefix(path) + "' in " + this.file + " is set to 'false', which is invalid. Set it to {} to disable it.", false);
 		}
 
-		return SerializedMap.fromObject(object);
+		try {
+			return SerializedMap.fromObject(object);
+		} catch (final FoException ex) {
+			if (ex.getMessage() != null && ex.getMessage().startsWith("Cannot instantiate SerializedMap"))
+				throw new FoException("Expected a map at '" + path + "' in " + this.file + ", got " + object.getClass().getSimpleName() + " instead! Please check your configuration syntax against the default file.", false);
+
+			throw ex;
+		}
 	}
 
 	/**
@@ -1258,8 +1267,19 @@ public abstract class FileConfig extends ConfigSection {
 		final Map<Key, Value> map = new LinkedHashMap<>();
 		final Object savedKeys = this.getObject(path);
 
-		if (savedKeys != null)
-			for (final Map.Entry<String, Object> entry : SerializedMap.fromObject(savedKeys)) {
+		if (savedKeys != null) {
+			final SerializedMap serialized;
+
+			try {
+				serialized = SerializedMap.fromObject(savedKeys);
+			} catch (final FoException ex) {
+				if (ex.getMessage() != null && ex.getMessage().startsWith("Cannot instantiate SerializedMap"))
+					throw new FoException("Expected a map at '" + path + "' in " + this.file + ", got " + savedKeys.getClass().getSimpleName() + " instead! Please check your configuration syntax against the default file.", false);
+
+				throw ex;
+			}
+
+			for (final Map.Entry<String, Object> entry : serialized) {
 				final Key key;
 
 				try {
@@ -1287,6 +1307,7 @@ public abstract class FileConfig extends ConfigSection {
 
 				map.put(key, value);
 			}
+		}
 
 		return map;
 	}
