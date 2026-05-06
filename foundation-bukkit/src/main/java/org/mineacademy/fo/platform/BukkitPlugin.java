@@ -388,8 +388,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			if (!messenger.isOutgoingChannelRegistered(this, ProxyListener.DEFAULT_CHANNEL))
 				messenger.registerOutgoingPluginChannel(this, ProxyListener.DEFAULT_CHANNEL);
 
-			this.onPluginPreStart();
-
 			if (!this.isEnabled() || !this.platformEnabled)
 				return;
 
@@ -745,13 +743,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 	 * Called before the plugin is started, see {@link JavaPlugin#onLoad()}
 	 */
 	protected void onPluginLoad() {
-	}
-
-	/**
-	 * Called before classes are scanned for \@AutoRegister and before settings are loaded.
-	 * Similar to {@link JavaPlugin#onEnable()}
-	 */
-	protected void onPluginPreStart() {
 	}
 
 	/**
