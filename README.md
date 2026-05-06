@@ -139,3 +139,10 @@ No guarantee - this software is provided AS IS, without any guarantee on its
 functionality. We made our best efforts to make Foundation an enterprise-level
 solution for anyone looking to accelerate his coding however we are not
 taking any responsibility for the success or failure you achieve using it.
+
+
+---
+
+<i>Dave Thomas, founder of OTI, godfather of the Eclipse strategy:</i>
+
+<i>Clean code can be read, and enhanced by a developer other than its original author. It has unit and acceptance tests. It has meaningful names. It provides one way rather than many ways for doing one thing. It has minimal dependencies, which are explicitly defined, and provides a clear and minimal API. Code should be literate since depending on the language, not all necessary information can be expressed clearly in code alone.</i>
