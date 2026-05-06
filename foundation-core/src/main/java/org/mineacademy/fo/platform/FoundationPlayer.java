@@ -24,10 +24,8 @@ import org.mineacademy.fo.settings.Lang;
 
 import lombok.NonNull;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.MessageType;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.chat.SignedMessage;
-import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Emitter;
@@ -511,15 +509,6 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	/**
-	 * @deprecated use {@link #sendMessage(Component)}
-	 */
-	@Deprecated
-	@Override
-	public final void sendMessage(final Identity source, final Component message, final MessageType type) {
-		this.sendMessage(message);
-	}
-
-	/**
 	 * Sends a message to the player.
 	 *
 	 * If message start with {@literal <actionbar>, <toast>, <title>, <bossbar>} or {@literal <center>},
@@ -815,7 +804,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param subtitle the subtitle, will be colorized
 	 */
 	public final void showTitle(final int fadeIn, final int stay, final int fadeOut, final SimpleComponent title, final SimpleComponent subtitle) {
-		this.showTitle(Title.title(title.toAdventure(this), subtitle.toAdventure(this), Times.of(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
+		this.showTitle(Title.title(title.toAdventure(this), subtitle.toAdventure(this), Times.times(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
 	}
 
 	/**
