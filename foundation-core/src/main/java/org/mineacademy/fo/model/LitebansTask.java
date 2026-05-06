@@ -57,20 +57,19 @@ public final class LitebansTask {
 			return;
 
 		try {
-			Class.forName("litebans.api.Events");
-
-		} catch (final ClassNotFoundException ex) {
-			CommonCore.log("LiteBans API not found, skipping integration.");
-
-			return;
-		}
-
-		try {
 			this.registeredListener = LitebansHook.registerListener(this.mutedPlayersByUniqueId);
 			this.enabled = true;
 
 		} catch (final Throwable t) {
-			CommonCore.error(t, "Failed to hook into LiteBans, got: " + t.getMessage() + " (unless you explicitly need this integration, you can ignore this error)");
+			// Typically MissingImplementationException when the LiteBans plugin is detected
+			// (Platform#isPluginInstalled returned true at the call site) but its API has
+			// not finished initializing yet, e.g. due to plugin load order on Velocity, or
+			// when another plugin shaded the litebans.api.* classes without LiteBans itself
+			// being installed. Log a warning rather than CommonCore#error, which would
+			// auto-report this expected condition as a crash.
+			CommonCore.warning("Failed to hook into LiteBans (" + t.getClass().getSimpleName()
+					+ (t.getMessage() != null ? ": " + t.getMessage() : "")
+					+ "). LiteBans integration disabled for this session.");
 		}
 	}
 
