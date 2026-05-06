@@ -1672,22 +1672,17 @@ public abstract class CommonCore {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return the corresponding major Java version such as 8 for Java 1.8, or 11 for Java 11.
+	 * Return the major Java version (e.g. 21 for "21.0.1+9").
 	 *
 	 * @return
 	 */
 	public static int getJavaVersion() {
 		String version = System.getProperty("java.version");
 
-		if (version.startsWith("1."))
-			version = version.substring(2, 3);
+		final int dot = version.indexOf(".");
 
-		else {
-			final int dot = version.indexOf(".");
-
-			if (dot != -1)
-				version = version.substring(0, dot);
-		}
+		if (dot != -1)
+			version = version.substring(0, dot);
 
 		if (version.contains("-"))
 			version = version.split("\\-")[0];

@@ -21,7 +21,6 @@ import sun.misc.Unsafe;
  * An abstract class for reflection-based wrappers around class loaders for adding
  * URLs to the classpath.
  */
-@SuppressWarnings("restriction")
 abstract class ClassLoaderHelper {
 
 	/**
@@ -48,26 +47,6 @@ abstract class ClassLoaderHelper {
 	 * net.bytebuddy.agent.ByteBuddyAgent class name for reflections
 	 */
 	private static final String BYTE_BUDDY_AGENT_CLASS = Util.replaceWithDots("net{}bytebuddy{}agent{}ByteBuddyAgent");
-
-	/**
-	 * java.lang.Module methods since we build against Java 8
-	 */
-	private static final Method getModuleMethod, addOpensMethod, getNameMethod;
-
-	static {
-		Method getModule = null, addOpens = null, getName = null;
-		try {
-			final Class<?> moduleClass = Class.forName("java.lang.Module");
-			getModule = Class.class.getMethod("getModule");
-			addOpens = moduleClass.getMethod("addOpens", String.class, moduleClass);
-			getName = moduleClass.getMethod("getName");
-		} catch (final Exception ignored) {
-		} finally {
-			getModuleMethod = getModule;
-			addOpensMethod = addOpens;
-			getNameMethod = getName;
-		}
-	}
 
 	/**
 	 * Unsafe class instance. Used in {@link #getPrivilegedMethodHandle(Method)}.
@@ -196,53 +175,28 @@ abstract class ClassLoaderHelper {
 			CommonCore.error(javaAgentException, "Cannot set accessible " + methodSignature + " using java agent");
 
 		final String packageName = method.getDeclaringClass().getPackage().getName();
-		String moduleName = null;
-		try {
-			moduleName = (String) getNameMethod.invoke(getModuleMethod.invoke(method.getDeclaringClass()));
-		} catch (final Exception ignored) {
-			// Don't throw an exception in case module reflections failed
-		}
+		final String moduleName = method.getDeclaringClass().getModule().getName();
+
 		if (moduleName != null)
-			CommonCore.warning("Cannot set accessible " + methodSignature + ", if you are using Java 9+ try to add the following option to your java command: --add-opens " + moduleName + "/" + packageName + "=ALL-UNNAMED");
+			CommonCore.warning("Cannot set accessible " + methodSignature + ", try to add the following option to your java command: --add-opens " + moduleName + "/" + packageName + "=ALL-UNNAMED");
 		else
-			// In case the try-and-catch above failed, should never happen
 			CommonCore.warning("Cannot set accessible " + methodSignature);
 
 		throw new RuntimeException("Cannot set accessible " + methodSignature);
 	}
 
 	private void handleInaccessibleObjectException(final Exception exception, final String methodSignature) {
-		// InaccessibleObjectException has been added in Java 9
-		if (!exception.getClass().getName().equals("java.lang.reflect.InaccessibleObjectException"))
+		if (!(exception instanceof java.lang.reflect.InaccessibleObjectException))
 			throw new RuntimeException("Cannot set accessible " + methodSignature, exception);
 	}
 
 	/**
-	 * Opens the module of the provided class using reflections.
+	 * Opens the module of the provided class to this helper's module using direct API.
 	 *
 	 * @param toOpen The class
-	 * @throws Exception if an error occurs
 	 */
-	protected static void openModule(final Class<?> toOpen) throws Exception {
-		//
-		// Snippet originally from lucko (Luck) <luck@lucko.me>, who used it in his own class loader
-		//
-		// This is a workaround used to maintain Java 9+ support with reflections
-		// Thanks to this you will be able to run this class loader with Java 8+
-
-		// This is effectively calling:
-		//
-		// toOpen.getModule().addOpens(
-		//     toOpen.getPackage().getName(),
-		//     ClassLoaderHelper.class.getModule()
-		// );
-		//
-		// We use reflection since we build against Java 8.
-
-		final Object urlClassLoaderModule = getModuleMethod.invoke(toOpen);
-		final Object thisModule = getModuleMethod.invoke(ClassLoaderHelper.class);
-
-		addOpensMethod.invoke(urlClassLoaderModule, toOpen.getPackage().getName(), thisModule);
+	protected static void openModule(final Class<?> toOpen) {
+		toOpen.getModule().addOpens(toOpen.getPackage().getName(), ClassLoaderHelper.class.getModule());
 	}
 
 	/**

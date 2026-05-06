@@ -1,6 +1,5 @@
 package org.mineacademy.fo.model;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,8 @@ import lombok.NonNull;
 
 /**
  * An engine that compiles and executes JavaScript code on the fly.
- * We automatically download the Nashorn library for Java 15 and up.
+ * We automatically download the Nashorn library since the bundled engine
+ * was removed in Java 15.
  *
  * See https://winterbe.com/posts/2014/04/05/java8-nashorn-tutorial/
  */
@@ -99,7 +99,8 @@ public final class JavaScriptExecutor {
 				scriptEngine = engineManager.getEngineByName("Nashorn");
 			}
 
-			// If still fails, try to load our own library for Java 15 and up
+			// If still fails, try to load the standalone nashorn-core library that
+			// FoundationLibraries downloads at runtime.
 			if (scriptEngine == null) {
 				final String nashorn = "org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory";
 
@@ -113,27 +114,16 @@ public final class JavaScriptExecutor {
 
 			engine = scriptEngine;
 
-			if (engine == null) {
-				final List<String> warningMessage = CommonCore.newList(
+			if (engine == null)
+				CommonCore.logFramed(false,
 						"ERROR: JavaScript placeholders will not function!",
 						"",
 						"Your Java version/distribution lacks the",
-						"Nashorn library for JavaScript placeholders.");
-
-				if (CommonCore.getJavaVersion() >= 15)
-					warningMessage.addAll(Arrays.asList(
-							"",
-							"To fix this, alert the plugin developer",
-							"to shade or load nashorn-core library in",
-							"this plugin."));
-				else
-					warningMessage.addAll(Arrays.asList(
-							"",
-							"To fix this, install Java 11 from Oracle",
-							"or other vendor that supports Nashorn."));
-
-				CommonCore.logFramed(false, CommonCore.toArray(warningMessage));
-			}
+						"Nashorn library for JavaScript placeholders.",
+						"",
+						"To fix this, alert the plugin developer",
+						"to shade or load nashorn-core library in",
+						"this plugin.");
 
 		} else
 			engine = null;
