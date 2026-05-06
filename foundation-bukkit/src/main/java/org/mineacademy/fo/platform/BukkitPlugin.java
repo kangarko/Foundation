@@ -722,6 +722,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			}
 		}
 
+		SimpleScoreboard.clearBoards();
+
 		if (SimpleSettings.REGISTER_REGIONS)
 			for (final DiskRegion region : DiskRegion.getRegions())
 				try {
