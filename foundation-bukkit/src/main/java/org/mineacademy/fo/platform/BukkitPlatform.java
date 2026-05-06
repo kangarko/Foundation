@@ -536,9 +536,23 @@ final class BukkitPlatform extends FoundationPlatform {
 	@Override
 	protected void dispatchConsoleCommand0(final String command) {
 		if (Bukkit.isPrimaryThread() && !Remain.isFolia())
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+			this.runConsoleCommand(command);
 		else
-			Platform.runTask(0, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+			Platform.runTask(0, () -> this.runConsoleCommand(command));
+	}
+
+	/*
+	 * Dispatches the command and isolates any exception thrown by the target command's plugin
+	 * so it is not reported as our own crash. Bukkit already prints the underlying stack trace
+	 * to the console; we just add a one-line warning naming the command that failed.
+	 */
+	private void runConsoleCommand(final String command) {
+		try {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+
+		} catch (final Throwable t) {
+			CommonCore.warning("Failed to dispatch console command '" + command + "', the error above was thrown by the command's owning plugin, not by " + BukkitPlugin.getInstance().getName() + ". Do not report this to us.");
+		}
 	}
 
 	@Override
