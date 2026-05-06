@@ -59,20 +59,7 @@ public final class NmsEntity {
 		}
 
 		this.bukkitWorld = location.getWorld();
-		this.nmsEntity = MinecraftVersion.equals(V.v1_7) ? getHandle(location, entityClass) : this.createEntity(location, entityClass);
-	}
-
-	//
-	// Return the entity handle, used for MC 1.7.10 to add entity
-	//
-	private static Object getHandle(final Location location, final Class<?> entityClass) {
-		final Entity entity = new Location(location.getWorld(), -1, 0, -1).getWorld().spawn(location, (Class<? extends Entity>) entityClass);
-
-		try {
-			return entity.getClass().getMethod("getHandle").invoke(entity);
-		} catch (final ReflectiveOperationException ex) {
-			throw new Error(ex);
-		}
+		this.nmsEntity = this.createEntity(location, entityClass);
 	}
 
 	//
@@ -150,11 +137,6 @@ final class NmsAccessor {
 	private static boolean hasRandomizeData = false;
 
 	/**
-	 * Is the current Minecraft version older than 1.8.8 ?
-	 */
-	private static boolean olderThan18;
-
-	/**
 	 * Static block initializer
 	 */
 	static void call() {
@@ -168,9 +150,7 @@ final class NmsAccessor {
 			final Class<?> nmsEntity = Remain.getNMSClass("Entity", "net.minecraft.world.entity.Entity");
 			final Class<?> ofcWorld = Remain.getOBCClass("CraftWorld");
 
-			olderThan18 = MinecraftVersion.olderThan(V.v1_8);
-
-			createEntity = MinecraftVersion.newerThan(V.v1_7) ? ReflectionUtil.getMethod(ofcWorld, "createEntity", Location.class, Class.class) : null;
+			createEntity = ReflectionUtil.getMethod(ofcWorld, "createEntity", Location.class, Class.class);
 			getBukkitEntity = nmsEntity.getMethod("getBukkitEntity");
 
 			if (MinecraftVersion.newerThan(V.v1_10)) {
@@ -184,10 +164,8 @@ final class NmsAccessor {
 					hasRandomizeData = true;
 				}
 
-			} else if (MinecraftVersion.newerThan(V.v1_7))
+			} else
 				addEntity = ReflectionUtil.getMethod(ofcWorld, "addEntity", nmsEntity, SpawnReason.class);
-			else
-				addEntity = Remain.getNMSClass("World", "net.minecraft.world.level.World").getDeclaredMethod("addEntity", nmsEntity, SpawnReason.class);
 
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
@@ -206,12 +184,6 @@ final class NmsAccessor {
 	 * @throws ReflectiveOperationException
 	 */
 	static Object addEntity(final World bukkitWorld, final Object nmsEntity, final SpawnReason reason) throws ReflectiveOperationException {
-		if (olderThan18) {
-			addEntity.invoke(Remain.getHandleWorld(bukkitWorld), nmsEntity, reason);
-
-			return getBukkitEntity.invoke(nmsEntity);
-		}
-
 		if (hasEntityConsumer)
 			if (hasRandomizeData)
 				return addEntity.invoke(bukkitWorld, nmsEntity, reason, null, false);

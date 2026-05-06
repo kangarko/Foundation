@@ -153,8 +153,8 @@ public final class TimeUtil {
 	public static long toTicks(final String humanReadableTime) {
 		ValidCore.checkNotNull(humanReadableTime, "Time is null");
 
-        if (humanReadableTime.trim().equals("0"))
-            return 0;
+		if (humanReadableTime.trim().equals("0"))
+			return 0;
 
 		long seconds = 0L;
 
@@ -377,16 +377,6 @@ public final class TimeUtil {
 		final java.util.Date date = new Date(timestamp);
 
 		return new Timestamp(date.getTime()).toString();
-	}
-
-	/**
-	 * Convert the given MySQL timestamp into a long.
-	 *
-	 * @param timestamp
-	 * @return
-	 */
-	public static long fromSQLTimestamp(final String timestamp) {
-		return Timestamp.valueOf(timestamp).getTime();
 	}
 
 	/**

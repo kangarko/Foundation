@@ -1672,25 +1672,6 @@ public abstract class CommonCore {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Return the major Java version (e.g. 21 for "21.0.1+9").
-	 *
-	 * @return
-	 */
-	public static int getJavaVersion() {
-		String version = System.getProperty("java.version");
-
-		final int dot = version.indexOf(".");
-
-		if (dot != -1)
-			version = version.substring(0, dot);
-
-		if (version.contains("-"))
-			version = version.split("\\-")[0];
-
-		return Integer.parseInt(version);
-	}
-
-	/**
 	 * The sleep method from {@link Thread#sleep(long)} but without the need for try-catch.
 	 *
 	 * @param milliseconds

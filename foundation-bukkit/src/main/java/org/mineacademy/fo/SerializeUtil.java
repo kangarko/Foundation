@@ -115,28 +115,6 @@ public final class SerializeUtil extends SerializeUtilCore {
 	}
 
 	/**
-	 * Deserialize the given column from the {@link SimpleResultSet} into a Bukkit's {@link ItemStack}.
-	 *
-	 * Throws {@link InvalidRowException} if the column value is null or empty.
-	 *
-	 * @param resultSet
-	 * @param columnLabel
-	 * @return
-	 * @throws SQLException
-	 */
-	public static ItemStack deserializeItemStrict(final SimpleResultSet resultSet, final String columnLabel) throws SQLException {
-		final String value = resultSet.getStringStrict(columnLabel);
-
-		try {
-			return deserialize(Language.JSON, ItemStack.class, value);
-
-		} catch (final Throwable ex) {
-			CommonCore.warning(BukkitPlugin.getInstance().getName() + " found invalid row with invalid item value '" + value + "' in column '" + columnLabel + "' in table " + resultSet.getTableName() + " ignoring.");
-			throw new InvalidRowException();
-		}
-	}
-
-	/**
 	 * Deserialize the given column from the {@link SimpleResultSet} into a Bukkit's {@link ItemStack} array.
 	 *
 	 * Returns empty array if the column value is null or empty.

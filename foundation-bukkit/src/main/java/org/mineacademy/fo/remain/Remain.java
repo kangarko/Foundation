@@ -40,7 +40,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
-import org.bukkit.block.Skull;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
@@ -83,7 +82,6 @@ import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
-import org.mineacademy.fo.RandomUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
 import org.mineacademy.fo.Valid;
@@ -191,14 +189,7 @@ public final class Remain {
 	 */
 	private static Method fromJSONToNMSComponentmethod;
 	private static Constructor<?> chatPacketConstructor;
-	private static Object enumTitle;
-	private static Object enumSubtitle;
-	private static Object enumReset;
 	private static Constructor<?> tabConstructor;
-	private static Constructor<?> titleTimesConstructor;
-	private static Constructor<?> titleConstructor;
-	private static Constructor<?> subtitleConstructor;
-	private static Constructor<?> resetTitleConstructor;
 
 	/**
 	 * Fields related to Folia
@@ -227,7 +218,6 @@ public final class Remain {
 	/**
 	 * Fields related to skull handling.
 	 */
-	private static Field blockProfileField;
 	private static Method metaSetProfileMethod;
 	private static Field metaProfileField;
 
@@ -289,11 +279,6 @@ public final class Remain {
 	 * Does the current server version support particle API?
 	 */
 	private static boolean hasWorldSpawnParticle = true;
-
-	/**
-	 * Does the current server version support native scoreboard API?
-	 */
-	private static boolean hasObjectiveGetScore = true;
 
 	/**
 	 * Does the current server version support getting inventorsy location?
@@ -427,12 +412,6 @@ public final class Remain {
 		}
 
 		try {
-			Objective.class.getMethod("getScore", String.class);
-		} catch (final Throwable e) {
-			hasObjectiveGetScore = false;
-		}
-
-		try {
 			Inventory.class.getMethod("getLocation");
 		} catch (final Throwable ex) {
 			hasInventoryGetLocation = false;
@@ -480,7 +459,7 @@ public final class Remain {
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_17)) {
-			final Class<?> chatSerializer = Remain.getNMSClass((MinecraftVersion.equals(V.v1_7) ? "" : "IChatBaseComponent$") + "ChatSerializer");
+			final Class<?> chatSerializer = Remain.getNMSClass("IChatBaseComponent$ChatSerializer");
 
 			fromJSONToNMSComponentmethod = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
@@ -529,25 +508,12 @@ public final class Remain {
 					if (MinecraftVersion.newerThan(V.v1_11))
 						chatPacketConstructor = chatPacket.getConstructor(chatBaseComponent, Remain.getNMSClass("ChatMessageType", "N/A"));
 					else
-						chatPacketConstructor = MinecraftVersion.newerThan(V.v1_7) ? chatPacket.getConstructor(chatBaseComponent, byte.class) : chatPacket.getConstructor(chatBaseComponent);
+						chatPacketConstructor = chatPacket.getConstructor(chatBaseComponent, byte.class);
 				}
 
-				if (MinecraftVersion.newerThan(V.v1_7)) {
-					final Class<?> titlePacket = Remain.getNMSClass("PacketPlayOutTitle", "N/A");
-					final Class<?> enumAction = titlePacket.getDeclaredClasses()[0];
+				final Class<?> tablistClass = Remain.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A");
 
-					enumTitle = enumAction.getField("TITLE").get(null);
-					enumSubtitle = enumAction.getField("SUBTITLE").get(null);
-					enumReset = enumAction.getField("RESET").get(null);
-
-					final Class<?> tablistClass = Remain.getNMSClass("PacketPlayOutPlayerListHeaderFooter", "N/A");
-					tabConstructor = MinecraftVersion.equals(V.v1_12) ? tablistClass.getConstructor() : tablistClass.getConstructor(chatBaseComponent);
-
-					titleTimesConstructor = titlePacket.getConstructor(int.class, int.class, int.class);
-					titleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
-					subtitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
-					resetTitleConstructor = titlePacket.getConstructor(enumAction, chatBaseComponent);
-				}
+				tabConstructor = MinecraftVersion.equals(V.v1_12) ? tablistClass.getConstructor() : tablistClass.getConstructor(chatBaseComponent);
 
 			} catch (final Throwable t) {
 				if (!isThermos)
@@ -1691,15 +1657,6 @@ public final class Remain {
 	}
 
 	/**
-	 * Return if the play time statistic is measured in ticks
-	 *
-	 * @return
-	 */
-	public static boolean isPlaytimeStatisticTicks() {
-		return MinecraftVersion.olderThan(V.v1_13);
-	}
-
-	/**
 	 * Returns if statistics do not save
 	 *
 	 * @return true if stat saving was disabled, false if not or if not running
@@ -1738,28 +1695,6 @@ public final class Remain {
 		} catch (final ReflectiveOperationException ex) {
 			throw new FoException(ex, "Unable to create command: /" + label);
 		}
-	}
-
-	/**
-	 * A shortcut method to generate a new {@link NamespacedKey}. Requires MC 1.13+
-	 *
-	 * The name is randomly assigned in the format YOURPLUGIN_RANDOM where YOURPLUGIN
-	 * is your plugin's name and RANDOM are 16 random letters.
-	 *
-	 * @return
-	 */
-	public static NamespacedKey newNamespaced() {
-		return new NamespacedKey(BukkitPlugin.getInstance(), BukkitPlugin.getInstance().getName() + "_" + RandomUtil.nextString(16));
-	}
-
-	/**
-	 * A shortcut method to generate a new {@link NamespacedKey}. Requires MC 1.13+
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static NamespacedKey newNamespaced(final String name) {
-		return new NamespacedKey(BukkitPlugin.getInstance(), name);
 	}
 
 	/**
@@ -2191,19 +2126,6 @@ public final class Remain {
 	}
 
 	/**
-	 * Sets a custom command name
-	 *
-	 * @param command
-	 * @param name
-	 */
-	public static void setCommandName(final PluginCommand command, final String name) {
-		try {
-			command.setName(name);
-		} catch (final NoSuchMethodError ex) {
-		}
-	}
-
-	/**
 	 * Sets a custom name to entity
 	 *
 	 * @param entity
@@ -2485,61 +2407,6 @@ public final class Remain {
 
 		} catch (final ReflectiveOperationException ex) {
 			CommonCore.error(ex, "Failed to send message packet type " + type + " to " + player.getName() + ", message: " + iChatBaseComponent);
-		}
-	}
-
-	public static void sendTitleLegacyPacket(final Player player, final int fadeIn, final int stay, final int fadeOut, final String title, final String subtitle) {
-		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
-
-		try {
-			if (titleConstructor == null)
-				return;
-
-			resetTitleLegacy(player);
-
-			if (titleTimesConstructor != null) {
-				final Object packet = titleTimesConstructor.newInstance(fadeIn, stay, fadeOut);
-
-				Remain.sendPacket(player, packet);
-			}
-
-			if (title != null) {
-				final Object chatTitle = convertLegacyToIChatBase(title);
-				final Object packet = titleConstructor.newInstance(enumTitle, chatTitle);
-
-				Remain.sendPacket(player, packet);
-			}
-
-			if (subtitle != null) {
-				final Object chatSubtitle = convertLegacyToIChatBase(subtitle);
-				final Object packet = subtitleConstructor.newInstance(enumSubtitle, chatSubtitle);
-
-				Remain.sendPacket(player, packet);
-			}
-
-		} catch (final ReflectiveOperationException ex) {
-			CommonCore.error(ex, "Error sending title to: " + player.getName() + ", title: " + title + ", subtitle: " + subtitle);
-		}
-	}
-
-	/**
-	 * Reset title for player
-	 *
-	 * @param player
-	 */
-	public static void resetTitleLegacy(final Player player) {
-		ValidCore.checkBoolean(MinecraftVersion.olderThan(V.v1_13), "This method is unsupported on MC 1.13 and later");
-
-		try {
-			if (resetTitleConstructor == null)
-				return;
-
-			final Object packet = resetTitleConstructor.newInstance(enumReset, null);
-
-			Remain.sendPacket(player, packet);
-
-		} catch (final ReflectiveOperationException ex) {
-			CommonCore.error(ex, "Error resetting title to: " + player.getName());
 		}
 	}
 
@@ -3425,52 +3292,9 @@ public final class Remain {
 		return ReflectionUtil.getConstructor(getNMSClass(nmsClassPath), params);
 	}
 
-	/**
-	 * Makes a new instance of the given NMS class with arguments.
-	 *
-	 * @param <T>
-	 * @param nmsPath
-	 * @param params
-	 * @return
-	 */
-	public static <T> T instantiateNMS(final String nmsPath, final Object... params) {
-		return (T) ReflectionUtil.instantiate(getNMSClass(nmsPath), params);
-	}
-
 	// ----------------------------------------------------------------------------------------------------
 	// Skull-related
 	// ----------------------------------------------------------------------------------------------------
-
-	/**
-	 * Set the base64-encoded texture data to a placed Skull block.
-	 *
-	 * @param block The Skull block instance to modify.
-	 * @param base64 The base64 string containing the texture data, typically related to a player’s skin.
-	 * @return
-	 */
-	public static Skull setSkullBlockBase64(final Skull block, final String base64) {
-
-		if (hasPaperProfile) {
-			block.setPlayerProfile(createPaperProfileFromBase64(base64));
-
-			return block;
-		}
-
-		try {
-			if (blockProfileField == null) {
-				blockProfileField = block.getClass().getDeclaredField("profile");
-
-				blockProfileField.setAccessible(true);
-			}
-
-			blockProfileField.set(block, getProfileFromBase64(base64));
-
-		} catch (NoSuchFieldException | IllegalAccessException ex) {
-			ex.printStackTrace();
-		}
-
-		return block;
-	}
 
 	/**
 	 * Set the base64-encoded texture data to a SkullMeta object, typically for use in an item.
@@ -3679,15 +3503,6 @@ public final class Remain {
 	 */
 	public static boolean hasWorldSpawnParticle() {
 		return hasWorldSpawnParticle;
-	}
-
-	/**
-	 * Is this server supporting native scoreboard api?
-	 *
-	 * @return if server supports native scoreboard api
-	 */
-	public static boolean hasScoreboardGetScore() {
-		return hasObjectiveGetScore;
 	}
 
 	/**

@@ -33,6 +33,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.util.Vector;
 import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
@@ -40,8 +41,6 @@ import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.Remain;
-
-import org.bukkit.util.Vector;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -137,21 +136,6 @@ public final class EntityUtil {
 			return -1;
 
 		return tMin >= 0 ? tMin : tMax;
-	}
-
-	/**
-	 * Returns the entity target only if it is a player, or null
-	 *
-	 * @param entity
-	 * @return
-	 */
-	public static Player getTargetPlayer(final Entity entity) {
-		final Entity target = getTarget(entity);
-
-		if (target == null)
-			return null;
-
-		return target instanceof Player && target.getLocation().getWorld().equals(entity.getWorld()) && !HookManager.isNPC(target) ? (Player) target : null;
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package org.mineacademy.fo.settings;
 
 import java.io.File;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -581,19 +580,6 @@ public class YamlConfig extends FileConfig {
 	public static YamlConfig fromFile(@NonNull final File file) {
 		final YamlConfig config = new YamlConfig();
 		config.loadFromFile(file);
-
-		return config;
-	}
-
-	/**
-	 * Creates a new {@link YamlConfig}, loading from the given file.
-	 *
-	 * @param reader Input file
-	 * @return Resulting configuration
-	 */
-	public static YamlConfig fromReader(@NonNull final Reader reader) {
-		final YamlConfig config = new YamlConfig();
-		config.loadFromReader(reader);
 
 		return config;
 	}

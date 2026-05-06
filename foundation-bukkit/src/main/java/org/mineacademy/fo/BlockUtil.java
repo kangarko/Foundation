@@ -1,22 +1,18 @@
 package org.mineacademy.fo;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.SkullType;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Skull;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.MinecraftVersion.V;
@@ -179,130 +175,6 @@ public final class BlockUtil {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// Spherical manipulation
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Get all locations within the given 3D spherical radius, hollow or not
-	 * <p>
-	 * NOTE: Calling this operation causes performance penaulty (>100ms for 30 radius!), be careful.
-	 *
-	 * @param location
-	 * @param radius
-	 * @param hollow
-	 * @return
-	 */
-	public static Set<Location> getSphere(final Location location, final int radius, final boolean hollow) {
-		final Set<Location> blocks = new HashSet<>();
-		final World world = location.getWorld();
-		final int X = location.getBlockX();
-		final int Y = location.getBlockY();
-		final int Z = location.getBlockZ();
-		final int radiusSquared = radius * radius;
-
-		if (hollow) {
-			for (int x = X - radius; x <= X + radius; x++)
-				for (int y = Y - radius; y <= Y + radius; y++)
-					for (int z = Z - radius; z <= Z + radius; z++)
-						if ((X - x) * (X - x) + (Y - y) * (Y - y) + (Z - z) * (Z - z) <= radiusSquared)
-							blocks.add(new Location(world, x, y, z));
-
-			return makeHollow(blocks, true);
-		}
-
-		for (int x = X - radius; x <= X + radius; x++)
-			for (int y = Y - radius; y <= Y + radius; y++)
-				for (int z = Z - radius; z <= Z + radius; z++)
-					if ((X - x) * (X - x) + (Y - y) * (Y - y) + (Z - z) * (Z - z) <= radiusSquared)
-						blocks.add(new Location(world, x, y, z));
-
-		return blocks;
-	}
-
-	/**
-	 * Get all locations within the given 2D circle radius, hollow or full circle
-	 * <p>
-	 * NOTE: Calling this operation causes performance penaulty (>100ms for 30 radius!), be careful.
-	 *
-	 * @param location
-	 * @param radius
-	 * @param hollow
-	 * @return
-	 */
-	public static Set<Location> getCircle(final Location location, final int radius, final boolean hollow) {
-		final Set<Location> blocks = new HashSet<>();
-		final World world = location.getWorld();
-
-		final int initialX = location.getBlockX();
-		final int initialY = location.getBlockY();
-		final int initialZ = location.getBlockZ();
-		final int radiusSquared = radius * radius;
-
-		if (hollow) {
-			for (int x = initialX - radius; x <= initialX + radius; x++)
-				for (int z = initialZ - radius; z <= initialZ + radius; z++)
-					if ((initialX - x) * (initialX - x) + (initialZ - z) * (initialZ - z) <= radiusSquared)
-						blocks.add(new Location(world, x, initialY, z));
-
-			return makeHollow(blocks, false);
-		}
-
-		for (int x = initialX - radius; x <= initialX + radius; x++)
-			for (int z = initialZ - radius; z <= initialZ + radius; z++)
-				if ((initialX - x) * (initialX - x) + (initialZ - z) * (initialZ - z) <= radiusSquared)
-					blocks.add(new Location(world, x, initialY, z));
-
-		return blocks;
-	}
-
-	/*
-	 * Creates a new list of outer location points from all given points
-	 */
-	private static Set<Location> makeHollow(final Set<Location> blocks, final boolean sphere) {
-		final Set<Location> edge = new HashSet<>();
-
-		if (!sphere) {
-			for (final Location location : blocks) {
-				final World world = location.getWorld();
-				final int x = location.getBlockX();
-				final int y = location.getBlockY();
-				final int z = location.getBlockZ();
-
-				final Location front = new Location(world, x + 1, y, z);
-				final Location back = new Location(world, x - 1, y, z);
-				final Location left = new Location(world, x, y, z + 1);
-				final Location right = new Location(world, x, y, z - 1);
-
-				if (!(blocks.contains(front) && blocks.contains(back) && blocks.contains(left) && blocks.contains(right)))
-					edge.add(location);
-
-			}
-			return edge;
-		}
-
-		for (final Location location : blocks) {
-			final World world = location.getWorld();
-
-			final int x = location.getBlockX();
-			final int y = location.getBlockY();
-			final int z = location.getBlockZ();
-
-			final Location front = new Location(world, x + 1, y, z);
-			final Location back = new Location(world, x - 1, y, z);
-			final Location left = new Location(world, x, y, z + 1);
-			final Location right = new Location(world, x, y, z - 1);
-			final Location top = new Location(world, x, y + 1, z);
-			final Location bottom = new Location(world, x, y - 1, z);
-
-			if (!(blocks.contains(front) && blocks.contains(back) && blocks.contains(left) && blocks.contains(right) && blocks.contains(top) && blocks.contains(bottom)))
-				edge.add(location);
-		}
-
-		return edge;
-
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
 	// Getting blocks within a cuboid
 	// ------------------------------------------------------------------------------------------------------------
 
@@ -385,28 +257,6 @@ public final class BlockUtil {
 						blocks.add(checkBlock);
 				}
 		return blocks;
-	}
-
-	/**
-	 * Return chunks around the given location
-	 *
-	 * @param location
-	 * @param radius
-	 * @return
-	 */
-	public static List<Chunk> getChunks(final Location location, final int radius) {
-		final Set<Chunk> addedChunks = new HashSet<>();
-		final World world = location.getWorld();
-
-		final int chunkX = location.getBlockX() >> 4;
-		final int chunkZ = location.getBlockZ() >> 4;
-
-		for (int x = chunkX - radius; x <= chunkX + radius; ++x)
-			for (int z = chunkZ - radius; z <= chunkZ + radius; ++z)
-				if (world.isChunkLoaded(x, z))
-					addedChunks.add(world.getChunkAt(x, z));
-
-		return new ArrayList<>(addedChunks);
 	}
 
 	/**
@@ -516,21 +366,6 @@ public final class BlockUtil {
 				|| material == CompMaterial.CLOCK.getMaterial()
 				|| material == CompMaterial.COMPASS.getMaterial()
 				|| material == CompMaterial.FLINT_AND_STEEL.getMaterial();
-	}
-
-	/**
-	 * Return true if the material is an armor
-	 *
-	 * @param material
-	 * @return
-	 */
-	public static boolean isArmor(final Material material) {
-		final String name = ReflectionUtil.getEnumName(material);
-
-		return name.endsWith("HELMET")
-				|| name.endsWith("CHESTPLATE")
-				|| name.endsWith("LEGGINGS")
-				|| name.endsWith("BOOTS");
 	}
 
 	/**
@@ -722,27 +557,6 @@ public final class BlockUtil {
 		return -1;
 	}
 
-	/**
-	 * Returns the closest location to the given one of the given locations
-	 *
-	 * @param location
-	 * @param locations
-	 * @return
-	 */
-	public static Location findClosestLocation(final Location location, List<Location> locations) {
-		final List<Location> locationsCopy = new ArrayList<>();
-
-		// Add locations on the same world
-		for (final Location oldLocation : locations)
-			if (oldLocation.getWorld().equals(location.getWorld()))
-				locationsCopy.add(oldLocation);
-
-		final Location playerLocation = location;
-
-		Collections.sort(locationsCopy, (f, s) -> Double.compare(f.distance(playerLocation), s.distance(playerLocation)));
-		return locationsCopy.get(0);
-	}
-
 	// ------------------------------------------------------------------------------------------------------------
 	// Shooting blocks
 	// ------------------------------------------------------------------------------------------------------------
@@ -817,74 +631,6 @@ public final class BlockUtil {
 			if (upperBlock.getType() == Material.AIR)
 				upperBlock.setType(Material.FIRE);
 		});
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Setting blocks to skulls
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Sets the block to a skull with the given UUID.
-	 *
-	 * @param block The block to set.
-	 * @param id    The player to set it to.
-	 */
-	public static void setBlockToSkullUuid(@NonNull final Block block, @NonNull final UUID id) {
-		setToSkull(block);
-
-		final Skull state = (Skull) block.getState();
-		state.setRawData((byte) 0x1);
-
-		try {
-			state.setOwningPlayer(Remain.getOfflinePlayerByUniqueId(id));
-
-		} catch (final Throwable t) {
-			state.setOwner(Remain.getOfflinePlayerByUniqueId(id).getName());
-		}
-
-		state.update(false, false);
-	}
-
-	/**
-	 * Sets the block to a skull with the skin found at the provided mojang URL.
-	 *
-	 * @param block The block to set.
-	 * @param url   The mojang URL to set it to use.
-	 */
-	public static void setBlockToSkullUrl(@NonNull final Block block, @NonNull final String url) {
-		blockWithBase64(block, Remain.convertSkinTextureUrlToBase64(url));
-	}
-
-	/*
-	 * Sets the block to a skull with the skin for the base64 string.
-	 */
-	private static void blockWithBase64(@NonNull final Block block, @NonNull final String base64) {
-		setToSkull(block);
-
-		final Skull state = (Skull) block.getState();
-		Remain.setSkullBlockBase64(state, base64);
-
-		state.update(false, false);
-	}
-
-	/*
-	 * Set a block to a skull/head block appropriate for the server version.
-	 *
-	 * This will attempt to use the 'PLAYER_HEAD' material first. If the material does not exist (for legacy versions),
-	 * it will fallback to setting the block to the 'SKULL' material and manually configure it as a player skull.
-	 */
-	private static void setToSkull(final Block block) {
-		try {
-			block.setType(ReflectionUtil.lookupEnum(Material.class, "PLAYER_HEAD"), false);
-
-		} catch (final IllegalArgumentException e) {
-			block.setType(ReflectionUtil.lookupEnum(Material.class, "SKULL"), false);
-
-			final Skull state = (Skull) block.getState();
-			state.setSkullType(SkullType.PLAYER);
-			state.setRawData((byte) 0x1);
-			state.update(false, false);
-		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
