@@ -303,8 +303,6 @@ final class BukkitPlayer extends FoundationPlayer {
 		}
 
 		this.audience.sendMessage(component);
-		// Faster but apparently breaks command click/suggest events for legacy MC 
-		//this.player.spigot().sendMessage((!this.hasHexColorSupport() ? BungeeComponentSerializer.legacy() : BungeeComponentSerializer.get()).serialize(component));
 	}
 
 	@Override
