@@ -38,7 +38,7 @@ public @interface AutoRegister {
 	/**
 	 * When false, we won't print console warnings such as that registration failed
 	 * because the server is outdated or lacks the necessary plugins to be hooked into
-	 * (example: PacketListener needs ProtocolLib)
+	 * (example: PacketListener needs the PacketEvents plugin)
 	 *
 	 * @return
 	 */

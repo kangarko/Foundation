@@ -1,12 +1,8 @@
 package org.mineacademy.fo.model;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -14,83 +10,74 @@ import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
-import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.EventHandledException;
-import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.BukkitPlugin;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.reflect.StructureModifier;
-import com.comphenix.protocol.wrappers.EnumWrappers.ChatType;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
-import com.comphenix.protocol.wrappers.WrappedServerPing;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.UserProfile;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSystemChatMessage;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.md_5.bungee.api.chat.BaseComponent;
 
 /**
- * Extend this class to listen to packets. Requires ProtocolLib.
+ * Extend this class to listen to packets. Requires the PacketEvents plugin.
  */
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PacketListener {
 
 	/**
-	 * Called automatically when you use \@AutoRegister, inject
-	 * your packet listeners here.
+	 * The PE listeners we registered, kept so they can be unregistered if needed.
 	 */
-	public abstract void onRegister();
+	private final List<PacketListenerCommon> registered = new ArrayList<>();
 
 	/**
-	 * A convenience shortcut to add packet listener
-	 *
-	 * @param adapter
+	 * Called automatically when you use \@AutoRegister, inject your packet listeners here.
 	 */
-	protected void addPacketListener(final SimpleAdapter adapter) {
-		HookManager.addPacketListener(adapter);
-	}
+	public abstract void onRegister();
 
 	// ------------------------------------------------------------------------------------------------------------
 	// Receiving
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * A convenience method for listening to Client>Server packets of the given type.
+	 * Listen to a Client>Server packet of the given type at NORMAL priority.
 	 *
 	 * @param type
 	 * @param consumer
 	 */
-	protected void addReceivingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
-		this.addReceivingListener(ListenerPriority.NORMAL, type, consumer);
+	protected final void addReceivingListener(final PacketTypeCommon type, final Consumer<PacketReceiveEvent> consumer) {
+		this.addReceivingListener(PacketListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
-	 * A convenience method for listening to Client>Server packets of the given type and priority.
+	 * Listen to a Client>Server packet of the given type and priority.
 	 *
 	 * @param priority
 	 * @param type
 	 * @param consumer
 	 */
-	protected void addReceivingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
-		this.addPacketListener(new SimpleAdapter(priority, type) {
+	protected final void addReceivingListener(final PacketListenerPriority priority, final PacketTypeCommon type, final Consumer<PacketReceiveEvent> consumer) {
+		this.register(new PacketListenerAbstract(priority) {
 
-			/**
-			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
-			 */
 			@Override
-			public void onPacketReceiving(final PacketEvent event) {
+			public void onPacketReceive(final PacketReceiveEvent event) {
+				if (event.getPacketType() != type)
+					return;
 
-				if (event.getPlayer() != null)
-					consumer.accept(event);
+				// Player is null for non-PLAY state packets (HANDSHAKE / STATUS / LOGIN).
+				// Consumers that dereference event.getPlayer() must guard against null.
+				consumer.accept(event);
 			}
 		});
 	}
@@ -100,381 +87,177 @@ public abstract class PacketListener {
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * A convenience method for listening to Server>Client packets of the given type.
+	 * Listen to a Server>Client packet of the given type at NORMAL priority.
 	 *
 	 * @param type
 	 * @param consumer
 	 */
-	protected void addSendingListener(final PacketType type, final Consumer<PacketEvent> consumer) {
-		this.addSendingListener(ListenerPriority.NORMAL, type, consumer);
+	protected final void addSendingListener(final PacketTypeCommon type, final Consumer<PacketSendEvent> consumer) {
+		this.addSendingListener(PacketListenerPriority.NORMAL, type, consumer);
 	}
 
 	/**
-	 * A convenience method for listening to Server>Client packets of the given type and priority.
+	 * Listen to a Server>Client packet of the given type and priority.
 	 *
 	 * @param priority
 	 * @param type
 	 * @param consumer
 	 */
-	protected void addSendingListener(final ListenerPriority priority, final PacketType type, final Consumer<PacketEvent> consumer) {
-		this.addPacketListener(new SimpleAdapter(priority, type) {
-
-			/**
-			 * @see com.comphenix.protocol.events.PacketAdapter#onPacketReceiving(com.comphenix.protocol.events.PacketEvent)
-			 */
-			@Override
-			public void onPacketSending(final PacketEvent event) {
-
-				if (event.getPlayer() != null)
-					consumer.accept(event);
-			}
+	protected final void addSendingListener(final PacketListenerPriority priority, final PacketTypeCommon type, final Consumer<PacketSendEvent> consumer) {
+		this.register(new PacketListenerAbstract(priority) {
 
 			@Override
-			public void onPacketReceiving(final PacketEvent event) {
-				if (type == PacketType.Play.Server.CHAT || type == PacketType.Play.Client.CHAT) {
-					// Packet can be both sided
-				} else
-					super.onPacketReceiving(event);
+			public void onPacketSend(final PacketSendEvent event) {
+				if (event.getPacketType() != type)
+					return;
+
+				// Player is null for non-PLAY state packets (HANDSHAKE / STATUS / LOGIN).
+				// Consumers that dereference event.getPlayer() must guard against null.
+				consumer.accept(event);
 			}
 		});
 	}
 
 	/**
-	 * Sets the hoverable text in the server's menu
-	 * To use this, create a new addSendingListener for PacketType.Status.Server.SERVER_INFO
-	 * and get the {@link WrappedServerPing} from event.getPacket().getServerPings().read(0)
-	 * then finallly call WrappedServerPing#setPlayers method
+	 * Register a fully custom PE listener (e.g. a {@link SimpleChatAdapter} subclass).
+	 *
+	 * @param listener
+	 */
+	protected final void register(final PacketListenerCommon listener) {
+		this.registered.add(PacketEvents.getAPI().getEventManager().registerListener(listener));
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// Server list ping helpers
+	// ------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Compile a list of pseudo-player profiles for use in the server list ping
+	 * "players sample" array (the hover text under the player count).
 	 *
 	 * @param hoverTexts
+	 * @return
 	 */
-	protected List<WrappedGameProfile> compileHoverText(final String... hoverTexts) {
-		final List<WrappedGameProfile> profiles = new ArrayList<>();
+	protected final List<UserProfile> compileHoverText(final String... hoverTexts) {
+		final List<UserProfile> profiles = new ArrayList<>(hoverTexts.length);
 
-		int count = 0;
-
-		for (final String hoverText : hoverTexts) {
-			final String colorized = CompChatColor.translateColorCodes(hoverText);
-			WrappedGameProfile profile;
-
-			try {
-				profile = new WrappedGameProfile(UUID.randomUUID(), colorized);
-
-			} catch (final Throwable t) {
-				profile = new WrappedGameProfile(String.valueOf(count++), colorized);
-			}
-
-			profiles.add(profile);
-		}
+		for (final String hoverText : hoverTexts)
+			profiles.add(new UserProfile(UUID.randomUUID(), CompChatColor.translateColorCodes(hoverText)));
 
 		return profiles;
 	}
 
+	// ------------------------------------------------------------------------------------------------------------
+	// Inner adapters
+	// ------------------------------------------------------------------------------------------------------------
+
 	/**
-	 * Sets the hoverable player text in the server list ping.
-	 * This bypasses a ProtocolLib bug where AutoWrapper picks a
-	 * non-canonical NMS NameAndId record constructor on MC 1.21.10+,
-	 * causing an NPE when calling WrappedServerPing#setPlayers.
+	 * A convenience adapter for handling chat packets, supporting both modern
+	 * SYSTEM_CHAT_MESSAGE (1.19+) and legacy CHAT_MESSAGE (pre-1.19).
 	 *
-	 * @param ping
-	 * @param hoverTexts
+	 * Override {@link #onJsonMessage(Player, String)} to inspect/mutate the
+	 * chat JSON. To rewrite the message back, also override {@link #editJson()}
+	 * and return true.
 	 */
-	protected void setServerListPlayers(final WrappedServerPing ping, final String... hoverTexts) {
-		final List<WrappedGameProfile> profiles = this.compileHoverText(hoverTexts);
-
-		if (MinecraftVersion.atLeast(V.v1_21)) {
-			this.setPlayersViaReflection(ping, profiles);
-			return;
-		}
-
-		ping.setPlayers(profiles);
-	}
-
-	protected void writeServerPing(final PacketEvent event, final WrappedServerPing ping) {
-		if (MinecraftVersion.olderThan(V.v1_21)) {
-			event.getPacket().getServerPings().write(0, ping);
-			return;
-		}
-
-		this.writeServerPingNms(event, ping);
-	}
-
-	private void setPlayersViaReflection(final WrappedServerPing ping, final List<WrappedGameProfile> profiles) {
-		try {
-			final Class<?> nameAndIdClass = Class.forName("net.minecraft.server.players.NameAndId");
-			final Constructor<?> canonicalCtor = nameAndIdClass.getConstructor(UUID.class, String.class);
-
-			final List<Object> nmsProfiles = new ArrayList<>();
-
-			for (final WrappedGameProfile profile : profiles) {
-				String name = profile.getName();
-
-				if (name == null)
-					name = "";
-
-				nmsProfiles.add(canonicalCtor.newInstance(profile.getUUID(), name));
-			}
-
-			final Field implField = WrappedServerPing.class.getDeclaredField("impl");
-			implField.setAccessible(true);
-
-			final Object serverPingRecord = implField.get(ping);
-
-			final Field playerSampleField = serverPingRecord.getClass().getDeclaredField("playerSample");
-			playerSampleField.setAccessible(true);
-
-			final Object playerSample = playerSampleField.get(serverPingRecord);
-
-			final Field sampleField = playerSample.getClass().getDeclaredField("sample");
-			sampleField.setAccessible(true);
-			sampleField.set(playerSample, nmsProfiles);
-
-		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Failed to set server list players via reflection bypass", ex);
-		}
-	}
-
-	private void writeServerPingNms(final PacketEvent event, final WrappedServerPing ping) {
-		try {
-			final Field implField = WrappedServerPing.class.getDeclaredField("impl");
-			implField.setAccessible(true);
-			final Object impl = implField.get(ping);
-
-			List<?> nmsSample = new ArrayList<>();
-
-			final Field playerSampleField = impl.getClass().getDeclaredField("playerSample");
-			playerSampleField.setAccessible(true);
-			final Object playerSample = playerSampleField.get(impl);
-
-			if (playerSample != null) {
-				final Field sampleField = playerSample.getClass().getDeclaredField("sample");
-				sampleField.setAccessible(true);
-				final Object sample = sampleField.get(playerSample);
-
-				if (sample instanceof List)
-					nmsSample = (List<?>) sample;
-			}
-
-			final Object nmsPacket = event.getPacket().getHandle();
-			final RecordComponent[] packetRCs = nmsPacket.getClass().getRecordComponents();
-			final Object nmsStatus = packetRCs[0].getAccessor().invoke(nmsPacket);
-			final RecordComponent[] statusRCs = nmsStatus.getClass().getRecordComponents();
-
-			final Object[] statusValues = new Object[statusRCs.length];
-
-			for (int i = 0; i < statusRCs.length; i++)
-				statusValues[i] = statusRCs[i].getAccessor().invoke(nmsStatus);
-
-			final WrappedChatComponent motd = ping.getMotD();
-
-			if (motd != null)
-				statusValues[0] = motd.getHandle();
-
-			if (statusValues[1] instanceof Optional && ((Optional<?>) statusValues[1]).isPresent()) {
-				final Object origPlayers = ((Optional<?>) statusValues[1]).get();
-				final Class<?>[] playerTypes = recordComponentTypes(origPlayers.getClass().getRecordComponents());
-
-				final Object newPlayers = origPlayers.getClass()
-						.getDeclaredConstructor(playerTypes)
-						.newInstance(ping.getPlayersMaximum(), ping.getPlayersOnline(), nmsSample);
-
-				statusValues[1] = Optional.of(newPlayers);
-			}
-
-			if (statusValues[2] instanceof Optional && ((Optional<?>) statusValues[2]).isPresent()) {
-				final Object origVersion = ((Optional<?>) statusValues[2]).get();
-				final Class<?>[] versionTypes = recordComponentTypes(origVersion.getClass().getRecordComponents());
-
-				final Object newVersion = origVersion.getClass()
-						.getDeclaredConstructor(versionTypes)
-						.newInstance(ping.getVersionName(), ping.getVersionProtocol());
-
-				statusValues[2] = Optional.of(newVersion);
-			}
-
-			final Object newStatus = nmsStatus.getClass().getDeclaredConstructor(recordComponentTypes(statusRCs)).newInstance(statusValues);
-			final Object newPacket = nmsPacket.getClass().getDeclaredConstructor(recordComponentTypes(packetRCs)).newInstance(newStatus);
-
-			event.setPacket(new PacketContainer(event.getPacketType(), newPacket));
-
-		} catch (final ReflectiveOperationException ex) {
-			throw new FoException("Failed to write server ping via NMS reflection", ex);
-		}
-	}
-
-	private static Class<?>[] recordComponentTypes(final RecordComponent[] components) {
-		final Class<?>[] types = new Class<?>[components.length];
-
-		for (int i = 0; i < components.length; i++)
-			types[i] = components[i].getType();
-
-		return types;
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
-	// Classes
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * A convenience adapter for handling chat packets doing most of the heavy work for you.
-	 */
-	protected abstract class SimpleChatAdapter extends SimpleAdapter {
+	protected abstract class SimpleChatAdapter extends PacketListenerAbstract {
 
 		/**
 		 * Players being processed RIGHT NOW inside the method. Prevents dead loop.
 		 */
 		private final Set<String> processedPlayers = new HashSet<>();
 
-		/**
-		 * Cached flags for performance purposes.
-		 */
-		private int actionBarMode = -1;
-		private Boolean hasAdventure = null;
-		private Boolean hasBungee = null;
-		private Boolean hasIChatBase = null;
-
-		/**
-		 * Create new chat listener
-		 */
 		public SimpleChatAdapter() {
-			super(ListenerPriority.HIGHEST, MinecraftVersion.atLeast(V.v1_19) ? PacketType.Play.Server.SYSTEM_CHAT : PacketType.Play.Server.CHAT);
+			super(PacketListenerPriority.HIGHEST);
 		}
 
 		@Override
-		public void onPacketSending(final PacketEvent event) {
+		public final void onPacketSend(final PacketSendEvent event) {
+			final PacketTypeCommon type = event.getPacketType();
+			final boolean modern = type == PacketType.Play.Server.SYSTEM_CHAT_MESSAGE;
+			final boolean legacy = type == PacketType.Play.Server.CHAT_MESSAGE;
+
+			if (!modern && !legacy)
+				return;
+
 			final Player player = event.getPlayer();
 
-			if (player == null)
+			if (player == null || !player.isOnline() || !BukkitPlugin.getInstance().isEnabled())
 				return;
 
-			final String playerName = event.getPlayer().getName();
-			final PacketContainer packet = event.getPacket();
+			final String name = player.getName();
 
-			// Ignore dummy instances and disabled plugin or processed players
-			if (!player.isOnline() || !BukkitPlugin.getInstance().isEnabled() || this.processedPlayers.contains(playerName))
+			if (this.processedPlayers.contains(name))
 				return;
 
-			// Ignore action bar messages
-			if (this.actionBarMode == -1)
-				if (!packet.getBooleans().getFields().isEmpty())
-					this.actionBarMode = 1;
-
-				else if (!packet.getBytes().getFields().isEmpty())
-					this.actionBarMode = 2;
-
-				else if (!packet.getChatTypes().getFields().isEmpty())
-					this.actionBarMode = 3;
-
-				else {
-					// Probably ways have changed
-					if (MinecraftVersion.newerThan(V.v1_21))
-						throw new FoException("Unknown way to find if chat packet is action bar, packet: " + packet.getHandle().getClass());
-
-					// Ignore and log the message
-				}
-
-			if (this.actionBarMode == 1) {
-				if (packet.getBooleans().read(0))
-					return;
-
-			} else if (this.actionBarMode == 2) {
-				// Apparently 1.8.8 is reporting this as it wants
-				//if (packet.getBytes().read(0) == (byte) 1)
-				//	return;
-
-			} else if (this.actionBarMode == 3)
-				if (packet.getChatTypes().read(0) == ChatType.GAME_INFO)
-					return;
-
-			// Cache booleans for faster performance: 0.3ms vs ~1ms
-			if (this.hasAdventure == null) {
-				this.hasAdventure = !event.getPacket().getModifier().withType(Component.class).getFields().isEmpty();
-				this.hasBungee = !event.getPacket().getModifier().withType(BaseComponent[].class).getFields().isEmpty();
-				this.hasIChatBase = !event.getPacket().getChatComponents().getFields().isEmpty();
-			}
-
-			// Lock processing to one instance only to prevent another packet filtering
 			try {
-				this.processedPlayers.add(playerName);
+				this.processedPlayers.add(name);
 
-				final StructureModifier<Component> modifierAdventure = this.hasAdventure ? event.getPacket().getModifier().withType(Component.class) : null;
-				final StructureModifier<BaseComponent[]> modifierBaseComponent = this.hasBungee ? event.getPacket().getModifier().withType(BaseComponent[].class) : null;
-				final StructureModifier<WrappedChatComponent> modifierIChatBaseComponent = this.hasIChatBase ? event.getPacket().getChatComponents() : null;
+				final WrapperPlayServerSystemChatMessage modernWrapper;
+				final WrapperPlayServerChatMessage legacyWrapper;
+				final Component before;
 
-				String json = null;
-				final boolean legacy = MinecraftVersion.olderThan(V.v1_16);
+				if (modern) {
+					modernWrapper = new WrapperPlayServerSystemChatMessage(event);
 
-				if (this.hasAdventure) {
-					final Component component = modifierAdventure.read(0);
-
-					if (component != null)
-						json = SimpleComponent.fromAdventure(component).toAdventureJson(null, legacy);
-				}
-
-				if (json == null && !"".equals(json) && !"{}".equals(json) && this.hasBungee) {
-					final BaseComponent[] components = modifierBaseComponent.read(0);
-
-					if (components != null)
-						json = SimpleComponent.fromBungee(components, legacy).toAdventureJson(null, legacy);
-				}
-
-				if (json == null && !"".equals(json) && !"{}".equals(json) && this.hasIChatBase) {
-					final WrappedChatComponent chatComponent = modifierIChatBaseComponent.read(0);
-
-					if (chatComponent != null)
-						try {
-							json = chatComponent.getJson();
-						} catch (final Throwable t) {
-							// Ignore, a bug in ProtocolLib 
-						}
-				}
-
-				if (json != null && json.length() < 50_000) {
-
-					// This flag effectivelly doubles processing time from ~0.3ms to ~0.6ms that is why it needs to be explicitly enabled
-					final boolean editJson = this.editJson();
-					final Component oldJson = editJson ? SimpleComponent.fromAdventureJson(json, legacy).toAdventure(null) : null;
-
-					try {
-						json = this.onJsonMessage(player, json);
-
-					} catch (final EventHandledException ex) {
-						event.setCancelled(true);
-
+					// Skip action-bar / overlay messages
+					if (modernWrapper.isOverlay())
 						return;
-					}
 
-					if (editJson) {
-						final Component newJson = GsonComponentSerializer.gson().deserialize(json);
+					before = modernWrapper.getMessage();
+					legacyWrapper = null;
 
-						if (!newJson.equals(oldJson))
-							if (this.hasAdventure)
-								modifierAdventure.write(0, newJson);
+				} else {
+					legacyWrapper = new WrapperPlayServerChatMessage(event);
+					before = legacyWrapper.getMessage().getChatContent();
+					modernWrapper = null;
+				}
 
-							else if (this.hasBungee)
-								modifierBaseComponent.write(0, BungeeComponentSerializer.get().serialize(newJson));
+				if (before == null)
+					return;
 
-							else if (this.hasIChatBase)
-								modifierIChatBaseComponent.write(0, WrappedChatComponent.fromJson(json));
-					}
-				} else
-					Debugger.debug("packets", "Skipping null or oversized chat message for " + playerName + ": " + json);
+				final boolean useLegacyHexFormat = MinecraftVersion.olderThan(V.v1_16);
+				final String originalJson = SimpleComponent.fromAdventure(before).toAdventureJson(null, useLegacyHexFormat);
+
+				if (originalJson == null || originalJson.isEmpty() || originalJson.length() >= 50_000)
+					return;
+
+				String json = originalJson;
+
+				try {
+					json = this.onJsonMessage(player, json);
+
+				} catch (final EventHandledException ex) {
+					event.setCancelled(true);
+
+					return;
+				}
+
+				if (this.editJson() && json != null && !json.equals(originalJson)) {
+					final Component newComponent = GsonComponentSerializer.gson().deserialize(json);
+
+					if (modern)
+						modernWrapper.setMessage(newComponent);
+					else
+						legacyWrapper.getMessage().setChatContent(newComponent);
+
+					event.markForReEncode(true);
+				}
 
 			} finally {
-				this.processedPlayers.remove(player.getName());
+				this.processedPlayers.remove(name);
 			}
 		}
 
 		/**
-		 * Called when chat message packet is received.
+		 * Called when chat message packet is sent to the player.
 		 *
-		 * If you edit the jsonMessage we do NOT set it back unless you call
-		 * {@link #editJson()} and set it to true.
+		 * If you edit the json, we do NOT set it back unless you also override
+		 * {@link #editJson()} to return true.
 		 *
-		 * To cancel cancel the packet, throw {@link EventHandledException}
+		 * To cancel the packet, throw {@link EventHandledException}.
 		 *
 		 * @param player
 		 * @param json
-		 *
 		 * @return
 		 */
 		protected String onJsonMessage(final Player player, final String json) {
@@ -482,66 +265,13 @@ public abstract class PacketListener {
 		}
 
 		/**
-		 * For performance purposes, json message in {@link #jsonMessage} is not edited by default
-		 * Return true to change this behavior.
+		 * For performance purposes, the json message is not written back by default.
+		 * Return true to enable that behavior.
 		 *
 		 * @return
 		 */
 		protected boolean editJson() {
 			return false;
-		}
-	}
-
-	/**
-	 * A convenience class so that you don't have to specify which plugin is the owner of the packet adapter
-	 */
-	protected class SimpleAdapter extends PacketAdapter {
-
-		/**
-		 * The packet we're listening for
-		 */
-		@Getter
-		private final PacketType type;
-
-		/**
-		 * Create a new packet adapter for the given packet type
-		 *
-		 * @param type
-		 */
-		public SimpleAdapter(final PacketType type) {
-			this(ListenerPriority.NORMAL, type);
-		}
-
-		/**
-		 * Create a new packet adapter for the given packet type with the given priority
-		 *
-		 * @param priority
-		 * @param type
-		 */
-		public SimpleAdapter(final ListenerPriority priority, final PacketType type) {
-			super(BukkitPlugin.getInstance(), priority, type);
-
-			this.type = type;
-		}
-
-		/**
-		 * This method is automatically fired when the client sends the {@link #type} to the server.
-		 *
-		 * @param event
-		 */
-		@Override
-		public void onPacketReceiving(final PacketEvent event) {
-			throw new FoException("Override onPacketReceiving to handle receiving client>server packet type " + this.type);
-		}
-
-		/**
-		 * This method is automatically fired when the server wants to send the {@link #type} to the client.
-		 *
-		 * @param event
-		 */
-		@Override
-		public void onPacketSending(final PacketEvent event) {
-			throw new FoException("Override onPacketReceiving to handle sending server>client packet type " + this.type);
 		}
 	}
 }

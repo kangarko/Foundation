@@ -1766,8 +1766,8 @@ public final class Remain {
 	}
 
 	/**
-	 * Opens the sign for the player. On legacy versions, ProtocolLib is
-	 * required to save the edits to the sign after updating it.
+	 * Opens the sign for the player. On legacy versions, the PacketEvents plugin
+	 * is required to save the edits to the sign after updating it.
 	 *
 	 * @param player
 	 * @param signBlock

@@ -50,10 +50,6 @@ import com.Zrips.CMI.Modules.TabList.TabListManager;
 import com.alessiodp.parties.api.Parties;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
 import com.earth2me.essentials.CommandSource;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IUser;
@@ -140,7 +136,7 @@ public final class HookManager {
 	private static PlaceholderAPIHook placeholderAPIHook;
 	private static PlotSquaredHook plotSquaredHook;
 	private static PremiumVanishHook premiumVanishHook;
-	private static ProtocolLibHook protocolLibHook;
+	private static boolean packetEventsLoaded = false;
 	private static ResidenceHook residenceHook;
 	private static TownyHook townyHook;
 	private static VaultHook vaultHook;
@@ -291,19 +287,14 @@ public final class HookManager {
 		if (Platform.isPluginInstalled("PremiumVanish"))
 			premiumVanishHook = new PremiumVanishHook();
 
-		if (Platform.isPluginInstalled("ProtocolLib"))
-
-			// Also check if the library is loaded properly.
+		if (Platform.isPluginInstalled("packetevents"))
 			try {
-				Class.forName("com.comphenix.protocol.wrappers.WrappedChatComponent");
-				Class.forName("com.comphenix.protocol.ProtocolLibrary");
-
-				protocolLibHook = new ProtocolLibHook();
+				packetEventsLoaded = com.github.retrooper.packetevents.PacketEvents.getAPI() != null;
 
 			} catch (final Throwable t) {
-				protocolLibHook = null;
+				packetEventsLoaded = false;
 
-				CommonCore.warning("You are running an old and unsupported version of ProtocolLib, please update it. The plugin will continue to function without hooking into it.");
+				CommonCore.warning("PacketEvents plugin is installed but its API failed to initialize. Please update PacketEvents. Packet features will be disabled.");
 			}
 
 		if (Platform.isPluginInstalled("Residence"))
@@ -604,16 +595,15 @@ public final class HookManager {
 	}
 
 	/**
-	 * Is ProtocolLib loaded?
+	 * Is PacketEvents loaded?
 	 * <p>
-	 * This will not only check if the plugin is in the plugins folder, but
-	 * also if it's correctly loaded and working. (Should detect the plugin's
-	 * malfunction when it's outdated).
+	 * Checks both that the PacketEvents plugin is installed and that
+	 * its API has been initialized.
 	 *
 	 * @return
 	 */
-	public static boolean isProtocolLibLoaded() {
-		return protocolLibHook != null;
+	public static boolean isPacketEventsLoaded() {
+		return packetEventsLoaded;
 	}
 
 	/**
@@ -1705,48 +1695,6 @@ public final class HookManager {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// ProtocolLib
-	// ------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Adds a {@link PacketAdapter} packet listener to ProtocolLib.
-	 * <p>
-	 * If the plugin is missing, an error will be thrown.
-	 *
-	 * @param adapter the adapter to add.
-	 */
-	public static void addPacketListener(/* Uses an Object to prevent errors if the plugin is not installed. */final Object adapter) {
-		ValidCore.checkBoolean(isProtocolLibLoaded(), "Cannot add packet listeners if ProtocolLib isn't installed");
-
-		protocolLibHook.addPacketListener(adapter);
-	}
-
-	/**
-	 * Removes a {@link PacketAdapter} packet listener from ProtocolLib.
-	 * <p>
-	 * If the plugin is missing, or the listener hasn't been registered, an error will be thrown
-	 *
-	 * @param adapter the adapter to remove.
-	 */
-	public static void removePacketListener(final Object adapter) {
-		ValidCore.checkBoolean(isProtocolLibLoaded(), "Cannot remove packet listeners if ProtocolLib isn't installed");
-
-		protocolLibHook.removePacketListener(adapter);
-	}
-
-	/**
-	 * Send a {@link PacketContainer} to the given player.
-	 *
-	 * @param player          the player to send the packet container to.
-	 * @param packetContainer the packet container to send.
-	 */
-	public static void sendPacket(final Player player, final Object packetContainer) {
-		ValidCore.checkBoolean(isProtocolLibLoaded(), "Sending packets requires ProtocolLib to be installed and loaded");
-
-		protocolLibHook.sendPacket(player, packetContainer);
-	}
-
-	// ------------------------------------------------------------------------------------------------------------
 	// LWC
 	// ------------------------------------------------------------------------------------------------------------
 
@@ -2423,83 +2371,6 @@ class TownyHook {
 
 		} catch (final Throwable e) {
 			return null;
-		}
-	}
-}
-
-class ProtocolLibHook {
-
-	private final ProtocolManager manager;
-	private final Set<Object> registeredListeners = new HashSet<>();
-
-	ProtocolLibHook() {
-		this.manager = ProtocolLibrary.getProtocolManager();
-
-		if (this.manager == null)
-			CommonCore.warning("Unable to get protocol manager. Ensure ProtocolLib threw no errors in your startup log and is compatible with your server version. "
-					+ "If you're a developer, place ProtocolLib to softDepend in plugin.yml. Packet features won't function.");
-	}
-
-	final void addPacketListener(final Object listener) {
-		ValidCore.checkBoolean(listener instanceof com.comphenix.protocol.events.PacketListener, "Listener must extend or implements com.comphenix.protocol.events.PacketListener or PacketAdapter");
-
-		if (this.manager != null) {
-			try {
-				this.manager.addPacketListener((com.comphenix.protocol.events.PacketListener) listener);
-
-			} catch (final Throwable t) {
-				CommonCore.error(t, "Failed to register ProtocolLib packet listener! Ensure you have the latest ProtocolLib. If you reloaded, try a fresh startup (some ProtocolLib esp. for 1.8.8 fails on reload).");
-
-				return;
-			}
-
-			this.registeredListeners.add(listener);
-		}
-	}
-
-	final void removePacketListener(final Object listener) {
-		ValidCore.checkBoolean(listener instanceof com.comphenix.protocol.events.PacketListener, "Listener must extend or implements com.comphenix.protocol.events.PacketListener or PacketAdapter");
-
-		if (this.manager != null) {
-			ValidCore.checkBoolean(this.registeredListeners.contains(listener), "Listener must already be registered with ProtocolLib.");
-
-			try {
-				this.manager.removePacketListener((com.comphenix.protocol.events.PacketListener) listener);
-
-			} catch (final Throwable t) {
-				CommonCore.error(t, "Failed to unregister ProtocolLib packet listener!");
-
-				return;
-			}
-
-			this.registeredListeners.remove(listener);
-		}
-	}
-
-	final void sendPacket(final PacketContainer packet) {
-		for (final Player player : Remain.getOnlinePlayers())
-			this.sendPacket(player, packet);
-	}
-
-	final void sendPacket(final Player player, final Object packet) {
-		ValidCore.checkNotNull(player);
-		ValidCore.checkBoolean(packet instanceof PacketContainer, "Packet must be instance of PacketContainer from ProtocolLib");
-
-		if (this.manager != null)
-			try {
-				this.manager.sendServerPacket(player, (PacketContainer) packet);
-
-			} catch (final Exception e) {
-				CommonCore.error(e, "Failed to send " + ((PacketContainer) packet).getType() + " packet to " + player.getName());
-			}
-	}
-
-	final boolean isTemporaryPlayer(final Player player) {
-		try {
-			return player != null && player.getClass().getSimpleName().contains("TemporaryPlayer"); // Solves compatibiltiy issues
-
-		} catch (final NoClassDefFoundError err) {
-			return false;
 		}
 	}
 }
