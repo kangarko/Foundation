@@ -156,6 +156,17 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 	}
 
 	/**
+	 * Puts the key-value pair into the map if the value is false
+	 *
+	 * @param key
+	 * @param value
+	 */
+	public void putIfFalse(final String key, final boolean value) {
+		if (!value)
+			this.put(key, value);
+	}
+
+	/**
 	 * Puts the key-value pair into the map if the value is not null and non zero
 	 *
 	 * @param key
