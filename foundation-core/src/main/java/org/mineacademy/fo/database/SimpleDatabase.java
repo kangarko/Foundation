@@ -60,29 +60,77 @@ import lombok.RequiredArgsConstructor;
 public class SimpleDatabase {
 
 	/**
-	 * Pool sizing. SQLite is single-writer so we use one connection for it;
-	 * MySQL/MariaDB get a fixed pool that matches LuckPerms' convention.
+	 * SQLite is single-writer so we always use one connection for it.
 	 */
-	private static final int POOL_SIZE_DEFAULT = 10;
 	private static final int POOL_SIZE_SQLITE = 1;
 
 	/**
-	 * Time HikariCP will wait for a free connection before throwing.
+	 * Default pool size for MySQL/MariaDB. Tunable via setPoolSize() before connect().
 	 */
-	private static final long CONNECTION_TIMEOUT_MS = 5_000L;
+	private int poolSize = 10;
+
+	/**
+	 * Time HikariCP will wait for a free connection before throwing. Tunable via setConnectionTimeoutMs().
+	 */
+	private long connectionTimeoutMs = 5_000L;
 
 	/**
 	 * Maximum lifetime of a pooled connection. HikariCP rotates connections
 	 * older than this to avoid stale TCP sockets that have been closed
-	 * server-side without our knowledge.
+	 * server-side without our knowledge. Tunable via setMaxLifetimeMs().
 	 */
-	private static final long MAX_LIFETIME_MS = 30L * 60L * 1_000L;
+	private long maxLifetimeMs = 30L * 60L * 1_000L;
 
 	/**
 	 * How often the pool pings idle connections to keep them alive. Must be
-	 * less than MAX_LIFETIME_MS and greater than 30s per HikariCP docs.
+	 * less than maxLifetimeMs and greater than 30s per HikariCP docs.
+	 * Tunable via setKeepaliveMs().
 	 */
-	private static final long KEEPALIVE_MS = 60L * 1_000L;
+	private long keepaliveMs = 60L * 1_000L;
+
+	/**
+	 * Configure the maximum pool size for MySQL/MariaDB. Must be called before connect().
+	 *
+	 * @param poolSize
+	 */
+	public final void setPoolSize(final int poolSize) {
+		ValidCore.checkBoolean(poolSize > 0, "Pool size must be > 0, got " + poolSize);
+
+		this.poolSize = poolSize;
+	}
+
+	/**
+	 * Configure how long HikariCP waits for a free connection. Must be called before connect().
+	 *
+	 * @param connectionTimeoutMs
+	 */
+	public final void setConnectionTimeoutMs(final long connectionTimeoutMs) {
+		ValidCore.checkBoolean(connectionTimeoutMs >= 250L, "Connection timeout must be >= 250ms, got " + connectionTimeoutMs);
+
+		this.connectionTimeoutMs = connectionTimeoutMs;
+	}
+
+	/**
+	 * Configure the maximum lifetime of a pooled connection. Must be called before connect().
+	 *
+	 * @param maxLifetimeMs
+	 */
+	public final void setMaxLifetimeMs(final long maxLifetimeMs) {
+		ValidCore.checkBoolean(maxLifetimeMs >= 30_000L, "Max lifetime must be >= 30s, got " + maxLifetimeMs);
+
+		this.maxLifetimeMs = maxLifetimeMs;
+	}
+
+	/**
+	 * Configure how often the pool pings idle connections. Must be called before connect().
+	 *
+	 * @param keepaliveMs
+	 */
+	public final void setKeepaliveMs(final long keepaliveMs) {
+		ValidCore.checkBoolean(keepaliveMs >= 30_000L, "Keepalive must be >= 30s, got " + keepaliveMs);
+
+		this.keepaliveMs = keepaliveMs;
+	}
 
 	/**
 	 * Map of variables you can use with the {} syntax in SQL.
@@ -215,25 +263,24 @@ public class SimpleDatabase {
 				config.setPassword(password);
 
 			config.setPoolName(Platform.getPlugin().getName() + "-" + this.getClass().getSimpleName());
-			config.setConnectionTimeout(CONNECTION_TIMEOUT_MS);
+			config.setConnectionTimeout(this.connectionTimeoutMs);
 
-			if (this.isSQLite) {
-				// Legacy 1.8.8 server forks bundle an ancient sqlite-jdbc whose org.sqlite.Conn
-				// lacks the JDBC4 isValid() method. Parent-first classloader delegation lets that
-				// legacy class win over the 3.51.3.0 we download via loadLibrary, so HikariCP's
-				// default validation throws AbstractMethodError. The query-based test bypasses
-				// isValid() and works on both legacy and modern drivers.
-				config.setConnectionTestQuery("SELECT 1");
+			// Force a query-based liveness check so PoolBase.isConnectionAlive() never falls back
+			// to JDBC4 isValid()/setNetworkTimeout, which throws SQLNonTransientConnectionException
+			// ("No operations allowed after connection closed") on TCP connections silently dropped
+			// by NAT/firewall. Both SQLite and MySQL drivers handle SELECT 1.
+			config.setConnectionTestQuery("SELECT 1");
+			config.setValidationTimeout(2_000L);
 
-			} else {
-				config.setMaxLifetime(MAX_LIFETIME_MS);
-				config.setKeepaliveTime(KEEPALIVE_MS);
+			if (!this.isSQLite) {
+				config.setMaxLifetime(this.maxLifetimeMs);
+				config.setKeepaliveTime(this.keepaliveMs);
 			}
 
-			final int poolSize = this.isSQLite ? POOL_SIZE_SQLITE : POOL_SIZE_DEFAULT;
+			final int effectivePoolSize = this.isSQLite ? POOL_SIZE_SQLITE : this.poolSize;
 
-			config.setMaximumPoolSize(poolSize);
-			config.setMinimumIdle(poolSize);
+			config.setMaximumPoolSize(effectivePoolSize);
+			config.setMinimumIdle(effectivePoolSize);
 
 			this.dataSource = new HikariDataSource(config);
 
