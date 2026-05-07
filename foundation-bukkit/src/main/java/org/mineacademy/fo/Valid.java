@@ -5,7 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.Vector;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.remain.Remain;
+import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 
 import lombok.AccessLevel;
@@ -54,7 +54,7 @@ public final class Valid extends ValidCore {
 	 * @param syncErrorMessage
 	 */
 	public static void checkAsync(final String syncErrorMessage) {
-		ValidCore.checkBoolean(!Bukkit.isPrimaryThread() || Remain.isFolia(), syncErrorMessage);
+		ValidCore.checkBoolean(Platform.isAsync(), syncErrorMessage);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
