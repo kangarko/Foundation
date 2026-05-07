@@ -439,8 +439,11 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 					final OfflinePlayer player = audience != null && audience.isPlayer() ? audience.getPlayer() : null;
 
 					try {
-						message = PlaceholderAPI.setPlaceholders(player, message);
-						message = PlaceholderAPI.setBracketPlaceholders(player, message);
+						if (message.indexOf('%') >= 0)
+							message = PlaceholderAPI.setPlaceholders(player, message);
+
+						if (message.indexOf('{') >= 0)
+							message = PlaceholderAPI.setBracketPlaceholders(player, message);
 
 					} catch (final Throwable t) {
 						CommonCore.logFramed(

@@ -335,6 +335,9 @@ public final class Variables {
 	 * Implementation for replacing variables.
 	 */
 	private String replaceLegacy0(@NonNull final String message) {
+		if (message.indexOf('{') < 0)
+			return message;
+
 		final Matcher matcher = BRACKET_VARIABLE_PATTERN.matcher(message);
 		final StringBuilder result = new StringBuilder();
 		int lastMatchEnd = 0;
