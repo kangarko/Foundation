@@ -84,6 +84,7 @@ import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
@@ -93,6 +94,7 @@ import net.citizensnpcs.api.ai.tree.Behavior;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
@@ -124,6 +126,7 @@ public final class HookManager {
 	private static EssentialsHook essentialsHook;
 	private static FactionsHook factionsHook;
 	private static ItemsAdderHook itemsAdderHook;
+	private static NexoHook nexoHook;
 	private static LandsHook landsHook;
 	private static LocketteProHook locketteProHook;
 	private static PAFHook pafHook;
@@ -241,6 +244,9 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("ItemsAdder"))
 			itemsAdderHook = new ItemsAdderHook();
+
+		if (Platform.isPluginInstalled("Nexo"))
+			nexoHook = new NexoHook();
 
 		if (Platform.isPluginInstalled("Lands"))
 			landsHook = new LandsHook();
@@ -457,6 +463,15 @@ public final class HookManager {
 	 */
 	public static boolean isItemsAdderLoaded() {
 		return itemsAdderHook != null;
+	}
+
+	/**
+	 * Is Nexo loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isNexoLoaded() {
+		return nexoHook != null;
 	}
 
 	/**
@@ -1249,14 +1264,20 @@ public final class HookManager {
 	}
 
 	/**
-	 * Use ItemsAdder to replace font images in the message based on the player's permission
+	 * Use ItemsAdder and Nexo to replace font images in the message based on the player's permission.
 	 *
 	 * @param player  the player to use.
 	 * @param component the message.
 	 * @return
 	 */
-	public static SimpleComponent replaceFontImages(final Player player, final SimpleComponent component) {
-		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImages(player, component) : component;
+	public static SimpleComponent replaceFontImages(final Player player, SimpleComponent component) {
+		if (isItemsAdderLoaded())
+			component = itemsAdderHook.replaceFontImages(player, component);
+
+		if (isNexoLoaded())
+			component = nexoHook.replaceFontImages(player, component);
+
+		return component;
 	}
 
 	/**
@@ -1270,14 +1291,20 @@ public final class HookManager {
 	}
 
 	/**
-	 * Use ItemsAdder to replace font images in the message based on the player's permission
+	 * Use ItemsAdder and Nexo to replace font images in the message based on the player's permission.
 	 *
 	 * @param player  the player to use.
 	 * @param message the message.
 	 * @return
 	 */
-	public static String replaceFontImagesLegacy(final Player player, final String message) {
-		return isItemsAdderLoaded() ? itemsAdderHook.replaceFontImagesLegacy(player, message) : message;
+	public static String replaceFontImagesLegacy(final Player player, String message) {
+		if (isItemsAdderLoaded())
+			message = itemsAdderHook.replaceFontImagesLegacy(player, message);
+
+		if (isNexoLoaded())
+			message = nexoHook.replaceFontImagesLegacy(player, message);
+
+		return message;
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -1615,6 +1642,17 @@ public final class HookManager {
 			return message;
 
 		return isPlaceholderAPILoaded() ? placeholderAPIHook.replaceRelationPlaceholders(one, two, message) : message;
+	}
+
+	/**
+	 * Quick test for whether a string can possibly contain a PlaceholderAPI
+	 * relational placeholder, mirroring {@link Variables#BRACKET_REL_VARIABLE_PATTERN}.
+	 *
+	 * @param message
+	 * @return
+	 */
+	public static boolean hasRelationPlaceholder(final String message) {
+		return message != null && (message.contains("{rel_") || message.contains("(rel_") || message.contains("%rel_"));
 	}
 
 	/**
@@ -2816,6 +2854,10 @@ final class PlaceholderAPIHook {
 					}
 				}
 			}
+
+			// Native PAPI handles %rel_*% form which Foundation's bracket matcher does not
+			if (one != null && two != null && message.indexOf("%rel_") >= 0)
+				message = PlaceholderAPI.setRelationalPlaceholders(one, two, message);
 
 			return message;
 
@@ -4428,6 +4470,108 @@ class ItemsAdderHook {
 
 		// Fallback to original message or component if replacement fails
 		return messageOrComponent;
+	}
+}
+
+class NexoHook {
+
+	private Method instanceMethod;
+	private Method fontManagerMethod;
+	private Method glyphsMethod;
+	private Method getPermissionMethod;
+	private Method getPlaceholderConfigMethod;
+	private Method getTagConfigMethod;
+	private Method getPlaceholdersMethod;
+	private Method getUnicodesMethod;
+	private boolean failed = false;
+
+	NexoHook() {
+		try {
+			final Class<?> nexoPluginClass = ReflectionUtil.lookupClass("com.nexomc.nexo.NexoPlugin");
+			final Class<?> fontManagerClass = ReflectionUtil.lookupClass("com.nexomc.nexo.fonts.FontManager");
+			final Class<?> glyphClass = ReflectionUtil.lookupClass("com.nexomc.nexo.glyphs.Glyph");
+
+			this.instanceMethod = ReflectionUtil.getMethod(nexoPluginClass, "instance");
+			this.fontManagerMethod = ReflectionUtil.getMethod(nexoPluginClass, "fontManager");
+			this.glyphsMethod = ReflectionUtil.getMethod(fontManagerClass, "glyphs");
+			this.getPermissionMethod = ReflectionUtil.getMethod(glyphClass, "getPermission");
+			this.getPlaceholderConfigMethod = ReflectionUtil.getMethod(glyphClass, "getPlaceholderConfig");
+			this.getTagConfigMethod = ReflectionUtil.getMethod(glyphClass, "getTagConfig");
+			this.getPlaceholdersMethod = ReflectionUtil.getMethod(glyphClass, "getPlaceholders");
+			this.getUnicodesMethod = ReflectionUtil.getMethod(glyphClass, "getUnicodes");
+
+		} catch (final Throwable t) {
+			CommonCore.warning("Unable to resolve Nexo API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
+
+			t.printStackTrace();
+			this.failed = true;
+		}
+	}
+
+	SimpleComponent replaceFontImages(final Player player, final SimpleComponent component) {
+		if (this.failed)
+			return component;
+
+		Component adventure = component.toAdventure(null);
+
+		for (final Object glyph : this.loadGlyphs()) {
+			if (!this.canSee(player, glyph))
+				continue;
+
+			final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.getPlaceholderConfigMethod, glyph);
+			final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.getTagConfigMethod, glyph);
+
+			if (placeholderConfig != null)
+				adventure = adventure.replaceText(placeholderConfig);
+
+			if (tagConfig != null)
+				adventure = adventure.replaceText(tagConfig);
+		}
+
+		return SimpleComponent.fromAdventure(adventure);
+	}
+
+	String replaceFontImagesLegacy(final Player player, String message) {
+		if (this.failed)
+			return message;
+
+		for (final Object glyph : this.loadGlyphs()) {
+			if (!this.canSee(player, glyph))
+				continue;
+
+			final List<String> unicodes = ReflectionUtil.invoke(this.getUnicodesMethod, glyph);
+
+			if (unicodes == null || unicodes.isEmpty())
+				continue;
+
+			final String unicode = unicodes.get(0);
+			final List<String> placeholders = ReflectionUtil.invoke(this.getPlaceholdersMethod, glyph);
+
+			if (placeholders == null)
+				continue;
+
+			for (final String placeholder : placeholders)
+				if (placeholder != null && !placeholder.isEmpty())
+					message = message.replace(placeholder, unicode);
+		}
+
+		return message;
+	}
+
+	private Collection<?> loadGlyphs() {
+		final Object plugin = ReflectionUtil.invokeStatic(this.instanceMethod);
+		final Object fontManager = ReflectionUtil.invoke(this.fontManagerMethod, plugin);
+
+		return ReflectionUtil.invoke(this.glyphsMethod, fontManager);
+	}
+
+	private boolean canSee(final Player player, final Object glyph) {
+		if (player == null)
+			return true;
+
+		final String permission = ReflectionUtil.invoke(this.getPermissionMethod, glyph);
+
+		return permission == null || permission.isEmpty() || player.hasPermission(permission);
 	}
 }
 
