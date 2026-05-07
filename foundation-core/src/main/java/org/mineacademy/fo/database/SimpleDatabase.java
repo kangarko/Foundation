@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import org.mineacademy.fo.CommonCore;
@@ -93,6 +95,15 @@ public class SimpleDatabase {
 	private HikariDataSource dataSource;
 
 	/**
+	 * Guards the pool lifecycle so disconnect() and reconnect() cannot rip a borrowed
+	 * connection out from under an in-flight query (reload races with AsyncPlayerPreLoginEvent).
+	 * Read lock is held for the lifetime of one borrowed connection; write lock is held by
+	 * connect() and disconnect(). Fair ordering ensures disconnect() does not starve under
+	 * sustained query load.
+	 */
+	private final ReentrantReadWriteLock connectionLock = new ReentrantReadWriteLock(true);
+
+	/**
 	 * The last credentials from the connect function, or null if never called.
 	 */
 	private LastCredentials lastCredentials;
@@ -147,6 +158,20 @@ public class SimpleDatabase {
 	 * @param password
 	 */
 	public final void connect(final String url, final String user, final String password) {
+		this.connectionLock.writeLock().lock();
+
+		try {
+			this.connectInternal(url, user, password);
+
+		} finally {
+			this.connectionLock.writeLock().unlock();
+		}
+	}
+
+	/*
+	 * Builds the pool and runs onConnected. Always invoked under the write lock.
+	 */
+	private void connectInternal(final String url, final String user, final String password) {
 		// Guard against double-init leaking the previous pool's threads.
 		if (this.dataSource != null)
 			this.disconnect();
@@ -341,16 +366,22 @@ public class SimpleDatabase {
 	 * Closes the connection pool, if not null.
 	 */
 	public final void disconnect() {
-		if (this.dataSource != null) {
-			try {
-				this.dataSource.close();
+		this.connectionLock.writeLock().lock();
 
-			} catch (final Throwable ex) {
-				CommonCore.error(ex, "Error closing database connection pool!");
+		try {
+			if (this.dataSource != null) {
+				try {
+					this.dataSource.close();
 
-			} finally {
-				this.dataSource = null;
+				} catch (final Throwable ex) {
+					CommonCore.error(ex, "Error closing database connection pool!");
+
+				} finally {
+					this.dataSource = null;
+				}
 			}
+		} finally {
+			this.connectionLock.writeLock().unlock();
 		}
 	}
 
@@ -695,7 +726,7 @@ public class SimpleDatabase {
 		Debugger.debug("mysql", "Batch insert SQL: " + sql);
 
 		// Borrow ONE connection for the whole transaction.
-		try (Connection connection = this.dataSource.getConnection()) {
+		try (Connection connection = this.borrowConnection()) {
 			final boolean originalAutoCommit = connection.getAutoCommit();
 
 			try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -773,7 +804,7 @@ public class SimpleDatabase {
 		if (sqls.isEmpty())
 			return;
 
-		try (Connection connection = this.dataSource.getConnection()) {
+		try (Connection connection = this.borrowConnection()) {
 			final boolean originalAutoCommit = connection.getAutoCommit();
 
 			try (Statement batchStatement = connection.createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
@@ -1029,12 +1060,10 @@ public class SimpleDatabase {
 	 * This keeps the existing try-with-resources call sites unchanged.
 	 */
 	protected final PreparedStatement prepareStatement(final String sql) {
-		this.ensureConnected();
-
 		Connection borrowed = null;
 
 		try {
-			borrowed = this.dataSource.getConnection();
+			borrowed = this.borrowConnection();
 			final PreparedStatement realStatement = borrowed.prepareStatement(sql);
 
 			return wrapPreparedStatement(realStatement, borrowed);
@@ -1136,7 +1165,7 @@ public class SimpleDatabase {
 
 		Debugger.debug("mysql", "Updating database with: " + sql);
 
-		try (Connection connection = this.dataSource.getConnection();
+		try (Connection connection = this.borrowConnection();
 				Statement statement = connection.createStatement()) {
 			statement.executeUpdate(sql);
 
@@ -1163,8 +1192,6 @@ public class SimpleDatabase {
 	 */
 	@Deprecated
 	protected final ResultSet queryUnsafe(String sql) {
-		this.ensureConnected();
-
 		sql = this.replaceVariables(sql);
 
 		Debugger.debug("mysql", "Querying database with: " + sql);
@@ -1173,7 +1200,7 @@ public class SimpleDatabase {
 		Statement statement = null;
 
 		try {
-			borrowed = this.dataSource.getConnection();
+			borrowed = this.borrowConnection();
 			statement = borrowed.createStatement();
 			final ResultSet resultSet = statement.executeQuery(sql);
 
@@ -1244,6 +1271,69 @@ public class SimpleDatabase {
 	// --------------------------------------------------------------------
 	// Pool-aware proxies for JDBC objects whose lifetime spans method calls
 	// --------------------------------------------------------------------
+
+	/*
+	 * Borrows a connection from the pool while holding the read lock for the lifetime
+	 * of that connection. The returned Connection is a proxy whose close() releases
+	 * the underlying connection AND the read lock. Callers MUST close it (try-with-resources).
+	 *
+	 * disconnect() takes the write lock, so it blocks until every in-flight borrow
+	 * has been released; new borrows park on the read lock until the new pool is up.
+	 * This eliminates the "Communications link failure" race during /reload under load.
+	 */
+	private Connection borrowConnection() throws SQLException {
+		this.connectionLock.readLock().lock();
+
+		Connection real = null;
+
+		try {
+			this.ensureConnected();
+
+			real = this.dataSource.getConnection();
+
+			final Connection borrowed = real;
+			final AtomicBoolean closed = new AtomicBoolean(false);
+			final ReentrantReadWriteLock.ReadLock readLock = this.connectionLock.readLock();
+
+			return (Connection) Proxy.newProxyInstance(
+					SimpleDatabase.class.getClassLoader(),
+					new Class<?>[] { Connection.class },
+					new InvocationHandler() {
+						@Override
+						public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+							if ("close".equals(method.getName()) && (args == null || args.length == 0)) {
+								if (closed.compareAndSet(false, true))
+									try {
+										borrowed.close();
+
+									} finally {
+										readLock.unlock();
+									}
+
+								return null;
+							}
+
+							try {
+								return method.invoke(borrowed, args);
+
+							} catch (final InvocationTargetException ex) {
+								throw ex.getCause();
+							}
+						}
+					});
+
+		} catch (final SQLException | RuntimeException ex) {
+			if (real != null)
+				try {
+					real.close();
+				} catch (final SQLException ignored) {
+				}
+
+			this.connectionLock.readLock().unlock();
+
+			throw ex;
+		}
+	}
 
 	/*
 	 * Wraps a PreparedStatement so that close() also closes its borrowed Connection.
