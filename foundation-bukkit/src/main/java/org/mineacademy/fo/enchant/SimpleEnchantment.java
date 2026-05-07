@@ -55,7 +55,7 @@ import lombok.NonNull;
  *
  * DISCLAIMER: Minecraft is not built for your custom enchants. The enchant name is stored
  * on the client so it wont show anything for custom enchantments - Foundation will do its
- * best to intercept the set slot packet and inject the lore manually (requires ProtocolLib),
+ * best to intercept the set slot packet and inject the lore manually (requires the PacketEvents plugin),
  *
  * USAGE: To use this, You need to first register your custom NMS class in
  * {@link #registerEnchantmentHandle(Class)} which needs to extend either Bukkit or NMS Enchantment class
