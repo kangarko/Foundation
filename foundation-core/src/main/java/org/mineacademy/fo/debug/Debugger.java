@@ -13,6 +13,8 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
+
+
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
@@ -119,7 +121,7 @@ public final class Debugger {
 				return;
 			}
 
-		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError) && !hasZipFileError(throwable)) {
+		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError) && !isIgnored(throwable)) {
 			final Throwable finalThrowable = throwable;
 
 			final StackTraceElement[] elements = finalThrowable.getStackTrace();
@@ -242,7 +244,7 @@ public final class Debugger {
 				.replace("\t", "\\t");
 	}
 
-	private static boolean hasZipFileError(Throwable throwable) {
+	private static boolean isIgnored(Throwable throwable) {
 		Throwable cause = throwable;
 
 		do {
@@ -251,12 +253,15 @@ public final class Debugger {
 			if (msg != null && (msg.contains("zip file closed") || msg.contains("has thrown a zip file error")))
 				return true;
 
-			// Plugin JAR was moved, deleted, quarantined or remapped by Paper while running.
-			// Treat as an environment issue, not a plugin bug, so we do not spam crash reports.
 			if (cause instanceof java.nio.file.NoSuchFileException || cause instanceof java.io.FileNotFoundException) {
 				if (msg != null && (msg.contains(".jar") || msg.contains(".paper-remapped")))
 					return true;
 			}
+
+			if (cause instanceof java.net.SocketTimeoutException
+					|| cause instanceof java.net.ConnectException
+					|| cause instanceof java.net.UnknownHostException)
+				return true;
 		} while ((cause = cause.getCause()) != null);
 
 		return false;
