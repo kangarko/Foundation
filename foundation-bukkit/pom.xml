@@ -146,11 +146,11 @@
 			<version>2.12.2</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- Include ProtocolLib upstream -->
+		<!-- Provide packetevents upstream -->
 		<dependency>
 			<groupId>org.mineacademy.plugin</groupId>
-			<artifactId>ProtocolLib</artifactId>
-			<version>5.5.0-SNAPSHOT-fd855ed</version>
+			<artifactId>PacketEvents</artifactId>
+			<version>2.12.1</version>
 			<!--<scope>provided</scope>-->
 		</dependency>
 		<dependency>
