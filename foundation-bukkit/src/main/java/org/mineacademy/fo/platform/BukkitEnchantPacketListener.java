@@ -3,7 +3,6 @@ package org.mineacademy.fo.platform;
 import java.util.List;
 
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.MerchantRecipe;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.annotation.AutoRegister;
@@ -12,16 +11,22 @@ import org.mineacademy.fo.model.PacketListener;
 import org.mineacademy.fo.remain.CompItemFlag;
 import org.mineacademy.fo.remain.CompMaterial;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.reflect.StructureModifier;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.recipe.data.MerchantOffer;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMerchantOffers;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
 
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * Listens to and intercepts packets using Foundation inbuilt features
+ * Listens to and intercepts inventory packets to inject custom-enchantment lore.
+ * Only active on Minecraft versions older than 1.20.5 — newer versions natively
+ * render custom enchant names through the data-component tooltip system.
  */
 @AutoRegister(hideIncompatibilityWarnings = true, doNotAutoRegister = true)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,9 +38,6 @@ final class BukkitEnchantPacketListener extends PacketListener {
 	@Getter(value = AccessLevel.MODULE)
 	private static final PacketListener instance = new BukkitEnchantPacketListener();
 
-	/**
-	 * Registers our packet listener for some of the more advanced features of Foundation
-	 */
 	@Override
 	public void onRegister() {
 
@@ -44,118 +46,112 @@ final class BukkitEnchantPacketListener extends PacketListener {
 		if (MinecraftVersion.atLeast(V.v1_21) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5))
 			return;
 
-		// To ensure, the client isn't trying to create an item with our fake enchantment lore
-		// Because that would cause duplicate entries if the enchantment is upgraded/remove
-		// Ex:
-		//   BlackNova II (fake lore)
-		//   BlackNova I  (actual lore of the item)
-		this.addReceivingListener(PacketType.Play.Client.SET_CREATIVE_SLOT, event -> {
-			final PacketContainer packet = event.getPacket();
-			final ItemStack item = packet.getItemModifier().readSafely(0);
+		// Strip our fake lore from items the client sends back via creative-mode slot drag,
+		// so the enchantment name doesn't get duplicated when the upgrade level changes.
+		this.addReceivingListener(PacketType.Play.Client.CREATIVE_INVENTORY_ACTION, event -> {
+			final WrapperPlayClientCreativeInventoryAction wrapper = new WrapperPlayClientCreativeInventoryAction(event);
+			final ItemStack bukkit = toBukkit(wrapper.getItemStack());
 
-			if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
-				final ItemStack newItem = SimpleEnchantment.removeEnchantmentLores(item);
+			if (!shouldProcess(bukkit))
+				return;
 
-				if (newItem != null)
-					packet.getItemModifier().write(0, newItem);
+			final ItemStack mutated = SimpleEnchantment.removeEnchantmentLores(bukkit);
+
+			if (mutated != null) {
+				wrapper.setItemStack(SpigotConversionUtil.fromBukkitItemStack(mutated));
+
+				event.markForReEncode(true);
 			}
 		});
 
-		// Auto placement of our lore when items are custom enchanted
+		// Inject lore for single-slot updates
 		this.addSendingListener(PacketType.Play.Server.SET_SLOT, event -> {
-			final StructureModifier<ItemStack> itemModifier = event.getPacket().getItemModifier();
-			ItemStack item = itemModifier.read(0);
+			final WrapperPlayServerSetSlot wrapper = new WrapperPlayServerSetSlot(event);
+			final ItemStack bukkit = toBukkit(wrapper.getItem());
 
-			if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
-				item = SimpleEnchantment.addEnchantmentLores(item);
+			if (!shouldProcess(bukkit))
+				return;
 
-				// Write the item
-				if (item != null)
-					itemModifier.write(0, item);
+			final ItemStack mutated = SimpleEnchantment.addEnchantmentLores(bukkit);
+
+			if (mutated != null) {
+				wrapper.setItem(SpigotConversionUtil.fromBukkitItemStack(mutated));
+
+				event.markForReEncode(true);
 			}
 		});
 
+		// Inject lore for full-window updates (inventory open, refresh, etc.)
 		this.addSendingListener(PacketType.Play.Server.WINDOW_ITEMS, event -> {
-			final PacketContainer packet = event.getPacket();
+			final WrapperPlayServerWindowItems wrapper = new WrapperPlayServerWindowItems(event);
+			final List<com.github.retrooper.packetevents.protocol.item.ItemStack> items = wrapper.getItems();
+			boolean changed = false;
 
-			// for older versions, this is not needed because I believe they use an array
-			final StructureModifier<List<ItemStack>> itemListModifier = packet.getItemListModifier();
-			for (int i = 0; i < itemListModifier.size(); i++) {
-				final List<ItemStack> itemStacks = itemListModifier.read(i);
-				if (itemStacks != null) {
-					boolean changed = false;
-					final int size = itemStacks.size();
-					for (int j = 0; j < size; j++) {
+			for (int i = 0; i < items.size(); i++) {
+				final ItemStack bukkit = toBukkit(items.get(i));
 
-						ItemStack item = itemStacks.get(j);
-						if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
-							item = SimpleEnchantment.addEnchantmentLores(item);
+				if (!shouldProcess(bukkit))
+					continue;
 
-							if (item == null)
-								continue;
+				final ItemStack mutated = SimpleEnchantment.addEnchantmentLores(bukkit);
 
-							itemStacks.set(j, item);
-							changed = true;
-						}
-					}
-					if (changed)
-						itemListModifier.write(i, itemStacks);
+				if (mutated != null) {
+					items.set(i, SpigotConversionUtil.fromBukkitItemStack(mutated));
+
+					changed = true;
 				}
 			}
 
-			// Not needed for 1.13+ since they changed it to a list according to someone on the spigot forum
-			// Though, why not
-			final StructureModifier<ItemStack[]> itemArrayModifier = packet.getItemArrayModifier();
-			for (int i = 0; i < itemArrayModifier.size(); i++) {
-				final ItemStack[] itemStacks = itemArrayModifier.read(i);
-				if (itemStacks != null) {
-					boolean changed = false;
-
-					for (int j = 0; j < itemStacks.length; j++) {
-						ItemStack item = itemStacks[j];
-						if (item != null && !CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
-							item = SimpleEnchantment.addEnchantmentLores(item);
-							if (item == null)
-								continue;
-
-							itemStacks[j] = item;
-							changed = true;
-						}
-					}
-					if (changed)
-						itemArrayModifier.write(i, itemStacks);
-				}
-			}
+			if (changed)
+				event.markForReEncode(true);
 		});
 
+		// Inject lore on villager merchant trade results
 		if (MinecraftVersion.atLeast(V.v1_9))
-			this.addSendingListener(PacketType.Play.Server.OPEN_WINDOW_MERCHANT, event -> {
-				final PacketContainer packet = event.getPacket();
-				final List<MerchantRecipe> ls = packet.getMerchantRecipeLists().read(0);
-
+			this.addSendingListener(PacketType.Play.Server.MERCHANT_OFFERS, event -> {
+				final WrapperPlayServerMerchantOffers wrapper = new WrapperPlayServerMerchantOffers(event);
+				final List<MerchantOffer> offers = wrapper.getMerchantOffers();
 				boolean changed = false;
 
-				for (int i = 0; i < ls.size(); i++) {
-					final MerchantRecipe recipe = ls.get(i);
-					ItemStack item = recipe.getResult();
+				for (final MerchantOffer offer : offers) {
+					final ItemStack bukkit = toBukkit(offer.getOutputItem());
 
-					if (!CompMaterial.isAir(item.getType()) && !CompItemFlag.HIDE_ENCHANTS.has(item)) {
-						item = SimpleEnchantment.addEnchantmentLores(item);
+					if (!shouldProcess(bukkit))
+						continue;
 
-						if (item == null)
-							continue;
+					final ItemStack mutated = SimpleEnchantment.addEnchantmentLores(bukkit);
 
-						final MerchantRecipe newRecipe = new MerchantRecipe(item, recipe.getUses(), recipe.getMaxUses(), recipe.hasExperienceReward(), recipe.getVillagerExperience(), recipe.getPriceMultiplier());
-						newRecipe.setIngredients(recipe.getIngredients());
-
-						ls.set(i, newRecipe);
+					if (mutated != null) {
+						offer.setOutputItem(SpigotConversionUtil.fromBukkitItemStack(mutated));
 
 						changed = true;
 					}
 				}
 
 				if (changed)
-					packet.getMerchantRecipeLists().write(0, ls);
+					event.markForReEncode(true);
 			});
+	}
+
+	/*
+	 * Helper: converts a PE ItemStack to a Bukkit ItemStack. Returns null if the
+	 * input itself is null or PE's empty-stack sentinel.
+	 */
+	private static ItemStack toBukkit(final com.github.retrooper.packetevents.protocol.item.ItemStack peItem) {
+		if (peItem == null || peItem == com.github.retrooper.packetevents.protocol.item.ItemStack.EMPTY)
+			return null;
+
+		return SpigotConversionUtil.toBukkitItemStack(peItem);
+	}
+
+	/*
+	 * Whether this item should pass through enchant-lore injection. Skips null,
+	 * air, and items that have HIDE_ENCHANTS flag set.
+	 */
+	private static boolean shouldProcess(final ItemStack item) {
+		if (item == null || CompMaterial.isAir(item.getType()))
+			return false;
+
+		return !CompItemFlag.HIDE_ENCHANTS.has(item);
 	}
 }
