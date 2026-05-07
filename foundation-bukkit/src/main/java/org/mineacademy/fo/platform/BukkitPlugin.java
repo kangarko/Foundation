@@ -42,6 +42,7 @@ import org.mineacademy.fo.platform.AutoRegisterScanner.FindInstance;
 import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 import org.mineacademy.fo.region.DiskRegion;
+import org.mineacademy.fo.region.RegionTracker;
 import org.mineacademy.fo.remain.CompMetadata;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.SimpleSettings;
@@ -400,6 +401,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 				// Load delayed to fix issues with multiverse plugins
 				Platform.runTask(DiskRegion::loadRegions);
+
+				RegionTracker.start();
 			}
 
 			if (!this.isEnabled() || !this.platformEnabled)
