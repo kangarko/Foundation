@@ -596,7 +596,10 @@ final class BukkitPlatform extends FoundationPlatform {
 
 	@Override
 	public boolean isAsync() {
-		return !Bukkit.isPrimaryThread() || Remain.isFolia();
+		if (Remain.isFolia())
+			return !Remain.isTickThread();
+
+		return !Bukkit.isPrimaryThread();
 	}
 
 	@Override

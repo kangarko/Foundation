@@ -236,6 +236,12 @@ public final class Remain {
 	private static boolean isFolia = false;
 
 	/**
+	 * Cached Moonrise TickThread.isTickThread() method on Paper/Folia, null elsewhere.
+	 * Returns true on the main thread (Paper) or any region tick thread (Folia).
+	 */
+	private static java.lang.reflect.Method isTickThreadMethod = null;
+
+	/**
 	 * Return true if this server is Thermos
 	 */
 	private static boolean isThermos = false;
@@ -338,6 +344,16 @@ public final class Remain {
 		hasPaperProfile = isPaper && ReflectionUtil.isClassAvailable("com.destroystokyo.paper.profile.PlayerProfile");
 		isFolia = ReflectionUtil.isClassAvailable("io.papermc.paper.threadedregions.RegionizedServer");
 		isThermos = ReflectionUtil.isClassAvailable("thermos.ThermosRemapper");
+
+		// Resolve Moonrise TickThread.isTickThread() once. Present on modern Paper and Folia, absent on legacy Spigot/CraftBukkit/1.8.x.
+		if (ReflectionUtil.isClassAvailable("ca.spottedleaf.moonrise.common.util.TickThread")) {
+			try {
+				isTickThreadMethod = ReflectionUtil.lookupClass("ca.spottedleaf.moonrise.common.util.TickThread").getMethod("isTickThread");
+
+			} catch (final NoSuchMethodException ex) {
+				isTickThreadMethod = null;
+			}
+		}
 		isUsingMojangMappings = ReflectionUtil.isClassAvailable("net.minecraft.server.level.ServerPlayer");
 
 		try {
@@ -3440,6 +3456,30 @@ public final class Remain {
 	 */
 	public static boolean isFolia() {
 		return isFolia;
+	}
+
+	/**
+	 * Return true if the calling thread is a server tick thread.
+	 *
+	 * On Folia, this is any region scheduler tick thread. On modern Paper, this is the main thread.
+	 * On legacy Spigot/CraftBukkit/1.8.x where Moonrise is absent, falls back to Bukkit.isPrimaryThread().
+	 *
+	 * Use this in preference to Bukkit.isPrimaryThread() when you need to detect tick threads on Folia,
+	 * because Folia has no single "primary" thread.
+	 *
+	 * @return
+	 */
+	public static boolean isTickThread() {
+		if (isTickThreadMethod != null) {
+			try {
+				return (boolean) isTickThreadMethod.invoke(null);
+
+			} catch (final ReflectiveOperationException ex) {
+				throw new RuntimeException("Failed to invoke TickThread.isTickThread()", ex);
+			}
+		}
+
+		return Bukkit.isPrimaryThread();
 	}
 
 	/**
