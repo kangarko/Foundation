@@ -13,8 +13,6 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
-
-
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.platform.FoundationPlugin;
 import org.mineacademy.fo.platform.Platform;
@@ -360,7 +358,7 @@ public final class Debugger {
 			log("Enumeration of " + values.length + "x" + values.getClass().getSimpleName().toLowerCase().replace("[]", ""));
 
 			for (int i = 0; i < values.length; i++)
-				log("&8[" + i + "] &7" + values[i]);
+				log("[" + i + "] " + values[i]);
 		} else
 			log("Value are null");
 	}
