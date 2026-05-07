@@ -1,10 +1,13 @@
 package org.mineacademy.fo.model;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+import javax.script.Compilable;
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -42,91 +45,56 @@ public final class JavaScriptExecutor {
 	 */
 	private static final Object LOCK = new Object();
 
+	private static final Map<String, CompiledScript> COMPILED_SCRIPTS = new LinkedHashMap<String, CompiledScript>(64, 0.75f, true) {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		protected boolean removeEldestEntry(final Map.Entry<String, CompiledScript> eldest) {
+			return this.size() > 512;
+		}
+	};
+
 	// Load the engine
 	static {
 		// Commented out, no longer needed (?) and causes java.util.NoSuchElementException: No value present on Paper on modern Minecraft versions
 		//Thread.currentThread().setContextClassLoader(Platform.getPlugin().getPluginClassLoader());
 
 		ScriptEngineManager engineManager = new ScriptEngineManager();
-		ScriptEngine scriptEngine = null;
+		ScriptEngine scriptEngine = engineManager.getEngineByName("Nashorn");
 
-		boolean knownBug = false;
+		// Workaround for newer Minecraft releases
+		if (scriptEngine == null) {
+			engineManager = new ScriptEngineManager(null);
 
-		try {
 			scriptEngine = engineManager.getEngineByName("Nashorn");
-
-		} catch (final ExceptionInInitializerError ex) {
-			final Throwable cause = ex.getCause();
-
-			if (cause instanceof NullPointerException && cause.toString().contains("java.lang.invoke.MethodHandle.type()")) {
-				CommonCore.logFramed(
-						"",
-						"FATAL ERROR LOADING JAVASCRIPT ENGINE",
-						"",
-						"If you see 'Cannot set JUL log level through log4j-api: ignoring call...' above,",
-						"that means your server version is not compatible with nashorn-core library we use",
-						"to execute JavaScript code, such as in your variables or operators.",
-						"",
-						"THIS IS NOT OUR BUG - DO NOT REPORT TO US",
-						" ",
-						"PLEASE NAG VELOCITY TO EXPEDITE THEIR LIBRARY UPDATE",
-						"https://github.com/PaperMC/Velocity/issues/1462",
-						"",
-						"THIS IS A BUG WHERE VELOCITY USES AN OUTDATED LOG4J LIBRARY WHICH HAS THIS",
-						"PROBLEM, AND IS OUTSIDE OF OUR CONTROL. ALL PLUGINS ARE AFFECTED.",
-						"",
-						"Temporary solutions:",
-						"1. If you're on Velocity, run your server with the following system property:",
-						"   -Dlog4j2.julLoggerAdapter=org.apache.logging.log4j.jul.CoreLoggerAdapter",
-						"",
-						"   See https://docs.papermc.io/paper/reference/system-properties for how to do so.",
-						"",
-						"2. Or, if you can't do the above, downgrade to Velocity build 446 temporarily:",
-						"   https://api.papermc.io/v2/projects/velocity/versions/3.4.0-SNAPSHOT/builds/446/downloads/velocity-3.4.0-SNAPSHOT-446.jar");
-
-				knownBug = true;
-
-			} else
-				ex.printStackTrace();
 		}
 
-		if (!knownBug) {
+		// If still fails, try to load the standalone nashorn-core library that
+		// FoundationLibraries downloads at runtime.
+		if (scriptEngine == null) {
+			final String nashorn = "org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory";
 
-			// Workaround for newer Minecraft releases
-			if (scriptEngine == null) {
-				engineManager = new ScriptEngineManager(null);
+			if (ReflectionUtil.isClassAvailable(nashorn)) {
+				final ScriptEngineFactory engineFactory = ReflectionUtil.instantiate(ReflectionUtil.lookupClass(nashorn));
 
+				engineManager.registerEngineName("Nashorn", engineFactory);
 				scriptEngine = engineManager.getEngineByName("Nashorn");
 			}
+		}
 
-			// If still fails, try to load the standalone nashorn-core library that
-			// FoundationLibraries downloads at runtime.
-			if (scriptEngine == null) {
-				final String nashorn = "org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory";
+		engine = scriptEngine;
 
-				if (ReflectionUtil.isClassAvailable(nashorn)) {
-					final ScriptEngineFactory engineFactory = ReflectionUtil.instantiate(ReflectionUtil.lookupClass(nashorn));
-
-					engineManager.registerEngineName("Nashorn", engineFactory);
-					scriptEngine = engineManager.getEngineByName("Nashorn");
-				}
-			}
-
-			engine = scriptEngine;
-
-			if (engine == null)
-				CommonCore.logFramed(false,
-						"ERROR: JavaScript placeholders will not function!",
-						"",
-						"Your Java version/distribution lacks the",
-						"Nashorn library for JavaScript placeholders.",
-						"",
-						"To fix this, alert the plugin developer",
-						"to shade or load nashorn-core library in",
-						"this plugin.");
-
-		} else
-			engine = null;
+		if (engine == null)
+			CommonCore.logFramed(false,
+					"ERROR: JavaScript placeholders will not function!",
+					"",
+					"Your Java version/distribution lacks the",
+					"Nashorn library for JavaScript placeholders.",
+					"",
+					"To fix this, alert the plugin developer",
+					"to shade or load nashorn-core library in",
+					"this plugin.");
 	}
 
 	/**
@@ -281,7 +249,14 @@ public final class JavaScriptExecutor {
 			}
 
 			try {
-				final Object result = engine.eval(javascript);
+				CompiledScript compiled = COMPILED_SCRIPTS.get(javascript);
+
+				if (compiled == null && engine instanceof Compilable) {
+					compiled = ((Compilable) engine).compile(javascript);
+					COMPILED_SCRIPTS.put(javascript, compiled);
+				}
+
+				final Object result = compiled != null ? compiled.eval() : engine.eval(javascript);
 
 				if (result instanceof String) {
 					String string = ((String) result).trim().toLowerCase();
