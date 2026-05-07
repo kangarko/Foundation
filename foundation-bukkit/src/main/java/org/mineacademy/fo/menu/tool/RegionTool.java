@@ -75,11 +75,6 @@ public final class RegionTool extends VisualTool {
 	};
 
 	/**
-	 * The actual item
-	 */
-	private ItemStack item;
-
-	/**
 	 * @see org.mineacademy.fo.visual.VisualTool#getBlockName(org.bukkit.block.Block, org.bukkit.entity.Player)
 	 */
 	@Override
@@ -99,14 +94,11 @@ public final class RegionTool extends VisualTool {
 	}
 
 	/**
-	 * @see org.mineacademy.fo.menu.tool.Tool#getItem()
+	 * @see org.mineacademy.fo.menu.tool.Tool#createItem()
 	 */
 	@Override
-	public ItemStack getItem() {
-		if (this.item == null)
-			this.item = ItemCreator.fromMaterial(itemMaterial).name(itemName).lore(lore).make();
-
-		return this.item;
+	protected ItemStack createItem() {
+		return ItemCreator.fromMaterial(itemMaterial).name(itemName).lore(lore).make();
 	}
 
 	/**

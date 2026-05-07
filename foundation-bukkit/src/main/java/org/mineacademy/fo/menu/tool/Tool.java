@@ -12,6 +12,7 @@ import org.mineacademy.fo.ItemUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.menu.model.ItemCreator;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.CompMetadata;
 
 /**
  * Represents a tool. A tool is a simple ItemStack that is registered within the
@@ -20,9 +21,24 @@ import org.mineacademy.fo.platform.Platform;
 public abstract class Tool {
 
 	/**
+	 * Per-plugin NBT key stamped on every tool item. Because the key itself
+	 * includes the plugin name, two Foundation-shaded plugins with visually-identical
+	 * tools end up with disjoint key sets, so {@link ItemUtil#isSimilar} rejects
+	 * cross-plugin matches and only the originating plugin's listener handles the click.
+	 */
+	private static final String TAG_PLUGIN = Platform.getPlugin().getName() + "_FoTool";
+
+	/**
 	 * The registered tools
 	 */
 	private static final Collection<Tool> tools = new ConcurrentLinkedQueue<>();
+
+	/**
+	 * Cached, plugin-tagged item produced by {@link #createItem()}. Built once on
+	 * first access and reused by every {@link #getItem()} / {@link #isTool(ItemStack)}
+	 * / {@link #give(Player)} call.
+	 */
+	private ItemStack item;
 
 	/**
 	 * Add a new tool to register.
@@ -44,7 +60,7 @@ public abstract class Tool {
 	 * @return true if the tool is registered
 	 */
 	static boolean isRegistered(final Tool tool) {
-		return getTool(tool.getItem()) != null;
+		return tools.contains(tool);
 	}
 
 	/**
@@ -134,13 +150,26 @@ public abstract class Tool {
 	}
 
 	/**
-	 * Get the tool item
-	 * <p>
-	 * TIP: Use {@link ItemCreator}
+	 * Returns this tool's item, lazily built from {@link #createItem()} and stamped
+	 * with this plugin's ownership NBT tag. Always tagged — there is no untagged
+	 * accessor by design.
 	 *
 	 * @return the tool item
 	 */
-	public abstract ItemStack getItem();
+	public final ItemStack getItem() {
+		if (this.item == null)
+			this.item = CompMetadata.setMetadata(this.createItem(), TAG_PLUGIN, Platform.getPlugin().getName());
+
+		return this.item;
+	}
+
+	/**
+	 * Subclass hook for building the visual item. Called once, then cached and
+	 * tagged by {@link #getItem()}. Use {@link ItemCreator}.
+	 *
+	 * @return the freshly built (untagged) item
+	 */
+	protected abstract ItemStack createItem();
 
 	/**
 	 * Called automatically when the tool is clicked
@@ -237,7 +266,7 @@ public abstract class Tool {
 	 * @param slot
 	 */
 	public final void give(final Player player, final int slot) {
-		player.getInventory().setItem(slot, this.getItem());
+		player.getInventory().setItem(slot, this.getItem().clone());
 	}
 
 	/**
@@ -246,7 +275,7 @@ public abstract class Tool {
 	 * @param player
 	 */
 	public final void give(final Player player) {
-		player.getInventory().addItem(this.getItem());
+		player.getInventory().addItem(this.getItem().clone());
 	}
 
 	/**
