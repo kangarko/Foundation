@@ -95,6 +95,7 @@ import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
@@ -127,6 +128,7 @@ public final class HookManager {
 	private static FactionsHook factionsHook;
 	private static ItemsAdderHook itemsAdderHook;
 	private static NexoHook nexoHook;
+	private static CraftEngineHook craftEngineHook;
 	private static LandsHook landsHook;
 	private static LocketteProHook locketteProHook;
 	private static PAFHook pafHook;
@@ -247,6 +249,9 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("Nexo"))
 			nexoHook = new NexoHook();
+
+		if (Platform.isPluginInstalled("CraftEngine"))
+			craftEngineHook = new CraftEngineHook();
 
 		if (Platform.isPluginInstalled("Lands"))
 			landsHook = new LandsHook();
@@ -472,6 +477,15 @@ public final class HookManager {
 	 */
 	public static boolean isNexoLoaded() {
 		return nexoHook != null;
+	}
+
+	/**
+	 * Is CraftEngine loaded?
+	 *
+	 * @return
+	 */
+	public static boolean isCraftEngineLoaded() {
+		return craftEngineHook != null;
 	}
 
 	/**
@@ -1250,11 +1264,12 @@ public final class HookManager {
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
-	// ItemsAdder
+	// Font images (ItemsAdder, Nexo, CraftEngine)
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Use ItemsAdder to replace font images in the message.
+	 * Replace font images / emoji glyphs in the message via every loaded provider
+	 * (ItemsAdder, Nexo, CraftEngine).
 	 *
 	 * @param component the message.
 	 * @return
@@ -1264,7 +1279,9 @@ public final class HookManager {
 	}
 
 	/**
-	 * Use ItemsAdder and Nexo to replace font images in the message based on the player's permission.
+	 * Replace font images / emoji glyphs in the message via every loaded provider
+	 * (ItemsAdder, Nexo, CraftEngine), gated by per-player permission where the
+	 * provider supports it.
 	 *
 	 * @param player  the player to use.
 	 * @param component the message.
@@ -1277,21 +1294,27 @@ public final class HookManager {
 		if (isNexoLoaded())
 			component = nexoHook.replaceFontImages(player, component);
 
+		if (isCraftEngineLoaded())
+			component = craftEngineHook.replaceFontImages(player, component);
+
 		return component;
 	}
 
 	/**
-	 * Use ItemsAdder to replace font images in the message.
+	 * Replace font images / emoji glyphs in the message via every loaded provider
+	 * (ItemsAdder, Nexo, CraftEngine).
 	 *
-	 * @param mesasage the message.
+	 * @param message the message.
 	 * @return
 	 */
-	public static String replaceFontImagesLegacy(final String mesasage) {
-		return replaceFontImagesLegacy(null, mesasage);
+	public static String replaceFontImagesLegacy(final String message) {
+		return replaceFontImagesLegacy(null, message);
 	}
 
 	/**
-	 * Use ItemsAdder and Nexo to replace font images in the message based on the player's permission.
+	 * Replace font images / emoji glyphs in the message via every loaded provider
+	 * (ItemsAdder, Nexo, CraftEngine), gated by per-player permission where the
+	 * provider supports it.
 	 *
 	 * @param player  the player to use.
 	 * @param message the message.
@@ -1303,6 +1326,9 @@ public final class HookManager {
 
 		if (isNexoLoaded())
 			message = nexoHook.replaceFontImagesLegacy(player, message);
+
+		if (isCraftEngineLoaded())
+			message = craftEngineHook.replaceFontImagesLegacy(player, message);
 
 		return message;
 	}
@@ -4572,6 +4598,114 @@ class NexoHook {
 		final String permission = ReflectionUtil.invoke(this.getPermissionMethod, glyph);
 
 		return permission == null || permission.isEmpty() || player.hasPermission(permission);
+	}
+}
+
+/*
+ * CraftEngine ships only as a Paper plugin and shades its own adventure into
+ * net.momirealms.craftengine.libraries.adventure, so we bridge over that namespace
+ * gap reflectively via the String-based emoji APIs (replaceMiniMessageEmoji /
+ * replaceJsonEmoji) where the boundary is plain text and safe across class loaders.
+ * Without this bridge ChatControl rebuilds the broadcast component from scratch and
+ * the player's typed ":smile:" reaches receivers literally - CraftEngine's own
+ * AsyncChatDecorateEvent listener only rewrites the chat preview, not the broadcast.
+ *
+ * We bind to the 2-arg default methods (not the 3-arg abstract ones) so CraftEngine
+ * applies the operator-configured emoji.max-emojis-per-parse cap from its own config.
+ * Class#getMethod (not ReflectionUtil.getMethod) is used because the defaults live on
+ * the FontManager interface and Foundation's helper walks only the superclass chain.
+ */
+class CraftEngineHook {
+
+	private Method instanceMethod;
+	private Method replaceMiniMessageEmojiMethod;
+	private Method replaceJsonEmojiMethod;
+	private Method adaptPlayerMethod;
+	private Method emojiTextResultText;
+	private Method emojiTextResultReplaced;
+	private boolean failed = false;
+
+	CraftEngineHook() {
+		try {
+			final Class<?> fontManagerClass = ReflectionUtil.lookupClass("net.momirealms.craftengine.bukkit.font.BukkitFontManager");
+			final Class<?> cePlayerClass = ReflectionUtil.lookupClass("net.momirealms.craftengine.core.entity.player.Player");
+			final Class<?> adaptorsClass = ReflectionUtil.lookupClass("net.momirealms.craftengine.bukkit.api.BukkitAdaptors");
+			final Class<?> textResultClass = ReflectionUtil.lookupClass("net.momirealms.craftengine.core.font.EmojiTextProcessResult");
+
+			this.instanceMethod = fontManagerClass.getMethod("instance");
+			this.replaceMiniMessageEmojiMethod = fontManagerClass.getMethod("replaceMiniMessageEmoji", String.class, cePlayerClass);
+			this.replaceJsonEmojiMethod = fontManagerClass.getMethod("replaceJsonEmoji", String.class, cePlayerClass);
+			this.adaptPlayerMethod = adaptorsClass.getMethod("adapt", Player.class);
+			this.emojiTextResultText = textResultClass.getMethod("text");
+			this.emojiTextResultReplaced = textResultClass.getMethod("replaced");
+
+		} catch (final Throwable t) {
+			CommonCore.warning("Unable to resolve CraftEngine API. The plugin will continue to function, but no emoji replacement will be performed. Is the integration outdated?");
+
+			t.printStackTrace();
+			this.failed = true;
+		}
+	}
+
+	SimpleComponent replaceFontImages(final Player player, final SimpleComponent component) {
+		if (this.failed || component == null)
+			return component;
+
+		try {
+			final Object fontManager = ReflectionUtil.invokeStatic(this.instanceMethod);
+
+			if (fontManager == null)
+				return component;
+
+			final String json = GsonComponentSerializer.gson().serialize(component.toAdventure(null));
+			final Object result = ReflectionUtil.invoke(this.replaceJsonEmojiMethod, fontManager, json, this.adaptPlayer(player));
+
+			if (result == null || !(boolean) ReflectionUtil.invoke(this.emojiTextResultReplaced, result))
+				return component;
+
+			final String newJson = ReflectionUtil.invoke(this.emojiTextResultText, result);
+
+			return SimpleComponent.fromAdventure(GsonComponentSerializer.gson().deserialize(newJson));
+
+		} catch (final Throwable t) {
+			this.logFailure(t);
+
+			return component;
+		}
+	}
+
+	String replaceFontImagesLegacy(final Player player, final String message) {
+		if (this.failed || message == null || message.isEmpty())
+			return message;
+
+		try {
+			final Object fontManager = ReflectionUtil.invokeStatic(this.instanceMethod);
+
+			if (fontManager == null)
+				return message;
+
+			final Object result = ReflectionUtil.invoke(this.replaceMiniMessageEmojiMethod, fontManager, message, this.adaptPlayer(player));
+
+			if (result == null || !(boolean) ReflectionUtil.invoke(this.emojiTextResultReplaced, result))
+				return message;
+
+			return ReflectionUtil.invoke(this.emojiTextResultText, result);
+
+		} catch (final Throwable t) {
+			this.logFailure(t);
+
+			return message;
+		}
+	}
+
+	private Object adaptPlayer(final Player player) {
+		return player == null ? null : ReflectionUtil.invokeStatic(this.adaptPlayerMethod, player);
+	}
+
+	private void logFailure(final Throwable t) {
+		final Throwable root = t.getCause() != null ? t.getCause() : t;
+
+		CommonCore.logTimed(3600, "Failed to invoke CraftEngine emoji replacement (" + root.getClass().getSimpleName() + ": " + root.getMessage() + "). This message will not show for the next hour.");
 	}
 }
 
