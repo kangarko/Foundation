@@ -295,6 +295,47 @@ public enum CompAttribute {
 	}
 
 	/**
+	 * Returns the base value of the attribute, ignoring all modifiers (from
+	 * equipment, potions, or external plugins). Use this when persisting an
+	 * attribute that should be restored later with {@link #set(LivingEntity, double)},
+	 * which sets the base value. Saving the effective value via {@link #get(LivingEntity)}
+	 * and restoring it as base would double-count modifiers on every cycle.
+	 *
+	 * @param entity
+	 * @return the base value, or null if not supported by the server or not applicable for the entity
+	 */
+	public final Double getBase(@NonNull final LivingEntity entity) {
+
+		// Minecraft 1.9+
+		if (hasAttributeClass) {
+			if (this.bukkitAttribute != null) {
+				final AttributeInstance instance = entity.getAttribute((Attribute) this.bukkitAttribute);
+
+				return instance != null ? instance.getBaseValue() : null;
+			}
+
+		} else if (this.getNmsName() != null)
+			try {
+				final Object instance = this.getLegacyAttributeInstance(entity);
+
+				try {
+					return (double) ReflectionUtil.invoke("getBaseValue", instance);
+
+				} catch (final Throwable ignored) {
+					return (double) ReflectionUtil.invoke("b", instance);
+				}
+
+			} catch (final NullPointerException ignored) {
+				return null;
+
+			} catch (final Throwable t) {
+				throw new FoException("Error retrieving base value of attribute " + this + " for " + entity);
+			}
+
+		return null;
+	}
+
+	/**
 	 * If supported by the server, sets a new attribute to the entity
 	 *
 	 * @param entity
