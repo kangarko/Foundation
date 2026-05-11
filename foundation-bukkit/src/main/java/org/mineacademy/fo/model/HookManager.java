@@ -4039,6 +4039,25 @@ class CitizensHook {
 
 			controller.getClass().getMethod("clear").invoke(controller);
 
+			// Citizens 2.0.42 bug: SimpleBehaviorController.clear() resets the
+			// Selector but leaves the controller's private `executing` boolean
+			// stuck true whenever a behavior was RUNNING at clear time. The
+			// next tick then skips the empty-list shouldExecute guard and
+			// crashes in Selector.getNextBehavior with Random.nextInt(0).
+			// Force-reset the flag here so callers do not have to.
+			if (this.modernCitizens)
+				try {
+					final java.lang.reflect.Field executing = controller.getClass().getDeclaredField("executing");
+
+					executing.setAccessible(true);
+					executing.setBoolean(controller, false);
+
+				} catch (final Throwable t) {
+					// Citizens renamed the field — log once so we notice the drift.
+					CommonCore.logTimed(60 * 30, "Could not reset Citizens BehaviorController.executing flag: " + t.getClass().getSimpleName() + ": " + t.getMessage()
+							+ ". This message only shows once per 30 minutes.");
+				}
+
 		} catch (final ReflectiveOperationException ex) {
 			throw new RuntimeException("Failed to clear behaviors on Citizens NPC", ex);
 		}
