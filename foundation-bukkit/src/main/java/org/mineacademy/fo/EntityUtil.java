@@ -4,8 +4,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -165,19 +167,94 @@ public final class EntityUtil {
 	}
 
 	/**
-	 * Attempts to spawn the entity for 1 tick at y=0 coordinate and then remove it
-	 * as means to getting its default health in Minecraft.
+	 * Cached default health per entity type so we only resolve once per server lifetime.
+	 * Thread-safe so lookups can happen from any scheduler/region on Folia.
+	 */
+	private static final Map<EntityType, Double> defaultHealthCache = new ConcurrentHashMap<>();
+
+	/**
+	 * Returns the vanilla default max-health for the given entity type.
 	 *
-	 * Must be on the main thread.
+	 * Reads from the NMS default-attribute registry ({@code DefaultAttributes}) when available
+	 * so the call is thread-safe on Folia (no region context needed) and does not fire spawn events.
+	 * Falls back to a one-shot entity spawn probe on legacy / non-Paper servers where the registry
+	 * class is absent. The result is cached per entity type.
 	 *
 	 * @param type
 	 * @return
 	 */
 	public static double getDefaultHealth(final EntityType type) {
-		Valid.checkSync("Cannot use getDefaultHealth async!");
-
 		if (type == CompEntityType.PLAYER)
 			return 20;
+
+		final Double cached = defaultHealthCache.get(type);
+
+		if (cached != null)
+			return cached;
+
+		final Double registryValue = readDefaultHealthFromRegistry(type);
+
+		if (registryValue != null) {
+			defaultHealthCache.put(type, registryValue);
+
+			return registryValue;
+		}
+
+		final double probed = probeDefaultHealthBySpawn(type);
+		defaultHealthCache.put(type, probed);
+
+		return probed;
+	}
+
+	/**
+	 * Resolve the default max-health from the NMS attribute registry via reflection,
+	 * or null if the server is too old (pre-1.17 NMS package layout) or the type has
+	 * no registered attribute supplier. Handles both pre-1.20.5 (Attributes.MAX_HEALTH
+	 * is raw Attribute) and post-1.20.5 (wrapped in Holder) signatures.
+	 */
+	private static Double readDefaultHealthFromRegistry(final EntityType type) {
+		try {
+			final Class<?> defaultAttributesClass = Class.forName("net.minecraft.world.entity.ai.attributes.DefaultAttributes");
+			final Class<?> attributesClass = Class.forName("net.minecraft.world.entity.ai.attributes.Attributes");
+			final Class<?> craftEntityTypeClass = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntityType");
+			final Class<?> nmsEntityTypeClass = Class.forName("net.minecraft.world.entity.EntityType");
+
+			final Object nmsType = craftEntityTypeClass.getMethod("bukkitToMinecraft", EntityType.class).invoke(null, type);
+			final boolean hasSupplier = (boolean) defaultAttributesClass.getMethod("hasSupplier", nmsEntityTypeClass).invoke(null, nmsType);
+
+			if (!hasSupplier)
+				return null;
+
+			final Object supplier = defaultAttributesClass.getMethod("getSupplier", nmsEntityTypeClass).invoke(null, nmsType);
+			final Object maxHealthAttribute = attributesClass.getField("MAX_HEALTH").get(null);
+
+			// AttributeSupplier has exactly one getBaseValue(Object) method; its parameter
+			// type is Holder on 1.20.5+ and Attribute on earlier versions. The MAX_HEALTH
+			// field's runtime type matches the signature, so we find the method by name
+			// rather than hard-coding either parameter class.
+			for (final Method method : supplier.getClass().getMethods())
+				if ("getBaseValue".equals(method.getName()) && method.getParameterCount() == 1)
+					return (double) method.invoke(supplier, maxHealthAttribute);
+
+			return null;
+
+		} catch (final ClassNotFoundException | NoSuchMethodException | NoSuchFieldException ignored) {
+			// Pre-1.17 server or mapping mismatch: caller falls back to spawn probe.
+			return null;
+
+		} catch (final Throwable t) {
+			CommonCore.log("Foundation.getDefaultHealth: NMS registry path failed for " + type + ", falling back to spawn probe. Raw error: " + t);
+
+			return null;
+		}
+	}
+
+	/**
+	 * Legacy fallback: spawn the entity at y=0 in a supported world, read health, remove it.
+	 * Requires the main / region tick thread and will NPE on Folia outside a region context.
+	 */
+	private static double probeDefaultHealthBySpawn(final EntityType type) {
+		Valid.checkSync("Cannot use getDefaultHealth async!");
 
 		World world = Bukkit.getWorlds().get(0);
 
