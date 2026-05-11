@@ -67,6 +67,28 @@ public final class ReflectionUtil {
 	private static final Map<Class<?>, Method> enumClassCache = new HashMap<>();
 
 	/**
+	 * Cache for {@link #getMethod(Class, String, Class...)} lookups, keyed by class then by
+	 * method signature. Negative lookups are cached as {@link #NULL_METHOD} to avoid re-walking
+	 * the class hierarchy on every call. Without this cache, hot paths like InventoryView reflection
+	 * on Paper 1.21+ (where every call goes through Paper's reflection rewriter) can stall the
+	 * main thread long enough to trip the watchdog.
+	 */
+	private static final Map<Class<?>, Map<String, Method>> methodCache = new ConcurrentHashMap<>();
+	private static final Method NULL_METHOD;
+
+	static {
+		try {
+			NULL_METHOD = ReflectionUtil.class.getDeclaredMethod("nullMethodSentinel");
+		} catch (final NoSuchMethodException ex) {
+			throw new Error(ex);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private static void nullMethodSentinel() {
+	}
+
+	/**
 	 * Maps primitive <code>Class</code>es to their corresponding wrapper <code>Class</code>.
 	 */
 	private static final Map<Class<?>, Class<?>> primitiveToWrapperMap = new HashMap<>();
@@ -305,24 +327,53 @@ public final class ReflectionUtil {
 	 * @param args
 	 * @return
 	 */
-	public static Method getMethod(@NonNull Class<?> clazz, @NonNull final String methodName, final Class<?>... args) {
-		while (!clazz.equals(Object.class))
+	public static Method getMethod(@NonNull final Class<?> clazz, @NonNull final String methodName, final Class<?>... args) {
+		final String cacheKey = buildMethodCacheKey(methodName, args);
+		final Map<String, Method> classMap = methodCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>());
+		final Method cached = classMap.get(cacheKey);
+
+		if (cached != null)
+			return cached == NULL_METHOD ? null : cached;
+
+		Class<?> current = clazz;
+
+		while (!current.equals(Object.class)) {
 			try {
-				final Method method = clazz.getDeclaredMethod(methodName, args);
+				final Method method = current.getDeclaredMethod(methodName, args);
 				method.setAccessible(true);
 
+				classMap.put(cacheKey, method);
 				return method;
 
 			} catch (final NoSuchMethodException ex) {
-				clazz = clazz.getSuperclass();
+				current = current.getSuperclass();
 
-				if (clazz == null)
+				if (current == null)
 					break;
 
 			} catch (final Throwable t) {
+				break;
 			}
+		}
 
+		classMap.put(cacheKey, NULL_METHOD);
 		return null;
+	}
+
+	private static String buildMethodCacheKey(final String methodName, final Class<?>[] args) {
+		if (args == null || args.length == 0)
+			return methodName;
+
+		final StringBuilder builder = new StringBuilder(methodName).append('(');
+
+		for (int i = 0; i < args.length; i++) {
+			if (i > 0)
+				builder.append(',');
+
+			builder.append(args[i] == null ? "null" : args[i].getName());
+		}
+
+		return builder.append(')').toString();
 	}
 
 	/**
