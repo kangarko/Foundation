@@ -241,6 +241,13 @@ public final class Remain {
 	 */
 	private static java.lang.reflect.Method isTickThreadMethod = null;
 
+	// Backing Moonrise method for Remain#isTickThreadFor(Entity).
+	private static java.lang.reflect.Method isTickThreadForEntityMethod = null;
+
+	// CraftEntity.getHandleRaw() — skips the TickThread check that getHandle() performs,
+	// required to pass a foreign-region entity into isTickThreadForEntityMethod.
+	private static java.lang.reflect.Method getHandleRawMethod = null;
+
 	/**
 	 * Return true if this server is Thermos
 	 */
@@ -345,14 +352,34 @@ public final class Remain {
 		isFolia = ReflectionUtil.isClassAvailable("io.papermc.paper.threadedregions.RegionizedServer");
 		isThermos = ReflectionUtil.isClassAvailable("thermos.ThermosRemapper");
 
-		// Resolve Moonrise TickThread.isTickThread() once. Present on modern Paper and Folia, absent on legacy Spigot/CraftBukkit/1.8.x.
+		// Moonrise TickThread on modern Paper and Folia; absent on 1.8.x / legacy Spigot.
 		if (ReflectionUtil.isClassAvailable("ca.spottedleaf.moonrise.common.util.TickThread")) {
 			try {
-				isTickThreadMethod = ReflectionUtil.lookupClass("ca.spottedleaf.moonrise.common.util.TickThread").getMethod("isTickThread");
+				final Class<?> tickThreadClass = ReflectionUtil.lookupClass("ca.spottedleaf.moonrise.common.util.TickThread");
+
+				isTickThreadMethod = tickThreadClass.getMethod("isTickThread");
+
+				try {
+					final Class<?> nmsEntityClass = ReflectionUtil.lookupClass("net.minecraft.world.entity.Entity");
+
+					isTickThreadForEntityMethod = tickThreadClass.getMethod("isTickThreadFor", nmsEntityClass);
+
+				} catch (final NoSuchMethodException ignored) {
+					isTickThreadForEntityMethod = null;
+				}
 
 			} catch (final NoSuchMethodException ex) {
 				isTickThreadMethod = null;
 			}
+		}
+
+		try {
+			final Class<?> craftEntityClass = ReflectionUtil.lookupClass(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntity");
+
+			getHandleRawMethod = craftEntityClass.getMethod("getHandleRaw");
+
+		} catch (final Throwable ignored) {
+			getHandleRawMethod = null;
 		}
 		isUsingMojangMappings = ReflectionUtil.isClassAvailable("net.minecraft.server.level.ServerPlayer");
 
@@ -3482,6 +3509,31 @@ public final class Remain {
 		}
 
 		return Bukkit.isPrimaryThread();
+	}
+
+	/**
+	 * Return true if the calling thread currently owns the region that ticks the given entity.
+	 * On non-Folia this is effectively {@link Bukkit#isPrimaryThread()} because a single tick
+	 * thread owns every entity; on Folia it is a precise per-region check.
+	 *
+	 * @param entity the entity whose region ownership to test, or null
+	 * @return true when it is safe to touch the entity's NMS state from the current thread
+	 */
+	public static boolean isTickThreadFor(final org.bukkit.entity.Entity entity) {
+		if (entity == null || !isFolia)
+			return true;
+
+		if (isTickThreadForEntityMethod == null || getHandleRawMethod == null)
+			return isTickThread();
+
+		try {
+			final Object nmsEntity = getHandleRawMethod.invoke(entity);
+
+			return (boolean) isTickThreadForEntityMethod.invoke(null, nmsEntity);
+
+		} catch (final ReflectiveOperationException ex) {
+			return isTickThread();
+		}
 	}
 
 	/**
