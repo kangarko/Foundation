@@ -392,7 +392,8 @@ public final class Remain {
 			}
 
 		} catch (final Throwable t) {
-			CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
+			if (!Platform.getPlatformName().contains("Arclight"))
+				CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_12))
@@ -412,7 +413,8 @@ public final class Remain {
 						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 			}
 		} catch (final Throwable t) {
-			CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
+			if (!Platform.getPlatformName().contains("Arclight"))
+				CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_16)) {
