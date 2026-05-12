@@ -330,6 +330,30 @@ public final class Remain {
 	private static boolean hasPlayerOpenVirtualSignMethod = false;
 
 	/**
+	 * Return true if the Entity class has the getHeight method (Bukkit 1.13+).
+	 * On older versions we fall back to the NMS Entity.length field.
+	 */
+	private static boolean hasEntityGetHeight = true;
+
+	/**
+	 * Cached NMS Entity height field for 1.8 to 1.12, where Bukkit had no getHeight().
+	 * The field is named "length" in NMS for these versions.
+	 */
+	private static Field nmsEntityHeightField = null;
+
+	/**
+	 * Return true if the Entity class has the getWidth method (Bukkit 1.13+).
+	 * On older versions we fall back to the NMS Entity.width field.
+	 */
+	private static boolean hasEntityGetWidth = true;
+
+	/**
+	 * Cached NMS Entity width field for 1.8 to 1.12, where Bukkit had no getWidth().
+	 * The field is named "width" in NMS for these versions.
+	 */
+	private static Field nmsEntityWidthField = null;
+
+	/**
 	 * The safeguard NMS prefix used in Bukkit 1.4 to 1.20.4.
 	 *
 	 * @deprecated internal use only and no longer needed on Minecraft 1.20.5 and greater
@@ -502,6 +526,42 @@ public final class Remain {
 			hasPlayerOpenVirtualSignMethod = true;
 		} catch (final Throwable ex) {
 			// Not available
+		}
+
+		try {
+			Entity.class.getMethod("getHeight");
+
+		} catch (final Throwable ex) {
+			hasEntityGetHeight = false;
+
+			try {
+				final Class<?> nmsEntityClass = Remain.getNMSClass("Entity", "net.minecraft.world.entity.Entity");
+
+				nmsEntityHeightField = nmsEntityClass.getField("length");
+				nmsEntityHeightField.setAccessible(true);
+
+			} catch (final Throwable ex2) {
+				if (!isThermos)
+					CommonCore.error(ex2, "Failed to find NMS Entity height field on legacy MC");
+			}
+		}
+
+		try {
+			Entity.class.getMethod("getWidth");
+
+		} catch (final Throwable ex) {
+			hasEntityGetWidth = false;
+
+			try {
+				final Class<?> nmsEntityClass = Remain.getNMSClass("Entity", "net.minecraft.world.entity.Entity");
+
+				nmsEntityWidthField = nmsEntityClass.getField("width");
+				nmsEntityWidthField.setAccessible(true);
+
+			} catch (final Throwable ex2) {
+				if (!isThermos)
+					CommonCore.error(ex2, "Failed to find NMS Entity width field on legacy MC");
+			}
 		}
 
 		if (MinecraftVersion.olderThan(V.v1_17)) {
@@ -1312,6 +1372,54 @@ public final class Remain {
 	}
 
 	/**
+	 * Return the height of the entity in blocks (its bounding box vertical size).
+	 *
+	 * Uses Bukkit's Entity.getHeight() on 1.13+ and falls back to the NMS Entity.length
+	 * field on 1.8 to 1.12 where the Bukkit API method does not exist.
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static double getEntityHeight(final Entity entity) {
+		if (hasEntityGetHeight)
+			return entity.getHeight();
+
+		if (nmsEntityHeightField == null)
+			return 1;
+
+		try {
+			return ((Number) nmsEntityHeightField.get(getHandleEntity(entity))).doubleValue();
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException(ex, "Failed to read NMS Entity.length for " + entity);
+		}
+	}
+
+	/**
+	 * Return the width of the entity in blocks (its bounding box horizontal size).
+	 *
+	 * Uses Bukkit's Entity.getWidth() on 1.13+ and falls back to the NMS Entity.width
+	 * field on 1.8 to 1.12 where the Bukkit API method does not exist.
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public static double getEntityWidth(final Entity entity) {
+		if (hasEntityGetWidth)
+			return entity.getWidth();
+
+		if (nmsEntityWidthField == null)
+			return 1;
+
+		try {
+			return ((Number) nmsEntityWidthField.get(getHandleEntity(entity))).doubleValue();
+
+		} catch (final ReflectiveOperationException ex) {
+			throw new FoException(ex, "Failed to read NMS Entity.width for " + entity);
+		}
+	}
+
+	/**
 	 * Return nearby entities in a location
 	 *
 	 * @param location
@@ -1381,8 +1489,8 @@ public final class Remain {
 					continue;
 
 				final Location feet = entity.getLocation();
-				final double halfWidth = entity.getWidth() / 2.0;
-				final double height = entity.getHeight();
+				final double halfWidth = getEntityWidth(entity) / 2.0;
+				final double height = getEntityHeight(entity);
 
 				final double hitDist = EntityUtil.rayIntersectsAABB(start.toVector(), direction, feet.toVector(), halfWidth, height);
 

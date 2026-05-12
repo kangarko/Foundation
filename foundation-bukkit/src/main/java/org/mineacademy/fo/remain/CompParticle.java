@@ -529,6 +529,9 @@ public enum CompParticle {
 	@SneakyThrows
 	private Object preparePacket(final double posX, final double posY, final double posZ, final double offsetX, final double offsetY, final double offsetZ, final double speed, final int count, final double extra, int... data) {
 
+		if (data == null)
+			data = new int[] { 1, 0 };
+
 		if (this == BLOCK_CRACK) {
 			int materialId = 0;
 			int materialData = 0;
