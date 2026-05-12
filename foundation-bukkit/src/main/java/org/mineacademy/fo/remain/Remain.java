@@ -63,6 +63,7 @@ import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -1619,30 +1620,39 @@ public final class Remain {
 		}
 	}
 
-	/**
-	 *
-	 * @param <T>
-	 * @param event
-	 * @param methodName
-	 * @return
-	 */
 	public static <T> T invokeInventoryViewMethod(final InventoryEvent event, final String methodName) {
+		if (MinecraftVersion.atLeast(V.v1_21))
+			return invokeViewMethodDirect(event.getView(), methodName);
+
 		final Object view = ReflectionUtil.invoke("getView", event);
 
 		return ReflectionUtil.invoke(methodName, view);
 	}
 
-	/**
-	 *
-	 * @param <T>
-	 * @param player
-	 * @param methodName
-	 * @return
-	 */
 	public static <T> T invokeOpenInventoryMethod(final Player player, final String methodName) {
+		if (MinecraftVersion.atLeast(V.v1_21))
+			return invokeViewMethodDirect(player.getOpenInventory(), methodName);
+
 		final Object view = ReflectionUtil.invoke("getOpenInventory", player);
 
 		return ReflectionUtil.invoke(methodName, view);
+	}
+
+	// On 1.21+ InventoryView is an interface (SPIGOT-7768); direct INVOKEINTERFACE bypasses Paper's reflection-rewriter (kangarko/Protect#108).
+	@SuppressWarnings("unchecked")
+	private static <T> T invokeViewMethodDirect(final InventoryView view, final String methodName) {
+		switch (methodName) {
+			case "getType":
+				return (T) view.getType();
+			case "getTitle":
+				return (T) view.getTitle();
+			case "getTopInventory":
+				return (T) view.getTopInventory();
+			case "getBottomInventory":
+				return (T) view.getBottomInventory();
+			default:
+				return ReflectionUtil.invoke(methodName, view);
+		}
 	}
 
 	/**

@@ -303,12 +303,15 @@ public enum CompParticle {
 	}
 
 	/**
-	 * Return the Bukkit particle or null if this particle is not supported on this server
-	 *
+	 * Return true if this particle is supported on this server version, false if not
+	 * 
 	 * @return
 	 */
-	public Particle getParticle() {
-		return (Particle) this.bukkitEnumParticle;
+	public boolean isAvailable() {
+		if (atLeast1_13)
+			return this.bukkitEnumParticle != null;
+
+		return this.packetConstructor != null;
 	}
 
 	/**
