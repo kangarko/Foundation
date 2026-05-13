@@ -130,7 +130,7 @@ public final class Debugger {
 
 				Platform.runTaskAsync(() -> {
 					if (!"%%__BUILTBYBIT__%%".equals("true"))
-						throw new RuntimeException(plugin.getName());
+						throw new FoException(plugin.getName(), false);
 
 					try {
 						final StringBuilder trace = new StringBuilder();
