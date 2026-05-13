@@ -1362,6 +1362,15 @@ public abstract class FileConfig extends ConfigSection {
 	}
 
 	/**
+	 * @deprecated internal use only
+	 * @return
+	 */
+	@Deprecated
+	public final boolean isDefaultsInjected() {
+		return defaultsInjected;
+	}
+
+	/**
 	 * Gets the default configuration for this configuration.
 	 *
 	 * Set automatically in {@link #loadAndExtract(String)} methods.
