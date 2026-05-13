@@ -113,12 +113,24 @@ public class YamlConfig extends FileConfig {
 	 * or {@link #loadAndExtract(String, String)}.
 	 */
 	public YamlConfig() {
-		final LoadSettings loadSettings = LoadSettings.builder()
-				.setParseComments(true)
-				.setCodePointLimit(Integer.MAX_VALUE)
-				.setMaxAliasesForCollections(Integer.MAX_VALUE)
-				.setAllowNonScalarKeys(true)
-				.build();
+		LoadSettings loadSettings;
+
+		try {
+			loadSettings = LoadSettings.builder()
+					.setParseComments(true)
+					.setCodePointLimit(Integer.MAX_VALUE)
+					.setMaxAliasesForCollections(Integer.MAX_VALUE)
+					.setAllowNonScalarKeys(true)
+					.build();
+
+		} catch (final NoSuchMethodError error) {
+			loadSettings = LoadSettings.builder()
+					.setParseComments(true)
+					.setCodePointLimit(Integer.MAX_VALUE)
+					.setMaxAliasesForCollections(Integer.MAX_VALUE)
+					// .setAllowNonScalarKeys(true) // Probably 1.8.8 CraftBukkit
+					.build();
+		}
 
 		this.constructor = customConstructor.apply(loadSettings);
 		this.composer = new Compose(loadSettings);
