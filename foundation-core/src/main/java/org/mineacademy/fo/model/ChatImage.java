@@ -31,7 +31,7 @@ import net.kyori.adventure.text.format.TextColor;
 public final class ChatImage {
 
 	@Setter
-	public static String avatarApiUrl;
+	public static String avatarApiUrl = "https://minotar.net/avatar/{player_name}/{image_height}.png";
 
 	/**
 	 * Represents the height of the image.
