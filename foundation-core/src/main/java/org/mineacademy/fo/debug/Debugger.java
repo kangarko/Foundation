@@ -251,6 +251,9 @@ public final class Debugger {
 			if (msg != null && (msg.contains("zip file closed") || msg.contains("has thrown a zip file error")))
 				return true;
 
+			if (msg != null && (msg.contains("No space left on device") || msg.contains("Disk quota exceeded") || msg.contains("Read-only file system")))
+				return true;
+
 			if (cause instanceof java.nio.file.NoSuchFileException || cause instanceof java.io.FileNotFoundException) {
 				if (msg != null && (msg.contains(".jar") || msg.contains(".paper-remapped")))
 					return true;
