@@ -182,6 +182,7 @@ public final class HookManager {
 
 		if (Platform.isPluginInstalled("Citizens"))
 			try {
+				Class.forName("net.citizensnpcs.api.CitizensAPI");
 				Class.forName("net.citizensnpcs.api.ai.tree.Behavior");
 
 				citizensHook = new CitizensHook();
