@@ -33,7 +33,7 @@ import lombok.NonNull;
  *
  * Inspired from: https://github.com/CryptoMorin/XSeries
  *
- * @author Matej Pacan and Crypto Morin
+ * @author kangarko and Crypto Morin
  */
 public enum CompSound {
 	AMBIENT_BASALT_DELTAS_ADDITIONS,
