@@ -1300,6 +1300,8 @@ public abstract class FileConfig extends ConfigSection {
 					ex.printStackTrace();
 
 					continue;
+				} catch (final NumberFormatException ex) {
+					throw new FoException("Invalid value '" + entry.getValue() + "' at '" + path + "." + entry.getKey() + "' in " + this.getFileName() + ", expected " + valueType.getSimpleName() + ". Check your configuration for an empty or non-numeric value.", false);
 				}
 
 				this.checkAssignable(path, key, keyType);
