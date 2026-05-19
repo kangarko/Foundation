@@ -263,6 +263,15 @@ public final class Debugger {
 					|| cause instanceof java.net.ConnectException
 					|| cause instanceof java.net.UnknownHostException)
 				return true;
+
+			if (cause instanceof java.sql.SQLTransientConnectionException || cause instanceof java.sql.SQLTimeoutException)
+				return true;
+
+			if (msg != null && msg.contains("Connection is not available, request timed out"))
+				return true;
+
+			if (msg != null && (msg.contains("SQLITE_READONLY") || msg.contains("SQLITE_BUSY") || msg.contains("SQLITE_LOCKED") || msg.contains("SQLITE_CORRUPT") || msg.contains("SQLITE_IOERR") || msg.contains("attempt to write a readonly database") || msg.contains("database is locked") || msg.contains("database disk image is malformed") || msg.contains("no such table") || msg.contains("no such column") || msg.contains("missing database")))
+				return true;
 		} while ((cause = cause.getCause()) != null);
 
 		return false;
