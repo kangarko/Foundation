@@ -281,7 +281,7 @@ public final class Variable extends YamlConfig {
 			Variables.setReplaceScript(false);
 
 			if (this.senderPermission != null && !this.senderPermission.isEmpty()
-					&& !audience.hasPermission(this.senderPermission))
+					&& !audience.hasNegatablePermission(this.senderPermission))
 				return SimpleComponent.empty();
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty())
@@ -408,7 +408,7 @@ public final class Variable extends YamlConfig {
 			Variables.setReplaceScript(false);
 
 			if (this.senderPermission != null && !this.senderPermission.isEmpty()
-					&& !variables.audience().hasPermission(this.senderPermission))
+					&& !variables.audience().hasNegatablePermission(this.senderPermission))
 				return "";
 
 			if (this.senderCondition != null && !this.senderCondition.isEmpty())

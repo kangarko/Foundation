@@ -235,6 +235,30 @@ public abstract class FoundationPlayer implements Audience {
 	}
 
 	/**
+	 * Returns true if this player passes the given permission check. The permission
+	 * may be prefixed with '!' to negate the check (the player must NOT have the
+	 * permission node that follows). A null or empty permission always returns true.
+	 *
+	 * @param permission
+	 * @return
+	 */
+	public final boolean hasNegatablePermission(final String permission) {
+		if (permission == null || permission.isEmpty())
+			return true;
+
+		if (permission.charAt(0) == '!') {
+			final String node = permission.substring(1).trim();
+
+			if (node.isEmpty())
+				throw new FoException("Permission cannot be just '!' (missing node after negation): '" + permission + "'", false);
+
+			return !this.hasPermission(node);
+		}
+
+		return this.hasPermission(permission);
+	}
+
+	/**
 	 * Implementation of hasPermission().
 	 */
 	protected abstract boolean hasPermission0(String permission);
