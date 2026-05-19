@@ -1461,7 +1461,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		 * Build the component for the given receiver.
 		 */
 		private Component build(final FoundationPlayer receiver) {
-			if (this.viewPermission != null && !this.viewPermission.isEmpty() && (receiver == null || !receiver.hasPermission(this.viewPermission)))
+			if (this.viewPermission != null && !this.viewPermission.isEmpty() && (receiver == null || !receiver.hasNegatablePermission(this.viewPermission)))
 				return null;
 
 			if (this.viewCondition != null && !this.viewCondition.isEmpty()) {
