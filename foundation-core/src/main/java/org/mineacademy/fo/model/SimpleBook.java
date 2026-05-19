@@ -193,11 +193,13 @@ public final class SimpleBook implements ConfigSerializable {
 		map.putIfExists("Title", this.title);
 		map.putIfExists("Author", this.author);
 
+		final List<String> pages = this.pages == null ? new ArrayList<>() : this.pages;
+
 		// Trim to avoid packet overflow
-		map.put("Pages", this.pages != null && this.pages.size() > 60 ? this.pages.subList(0, 60) : this.pages);
+		map.put("Pages", pages.size() > 60 ? pages.subList(0, 60) : pages);
 		map.put("Signed", this.signed);
 		map.put("Last_Modified", this.lastModified);
-		map.put("Unique_Id", this.uniqueId);
+		map.putIfExists("Unique_Id", this.uniqueId);
 
 		return map;
 	}
