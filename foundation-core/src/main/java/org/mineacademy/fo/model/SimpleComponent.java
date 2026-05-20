@@ -36,6 +36,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -831,27 +832,38 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public String toAdventureJson(final FoundationPlayer receiver, final boolean legacy) {
+		final GsonComponentSerializer serializer = legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson();
+		final Component adventure = this.toAdventure(receiver);
+
 		try {
-			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
+			return serializer.serialize(adventure);
 
 		} catch (final Throwable t) {
-			final String mini = this.toMini(receiver);
-			final String stripped = mini.replaceAll("(<hover:show_item:[^:>]+):[^>]*?'>", "$1'>");
+			try {
+				return serializer.serialize(stripShowItemHoversRecursive(adventure));
 
-			CommonCore.log(
-					"Adventure failed to convert component to JSON. Will return stripped!",
-					"This is a Paper bug (especially if you the error says 'There is no data holder'",
-					"and your item has a hover event - in that case, update Paper.",
-					"If you are running the latest Paper, open an issue with their team.",
-					"",
-					"Mini: " + mini,
-					"Stripped: " + stripped);
-
-			t.printStackTrace(); // do not auto-report, likely not our fault
-			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
-
-			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
+			} catch (final Throwable secondary) {
+				return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
+			}
 		}
+	}
+
+	private static Component stripShowItemHoversRecursive(Component component) {
+		final HoverEvent<?> hover = component.hoverEvent();
+
+		if (hover != null && hover.action() == HoverEvent.Action.SHOW_ITEM)
+			component = component.hoverEvent(null);
+
+		if (!component.children().isEmpty()) {
+			final List<Component> newChildren = new ArrayList<>();
+
+			for (final Component child : component.children())
+				newChildren.add(stripShowItemHoversRecursive(child));
+
+			component = component.children(newChildren);
+		}
+
+		return component;
 	}
 
 	/**
