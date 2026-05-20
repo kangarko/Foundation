@@ -835,23 +835,48 @@ public final class SimpleComponent implements ConfigSerializable {
 			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
 
 		} catch (final Throwable t) {
-			final String mini = this.toMini(receiver);
-			final String stripped = mini.replaceAll("(<hover:show_item:[^:>]+):[^>]*?'>", "$1'>");
-
-			CommonCore.log(
-					"Adventure failed to convert component to JSON. Will return stripped!",
-					"This is a Paper bug (especially if you the error says 'There is no data holder'",
-					"and your item has a hover event - in that case, update Paper.",
-					"If you are running the latest Paper, open an issue with their team.",
-					"",
-					"Mini: " + mini,
-					"Stripped: " + stripped);
-
-			t.printStackTrace(); // do not auto-report, likely not our fault
-			CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
-
-			return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
+			return this.handleAdventureJsonFailure(receiver, legacy, t);
 		}
+	}
+
+	/**
+	 * Returns the JSON representation of the component for the given receiver,
+	 * or null if conversion fails. Unlike {@link #toAdventureJson(FoundationPlayer, boolean)}
+	 * this does not log or attempt a legacy fallback.
+	 *
+	 * Intended for hot paths (e.g. packet listeners) where a single broken
+	 * component must not produce a stacktrace per chat packet.
+	 *
+	 * @param receiver
+	 * @param legacy
+	 * @return
+	 */
+	public String toAdventureJsonOrNull(final FoundationPlayer receiver, final boolean legacy) {
+		try {
+			return (legacy ? GsonComponentSerializer.colorDownsamplingGson() : GsonComponentSerializer.gson()).serialize(this.toAdventure(receiver));
+
+		} catch (final Throwable t) {
+			return null;
+		}
+	}
+
+	private String handleAdventureJsonFailure(final FoundationPlayer receiver, final boolean legacy, final Throwable t) {
+		final String mini = this.toMini(receiver);
+		final String stripped = mini.replaceAll("(<hover:show_item:[^:>]+):[^>]*?'>", "$1'>");
+
+		CommonCore.log(
+				"Adventure failed to convert component to JSON. Will return stripped!",
+				"This is a Paper bug (especially if you the error says 'There is no data holder'",
+				"and your item has a hover event - in that case, update Paper.",
+				"If you are running the latest Paper, open an issue with their team.",
+				"",
+				"Mini: " + mini,
+				"Stripped: " + stripped);
+
+		t.printStackTrace(); // do not auto-report, likely not our fault
+		CommonCore.log("(Do not report the above stacktrace to us, read the log above first)");
+
+		return fromSection(this.toLegacySection(receiver)).toAdventureJson(receiver, legacy);
 	}
 
 	/**

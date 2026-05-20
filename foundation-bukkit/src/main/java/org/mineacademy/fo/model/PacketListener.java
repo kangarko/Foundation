@@ -216,8 +216,12 @@ public abstract class PacketListener {
 					return;
 
 				final boolean useLegacyHexFormat = MinecraftVersion.olderThan(V.v1_16);
-				final String originalJson = SimpleComponent.fromAdventure(before).toAdventureJson(null, useLegacyHexFormat);
+				final String originalJson = SimpleComponent.fromAdventure(before).toAdventureJsonOrNull(null, useLegacyHexFormat);
 
+				// Skip caching/processing when Adventure cannot serialize the component
+				// (e.g. third-party plugins inject NBT-bearing show_item hovers that the
+				// adventure-platform converter rejects). The packet itself is untouched
+				// so the player still receives the message; we just do not log noise here.
 				if (originalJson == null || originalJson.isEmpty() || originalJson.length() >= 50_000)
 					return;
 
