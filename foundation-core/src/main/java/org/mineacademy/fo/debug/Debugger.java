@@ -272,6 +272,12 @@ public final class Debugger {
 
 			if (msg != null && (msg.contains("SQLITE_READONLY") || msg.contains("SQLITE_BUSY") || msg.contains("SQLITE_LOCKED") || msg.contains("SQLITE_CORRUPT") || msg.contains("SQLITE_IOERR") || msg.contains("attempt to write a readonly database") || msg.contains("database is locked") || msg.contains("database disk image is malformed") || msg.contains("no such table") || msg.contains("no such column") || msg.contains("missing database")))
 				return true;
+
+			// MySQL/MariaDB user-side database corruption: orphaned .frm with missing .ibd
+			// tablespace, or InnoDB recovery failed. Not a plugin bug — user must repair
+			// their database (DROP TABLE in MySQL, let the plugin recreate it).
+			if (msg != null && msg.contains("doesn't exist in engine"))
+				return true;
 		} while ((cause = cause.getCause()) != null);
 
 		return false;
