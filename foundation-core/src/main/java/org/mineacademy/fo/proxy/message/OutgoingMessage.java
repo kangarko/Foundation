@@ -327,30 +327,28 @@ public final class OutgoingMessage extends Message {
 	 * @param server
 	 */
 	public void sendToServer(final String fromServer, final FoundationServer server) {
-		synchronized (ProxyListener.DEFAULT_CHANNEL) {
-			final String channel = this.getChannel();
-			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
+		final String channel = this.getChannel();
+		final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, fromServer);
 
-			final boolean isSpammyPacket = this.getMessage().name().startsWith("DIRECTORY_");
+		final boolean isSpammyPacket = this.getMessage().name().startsWith("DIRECTORY_");
 
-			if (server.isEmpty()) {
-				if (!isSpammyPacket)
-					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
-
-				return;
-			}
-
-			if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
-				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
-
-				return;
-			}
-
-			server.sendData(DEFAULT_CHANNEL, byteArray);
-
+		if (server.isEmpty()) {
 			if (!isSpammyPacket)
-				Debugger.debug("proxy", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
+				Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + server.getName() + " server because it is empty.");
+
+			return;
 		}
+
+		if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
+			CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+
+			return;
+		}
+
+		server.sendData(DEFAULT_CHANNEL, byteArray);
+
+		if (!isSpammyPacket)
+			Debugger.debug("proxy", "Forwarding data on " + channel + " channel from " + this + " to " + server.getName() + " server.");
 	}
 
 	/**
@@ -366,38 +364,36 @@ public final class OutgoingMessage extends Message {
 	 * @param ignoredServerName
 	 */
 	public void broadcastExcept(final String ignoredServerName) {
-		synchronized (ProxyListener.DEFAULT_CHANNEL) {
-			final String channel = this.getChannel();
-			final boolean isSpammyPacket = this.getMessage().name().startsWith("DIRECTORY_");
+		final String channel = this.getChannel();
+		final boolean isSpammyPacket = this.getMessage().name().startsWith("DIRECTORY_");
 
-			for (final FoundationServer otherServer : Platform.getServers()) {
-				if (otherServer.isEmpty()) {
-					if (!isSpammyPacket)
-						Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
-
-					continue;
-				}
-
-				if (ignoredServerName != null && otherServer.getName().equalsIgnoreCase(ignoredServerName)) {
-					if (!isSpammyPacket)
-						Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is ignored.");
-
-					continue;
-				}
-
-				final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, otherServer.getName());
-
-				if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
-					CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
-
-					return;
-				}
-
-				otherServer.sendData(DEFAULT_CHANNEL, byteArray);
-
+		for (final FoundationServer otherServer : Platform.getServers()) {
+			if (otherServer.isEmpty()) {
 				if (!isSpammyPacket)
-					Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
+					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is empty.");
+
+				continue;
 			}
+
+			if (ignoredServerName != null && otherServer.getName().equalsIgnoreCase(ignoredServerName)) {
+				if (!isSpammyPacket)
+					Debugger.debug("proxy", "NOT sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server because it is ignored.");
+
+				continue;
+			}
+
+			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, otherServer.getName());
+
+			if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
+				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+
+				return;
+			}
+
+			otherServer.sendData(DEFAULT_CHANNEL, byteArray);
+
+			if (!isSpammyPacket)
+				Debugger.debug("proxy", "Sending data on " + channel + " channel from " + this + " to " + otherServer.getName() + " server.");
 		}
 	}
 }

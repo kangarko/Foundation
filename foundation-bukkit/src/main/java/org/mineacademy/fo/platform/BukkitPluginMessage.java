@@ -31,45 +31,39 @@ final class BukkitPluginMessage implements PluginMessageListener {
 	@Deprecated
 	@Override
 	public void onPluginMessageReceived(final String channel, final Player player, final byte[] data) {
-		synchronized (BukkitPlugin.getInstance()) {
+		if (!channel.equals(ProxyListener.DEFAULT_CHANNEL))
+			return;
 
-			// Check if the message is for a server (ignore client messages)
-			if (!channel.equals(ProxyListener.DEFAULT_CHANNEL))
-				return;
+		final ByteArrayInputStream stream = new ByteArrayInputStream(data);
+		ByteArrayDataInput input;
 
-			// Read the plugin message
-			final ByteArrayInputStream stream = new ByteArrayInputStream(data);
-			ByteArrayDataInput input;
+		try {
+			input = ByteStreams.newDataInput(stream);
 
-			try {
-				input = ByteStreams.newDataInput(stream);
-
-			} catch (final Throwable t) {
-				input = ByteStreams.newDataInput(data);
-			}
-
-			final String channelName = input.readUTF();
-
-			for (final ProxyListener listener : ProxyListener.getRegisteredListeners())
-				if (channelName.equals(listener.getChannel())) {
-
-					final UUID senderUid = UUID.fromString(input.readUTF());
-					final String serverName = input.readUTF();
-					final String actionName = input.readUTF();
-
-					final ProxyMessage message = ProxyMessage.getByName(listener, actionName);
-
-					if (message == null)
-						listener.onInvalidMessageReceived(senderUid, serverName, actionName);
-					else {
-						final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, input, stream);
-
-						listener.setData(data);
-						listener.onMessageReceived(incomingMessage);
-					}
-
-					break;
-				}
+		} catch (final Throwable t) {
+			input = ByteStreams.newDataInput(data);
 		}
+
+		final String channelName = input.readUTF();
+
+		for (final ProxyListener listener : ProxyListener.getRegisteredListeners())
+			if (channelName.equals(listener.getChannel())) {
+
+				final UUID senderUid = UUID.fromString(input.readUTF());
+				final String serverName = input.readUTF();
+				final String actionName = input.readUTF();
+
+				final ProxyMessage message = ProxyMessage.getByName(listener, actionName);
+
+				if (message == null)
+					listener.onInvalidMessageReceived(senderUid, serverName, actionName);
+				else {
+					final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, input, stream);
+
+					listener.onMessageReceived(incomingMessage);
+				}
+
+				break;
+			}
 	}
 }

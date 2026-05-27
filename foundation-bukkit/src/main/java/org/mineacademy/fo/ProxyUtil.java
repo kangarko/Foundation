@@ -23,8 +23,6 @@ import lombok.NonNull;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProxyUtil {
 
-	private static final Object LOCK = new Object();
-
 	/**
 	 * Sends message via a channel to proxy.
 	 *
@@ -118,26 +116,24 @@ public final class ProxyUtil {
 	 */
 	@SafeVarargs
 	public static <T> void sendPluginMessage(Player sender, final String channel, final ProxyMessage message, final T... dataArray) {
-		synchronized (LOCK) {
-			if (sender == null)
-				sender = findFirstPlayer();
+		if (sender == null)
+			sender = findFirstPlayer();
 
-			if (sender == null) {
-				Debugger.debug("proxy", "Cannot send message " + message + " on channel '" + channel + "' to proxy because this server has no players.");
+		if (sender == null) {
+			Debugger.debug("proxy", "Cannot send message " + message + " on channel '" + channel + "' to proxy because this server has no players.");
 
-				return;
-			}
-
-			final OutgoingMessage out = new OutgoingMessage(message);
-
-			for (final T data : dataArray) {
-				ValidCore.checkNotNull(data, "Found null object when sending proxy " + message + " on channel " + channel);
-
-				out.write(data, data.getClass());
-			}
-
-			out.send(sender.getUniqueId());
+			return;
 		}
+
+		final OutgoingMessage out = new OutgoingMessage(message);
+
+		for (final T data : dataArray) {
+			ValidCore.checkNotNull(data, "Found null object when sending proxy " + message + " on channel " + channel);
+
+			out.write(data, data.getClass());
+		}
+
+		out.send(sender.getUniqueId());
 	}
 
 	/**
@@ -161,35 +157,33 @@ public final class ProxyUtil {
 	 * @param data  the data
 	 */
 	public static void sendBungeeMessage(@NonNull final Player sender, final Object... data) {
-		synchronized (LOCK) {
-			ValidCore.checkBoolean(data != null && data.length >= 1, "");
+		ValidCore.checkBoolean(data != null && data.length >= 1, "");
 
-			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
-			for (final Object datum : data) {
+		for (final Object datum : data) {
 
-				if (data == null)
-					throw new FoException("Found null object when sending proxy plugin message! Data: " + CommonCore.join(data, t -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtil.Language.YAML, t), "").toString()));
+			if (data == null)
+				throw new FoException("Found null object when sending proxy plugin message! Data: " + CommonCore.join(data, t -> CommonCore.getOrDefault(SerializeUtilCore.serialize(SerializeUtil.Language.YAML, t), "").toString()));
 
-				if (datum instanceof Integer)
-					out.writeInt((Integer) datum);
+			if (datum instanceof Integer)
+				out.writeInt((Integer) datum);
 
-				else if (datum instanceof Double)
-					out.writeDouble((Double) datum);
+			else if (datum instanceof Double)
+				out.writeDouble((Double) datum);
 
-				else if (datum instanceof Boolean)
-					out.writeBoolean((Boolean) datum);
+			else if (datum instanceof Boolean)
+				out.writeBoolean((Boolean) datum);
 
-				else if (datum instanceof String)
-					out.writeUTF((String) datum);
+			else if (datum instanceof String)
+				out.writeUTF((String) datum);
 
-				else
-					throw new FoException("Unknown type of data in proxy plugin message: " + datum + " (" + datum.getClass().getSimpleName() + ")");
-			}
-
-			// Can't use "Bukkit.getServer()" since it will send one message for each player, creating duplicates (i.e. 4X join message bug)
-			sender.sendPluginMessage(BukkitPlugin.getInstance(), "BungeeCord", out.toByteArray());
+			else
+				throw new FoException("Unknown type of data in proxy plugin message: " + datum + " (" + datum.getClass().getSimpleName() + ")");
 		}
+
+		// Can't use "Bukkit.getServer()" since it will send one message for each player, creating duplicates (i.e. 4X join message bug)
+		sender.sendPluginMessage(BukkitPlugin.getInstance(), "BungeeCord", out.toByteArray());
 	}
 
 	/*
