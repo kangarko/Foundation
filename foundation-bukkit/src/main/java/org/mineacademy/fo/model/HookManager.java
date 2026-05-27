@@ -2716,7 +2716,9 @@ final class PlaceholderAPIHook {
 		}
 
 		// MineAcademy edit: Case insensitive
-		for (final PlaceholderExpansion expansion : expansions)
+		for (final PlaceholderExpansion expansion : expansions) {
+			final String expansionClass = expansion == null ? "null" : expansion.getClass().getName();
+
 			try {
 				// Ignore our internal expansion and poorly coded ones
 				if (expansion != null) {
@@ -2724,7 +2726,7 @@ final class PlaceholderAPIHook {
 						continue;
 
 					if (expansion.getIdentifier() == null) {
-						Common.warning("The PlaceholderAPI expansion " + expansion + " is wrongly coded as it's missing an identifier! Skipping...");
+						Common.warning("The PlaceholderAPI expansion " + expansionClass + " is wrongly coded as it's missing an identifier! Skipping...");
 
 						continue;
 					}
@@ -2734,8 +2736,9 @@ final class PlaceholderAPIHook {
 				}
 
 			} catch (final Throwable t) {
-				Common.error(t, "Failed to register PlaceholderAPI extension " + expansion);
+				Common.error(t, "Failed to register PlaceholderAPI extension " + expansionClass);
 			}
+		}
 	}
 
 	private String setPlaceholders(final OfflinePlayer player, final String text) {
@@ -2943,6 +2946,18 @@ final class PlaceholderAPIHook {
 
 	class FoundationPlaceholderAPIInjector extends PlaceholderExpansion {
 
+		private final String cachedIdentifier;
+		private final String cachedAuthor;
+		private final String cachedVersion;
+
+		FoundationPlaceholderAPIInjector() {
+			final BukkitPlugin plugin = BukkitPlugin.getInstance();
+
+			this.cachedIdentifier = plugin.getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
+			this.cachedAuthor = plugin.getDescription().getAuthors().toString();
+			this.cachedVersion = plugin.getVersion();
+		}
+
 		/**
 		 * Because this is an internal class,
 		 * you must override this method to let PlaceholderAPI know to not
@@ -2974,7 +2989,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getAuthor() {
-			return BukkitPlugin.getInstance().getDescription().getAuthors().toString();
+			return this.cachedAuthor;
 		}
 
 		/**
@@ -2988,7 +3003,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getIdentifier() {
-			return BukkitPlugin.getInstance().getName().toLowerCase().replace("%", "").replace(" ", "").replace("_", "");
+			return this.cachedIdentifier;
 		}
 
 		/**
@@ -3001,7 +3016,7 @@ final class PlaceholderAPIHook {
 		 */
 		@Override
 		public String getVersion() {
-			return BukkitPlugin.getInstance().getVersion();
+			return this.cachedVersion;
 		}
 
 		/**
