@@ -1747,7 +1747,6 @@ public final class Remain {
 	}
 
 	// On 1.21+ InventoryView is an interface (SPIGOT-7768); direct INVOKEINTERFACE bypasses Paper's reflection-rewriter (kangarko/Protect#108).
-	@SuppressWarnings("unchecked")
 	private static <T> T invokeViewMethodDirect(final InventoryView view, final String methodName) {
 		switch (methodName) {
 			case "getType":
