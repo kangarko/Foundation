@@ -41,197 +41,194 @@ public final class VelocityListener {
 	 */
 	@Subscribe
 	public void onPluginMessage(final PluginMessageEvent event) {
-		synchronized (ProxyListener.DEFAULT_CHANNEL) {
-			final ChannelMessageSource sender = event.getSource();
-			final byte[] data = event.getData();
+		final ChannelMessageSource sender = event.getSource();
+		final byte[] data = event.getData();
 
-			if (event.getResult() == ForwardResult.handled())
-				return;
+		if (event.getResult() == ForwardResult.handled())
+			return;
 
-			if (!event.getIdentifier().getId().equals(ProxyListener.DEFAULT_CHANNEL) && !event.getIdentifier().getId().equals("bungeecord:main"))
-				return;
+		if (!event.getIdentifier().getId().equals(ProxyListener.DEFAULT_CHANNEL) && !event.getIdentifier().getId().equals("bungeecord:main"))
+			return;
 
-			// Check if a player is not trying to send us a fake message
-			if (!(sender instanceof ServerConnection))
-				return;
+		// Check if a player is not trying to send us a fake message
+		if (!(sender instanceof ServerConnection))
+			return;
 
-			final ServerConnection connection = (ServerConnection) event.getSource();
-			final ByteArrayInputStream stream = new ByteArrayInputStream(data);
-			final ByteArrayDataInput in = ByteStreams.newDataInput(stream);
+		final ServerConnection connection = (ServerConnection) event.getSource();
+		final ByteArrayInputStream stream = new ByteArrayInputStream(data);
+		final ByteArrayDataInput in = ByteStreams.newDataInput(stream);
 
-			final String subChannel = in.readUTF();
+		final String subChannel = in.readUTF();
 
-			boolean handled = false;
+		boolean handled = false;
 
-			for (final ProxyListener listener : ProxyListener.getRegisteredListeners())
-				if (subChannel.equals(listener.getChannel())) {
+		for (final ProxyListener listener : ProxyListener.getRegisteredListeners())
+			if (subChannel.equals(listener.getChannel())) {
 
-					final UUID senderUid = UUID.fromString(in.readUTF());
-					final String serverName = in.readUTF();
-					final String actionName = in.readUTF();
+				final UUID senderUid = UUID.fromString(in.readUTF());
+				final String serverName = in.readUTF();
+				final String actionName = in.readUTF();
 
-					final ProxyMessage message = ProxyMessage.getByName(listener, actionName);
+				final ProxyMessage message = ProxyMessage.getByName(listener, actionName);
 
-					if (message == null)
-						new NullPointerException("Unknown plugin message '" + actionName + "'. IF YOU UPDATED THE PLUGIN BY RELOADING, stop your entire network, ensure all servers were updated and start it again.").printStackTrace();
+				if (message == null)
+					new NullPointerException("Unknown plugin message '" + actionName + "'. IF YOU UPDATED THE PLUGIN BY RELOADING, stop your entire network, ensure all servers were updated and start it again.").printStackTrace();
 
-					else {
-						final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, in, stream);
+				else {
+					final IncomingMessage incomingMessage = new IncomingMessage(listener, senderUid, serverName, message, data, in, stream);
 
-						listener.setData(data);
-						listener.onMessageReceived(incomingMessage);
-					}
-
-					handled = true;
-					break;
+					listener.onMessageReceived(incomingMessage);
 				}
 
-			// Credits: https://github.com/VelocityPowered/BungeeQuack/blob/master/src/main/java/com/velocitypowered/bungeequack/BungeeQuack.java
-			// The reason for this ugly patch is that the above listener is ignored completely when velocity handles bungee commands :/
-			//
-			// https://github.com/kangarko/ChatControl/issues/2673
-			final ProxyServer proxy = VelocityPlugin.getServer();
-			final ByteArrayDataOutput out = ByteStreams.newDataOutput();
-			boolean found = true;
-
-			if (subChannel.equals("ForwardToPlayer")) {
-				final String name = in.readUTF();
-				final Player target = proxy.getPlayer(name).orElse(null);
-
-				if (target != null)
-					target.getCurrentServer().get().sendPluginMessage(event.getIdentifier(), this.prepareForwardMessage(in));
-
-			} else if (subChannel.equals("Forward")) {
-				final String target = in.readUTF();
-				final byte[] toForward = this.prepareForwardMessage(in);
-
-				if (target.equals("ALL") || target.equals("ONLINE")) {
-					for (final RegisteredServer other : Remain.getServers())
-						if (!other.getServerInfo().getName().equals(connection.getServerInfo().getName()))
-							other.sendPluginMessage(event.getIdentifier(), toForward);
-
-				} else
-					proxy.getServer(target).ifPresent(conn -> conn.sendPluginMessage(event.getIdentifier(), toForward));
-
-			} else if (subChannel.equals("Connect")) {
-				final Optional<RegisteredServer> info = proxy.getServer(in.readUTF());
-				info.ifPresent(serverInfo -> connection.getPlayer().createConnectionRequest(serverInfo).fireAndForget());
-
-			} else if (subChannel.equals("ConnectOther"))
-				proxy.getPlayer(in.readUTF()).ifPresent(otherPlayer -> {
-					final Optional<RegisteredServer> info = proxy.getServer(in.readUTF());
-					info.ifPresent(serverInfo -> otherPlayer.createConnectionRequest(serverInfo).fireAndForget());
-				});
-
-			else if (subChannel.equals("IP")) {
-				out.writeUTF("IP");
-				out.writeUTF(connection.getPlayer().getRemoteAddress().getHostString());
-				out.writeInt(connection.getPlayer().getRemoteAddress().getPort());
-
-			} else if (subChannel.equals("PlayerCount")) {
-				final String target = in.readUTF();
-
-				if (target.equals("ALL")) {
-					out.writeUTF("PlayerCount");
-					out.writeUTF("ALL");
-					out.writeInt(proxy.getPlayerCount());
-				} else
-					proxy.getServer(target).ifPresent(rs -> {
-						final int playersOnServer = rs.getPlayersConnected().size();
-						out.writeUTF("PlayerCount");
-						out.writeUTF(rs.getServerInfo().getName());
-						out.writeInt(playersOnServer);
-					});
-
-			} else if (subChannel.equals("PlayerList")) {
-				final String target = in.readUTF();
-
-				if (target.equals("ALL")) {
-					out.writeUTF("PlayerList");
-					out.writeUTF("ALL");
-					out.writeUTF(Remain.getOnlinePlayers(true).stream().map(Player::getUsername).collect(Collectors.joining(", ")));
-
-				} else
-					proxy.getServer(target).ifPresent(info -> {
-						final String playersOnServer = info.getPlayersConnected().stream().map(Player::getUsername).collect(Collectors.joining(", "));
-						out.writeUTF("PlayerList");
-						out.writeUTF(info.getServerInfo().getName());
-						out.writeUTF(playersOnServer);
-					});
-
-			} else if (subChannel.equals("GetServers")) {
-				out.writeUTF("GetServers");
-				out.writeUTF(Remain.getServers().stream().map(s -> s.getServerInfo().getName()).collect(Collectors.joining(", ")));
-
-			} else if (subChannel.equals("Message")) {
-				final String target = in.readUTF();
-				final String message = in.readUTF();
-
-				if (target.equals("ALL"))
-					for (final Player player : Remain.getOnlinePlayers(false))
-						Common.tell(player, message);
-
-				else
-					proxy.getPlayer(target).ifPresent(player -> {
-						Common.tell(player, message);
-					});
-
-			} else if (subChannel.equals("GetServer")) {
-				out.writeUTF("GetServer");
-				out.writeUTF(connection.getServerInfo().getName());
-
-			} else if (subChannel.equals("GetPlayerServer")) {
-				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
-					player.getCurrentServer().ifPresent(server -> {
-						out.writeUTF("GetPlayerServer");
-						out.writeUTF(player.getUsername());
-						out.writeUTF(server.getServerInfo().getName());
-					});
-				});
-
-			} else if (subChannel.equals("UUID")) {
-				out.writeUTF("UUID");
-				out.writeUTF(UuidUtils.toUndashed(connection.getPlayer().getUniqueId()));
-
-			} else if (subChannel.equals("UUIDOther"))
-				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
-					out.writeUTF("UUIDOther");
-					out.writeUTF(player.getUsername());
-					out.writeUTF(UuidUtils.toUndashed(player.getUniqueId()));
-				});
-
-			else if (subChannel.equals("ServerIP"))
-				proxy.getServer(in.readUTF()).ifPresent(info -> {
-					out.writeUTF("ServerIP");
-					out.writeUTF(info.getServerInfo().getName());
-					out.writeUTF(info.getServerInfo().getAddress().getHostString());
-					out.writeShort(info.getServerInfo().getAddress().getPort());
-				});
-
-			else if (subChannel.equals("KickPlayer"))
-				proxy.getPlayer(in.readUTF()).ifPresent(player -> {
-					final String kickReason = in.readUTF();
-
-					player.disconnect(SimpleComponent.fromSection(kickReason).toAdventure(null));
-				});
-
-			else
-				found = false;
-
-			if (found) {
-				Debugger.debug("proxy", VelocityPlugin.getInstance().getName() + " forwarded plugin message '" + subChannel + "' to " + connection.getPlayer().getUsername());
-
-				final byte[] outData = out.toByteArray();
-
-				if (outData.length > 0)
-					connection.sendPluginMessage(event.getIdentifier(), outData);
-
 				handled = true;
+				break;
 			}
 
-			if (handled)
-				event.setResult(PluginMessageEvent.ForwardResult.handled());
+		// Credits: https://github.com/VelocityPowered/BungeeQuack/blob/master/src/main/java/com/velocitypowered/bungeequack/BungeeQuack.java
+		// The reason for this ugly patch is that the above listener is ignored completely when velocity handles bungee commands :/
+		//
+		// https://github.com/kangarko/ChatControl/issues/2673
+		final ProxyServer proxy = VelocityPlugin.getServer();
+		final ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		boolean found = true;
+
+		if (subChannel.equals("ForwardToPlayer")) {
+			final String name = in.readUTF();
+			final Player target = proxy.getPlayer(name).orElse(null);
+
+			if (target != null)
+				target.getCurrentServer().get().sendPluginMessage(event.getIdentifier(), this.prepareForwardMessage(in));
+
+		} else if (subChannel.equals("Forward")) {
+			final String target = in.readUTF();
+			final byte[] toForward = this.prepareForwardMessage(in);
+
+			if (target.equals("ALL") || target.equals("ONLINE")) {
+				for (final RegisteredServer other : Remain.getServers())
+					if (!other.getServerInfo().getName().equals(connection.getServerInfo().getName()))
+						other.sendPluginMessage(event.getIdentifier(), toForward);
+
+			} else
+				proxy.getServer(target).ifPresent(conn -> conn.sendPluginMessage(event.getIdentifier(), toForward));
+
+		} else if (subChannel.equals("Connect")) {
+			final Optional<RegisteredServer> info = proxy.getServer(in.readUTF());
+			info.ifPresent(serverInfo -> connection.getPlayer().createConnectionRequest(serverInfo).fireAndForget());
+
+		} else if (subChannel.equals("ConnectOther"))
+			proxy.getPlayer(in.readUTF()).ifPresent(otherPlayer -> {
+				final Optional<RegisteredServer> info = proxy.getServer(in.readUTF());
+				info.ifPresent(serverInfo -> otherPlayer.createConnectionRequest(serverInfo).fireAndForget());
+			});
+
+		else if (subChannel.equals("IP")) {
+			out.writeUTF("IP");
+			out.writeUTF(connection.getPlayer().getRemoteAddress().getHostString());
+			out.writeInt(connection.getPlayer().getRemoteAddress().getPort());
+
+		} else if (subChannel.equals("PlayerCount")) {
+			final String target = in.readUTF();
+
+			if (target.equals("ALL")) {
+				out.writeUTF("PlayerCount");
+				out.writeUTF("ALL");
+				out.writeInt(proxy.getPlayerCount());
+			} else
+				proxy.getServer(target).ifPresent(rs -> {
+					final int playersOnServer = rs.getPlayersConnected().size();
+					out.writeUTF("PlayerCount");
+					out.writeUTF(rs.getServerInfo().getName());
+					out.writeInt(playersOnServer);
+				});
+
+		} else if (subChannel.equals("PlayerList")) {
+			final String target = in.readUTF();
+
+			if (target.equals("ALL")) {
+				out.writeUTF("PlayerList");
+				out.writeUTF("ALL");
+				out.writeUTF(Remain.getOnlinePlayers(true).stream().map(Player::getUsername).collect(Collectors.joining(", ")));
+
+			} else
+				proxy.getServer(target).ifPresent(info -> {
+					final String playersOnServer = info.getPlayersConnected().stream().map(Player::getUsername).collect(Collectors.joining(", "));
+					out.writeUTF("PlayerList");
+					out.writeUTF(info.getServerInfo().getName());
+					out.writeUTF(playersOnServer);
+				});
+
+		} else if (subChannel.equals("GetServers")) {
+			out.writeUTF("GetServers");
+			out.writeUTF(Remain.getServers().stream().map(s -> s.getServerInfo().getName()).collect(Collectors.joining(", ")));
+
+		} else if (subChannel.equals("Message")) {
+			final String target = in.readUTF();
+			final String message = in.readUTF();
+
+			if (target.equals("ALL"))
+				for (final Player player : Remain.getOnlinePlayers(false))
+					Common.tell(player, message);
+
+			else
+				proxy.getPlayer(target).ifPresent(player -> {
+					Common.tell(player, message);
+				});
+
+		} else if (subChannel.equals("GetServer")) {
+			out.writeUTF("GetServer");
+			out.writeUTF(connection.getServerInfo().getName());
+
+		} else if (subChannel.equals("GetPlayerServer")) {
+			proxy.getPlayer(in.readUTF()).ifPresent(player -> {
+				player.getCurrentServer().ifPresent(server -> {
+					out.writeUTF("GetPlayerServer");
+					out.writeUTF(player.getUsername());
+					out.writeUTF(server.getServerInfo().getName());
+				});
+			});
+
+		} else if (subChannel.equals("UUID")) {
+			out.writeUTF("UUID");
+			out.writeUTF(UuidUtils.toUndashed(connection.getPlayer().getUniqueId()));
+
+		} else if (subChannel.equals("UUIDOther"))
+			proxy.getPlayer(in.readUTF()).ifPresent(player -> {
+				out.writeUTF("UUIDOther");
+				out.writeUTF(player.getUsername());
+				out.writeUTF(UuidUtils.toUndashed(player.getUniqueId()));
+			});
+
+		else if (subChannel.equals("ServerIP"))
+			proxy.getServer(in.readUTF()).ifPresent(info -> {
+				out.writeUTF("ServerIP");
+				out.writeUTF(info.getServerInfo().getName());
+				out.writeUTF(info.getServerInfo().getAddress().getHostString());
+				out.writeShort(info.getServerInfo().getAddress().getPort());
+			});
+
+		else if (subChannel.equals("KickPlayer"))
+			proxy.getPlayer(in.readUTF()).ifPresent(player -> {
+				final String kickReason = in.readUTF();
+
+				player.disconnect(SimpleComponent.fromSection(kickReason).toAdventure(null));
+			});
+
+		else
+			found = false;
+
+		if (found) {
+			Debugger.debug("proxy", VelocityPlugin.getInstance().getName() + " forwarded plugin message '" + subChannel + "' to " + connection.getPlayer().getUsername());
+
+			final byte[] outData = out.toByteArray();
+
+			if (outData.length > 0)
+				connection.sendPluginMessage(event.getIdentifier(), outData);
+
+			handled = true;
 		}
+
+		if (handled)
+		event.setResult(PluginMessageEvent.ForwardResult.handled());
 	}
 
 	// Credits: https://github.com/VelocityPowered/BungeeQuack/blob/master/src/main/java/com/velocitypowered/bungeequack/BungeeQuack.java

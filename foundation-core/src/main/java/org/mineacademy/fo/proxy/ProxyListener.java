@@ -1,15 +1,14 @@
 package org.mineacademy.fo.proxy;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.proxy.message.IncomingMessage;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -30,7 +29,7 @@ public abstract class ProxyListener {
 	/**
 	 * Holds registered listeners.
 	 */
-	private static final Set<ProxyListener> registeredListeners = new HashSet<>();
+	private static final Set<ProxyListener> registeredListeners = new CopyOnWriteArraySet<>();
 
 	/**
 	 * The channel.
@@ -43,12 +42,6 @@ public abstract class ProxyListener {
 	 */
 	@Getter
 	private final ProxyMessage[] actions;
-
-	/**
-	 * Temporary variable for reading data.
-	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private byte[] data;
 
 	/**
 	 * Create a new listener with the given params.
@@ -97,16 +90,6 @@ public abstract class ProxyListener {
 	 */
 	public void onInvalidMessageReceived(UUID senderUid, String serverName, String actionName) {
 		new NullPointerException("Unknown plugin action '" + actionName + "' from server " + serverName + ". ALL SERVERS NEED TO HAVE THE SAME VERSION.").printStackTrace();
-	}
-
-	/**
-	 * @deprecated internal use only
-	 *
-	 * @param data
-	 */
-	@Deprecated
-	public final void setData(final byte[] data) {
-		this.data = data;
 	}
 
 	@Override
