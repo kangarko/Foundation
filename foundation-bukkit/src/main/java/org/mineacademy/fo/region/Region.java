@@ -216,6 +216,14 @@ public class Region implements ConfigSerializable {
 	public final List<Entity> getEntities() {
 		ValidCore.checkBoolean(this.isWhole(), "Cannot perform getEntities on a non-complete region: " + this.toString());
 
+		// Chunk#getEntities is illegal off the owning region thread on Paper/Folia and
+		// NPE-prone on async Paper. Throw so the offending caller surfaces in the stack
+		// trace; async-safe consumers should track UUIDs via events and resolve through
+		// Remain#getLoadedEntity(UUID).
+		if (!org.mineacademy.fo.remain.Remain.isTickThread())
+			throw new IllegalStateException("Region#getEntities called off the tick thread on " + Thread.currentThread().getName()
+					+ ". Chunk#getEntities is not thread-safe on Paper/Folia. Move the call to the main thread or use Remain#getLoadedEntity(UUID).");
+
 		final List<Entity> found = new LinkedList<>();
 
 		final Location[] centered = this.getCorrectedPoints();

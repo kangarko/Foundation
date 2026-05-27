@@ -85,7 +85,6 @@ import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.TimeUtil;
-import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.CompChatColor;
@@ -1106,18 +1105,26 @@ public final class Remain {
 	}
 
 	/**
-	 * Return the entity by UUID
+	 * Return the entity by UUID. Async-safe on Paper/Folia via the native
+	 * {@code Bukkit.getEntity(UUID)} entity tracker lookup (O(1)). Falls back
+	 * to a full world scan only on pre-1.10 servers that lack the API.
 	 *
 	 * @param uuid
 	 * @return
 	 */
 	public static Entity getLoadedEntity(final UUID uuid) {
-		Valid.checkSync("Remain#getEntity must be called on the main thread");
+		try {
+			final Entity direct = Bukkit.getEntity(uuid);
 
-		for (final World world : Bukkit.getWorlds())
-			for (final Entity entity : world.getEntities())
-				if (entity.getUniqueId().equals(uuid))
-					return entity;
+			if (direct != null)
+				return direct;
+
+		} catch (final NoSuchMethodError legacy) {
+			for (final World world : Bukkit.getWorlds())
+				for (final Entity entity : world.getEntities())
+					if (entity.getUniqueId().equals(uuid))
+						return entity;
+		}
 
 		return null;
 	}
