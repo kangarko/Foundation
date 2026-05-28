@@ -257,6 +257,10 @@ public abstract class VelocityPlugin implements FoundationPlugin {
 
 		this.enabled = false;
 
+		// Unregister event listeners FIRST so any DisconnectEvent dispatched
+		// during proxy shutdown does not reach our handlers after onPluginStop
+		// runs or after instance is nulled.
+		this.proxy.getEventManager().unregisterListeners(this);
 		this.proxy.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
 
 		try {
