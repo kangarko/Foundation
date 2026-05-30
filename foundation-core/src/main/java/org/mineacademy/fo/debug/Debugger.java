@@ -270,6 +270,24 @@ public final class Debugger {
 			if (msg != null && msg.contains("Connection is not available, request timed out"))
 				return true;
 
+			// Remote MySQL/MariaDB connection dropped mid-query (network reset, firewall, server restart):
+			// a CommunicationsException (SQLState class 08) wrapping a socket reset / EOF. Transient
+			// infrastructure failure, not a plugin bug.
+			if (cause instanceof java.io.EOFException || cause.getClass().getName().endsWith("CommunicationsException"))
+				return true;
+
+			if (cause instanceof java.sql.SQLException) {
+				final String sqlState = ((java.sql.SQLException) cause).getSQLState();
+
+				if (sqlState != null && sqlState.startsWith("08"))
+					return true;
+			}
+
+			// A single row exceeds the server's max_allowed_packet. The user must raise that server limit;
+			// the plugin already skips oversized rows on insert where it can.
+			if (msg != null && (msg.contains("max_allowed_packet") || msg.contains("Packet for query is too large")))
+				return true;
+
 			if (msg != null && (msg.contains("SQLITE_READONLY") || msg.contains("SQLITE_BUSY") || msg.contains("SQLITE_LOCKED") || msg.contains("SQLITE_CORRUPT") || msg.contains("SQLITE_IOERR") || msg.contains("attempt to write a readonly database") || msg.contains("database is locked") || msg.contains("database disk image is malformed") || msg.contains("no such table") || msg.contains("no such column") || msg.contains("missing database")))
 				return true;
 
