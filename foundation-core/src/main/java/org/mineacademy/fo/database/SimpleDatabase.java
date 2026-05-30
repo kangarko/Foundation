@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,6 +64,12 @@ public class SimpleDatabase {
 	 * SQLite is single-writer so we always use one connection for it.
 	 */
 	private static final int POOL_SIZE_SQLITE = 1;
+
+	/**
+	 * Headroom subtracted from the server's max_allowed_packet when deciding whether a single batch
+	 * row is too large to send, covering the SQL text and prepared-statement framing.
+	 */
+	private static final long PACKET_SAFETY_MARGIN_BYTES = 64L * 1024L;
 
 	/**
 	 * Default pool size for MySQL/MariaDB. Tunable via setPoolSize() before connect().
@@ -161,6 +168,12 @@ public class SimpleDatabase {
 	 */
 	private boolean isSQLite = false;
 
+	/*
+	 * The server's max_allowed_packet in bytes, read once on connect for MySQL/MariaDB, or 0 when
+	 * unknown or SQLite. Used by insertBatch to skip rows that would exceed it.
+	 */
+	private long maxAllowedPacketBytes = 0;
+
 	// --------------------------------------------------------------------
 	// Connecting
 	// --------------------------------------------------------------------
@@ -225,6 +238,7 @@ public class SimpleDatabase {
 			this.disconnect();
 
 		this.isSQLite = false;
+		this.maxAllowedPacketBytes = 0;
 
 		try {
 			final String driverClassName = this.loadDriverFor(url);
@@ -289,6 +303,9 @@ public class SimpleDatabase {
 
 			this.lastCredentials = new LastCredentials(url, databaseName, user, password);
 
+			if (!this.isSQLite)
+				this.loadMaxAllowedPacket();
+
 			// Create tables automatically
 			for (final Table createdTable : this.getTables()) {
 				final TableCreator creator = new TableCreator(createdTable.getName());
@@ -351,6 +368,23 @@ public class SimpleDatabase {
 		}
 
 		throw new FoException("Unknown database driver '" + url + "'. Only SQLite, MySQL and MariaDB (which supports MariaDB automatically) are supported at this time.", false);
+	}
+
+	/*
+	 * Reads the server's max_allowed_packet once after connecting (MySQL/MariaDB only) so insertBatch
+	 * can skip rows that would exceed it. Leaves the value at 0 (protection disabled) if it cannot be read.
+	 */
+	private void loadMaxAllowedPacket() {
+		try (Connection connection = this.dataSource.getConnection();
+				Statement statement = connection.createStatement();
+				ResultSet resultSet = statement.executeQuery("SELECT @@max_allowed_packet")) {
+
+			if (resultSet.next())
+				this.maxAllowedPacketBytes = resultSet.getLong(1);
+
+		} catch (final SQLException ex) {
+			Debugger.debug("mysql", "Could not read max_allowed_packet, oversized-row protection disabled: " + ex.getMessage());
+		}
 	}
 
 	/*
@@ -772,6 +806,52 @@ public class SimpleDatabase {
 
 		Debugger.debug("mysql", "Batch insert SQL: " + sql);
 
+		// Serialize each row once (reused below for the prepared statement) and skip any single row whose
+		// payload exceeds the server's max_allowed_packet. With rewriteBatchedStatements disabled the driver
+		// sends each row as its own packet, so one oversized row would otherwise abort the whole batch (and
+		// kill the connection) with "Packet for query is too large".
+		final long limit = this.maxAllowedPacketBytes > 0 ? this.maxAllowedPacketBytes - PACKET_SAFETY_MARGIN_BYTES : Long.MAX_VALUE;
+		final List<Object[]> rows = new ArrayList<>(maps.size());
+
+		for (final SerializedMap map : maps)
+			try {
+				final Object[] values = new Object[map.size()];
+				long estimatedBytes = 0;
+				int index = 0;
+
+				for (Object value : map.values()) {
+					value = SerializeUtilCore.serialize(Language.JSON, value);
+
+					if (value instanceof JsonArray)
+						value = ((JsonArray) value).toString();
+
+					value = value == null || "NULL".equals(value) ? null : value instanceof Boolean ? (boolean) value ? 1 : 0 : value;
+
+					if (value instanceof String)
+						estimatedBytes += ((String) value).getBytes(StandardCharsets.UTF_8).length;
+
+					values[index++] = value;
+				}
+
+				if (estimatedBytes > limit) {
+					CommonCore.log("Skipped saving a row into '" + table.getName() + "' because its size (" + estimatedBytes
+							+ " bytes) exceeds your database server's max_allowed_packet (" + this.maxAllowedPacketBytes
+							+ " bytes). Raise max_allowed_packet on your MySQL/MariaDB server to store rows this large.");
+
+					continue;
+				}
+
+				rows.add(values);
+
+			} catch (final Throwable t) {
+				CommonCore.error(t,
+						"Error processing database batch entry!",
+						"Batch entry: " + map);
+			}
+
+		if (rows.isEmpty())
+			return;
+
 		// Borrow ONE connection for the whole transaction.
 		try (Connection connection = this.borrowConnection()) {
 			final boolean originalAutoCommit = connection.getAutoCommit();
@@ -779,31 +859,16 @@ public class SimpleDatabase {
 			try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 				connection.setAutoCommit(false);
 
-				for (final SerializedMap map : maps)
-					try {
-						int index = 1;
+				for (final Object[] values : rows) {
+					int index = 1;
 
-						for (Object value : map.values()) {
-							value = SerializeUtilCore.serialize(Language.JSON, value);
+					for (final Object value : values)
+						preparedStatement.setObject(index++, value);
 
-							if (value instanceof JsonArray)
-								value = ((JsonArray) value).toString();
+					preparedStatement.addBatch();
+				}
 
-							value = value == null || "NULL".equals(value) ? null : value instanceof Boolean ? (boolean) value ? 1 : 0 : value;
-
-							Debugger.debug("mysql", "Setting item " + index + " in statement to: " + value);
-							preparedStatement.setObject(index++, value);
-						}
-
-						preparedStatement.addBatch();
-
-					} catch (final Throwable t) {
-						CommonCore.error(t,
-								"Error processing database batch entry!",
-								"Batch entry: " + map);
-					}
-
-				Debugger.debug("mysql", "Executing batch...");
+				Debugger.debug("mysql", "Executing batch of " + rows.size() + " row(s)...");
 				preparedStatement.executeBatch();
 
 				connection.commit();
