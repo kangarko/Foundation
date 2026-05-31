@@ -4499,33 +4499,40 @@ class ItemsAdderHook {
 		if (this.failed)
 			return messageOrComponent;
 
-		if (player == null) {
-			if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventureNoPlayer != null) {
-				final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
-				final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component);
+		try {
+			if (player == null) {
+				if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventureNoPlayer != null) {
+					final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
+					final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventureNoPlayer, component);
 
-				return (T) SimpleComponent.fromAdventure(result);
+					return (T) SimpleComponent.fromAdventure(result);
 
-			} else if (messageOrComponent instanceof String && this.replaceFontImagesStringNoPlayer != null) {
-				final String message = (String) messageOrComponent;
-				final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesStringNoPlayer, message);
+				} else if (messageOrComponent instanceof String && this.replaceFontImagesStringNoPlayer != null) {
+					final String message = (String) messageOrComponent;
+					final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesStringNoPlayer, message);
 
-				return (T) result;
+					return (T) result;
+				}
+
+			} else {
+				if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventure != null) {
+					final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
+					final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component);
+
+					return (T) SimpleComponent.fromAdventure(result);
+
+				} else if (messageOrComponent instanceof String && this.replaceFontImagesString != null) {
+					final String message = (String) messageOrComponent;
+					final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesString, player, message);
+
+					return (T) result;
+				}
 			}
 
-		} else {
-			if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventure != null) {
-				final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
-				final Component result = (Component) ReflectionUtil.invokeStatic(this.replaceFontImagesAdventure, player, component);
+		} catch (final Throwable t) {
+			final Throwable root = t.getCause() != null ? t.getCause() : t;
 
-				return (T) SimpleComponent.fromAdventure(result);
-
-			} else if (messageOrComponent instanceof String && this.replaceFontImagesString != null) {
-				final String message = (String) messageOrComponent;
-				final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesString, player, message);
-
-				return (T) result;
-			}
+			CommonCore.logTimed(3600, "Failed to invoke ItemsAdder font image replacement (" + root.getClass().getSimpleName() + ": " + root.getMessage() + "). ItemsAdder is likely still loading or reloading its content. This message will not show for the next hour.");
 		}
 
 		// Fallback to original message or component if replacement fails
