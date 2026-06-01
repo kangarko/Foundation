@@ -4,11 +4,12 @@ import java.lang.reflect.Constructor;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.Particle.DustTransition;
-import org.bukkit.Vibration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
@@ -429,14 +430,21 @@ public enum CompParticle {
 
 		// Minecraft 1.12 and up
 		if (this.bukkitEnumParticle != null) {
-			if (atLeast1_13 && this == REDSTONE)
-				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+			if (data == null || data.length == 0) {
+				if (atLeast1_13) {
+					final Class<?> dataType = ((Particle) this.bukkitEnumParticle).getDataType();
 
-			else if (data == null || data.length == 0) {
+					// Some particles require a data object and would crash the server if spawned without one
+					if (dataType != Void.class) {
+						final Object defaultData = getDefaultData(dataType, location);
 
-				// Particles such as block/item/dust require a data object and would crash the server if spawned without one
-				if (atLeast1_13 && ((Particle) this.bukkitEnumParticle).getDataType() != Void.class)
-					return;
+						// Spawn with a sensible default; skip if we have no default for this data type to avoid a crash
+						if (defaultData != null)
+							location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, defaultData);
+
+						return;
+					}
+				}
 
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 
@@ -513,14 +521,21 @@ public enum CompParticle {
 
 		// Minecraft 1.12 and up
 		if (this.bukkitEnumParticle != null) {
-			if (atLeast1_13 && this == REDSTONE)
-				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
+			if (data == null || data.length == 0) {
+				if (atLeast1_13) {
+					final Class<?> dataType = ((Particle) this.bukkitEnumParticle).getDataType();
 
-			else if (data == null || data.length == 0) {
+					// Some particles require a data object and would crash the server if spawned without one
+					if (dataType != Void.class) {
+						final Object defaultData = getDefaultData(dataType, location);
 
-				// Particles such as block/item/dust require a data object and would crash the server if spawned without one
-				if (atLeast1_13 && ((Particle) this.bukkitEnumParticle).getDataType() != Void.class)
-					return;
+						// Spawn with a sensible default; skip if we have no default for this data type to avoid a crash
+						if (defaultData != null)
+							player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, defaultData);
+
+						return;
+					}
+				}
 
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 
@@ -532,6 +547,50 @@ public enum CompParticle {
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra));
 			else
 				Remain.sendPacket(player, this.preparePacket(location.getX(), location.getY(), location.getZ(), offsetX, offsetY, offsetZ, speed, count, extra, data));
+	}
+
+	/*
+	 * Returns a sensible default data object required to spawn a particle whose data type is not Void
+	 * on Minecraft 1.13+, preventing a "missing required data" server crash when the caller supplies none.
+	 *
+	 * Dispatched by the data type's simple class name (rather than a class literal) so version-specific
+	 * classes such as Particle.Spell, Particle.Trail, DustTransition or Vibration are never resolved on
+	 * older servers that lack them - the constructor only runs when that exact type is the actual data type.
+	 *
+	 * Returns null for an unknown data type, in which case the particle is skipped.
+	 */
+	private static Object getDefaultData(final Class<?> dataType, final Location location) {
+		switch (dataType.getSimpleName()) {
+			case "BlockData":
+				return Material.STONE.createBlockData();
+			case "ItemStack":
+				return new ItemStack(Material.STONE);
+			case "DustOptions":
+				return new DustOptions(Color.RED, 1F);
+			case "DustTransition":
+				return new DustTransition(Color.RED, Color.BLUE, 1F);
+			case "Spell":
+				return new Particle.Spell(Color.RED, 1F);
+			case "Trail":
+				return new Particle.Trail(location, Color.RED, 10);
+			case "Color":
+				return Color.RED;
+			case "Float":
+				return 1F;
+			case "Integer":
+				return 1;
+			case "Vibration": {
+				// Built reflectively on purpose: a direct "new Vibration(...)" makes the bytecode verifier load
+				// the Vibration.Destination interface to type-check the argument, which crashes CompParticle on
+				// load on MC 1.8-1.16 where that 1.17+ class does not exist, even though this case never runs there
+				final Object destination = ReflectionUtil.instantiate(ReflectionUtil.lookupClass("org.bukkit.Vibration$Destination$BlockDestination"), location);
+				final Constructor<?> constructor = ReflectionUtil.getConstructor("org.bukkit.Vibration", ReflectionUtil.lookupClass("org.bukkit.Vibration$Destination"), int.class);
+
+				return ReflectionUtil.instantiate(constructor, destination, 10);
+			}
+			default:
+				return null;
+		}
 	}
 
 	/*
