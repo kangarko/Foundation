@@ -429,13 +429,18 @@ public enum CompParticle {
 
 		// Minecraft 1.12 and up
 		if (this.bukkitEnumParticle != null) {
-			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
+			if (atLeast1_13 && this == REDSTONE)
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
 
-			else if (data == null || data.length == 0)
+			else if (data == null || data.length == 0) {
+
+				// Particles such as block/item/dust require a data object and would crash the server if spawned without one
+				if (atLeast1_13 && ((Particle) this.bukkitEnumParticle).getDataType() != Void.class)
+					return;
+
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
 
-			else
+			} else
 				location.getWorld().spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 		}
 
@@ -508,12 +513,18 @@ public enum CompParticle {
 
 		// Minecraft 1.12 and up
 		if (this.bukkitEnumParticle != null) {
-			if (MinecraftVersion.atLeast(V.v1_13) && this == REDSTONE)
+			if (atLeast1_13 && this == REDSTONE)
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, new DustOptions(Color.RED, 1F));
 
-			else if (data == null || data.length == 0)
+			else if (data == null || data.length == 0) {
+
+				// Particles such as block/item/dust require a data object and would crash the server if spawned without one
+				if (atLeast1_13 && ((Particle) this.bukkitEnumParticle).getDataType() != Void.class)
+					return;
+
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra);
-			else
+
+			} else
 				player.spawnParticle((Particle) this.bukkitEnumParticle, location, count, offsetX, offsetY, offsetZ, extra, data);
 
 		} else if (this.packetConstructor != null)
