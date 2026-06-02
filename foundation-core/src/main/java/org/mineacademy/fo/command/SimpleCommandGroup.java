@@ -350,7 +350,7 @@ public abstract class SimpleCommandGroup {
 			final SimpleSubCommandCore subcommand = this.findSubcommand(argument);
 
 			if (subcommand != null)
-				subcommand.delegateExecute(this.audience, this.getLabel(), this.compileSubcommandArgs());
+				subcommand.delegateExecute(this.audience, this.currentLabel, this.compileSubcommandArgs());
 
 			else if (!SimpleCommandGroup.this.getHelpArguments().isEmpty() && ValidCore.isInList(argument, SimpleCommandGroup.this.getHelpArguments()))
 				this.tellSubcommandsHelp();
