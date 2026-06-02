@@ -177,6 +177,14 @@ public abstract class SimpleCommandCore {
 	 */
 	protected String[] args;
 
+	/**
+	 * The label the sender actually typed to run this command, which can be the
+	 * registered main label or one of its aliases. Updated on every execution so
+	 * that {label} and the auto-generated usage line reproduce what the player
+	 * typed (eg. /msg) instead of the registered main label (eg. /tell).
+	 */
+	protected String currentLabel;
+
 	// ----------------------------------------------------------------------
 
 	/**
@@ -207,7 +215,8 @@ public abstract class SimpleCommandCore {
 	 * @param aliases
 	 */
 	protected SimpleCommandCore(final String label, final List<String> aliases) {
-		this.label = label;
+		this.label        = label;
+		this.currentLabel = label;
 
 		if (aliases != null)
 			this.aliases = aliases;
@@ -328,6 +337,11 @@ public abstract class SimpleCommandCore {
 		this.audience = audience;
 		this.args = args;
 
+		if (label != null && !label.isEmpty())
+			this.currentLabel = label;
+		else
+			this.currentLabel = this.label;
+
 		try {
 			if (this.getPermission() != null)
 				this.checkPerm(this.getPermission());
@@ -405,7 +419,7 @@ public abstract class SimpleCommandCore {
 	 * Get the effective command with sublabel if applicable
 	 */
 	private String getEffectiveCommand() {
-		return "/" + this.getLabel() + (this instanceof SimpleSubCommandCore ? " " + ((SimpleSubCommandCore) this).getSublabel() : "");
+		return "/" + this.currentLabel + (this instanceof SimpleSubCommandCore ? " " + ((SimpleSubCommandCore) this).getSublabel() : "");
 	}
 
 	/**
@@ -1271,7 +1285,7 @@ public abstract class SimpleCommandCore {
 	protected Map<String, Object> preparePlaceholders() {
 		final Map<String, Object> map = new HashMap<>();
 
-		map.put("label", this.label);
+		map.put("label", this.currentLabel);
 		map.put("player", this.audience.getName());
 
 		for (int i = 0; i < this.args.length; i++)
