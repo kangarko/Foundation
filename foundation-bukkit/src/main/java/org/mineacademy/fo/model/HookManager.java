@@ -2777,14 +2777,14 @@ final class PlaceholderAPIHook {
 				if (value != null) {
 					value = Matcher.quoteReplacement(CompChatColor.translateColorCodes(value));
 
-					String lastColors = backSpace ? CompChatColor.getLastColors(value)
+					final String lastColors = backSpace ? CompChatColor.getLastColors(value)
 							.replace(CompChatColor.UNDERLINE.toString(), "")
 							.replace(CompChatColor.STRIKETHROUGH.toString(), "")
 							.replace(CompChatColor.MAGIC.toString(), "") : "";
 
 					message = message.replaceAll(Pattern.quote(matcher.group()), value.isEmpty() ? ""
 							: (frontSpace && !value.startsWith(" ") ? " " : "") + value
-							+ (backSpace && !value.endsWith(" ") ? CompChatColor.RESET + lastColors + " " : ""));
+									+ (backSpace && !value.endsWith(" ") ? CompChatColor.RESET + lastColors + " " : ""));
 				}
 			}
 		}
@@ -2800,7 +2800,7 @@ final class PlaceholderAPIHook {
 			final String message = throwable.getMessage();
 
 			if (throwable instanceof NullPointerException && message != null && message.contains("Cannot invoke") && message.contains("is null")) {
-				Common.logFramed(
+				/*Common.logFramed(
 						"Faulty extension " + placeholderExpansion.getClass(),
 						"failed to replace '" + params + "'",
 						"",
@@ -2811,8 +2811,12 @@ final class PlaceholderAPIHook {
 						"Alert their developers to account for null",
 						"OfflinePlayer parameter as specified in",
 						"PlaceholderAPI API docs. Printing the error",
-						"below and returning empty value.");
-			} else
+						"below and returning empty value.");*/
+
+				Common.logTimed(1 * 60 * 60, "Faulty extension " + placeholderExpansion.getClass() + " failed to replace '" + params + "' for player " + player
+						+ " because the extension is not properly handling nullability (" + message + "). Report this error to them, not to us! This message only shows once per hour.");
+
+			} else {
 				Common.logFramed(
 						"Error in extension " + placeholderExpansion.getClass(),
 						"when replacing '" + params + "' for player " + player,
@@ -2823,8 +2827,9 @@ final class PlaceholderAPIHook {
 						"Printing the error below and returning",
 						"empty value.");
 
-			throwable.printStackTrace();
-			Common.log("(Please report the above error to the other plugin developers, see the above message for details.)");
+				throwable.printStackTrace();
+				Common.log("(Please report the above error to the other plugin developers, see the above message for details. " + Platform.getPlugin().getName() + " will continue to work.)");
+			}
 
 			return "";
 		}
@@ -3046,7 +3051,7 @@ final class PlaceholderAPIHook {
 
 					if (value != null) {
 						final boolean emptyColorless = CompChatColor.stripColorCodes(value).isEmpty();
-						String lastColors = backSpace && !emptyColorless ? CompChatColor.getLastColors(value)
+						final String lastColors = backSpace && !emptyColorless ? CompChatColor.getLastColors(value)
 								.replace(CompChatColor.UNDERLINE.toString(), "")
 								.replace(CompChatColor.STRIKETHROUGH.toString(), "")
 								.replace(CompChatColor.MAGIC.toString(), "") : "";
