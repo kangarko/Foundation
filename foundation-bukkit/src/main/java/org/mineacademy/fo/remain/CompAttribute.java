@@ -262,6 +262,16 @@ public enum CompAttribute {
 	}
 
 	/**
+	 * Returns the underlying Bukkit {@link Attribute} as an Object (to stay loadable on legacy
+	 * servers that lack the attribute API), or null when this attribute is unsupported here.
+	 *
+	 * @return
+	 */
+	public Object getBukkitAttribute() {
+		return this.bukkitAttribute;
+	}
+
+	/**
 	 * Finds the attribute of an entity
 	 *
 	 * @param entity
