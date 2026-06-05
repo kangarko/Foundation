@@ -3,6 +3,7 @@ package org.mineacademy.fo;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -41,6 +42,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.CompAttribute;
 import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.Remain;
 
@@ -214,18 +216,12 @@ public final class EntityUtil {
 	 */
 	private static Double readDefaultHealthFromRegistry(final EntityType type) {
 		try {
-			final Class<?> defaultAttributesClass = Class.forName("net.minecraft.world.entity.ai.attributes.DefaultAttributes");
-			final Class<?> attributesClass = Class.forName("net.minecraft.world.entity.ai.attributes.Attributes");
-			final Class<?> craftEntityTypeClass = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntityType");
-			final Class<?> nmsEntityTypeClass = Class.forName("net.minecraft.world.entity.EntityType");
+			final Object supplier = resolveDefaultAttributeSupplier(type);
 
-			final Object nmsType = craftEntityTypeClass.getMethod("bukkitToMinecraft", EntityType.class).invoke(null, type);
-			final boolean hasSupplier = (boolean) defaultAttributesClass.getMethod("hasSupplier", nmsEntityTypeClass).invoke(null, nmsType);
-
-			if (!hasSupplier)
+			if (supplier == null)
 				return null;
 
-			final Object supplier = defaultAttributesClass.getMethod("getSupplier", nmsEntityTypeClass).invoke(null, nmsType);
+			final Class<?> attributesClass = Class.forName("net.minecraft.world.entity.ai.attributes.Attributes");
 			final Object maxHealthAttribute = attributesClass.getField("MAX_HEALTH").get(null);
 
 			// AttributeSupplier has exactly one getBaseValue(Object) method; its parameter
@@ -247,6 +243,101 @@ public final class EntityUtil {
 
 			return null;
 		}
+	}
+
+	/**
+	 * Returns the vanilla default base values for every attribute the given entity type defines,
+	 * read from the NMS default-attribute registry ({@code DefaultAttributes}).
+	 *
+	 * Unlike spawning a probe entity, this is thread-safe with no region context (Folia-safe) and
+	 * fires no events. Returns an empty map on servers without the registry (legacy / pre-1.20.5
+	 * mappings), where the caller should fall back to reading the values off a spawned entity.
+	 *
+	 * @param type
+	 * @return
+	 */
+	public static Map<CompAttribute, Double> getDefaultAttributeBaseValues(final EntityType type) {
+		final Map<CompAttribute, Double> defaults = new LinkedHashMap<>();
+
+		if (type == CompEntityType.PLAYER)
+			return defaults;
+
+		try {
+			final Object supplier = resolveDefaultAttributeSupplier(type);
+
+			if (supplier == null)
+				return defaults;
+
+			final Class<?> bukkitAttributeClass = Class.forName("org.bukkit.attribute.Attribute");
+			final Class<?> craftAttributeClass = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + ".attribute.CraftAttribute");
+			final Method bukkitToHolder = craftAttributeClass.getMethod("bukkitToMinecraftHolder", bukkitAttributeClass);
+
+			// getBaseValue / hasAttribute each take a single argument whose type is Holder on
+			// 1.20.5+ and Attribute earlier, so we resolve them by name to stay version-safe.
+			Method getBaseValue = null;
+			Method hasAttribute = null;
+
+			for (final Method method : supplier.getClass().getMethods()) {
+				if (method.getParameterCount() != 1)
+					continue;
+
+				if ("getBaseValue".equals(method.getName()))
+					getBaseValue = method;
+
+				else if ("hasAttribute".equals(method.getName()))
+					hasAttribute = method;
+			}
+
+			if (getBaseValue == null || hasAttribute == null)
+				return defaults;
+
+			for (final CompAttribute attribute : CompAttribute.values()) {
+				final Object bukkitAttribute = attribute.getBukkitAttribute();
+
+				if (bukkitAttribute == null)
+					continue;
+
+				try {
+					final Object holder = bukkitToHolder.invoke(null, bukkitAttribute);
+
+					if ((boolean) hasAttribute.invoke(supplier, holder))
+						defaults.put(attribute, (double) getBaseValue.invoke(supplier, holder));
+
+				} catch (final Throwable ignored) {
+					// Attribute not registered for this type or not mappable: skip it.
+				}
+			}
+
+		} catch (final ClassNotFoundException | NoSuchMethodException ignored) {
+			// Legacy server / pre-1.20.5 mappings: caller falls back to a spawn probe.
+			return new LinkedHashMap<>();
+
+		} catch (final Throwable t) {
+			CommonCore.log("Foundation.getDefaultAttributeBaseValues: NMS registry path failed for " + type + ", falling back to spawn probe. Raw error: " + t);
+
+			return new LinkedHashMap<>();
+		}
+
+		return defaults;
+	}
+
+	/**
+	 * Resolves the NMS {@code AttributeSupplier} holding the vanilla default attributes for the
+	 * given entity type, or null when the type has no registered supplier. Throws when the registry
+	 * classes are absent (legacy servers), letting callers fall back to a spawn probe.
+	 */
+	private static Object resolveDefaultAttributeSupplier(final EntityType type) throws ReflectiveOperationException {
+		final Class<?> defaultAttributesClass = Class.forName("net.minecraft.world.entity.ai.attributes.DefaultAttributes");
+		final Class<?> craftEntityTypeClass = Class.forName(Bukkit.getServer().getClass().getPackage().getName() + ".entity.CraftEntityType");
+		final Class<?> nmsEntityTypeClass = Class.forName("net.minecraft.world.entity.EntityType");
+
+		final Object nmsType = craftEntityTypeClass.getMethod("bukkitToMinecraft", EntityType.class).invoke(null, type);
+		final boolean hasSupplier = (boolean) defaultAttributesClass.getMethod("hasSupplier", nmsEntityTypeClass).invoke(null, nmsType);
+
+		if (!hasSupplier)
+			return null;
+
+		return defaultAttributesClass.getMethod("getSupplier", nmsEntityTypeClass).invoke(null, nmsType);
 	}
 
 	/**
