@@ -4101,6 +4101,12 @@ class DiscordSRVHook {
 	}
 
 	boolean sendMessage(final CommandSender sender, final String channel, final String message) {
+		if (DiscordSRV.getPlugin().getJda() == null) {
+			Debugger.debug("discord", "Unable to locate JDA. Not sending message to channel '" + channel + "': " + message);
+
+			return false;
+		}
+
 		final TextChannel textChannel = DiscordSRV.getPlugin().getDestinationTextChannelForGameChannelName(channel);
 
 		// The channel is not configured in the config.yml of Discord,
