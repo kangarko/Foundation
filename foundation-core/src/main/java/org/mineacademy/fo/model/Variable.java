@@ -324,8 +324,15 @@ public final class Variable extends YamlConfig {
 			SimpleComponent component = SimpleComponent
 					.fromMiniAmpersand(this.type.equals(Type.MESSAGE) ? stripBlacklistedTags(value) : value);
 
-			if (!ValidCore.isNullOrEmpty(this.hoverText))
-				component = component.onHoverLegacy(variables.replaceLegacyArray(CommonCore.toArray(this.hoverText)));
+			if (!ValidCore.isNullOrEmpty(this.hoverText)) {
+				final String[] replacedLines = variables.replaceLegacyArray(CommonCore.toArray(this.hoverText));
+				final SimpleComponent[] hoverComponents = new SimpleComponent[replacedLines.length];
+
+				for (int i = 0; i < replacedLines.length; i++)
+					hoverComponents[i] = SimpleComponent.fromMiniAmpersand("<gray>" + replacedLines[i]);
+
+				component = component.onHover(hoverComponents);
+			}
 
 			if (this.hoverItem != null && !this.hoverItem.isEmpty())
 				try {
