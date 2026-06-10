@@ -615,7 +615,7 @@ public final class ReflectionUtil {
 	 * @return the enum or error with exceptions, see above
 	 */
 	public static <E> E lookupEnum(final Class<E> typeOf, @NonNull String name, final String errorMessage) {
-		name = name.toUpperCase().replace(" ", "_");
+		name = name.toUpperCase().replace(" ", "_").trim();
 
 		final E result = lookupEnumSilent(typeOf, name);
 
@@ -650,7 +650,7 @@ public final class ReflectionUtil {
 	public static <E> E lookupEnumSilent(@NonNull final Class<E> typeOf, String name) {
 		ValidCore.checkNotEmpty(name, "Cannot lookup enum of type " + typeOf + " from no value");
 
-		name = name.toUpperCase().replace(" ", "_");
+		name = name.toUpperCase().replace(" ", "_").trim();
 
 		E found = lookupEnumSilent0(typeOf, name);
 
