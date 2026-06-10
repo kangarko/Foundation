@@ -250,6 +250,35 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
+	 * Add a hover event built from the given MiniMessage lines, joining them with new lines.
+	 *
+	 * Unlike {@link #onHoverLegacy(String...)}, the lines are parsed natively as MiniMessage so
+	 * non-legacy tags (such as font-image glyphs) are preserved and formatting is reset correctly.
+	 *
+	 * @param miniLines
+	 * @return
+	 */
+	public SimpleComponent onHoverMini(final String... miniLines) {
+		Component joined = Component.empty();
+
+		for (int i = 0; i < miniLines.length; i++) {
+			String line = miniLines[i];
+
+			if (MinecraftVersion.hasVersion() && MinecraftVersion.olderThan(V.v1_13) && stripMiniMessageTags(line).length() > LEGACY_HOVER_LINE_LENGTH_LIMIT)
+				line = String.join("\n", CommonCore.split(line, LEGACY_HOVER_LINE_LENGTH_LIMIT));
+
+			joined = joined.append(deserializeMiniToAdventure(line));
+
+			if (i < miniLines.length - 1)
+				joined = joined.append(Component.newline());
+		}
+
+		final Component finalComponent = joined;
+
+		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(finalComponent));
+	}
+
+	/**
 	 * Add a hover event. To put an ItemStack here, see {@link Platform#convertItemStackToHoverEvent(Object)}.
 	 *
 	 * @param hover
