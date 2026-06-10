@@ -795,7 +795,14 @@ public class SimpleDatabase {
 	 * @param maps
 	 */
 	protected final void insertBatch(final Table table, @NonNull final List<SerializedMap> maps) {
-		this.ensureConnected();
+		// Unlike the synchronous query methods, this runs from the async RowQueueWriter once per second
+		// regardless of connection state, so a missing pool is an expected, recoverable condition rather
+		// than developer error: a failed or aborted initial connect that left the plugin running without
+		// a database, or the brief teardown window during a settings reload. Skip the write instead of
+		// throwing a fatal, auto-reported exception. borrowConnection() below still parks on the read lock,
+		// so a normal in-progress reload completes and writes via the new pool rather than being skipped.
+		if (!this.isConnected())
+			return;
 
 		if (maps.isEmpty())
 			return;
