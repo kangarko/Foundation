@@ -120,6 +120,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 
 			for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
 
+				final boolean whole = otherRegion.isWhole();
 				final String longestText = "<gray>Secondary: <dark_green>" + SerializeUtil.serializeLocation(otherRegion.getSecondary());
 
 				components.add(SimpleComponent
@@ -147,7 +148,7 @@ public class RegionSubCommand extends SimpleSubCommand {
 						.onHoverLegacy(ChatUtil.center("<white>Region Information", longestText.length() * 2 + longestText.length() / 3),
 								"<gray>Primary: <dark_green>" + SerializeUtil.serializeLocation(otherRegion.getPrimary()),
 								longestText,
-								"<gray>Size: <dark_green>" + otherRegion.getBlocks().size() + " blocks"));
+								"<gray>Size: <dark_green>" + (whole ? otherRegion.getBlocks().size() + " blocks" : "<dark_red>incomplete")));
 			}
 
 			new ChatPaginator()
