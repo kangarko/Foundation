@@ -83,14 +83,14 @@ public final class Valid extends ValidCore {
 		if (first == null && sec == null)
 			return true;
 
-		if (first == null && sec == null || first != null && sec == null)
+		if (first == null || sec == null)
 			return false;
 
 		try {
 			if (!first.getWorld().getName().equals(sec.getWorld().getName()))
 				return false;
-		} catch (final NullPointerException ex) {
-			// Ignore
+		} catch (final IllegalArgumentException | NullPointerException ex) {
+			// The world is null or has been unloaded, fall back to comparing block coordinates only
 		}
 
 		return first.getBlockX() == sec.getBlockX() && first.getBlockY() == sec.getBlockY() && first.getBlockZ() == sec.getBlockZ();
