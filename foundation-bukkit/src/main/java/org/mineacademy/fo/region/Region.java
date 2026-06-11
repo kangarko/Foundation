@@ -294,7 +294,7 @@ public class Region implements ConfigSerializable {
 	 * @param player
 	 */
 	public void teleportToCenter(final Player player) {
-		ValidCore.checkNotNull(this.isWhole(), "Cannot call teleportToCenter() on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot call teleportToCenter() on a non-complete region: " + this.toString());
 
 		final Location toTeleportLocation = this.getCenter().clone();
 		final Location playerLocation = player.getLocation();
@@ -314,7 +314,7 @@ public class Region implements ConfigSerializable {
 	 * @throws FoException if the region's border is not set.
 	 */
 	public final Location getHighestLocation(final Location location) {
-		ValidCore.checkNotNull(this.isWhole(), "Cannot call getHighestLocation() on a non-complete region: " + this.toString());
+		ValidCore.checkBoolean(this.isWhole(), "Cannot call getHighestLocation() on a non-complete region: " + this.toString());
 
 		final int x = location.getBlockX();
 		final int z = location.getBlockZ();
