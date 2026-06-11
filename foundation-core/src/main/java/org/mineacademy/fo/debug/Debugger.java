@@ -260,8 +260,14 @@ public final class Debugger {
 			}
 
 			if (cause instanceof java.net.SocketTimeoutException
-					|| cause instanceof java.net.ConnectException
+					|| cause instanceof java.net.SocketException
 					|| cause instanceof java.net.UnknownHostException)
+				return true;
+
+			// Redis/Jedis connection dropped (connection reset, unexpected end of stream, pool failure):
+			// transient infrastructure failure, not a plugin bug. Class-name check because RedisBungee
+			// relocates jedis into its internal package.
+			if (cause.getClass().getName().endsWith("JedisConnectionException"))
 				return true;
 
 			if (cause instanceof java.sql.SQLTransientConnectionException || cause instanceof java.sql.SQLTimeoutException)
