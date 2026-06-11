@@ -302,6 +302,11 @@ public final class Debugger {
 			// their database (DROP TABLE in MySQL, let the plugin recreate it).
 			if (msg != null && msg.contains("doesn't exist in engine"))
 				return true;
+
+			// User wrote an invalid human-readable time in a config such as a localized
+			// "5 сек." instead of "5 seconds". A configuration error, not a plugin bug.
+			if (msg != null && (msg.contains("Must define date type! Example!") || msg.contains("Expected human readable time like")))
+				return true;
 		} while ((cause = cause.getCause()) != null);
 
 		return false;
