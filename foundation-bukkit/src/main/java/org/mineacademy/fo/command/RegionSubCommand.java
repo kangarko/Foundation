@@ -250,12 +250,18 @@ public class RegionSubCommand extends SimpleSubCommand {
 				final Location playerLocation = this.getPlayer().getLocation();
 				int count = 0;
 
-				for (final DiskRegion otherRegion : DiskRegion.getRegions())
-					if (otherRegion.getCenter().getWorld().equals(playerLocation.getWorld()) && otherRegion.getCenter().distance(playerLocation) < 100 && otherRegion.isWhole()) {
+				for (final DiskRegion otherRegion : DiskRegion.getRegions()) {
+					if (!otherRegion.isWhole())
+						continue; 
+
+					final Location center = otherRegion.getCenter();
+
+					if (center.getWorld().equals(playerLocation.getWorld()) && center.distance(playerLocation) < 100) {
 						otherRegion.visualize(this.getPlayer());
 
 						count++;
 					}
+				}
 
 				this.tellSuccess("Visualized " + Lang.numberFormat("case-region", count) + " nearby for 10 seconds.");
 			}
@@ -263,6 +269,9 @@ public class RegionSubCommand extends SimpleSubCommand {
 		}
 
 		else if (param == Param.TELEPORT) {
+			this.checkConsole();
+			this.checkBoolean(region.isWhole(), "Region '" + regionName + "' is not a whole region.");
+
 			region.teleportToCenter(this.getPlayer());
 
 			this.tellAndList(region, "Teleported to the center of region '&2" + regionName + "&7'");
