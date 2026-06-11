@@ -836,6 +836,9 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 		final StringBuilder result = new StringBuilder();
 
+		// Track open legacy decorations so a following color code can reset them like the vanilla client does
+		boolean legacyDecorationOpen = false;
+
 		// Split by spaces to handle URLs separately (preserve color codes inside URLs as-is)
 		final String[] parts = message.split(" ", -1);
 
@@ -850,7 +853,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				final String url = urlMatcher.group(2); // The actual URL
 
 				if (colorPrefix != null && !colorPrefix.isEmpty())
-					result.append(CompChatColor.convertLegacyToMini(colorPrefix, supportAmpersand));
+					legacyDecorationOpen = appendLegacyAsMini(result, colorPrefix, supportAmpersand, legacyDecorationOpen);
 
 				result.append(url.replace(String.valueOf(COLOR_CHAR), ""));
 
@@ -860,61 +863,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				continue;
 			}
 
-			for (int i = 0; i < part.length(); i++) {
-
-				// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
-				if (i + 13 < part.length() && (part.charAt(i) == COLOR_CHAR || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
-					final char prefix = part.charAt(i);
-					final StringBuilder hex = new StringBuilder("#");
-					boolean isValidHexSequence = true;
-
-					for (int j = 2; j <= 12; j += 2) {
-						if (part.charAt(i + j) == prefix)
-							hex.append(part.charAt(i + j + 1));
-
-						else {
-							isValidHexSequence = false;
-
-							break;
-						}
-					}
-
-					if (isValidHexSequence) {
-						result.append('<').append(hex).append('>');
-						i += 13; // Skip the entire §x§R§R§G§G§B§B or &x&R&R&G&G&B&B sequence
-
-						continue;
-					}
-				}
-
-				// Support &#RRGGBB and §#RRGGBB hex colors
-				if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR) && part.charAt(i + 1) == '#') {
-					final String hexCode = part.substring(i + 2, i + 8);
-
-					if (hexCode.matches("[0-9a-fA-F]{6}")) {
-						result.append("<#").append(hexCode).append('>');
-						i += 7; // Skip the entire &#RRGGBB sequence
-
-						continue;
-					}
-				}
-
-				if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR)) {
-					final String code = part.substring(i, i + 2);
-
-					if (LEGACY_TO_MINI.containsKey(code)) {
-						result.append(LEGACY_TO_MINI.get(code));
-						i++;
-
-						continue;
-					}
-				}
-
-				if (part.charAt(i) == COLOR_CHAR)
-					continue;
-
-				result.append(part.charAt(i));
-			}
+			legacyDecorationOpen = appendLegacyAsMini(result, part, supportAmpersand, legacyDecorationOpen);
 
 			// Re-append the space we used to split if it is not the last part
 			if (idx < parts.length - 1)
@@ -922,6 +871,96 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		}
 
 		return result.toString();
+	}
+
+	/*
+	 * Convert one space-delimited token from legacy codes to mini tags,
+	 * returning whether a legacy decoration remains open after it.
+	 */
+	private static boolean appendLegacyAsMini(final StringBuilder result, final String part, final boolean supportAmpersand, boolean legacyDecorationOpen) {
+		for (int i = 0; i < part.length(); i++) {
+
+			// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
+			if (i + 13 < part.length() && (part.charAt(i) == COLOR_CHAR || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
+				final char prefix = part.charAt(i);
+				final StringBuilder hex = new StringBuilder("#");
+				boolean isValidHexSequence = true;
+
+				for (int j = 2; j <= 12; j += 2) {
+					if (part.charAt(i + j) == prefix)
+						hex.append(part.charAt(i + j + 1));
+
+					else {
+						isValidHexSequence = false;
+
+						break;
+					}
+				}
+
+				if (isValidHexSequence) {
+					if (legacyDecorationOpen) {
+						result.append("<reset>");
+
+						legacyDecorationOpen = false;
+					}
+
+					result.append('<').append(hex).append('>');
+					i += 13; // Skip the entire §x§R§R§G§G§B§B or &x&R&R&G&G&B&B sequence
+
+					continue;
+				}
+			}
+
+			// Support &#RRGGBB and §#RRGGBB hex colors
+			if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR) && part.charAt(i + 1) == '#') {
+				final String hexCode = part.substring(i + 2, i + 8);
+
+				if (hexCode.matches("[0-9a-fA-F]{6}")) {
+					if (legacyDecorationOpen) {
+						result.append("<reset>");
+
+						legacyDecorationOpen = false;
+					}
+
+					result.append("<#").append(hexCode).append('>');
+					i += 7; // Skip the entire &#RRGGBB sequence
+
+					continue;
+				}
+			}
+
+			if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR)) {
+				final String code = part.substring(i, i + 2);
+
+				if (LEGACY_TO_MINI.containsKey(code)) {
+					final char codeChar = Character.toLowerCase(code.charAt(1));
+
+					if (codeChar >= 'k' && codeChar <= 'o')
+						legacyDecorationOpen = true;
+
+					else if (codeChar == 'r')
+						legacyDecorationOpen = false;
+
+					else if (legacyDecorationOpen) {
+						result.append("<reset>");
+
+						legacyDecorationOpen = false;
+					}
+
+					result.append(LEGACY_TO_MINI.get(code));
+					i++;
+
+					continue;
+				}
+			}
+
+			if (part.charAt(i) == COLOR_CHAR)
+				continue;
+
+			result.append(part.charAt(i));
+		}
+
+		return legacyDecorationOpen;
 	}
 
 	/**
