@@ -36,7 +36,7 @@ public final class CaseNumberFormat implements ConfigStringSerializable {
 		}
 
 		if (values.length != 3)
-			throw new FoException("Malformed type, use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
+			throw new FoException("Malformed time '" + raw + "', use format: 'second, seconds' OR 'sekundu, sekundy, sekund' (if your language has it)");
 
 		this.accusativeSingural = values[0];
 		this.accusativePlural = values[1];
