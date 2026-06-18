@@ -3984,7 +3984,7 @@ class CitizensHook {
 			final NPCRegistry reg = CitizensAPI.getNPCRegistry();
 
 			return reg != null ? reg.isNPC(entity) : false;
-		} catch (final NoClassDefFoundError err) {
+		} catch (final NoClassDefFoundError | IllegalStateException err) {
 			CommonCore.logTimed(60 * 30, "Unable to check if " + entity + " is Citizens NPC, got " + err + ". This error only shows once per 30min.");
 
 			return false;
@@ -4007,7 +4007,7 @@ class CitizensHook {
 					return target.getTarget();
 			}
 
-		} catch (final NoClassDefFoundError err) {
+		} catch (final NoClassDefFoundError | IllegalStateException err) {
 			CommonCore.logTimed(60 * 30, "Unable to get NPC target for " + entity + ", got " + err + ". This error only shows once per 30min.");
 		}
 
@@ -4026,7 +4026,7 @@ class CitizensHook {
 			if (npc != null)
 				npc.destroy();
 
-		} catch (final NoClassDefFoundError err) {
+		} catch (final NoClassDefFoundError | IllegalStateException err) {
 			CommonCore.logTimed(60 * 30, "Unable to destroy NPC " + entity + ", got " + err + ". This error only shows once per 30min.");
 		}
 	}
