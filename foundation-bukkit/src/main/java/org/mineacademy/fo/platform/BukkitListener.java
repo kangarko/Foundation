@@ -20,6 +20,8 @@ import org.bukkit.plugin.Plugin;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.Messenger;
+import org.mineacademy.fo.MinecraftVersion;
+import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.model.BuiltByBitUpdateCheck;
 import org.mineacademy.fo.model.ChatPaginator;
 import org.mineacademy.fo.model.HookManager;
@@ -27,12 +29,14 @@ import org.mineacademy.fo.model.LitebansTask;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleScoreboard;
 import org.mineacademy.fo.remain.CompMetadata;
+import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.SimpleSettings;
 import org.mineacademy.fo.visual.Visualizer;
 
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.event.player.PlayerCustomClickEvent;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
 
 /**
  * Listens for some events we handle for you automatically
@@ -183,6 +187,7 @@ final class BukkitListener implements Listener {
 			if (pages.size() > 1) {
 				player.sendMessage(" ");
 
+				final boolean customClick = isCustomClickSupported();
 				final int pagesDigits = (int) (Math.log10(pages.size()) + 1);
 				final int multiply = 23 - (int) MathUtil.ceiling(pagesDigits);
 
@@ -192,23 +197,25 @@ final class BukkitListener implements Listener {
 				if (page == 0)
 					component = component.appendMiniAmpersand(" &7« ");
 				else
-					component = component
+					component = pageClick(component
 							.appendMiniAmpersand(" &6« ")
-							.onHover(Lang.component("page-go-to-page", "page", String.valueOf(page)))
-							.onClickRunCmd("/#flp " + page);
+							.onHover(Lang.component("page-go-to-page", "page", String.valueOf(page))), page, customClick);
+
+				component = pageClick(component
+						.appendMiniAmpersand("&f" + (page + 1)).onHover(Lang.component("page-go-to-first-page")), 1, customClick);
 
 				component = component
-						.appendMiniAmpersand("&f" + (page + 1)).onHover(Lang.component("page-go-to-first-page")).onClickRunCmd("/#flp 1")
-						.appendMiniAmpersand("&7/").onHover(Lang.component("page-tooltip"))
-						.appendMiniAmpersand("&f" + pages.size() + "").onHover(Lang.component("page-go-to-last-page")).onClickRunCmd("/#flp " + pages.size());
+						.appendMiniAmpersand("&7/").onHover(Lang.component("page-tooltip"));
+
+				component = pageClick(component
+						.appendMiniAmpersand("&f" + pages.size() + "").onHover(Lang.component("page-go-to-last-page")), pages.size(), customClick);
 
 				if (page + 1 >= pages.size())
 					component = component.appendMiniAmpersand(" &7» ");
 				else
-					component = component
+					component = pageClick(component
 							.appendMiniAmpersand(" &6» ")
-							.onHover(Lang.component("page-go-to-page", "page", String.valueOf(page + 2)))
-							.onClickRunCmd("/#flp " + (page + 2));
+							.onHover(Lang.component("page-go-to-page", "page", String.valueOf(page + 2))), page + 2, customClick);
 
 				audience.sendMessage(component
 						.appendMiniAmpersand("&8&m" + CommonCore.duplicate("-", multiply)));
@@ -217,6 +224,33 @@ final class BukkitListener implements Listener {
 			// Prevent "Unknown command message"
 			event.setCancelled(true);
 		}
+	}
+
+	/*
+	 * Apply a click to the last appended component that navigates to the given pagination page,
+	 * using Paper's custom click action when supported to avoid the 1.21.6+ confirmation prompt.
+	 */
+	private static SimpleComponent pageClick(final SimpleComponent component, final int page, final boolean customClick) {
+		final String command = "/#flp " + page;
+
+		return customClick ? component.onClickCustomCommand(command) : component.onClickRunCmd(command);
+	}
+
+	/*
+	 * Returns true if the server can run hidden commands through Paper's custom click action
+	 * (Minecraft 1.21.6+), which avoids the client-side "Confirm Command Execution" prompt.
+	 */
+	private static boolean isCustomClickSupported() {
+		if (!Remain.isPaper() || !MinecraftVersion.hasVersion())
+			return false;
+
+		if (MinecraftVersion.newerThan(V.v1_21))
+			return true;
+
+		if (MinecraftVersion.equals(V.v1_21))
+			return MinecraftVersion.getSubversion() >= 6;
+
+		return false;
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -261,14 +295,28 @@ final class CustomClickListener implements Listener {
 		if (!(event.getCommonConnection() instanceof PlayerGameConnection))
 			return;
 
-		final String key = event.getIdentifier().toString();
+		if (!event.getIdentifier().equals(SimpleComponent.CUSTOM_COMMAND_CLICK_KEY))
+			return;
+
+		final BinaryTagHolder tag = event.getTag();
+
+		if (tag == null)
+			return;
+
+		final Map<?, ?> map = CommonCore.GSON.fromJson(tag.toString(), Map.class);
+		final Object command = map.get("command");
+		final Object plugin = map.get("plugin");
+
+		if (!(command instanceof String) || !(plugin instanceof String))
+			return;
+
+		// Every Foundation plugin registers this listener, so only the plugin that created the
+		// component re-dispatches, otherwise the command runs once per installed plugin.
+		if (!plugin.equals(Platform.getPlugin().getName()))
+			return;
+
 		final Player player = ((PlayerGameConnection) event.getCommonConnection()).getPlayer();
 
-		if (key.equals("minecraft:fo_custom_command")) {
-			final Map<String, String> map = CommonCore.GSON.fromJson(event.getTag().toString(), Map.class);
-			final String command = map.get("command");
-
-			player.chat(command);
-		}
+		player.chat((String) command);
 	}
 }
