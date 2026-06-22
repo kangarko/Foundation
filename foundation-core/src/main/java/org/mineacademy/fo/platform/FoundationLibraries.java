@@ -22,7 +22,7 @@ final class FoundationLibraries {
 			plugin.loadLibrary("org.openjdk.nashorn", "nashorn-core", "15.7");
 
 		if (!ReflectionUtil.isClassAvailable("com.google.gson.Gson"))
-			plugin.loadLibrary("com.google.code.gson", "gson", "2.13.2");
+			plugin.loadLibrary("com.google.code.gson", "gson", "2.14.0");
 
 		if (!ReflectionUtil.isClassAvailable("net.kyori.adventure.audience.Audience"))
 			plugin.loadLibrary("net.kyori", "adventure-api", "5.1.1");

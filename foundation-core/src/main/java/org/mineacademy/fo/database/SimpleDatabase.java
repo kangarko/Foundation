@@ -247,9 +247,9 @@ public class SimpleDatabase {
 			// BungeeCord does not. Load it on demand so HikariCP's class initializer doesn't
 			// fail with NoClassDefFoundError.
 			if (!ReflectionUtil.isClassAvailable("org.slf4j.LoggerFactory"))
-				Platform.getPlugin().loadLibrary("org.slf4j", "slf4j-api", "2.0.17");
+				Platform.getPlugin().loadLibrary("org.slf4j", "slf4j-api", "2.0.18");
 
-			Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", "7.0.2");
+			Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", "7.1.0");
 
 			String resolvedUrl = url;
 
@@ -348,7 +348,7 @@ public class SimpleDatabase {
 	 */
 	private String loadDriverFor(final String url) {
 		if (url.startsWith("jdbc:sqlite")) {
-			Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.51.3.0");
+			Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.53.2.0");
 
 			this.isSQLite = true;
 
@@ -356,13 +356,13 @@ public class SimpleDatabase {
 		}
 
 		if (url.startsWith("jdbc:mysql://")) {
-			Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.6.0");
+			Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.7.0");
 
 			return "com.mysql.cj.jdbc.Driver";
 		}
 
 		if (url.startsWith("jdbc:mariadb://")) {
-			Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.5.8");
+			Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.5.9");
 
 			return "org.mariadb.jdbc.Driver";
 		}
