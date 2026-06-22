@@ -71,7 +71,7 @@ public final class ChatPaginator {
 	 * @return
 	 */
 	public ChatPaginator setFoundationHeader(final String title) {
-		return this.setHeader("&8&m" + ChatUtil.center("&r " + title + " &8&m", Lang.legacy("command-header-center-letter").charAt(0), Integer.parseInt(Lang.legacy("command-header-center-padding"))));
+		return this.setHeader("&8&m" + ChatUtil.center("&r " + title + " &8&m", Lang.plain("command-header-center-letter").charAt(0), Integer.parseInt(Lang.plain("command-header-center-padding"))));
 	}
 
 	/**
