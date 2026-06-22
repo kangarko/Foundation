@@ -543,10 +543,6 @@ public final class Debugger {
 				!stackTraceLine.startsWith("org.yaml.snakeyaml") &&
 				!stackTraceLine.startsWith("sun.reflect") &&
 				!stackTraceLine.startsWith("sun.misc");
-
-		//!stackTraceLine.contains("org.bukkit.craftbukkit") &&
-		//!stackTraceLine.contains("java.lang.Thread.run") &&
-		//!stackTraceLine.contains("java.util.concurrent.ThreadPoolExecutor");
 	}
 
 	/*
