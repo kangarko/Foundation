@@ -119,7 +119,9 @@ public final class Debugger {
 				return;
 			}
 
-		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError) && !isIgnored(throwable)) {
+		final String ignoreReason = getIgnoreReason(throwable);
+
+		if (plugin.isErrorReportingSupported() && SimpleSettings.ERROR_AUTO_REPORTING && !BuiltByBitUpdateCheck.isNewVersionAvailable() && !(throwable instanceof OutOfMemoryError) && ignoreReason == null) {
 			final Throwable finalThrowable = throwable;
 
 			final StackTraceElement[] elements = finalThrowable.getStackTrace();
@@ -189,7 +191,7 @@ public final class Debugger {
 			}
 		}
 
-		saveErrorLocally(throwable, messages);
+		saveErrorLocally(throwable, ignoreReason, messages);
 	}
 
 	private static void postCrashReport(final Map<String, String> payload) {
@@ -242,77 +244,97 @@ public final class Debugger {
 				.replace("\t", "\\t");
 	}
 
-	private static boolean isIgnored(Throwable throwable) {
+	/*
+	 * Returns a short, server-owner-facing reason if the given error is a known server-environment
+	 * or transient infrastructure problem rather than a plugin bug, or null if it looks like a genuine
+	 * bug worth reporting. The returned reason is both the gate for skipping auto-reporting and the
+	 * message printed to the console so the owner can fix it themselves.
+	 */
+	private static String getIgnoreReason(Throwable throwable) {
 		Throwable cause = throwable;
 
 		do {
 			final String msg = cause.getMessage();
 
 			if (msg != null && (msg.contains("zip file closed") || msg.contains("has thrown a zip file error")))
-				return true;
+				return "A plugin or server JAR was changed or reloaded while the server was running. Restart your server fully instead of reloading it.";
 
 			if (msg != null && (msg.contains("No space left on device") || msg.contains("Disk quota exceeded") || msg.contains("Read-only file system")))
-				return true;
+				return "Your server ran out of disk space or its disk is read-only. Free up space and make sure the plugin folder is writable.";
 
 			if (cause instanceof java.nio.file.NoSuchFileException || cause instanceof java.io.FileNotFoundException) {
 				if (msg != null && (msg.contains(".jar") || msg.contains(".paper-remapped")))
-					return true;
+					return "A plugin or server JAR file was moved or deleted while the server was running. Restart your server fully.";
 			}
 
 			if (cause instanceof java.net.SocketTimeoutException
 					|| cause instanceof java.net.SocketException
 					|| cause instanceof java.net.UnknownHostException)
-				return true;
+				return "A network connection timed out or was reset. This is a temporary connectivity issue, not a plugin bug.";
 
 			// Redis/Jedis connection dropped (connection reset, unexpected end of stream, pool failure):
 			// transient infrastructure failure, not a plugin bug. Class-name check because RedisBungee
 			// relocates jedis into its internal package.
 			if (cause.getClass().getName().endsWith("JedisConnectionException"))
-				return true;
+				return "Lost connection to your Redis server. Make sure Redis is running and reachable from this server.";
 
 			if (cause instanceof java.sql.SQLTransientConnectionException || cause instanceof java.sql.SQLTimeoutException)
-				return true;
+				return "Lost connection to your database. This is a temporary network issue, not a plugin bug.";
 
 			if (msg != null && msg.contains("Connection is not available, request timed out"))
-				return true;
+				return "Your database connection pool timed out waiting for a free connection. Make sure your database server is reachable and not overloaded.";
 
 			// Remote MySQL/MariaDB connection dropped mid-query (network reset, firewall, server restart):
 			// a CommunicationsException (SQLState class 08) wrapping a socket reset / EOF. Transient
 			// infrastructure failure, not a plugin bug.
 			if (cause instanceof java.io.EOFException || cause.getClass().getName().endsWith("CommunicationsException"))
-				return true;
+				return "Lost connection to your MySQL/MariaDB database mid-query. Check your network and that the database server stays online.";
 
 			if (cause instanceof java.sql.SQLException) {
 				final String sqlState = ((java.sql.SQLException) cause).getSQLState();
 
 				if (sqlState != null && sqlState.startsWith("08"))
-					return true;
+					return "Lost connection to your database. This is a temporary network issue, not a plugin bug.";
 			}
 
 			// A single row exceeds the server's max_allowed_packet. The user must raise that server limit;
 			// the plugin already skips oversized rows on insert where it can.
 			if (msg != null && (msg.contains("max_allowed_packet") || msg.contains("Packet for query is too large")))
-				return true;
+				return "A database row exceeded your server's max_allowed_packet limit. Increase max_allowed_packet in your MySQL/MariaDB configuration.";
 
-			if (msg != null && (msg.contains("SQLITE_READONLY") || msg.contains("SQLITE_BUSY") || msg.contains("SQLITE_LOCKED") || msg.contains("SQLITE_CORRUPT") || msg.contains("SQLITE_IOERR") || msg.contains("attempt to write a readonly database") || msg.contains("database is locked") || msg.contains("database disk image is malformed") || msg.contains("no such table") || msg.contains("no such column") || msg.contains("missing database")))
-				return true;
+			// SQLite cannot open or write the database file: permissions, full disk, read-only mount,
+			// or a network/cloud-synced folder. An environment problem, not a plugin bug.
+			if (msg != null && (msg.contains("SQLITE_CANTOPEN") || msg.contains("unable to open database file") || msg.contains("opening db") || msg.contains("SQLITE_READONLY") || msg.contains("attempt to write a readonly database") || msg.contains("missing database")))
+				return "The plugin could not open or write its SQLite database file. Make sure the server has read and write permission to the plugin folder, the disk is not full, and the folder is not read-only or on a network/cloud-synced drive.";
+
+			if (msg != null && (msg.contains("SQLITE_BUSY") || msg.contains("SQLITE_LOCKED") || msg.contains("database is locked")))
+				return "Your SQLite database is locked by another process. Make sure only one server instance uses this database file at a time.";
+
+			if (msg != null && (msg.contains("SQLITE_CORRUPT") || msg.contains("database disk image is malformed")))
+				return "Your SQLite database file is corrupted. Restore it from a backup, or stop the server and delete it so the plugin can recreate it.";
+
+			if (msg != null && msg.contains("SQLITE_IOERR"))
+				return "A disk I/O error occurred while accessing your SQLite database. Check your disk health and that there is free space.";
+
+			if (msg != null && (msg.contains("no such table") || msg.contains("no such column")))
+				return "Your SQLite database is missing a table or column. Reload the plugin so it can rebuild the schema, or restore from a backup.";
 
 			// MySQL/MariaDB user-side database corruption: orphaned .frm with missing .ibd
-			// tablespace, or InnoDB recovery failed. Not a plugin bug — user must repair
+			// tablespace, or InnoDB recovery failed. Not a plugin bug, the user must repair
 			// their database (DROP TABLE in MySQL, let the plugin recreate it).
 			if (msg != null && msg.contains("doesn't exist in engine"))
-				return true;
+				return "Your MySQL/MariaDB table is corrupted (missing tablespace). Drop the affected table so the plugin can recreate it, or restore from a backup.";
 
 			// User wrote an invalid human-readable time in a config such as a localized
 			// "5 сек." instead of "5 seconds". A configuration error, not a plugin bug.
 			if (msg != null && (msg.contains("Must define date type! Example!") || msg.contains("Expected human readable time like")))
-				return true;
+				return "A time value in your configuration is not valid. Use English time formats like '5 seconds', '10 minutes' or '1 hour'.";
 		} while ((cause = cause.getCause()) != null);
 
-		return false;
+		return null;
 	}
 
-	private static void saveErrorLocally(Throwable throwable, final String... messages) {
+	private static void saveErrorLocally(Throwable throwable, final String ignoreReason, final String... messages) {
 		final String systemInfo = "Running " + Platform.getPlatformName() + " " + Platform.getPlatformVersion() + " and Java " + System.getProperty("java.version");
 
 		try {
@@ -359,7 +381,10 @@ public final class Debugger {
 			fill(lines, "----------------------------------------------------------------------------------------------", System.lineSeparator());
 
 			// Log to the console
-			CommonCore.log(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
+			if (ignoreReason != null)
+				CommonCore.log(header + ": " + ignoreReason + " This is not a plugin bug, so it was not reported. Full details saved to error.log. " + systemInfo);
+			else
+				CommonCore.log(header + "! Please check your error.log and report this issue with the information in that file. " + systemInfo);
 
 			// Finally, save the error file
 			FileUtil.write("error.log", lines);

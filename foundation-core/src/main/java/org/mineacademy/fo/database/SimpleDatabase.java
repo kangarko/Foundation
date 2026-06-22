@@ -421,6 +421,19 @@ public class SimpleDatabase {
 					"Please make sure you have the correct driver for your database installed.",
 					"Check the console for more information.");
 
+		else if (message.contains("Permission denied") || message.contains("Access is denied") || message.contains("opening db") || message.contains("SQLITE_CANTOPEN") || message.contains("unable to open database file") || message.contains("SQLITE_READONLY") || message.contains("attempt to write a readonly database"))
+			CommonCore.throwErrorUnreported(throwable,
+					"Failed to open the database file",
+					"URL: " + url,
+					"User: " + user,
+					"Error: " + message,
+					"",
+					"This is not a plugin bug. Your server is not allowed to read or",
+					"write the database file above. Fix the permissions of your plugin",
+					"folder so the account running the server can access it (for example",
+					"with chown/chmod), make sure the disk is not full or read-only, and",
+					"avoid running the server from a network or cloud-synced drive.");
+
 		else if (message.contains("Communications link failure") || message.contains("Could not connect to") || message.contains("invalid database address") || message.contains("Connection refused")
 				|| message.contains("Access denied for user") || message.contains("Could not create connection to database server") || message.contains("Incorrect port value"))
 			CommonCore.throwErrorUnreported(throwable,
