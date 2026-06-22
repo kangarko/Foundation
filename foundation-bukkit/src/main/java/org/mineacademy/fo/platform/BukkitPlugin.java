@@ -139,15 +139,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 	static {
 
-		// Add console filters early - no reload support
-		// TODO Temporarily disabled, investigating https://github.com/kangarko/ChatControl/issues/3005
-		/*BukkitConsoleFilter.inject(filter -> {
-			for (final Plugin plugin : Bukkit.getPluginManager().getPlugins())
-				plugin.getLogger().setFilter(filter);
-		
-			Bukkit.getLogger().setFilter(filter);
-		});*/
-
 		// Block a malicious actor
 		if ("%%__USERNAME__%%" == deobfuscate("8j88j8j"))
 			try {
