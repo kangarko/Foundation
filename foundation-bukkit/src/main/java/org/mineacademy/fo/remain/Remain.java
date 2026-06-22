@@ -274,6 +274,12 @@ public final class Remain {
 	private static boolean hasAdventureChatEvent = true;
 
 	/**
+	 * Does the server's Adventure api expose TranslatableComponent#arguments()? Added in Adventure 4.15.0.
+	 * When false, the bundled Adventure serializers crash with NoSuchMethodError on translatable components.
+	 */
+	private static boolean hasAdventureTranslatableArguments = true;
+
+	/**
 	 * Does the current server have Paper's PlayerProfile API (Paper 1.12.2+)?
 	 */
 	private static boolean hasPaperProfile = false;
@@ -416,6 +422,8 @@ public final class Remain {
 
 		hasBookEvent = ReflectionUtil.isClassAvailable("org.bukkit.event.player.PlayerEditBookEvent");
 		hasAdventureChatEvent = ReflectionUtil.isClassAvailable("io.papermc.paper.event.player.AsyncChatEvent");
+		hasAdventureTranslatableArguments = ReflectionUtil.isClassAvailable("net.kyori.adventure.text.TranslatableComponent")
+				&& ReflectionUtil.getMethod(ReflectionUtil.lookupClass("net.kyori.adventure.text.TranslatableComponent"), "arguments") != null;
 		hasSpawnEggMeta = ReflectionUtil.isClassAvailable("org.bukkit.inventory.meta.SpawnEggMeta");
 		hasAdvancements = ReflectionUtil.isClassAvailable("org.bukkit.advancement.Advancement") && ReflectionUtil.isClassAvailable("org.bukkit.NamespacedKey");
 
@@ -3703,6 +3711,18 @@ public final class Remain {
 	 */
 	public static boolean hasAdventureChatEvent() {
 		return hasAdventureChatEvent;
+	}
+
+	/**
+	 * Returns true if the server's Adventure api exposes TranslatableComponent#arguments() (Adventure 4.15.0+).
+	 *
+	 * When false, serializing a translatable component (such as an item name on a shop sign) throws
+	 * NoSuchMethodError because the bundled Adventure serializers call arguments() which the older api lacks.
+	 *
+	 * @return
+	 */
+	public static boolean hasAdventureTranslatableArguments() {
+		return hasAdventureTranslatableArguments;
 	}
 
 	/**
