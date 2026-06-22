@@ -444,7 +444,8 @@ public enum CompBiome {
 	BAMBOO_JUNGLE,
 	BAMBOO_JUNGLE_HILLS,
 	DRIPSTONE_CAVES,
-	LUSH_CAVES;
+	LUSH_CAVES,
+	SULFUR_CAVES;
 
 	private static final boolean HAS_HORIZONTAL_SUPPORT = MinecraftVersion.atLeast(V.v1_16);
 	private static final boolean HAS_NEGATIVE = MinecraftVersion.atLeast(V.v1_17);
