@@ -2101,6 +2101,18 @@ public final class Remain {
 		sendToast(receivers, message, icon, CompToastStyle.GOAL);
 	}
 
+	/*
+	 * Whether a toast can be shown by injecting a temporary advancement.
+	 *
+	 * On Folia and its threaded-region forks (Canvas, etc.) Bukkit.getUnsafe().loadAdvancement() reloads
+	 * every online player's advancements from the calling thread while those players keep ticking on their
+	 * own region threads, throwing ConcurrentModificationException. There is no thread-safe way to inject
+	 * a temporary advancement on such servers, so callers fall back to a chat message instead.
+	 */
+	private static boolean canShowAdvancementToast() {
+		return hasAdvancements && !isFolia;
+	}
+
 	/**
 	 * Send a "toast" notification to the given receivers. This is an advancement notification that cannot
 	 * be modified that much. It imposes a slight performance penalty the more players to send to.
@@ -2113,7 +2125,7 @@ public final class Remain {
 	 * @param style
 	 */
 	public static void sendToast(final List<Player> receivers, final Function<Player, String> message, final CompMaterial icon, final CompToastStyle style) {
-		if (hasAdvancements)
+		if (canShowAdvancementToast())
 			Platform.runTaskAsync(() -> {
 				for (final Player receiver : receivers) {
 
@@ -2155,7 +2167,7 @@ public final class Remain {
 	public static void sendToastToAudience(@NonNull final List<FoundationPlayer> receivers, @NonNull final Function<FoundationPlayer, String> message, @NonNull final CompMaterial icon, @NonNull final CompToastStyle style) {
 		ValidCore.checkBoolean(!CompMaterial.isAir(icon), "Toast icon cannot be air!");
 
-		if (hasAdvancements)
+		if (canShowAdvancementToast())
 			Platform.runTaskAsync(() -> {
 				for (final FoundationPlayer receiver : receivers) {
 
@@ -2240,7 +2252,7 @@ public final class Remain {
 			final String colorized = SimpleComponent.fromMiniAmpersand(message).toLegacySection(Platform.toPlayer(receiver)).replace("|", "\n");
 
 			if (!colorized.isEmpty())
-				if (hasAdvancements)
+				if (canShowAdvancementToast())
 					Platform.runTask(() -> new AdvancementAccessor(colorized, icon, toastStyle).show(receiver));
 
 				else
