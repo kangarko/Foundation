@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,16 +27,23 @@ import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.DataComponentValue;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -47,6 +55,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonDataComponentValue;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -135,6 +144,13 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * of Minecraft where there is no automatic line wrapping.
 	 */
 	public static final int LEGACY_HOVER_LINE_LENGTH_LIMIT = 55;
+
+	/**
+	 * The click action key used by {@link #onClickCustomCommand(String)} to run a hidden command
+	 * without the client showing the "Confirm Command Execution" prompt added in Minecraft 1.21.6.
+	 * Handled server side on Paper via PlayerCustomClickEvent.
+	 */
+	public static final Key CUSTOM_COMMAND_CLICK_KEY = Key.key("minecraft", "fo_custom_command");
 
 	/**
 	 * The components we are creating
@@ -279,6 +295,79 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
+	 * Add a hover event that renders the given MiniMessage lines inside a custom-styled tooltip using
+	 * the 1.21.2+ {@code minecraft:tooltip_style} item data component, letting resource packs (such as
+	 * ItemsAdder) draw a custom background and frame behind a chat hover.
+	 *
+	 * The first line becomes the tooltip title and the remaining lines its body. On servers older than
+	 * 1.21.2, where the component does not exist, a regular text hover is shown instead so the hover
+	 * text is never lost.
+	 *
+	 * @param tooltipStyle the namespaced key of the tooltip style, such as "itemsadder:custom_style"
+	 * @param miniLines    the hover lines parsed as MiniMessage
+	 * @return
+	 */
+	public SimpleComponent onHoverStyledTooltip(final String tooltipStyle, final String... miniLines) {
+		if (!isTooltipStyleSupported())
+			return this.onHoverMini(miniLines);
+
+		if (!Key.parseable(tooltipStyle)) {
+			CommonCore.logTimed(3600, "Invalid Tooltip_Style '" + tooltipStyle + "'. It must be a lowercase namespaced key such as 'itemsadder:custom_style'. Showing a plain hover instead. (This message shows hourly.)");
+
+			return this.onHoverMini(miniLines);
+		}
+
+		final Map<Key, DataComponentValue> components = new HashMap<>();
+
+		components.put(Key.key("minecraft", "tooltip_style"), GsonDataComponentValue.gsonDataComponentValue(new JsonPrimitive(tooltipStyle)));
+
+		if (miniLines.length > 0)
+			components.put(Key.key("minecraft", "custom_name"), GsonDataComponentValue.gsonDataComponentValue(serializeHoverLine(miniLines[0])));
+
+		if (miniLines.length > 1) {
+			final JsonArray lore = new JsonArray();
+
+			for (int i = 1; i < miniLines.length; i++)
+				lore.add(serializeHoverLine(miniLines[i]));
+
+			components.put(Key.key("minecraft", "lore"), GsonDataComponentValue.gsonDataComponentValue(lore));
+		}
+
+		final HoverEvent<?> hover = HoverEvent.showItem(Key.key("minecraft", "paper"), 1, components);
+
+		return this.modifyLastComponentAndReturn(component -> component.hoverEvent(hover));
+	}
+
+	/*
+	 * Serialize a single MiniMessage hover line into chat component JSON, turning off the italic that
+	 * Minecraft forces onto item names and lore and defaulting to white unless the line sets its own
+	 * color or decoration, so a styled tooltip renders like a regular text hover.
+	 */
+	private static JsonElement serializeHoverLine(final String miniLine) {
+		final Component line = deserializeMiniToAdventure(miniLine)
+				.colorIfAbsent(NamedTextColor.WHITE)
+				.decorationIfAbsent(TextDecoration.ITALIC, State.FALSE);
+
+		return GsonComponentSerializer.gson().serializeToTree(line);
+	}
+
+	/*
+	 * The minecraft:tooltip_style item data component was added in Minecraft 1.21.2.
+	 */
+	private static boolean isTooltipStyleSupported() {
+		if (!MinecraftVersion.hasVersion())
+			return false;
+
+		if (MinecraftVersion.newerThan(V.v1_21))
+			return true;
+
+		if (MinecraftVersion.equals(V.v1_21))
+			return MinecraftVersion.getSubversion() >= 2;
+
+		return false;
+	}
+
+	/**
 	 * Add a hover event. To put an ItemStack here, see {@link Platform#convertItemStackToHoverEvent(Object)}.
 	 *
 	 * @param hover
@@ -296,6 +385,33 @@ public final class SimpleComponent implements ConfigSerializable {
 	 */
 	public SimpleComponent onClickRunCmd(final String text) {
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.runCommand(text)));
+	}
+
+	/**
+	 * Run a command on click using Paper's custom click action introduced in Minecraft 1.21.6, which
+	 * does not trigger the client-side "Confirm Command Execution" prompt that is shown for commands
+	 * the client does not know, such as Foundation's hidden /#flp pagination command.
+	 *
+	 * The owning plugin name is embedded so that on servers with multiple Foundation plugins only the
+	 * plugin that created the component re-dispatches the command, instead of all of them at once.
+	 *
+	 * Only use this when the server is Paper running Minecraft 1.21.6 or newer, otherwise the click is
+	 * silently ignored by the client. The click is handled in BukkitListener via PlayerCustomClickEvent.
+	 *
+	 * @param command
+	 * @return
+	 */
+	public SimpleComponent onClickCustomCommand(final String command) {
+		final String snbt = "{command:\"" + escapeSnbtString(command) + "\",plugin:\"" + escapeSnbtString(Platform.getPlugin().getName()) + "\"}";
+
+		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.custom(CUSTOM_COMMAND_CLICK_KEY, BinaryTagHolder.binaryTagHolder(snbt))));
+	}
+
+	/*
+	 * Escape a string so it can be safely embedded inside a double-quoted SNBT value.
+	 */
+	private static String escapeSnbtString(final String value) {
+		return value.replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 
 	/**
