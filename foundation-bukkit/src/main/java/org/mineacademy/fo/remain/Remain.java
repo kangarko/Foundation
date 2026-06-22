@@ -451,7 +451,7 @@ public final class Remain {
 			}
 
 		} catch (final Throwable t) {
-			if (!Platform.getPlatformName().contains("Arclight") && !Platform.getPlatformName().contains("Cardboard"))
+			if (!isUnsupportedPlatform())
 				CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
 		}
 
@@ -472,7 +472,7 @@ public final class Remain {
 						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 			}
 		} catch (final Throwable t) {
-			if (!Platform.getPlatformName().contains("Arclight") && !Platform.getPlatformName().contains("Cardboard"))
+			if (!isUnsupportedPlatform())
 				CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
 		}
 
@@ -655,6 +655,12 @@ public final class Remain {
 			} catch (final Throwable t) {
 				CommonCore.error(t, "Failed to setup Folia scheduler");
 			}
+	}
+
+	private static boolean isUnsupportedPlatform() {
+		final String platformName = Platform.getPlatformName();
+
+		return platformName.contains("Arclight") || platformName.contains("Cardboard") || (platformName.contains("CraftBukkit") && MinecraftVersion.atLeast(V.v1_12));
 	}
 
 	// ----------------------------------------------------------------------------------------------------
