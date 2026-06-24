@@ -211,6 +211,10 @@ public final class Variable extends YamlConfig {
 	 * @return
 	 */
 	public String getValue(final Variables variables) {
+		final FoundationPlayer audience = variables.audience();
+
+		if (this.value.contains("player.") && (audience == null || !audience.isPlayer()))
+			return "";
 
 		// Replace variables in script
 		final String script;
@@ -333,7 +337,8 @@ public final class Variable extends YamlConfig {
 				component = component.onHoverMini(hoverLines);
 			}
 
-			if (this.hoverItem != null && !this.hoverItem.isEmpty())
+			if (this.hoverItem != null && !this.hoverItem.isEmpty()
+					&& !(this.hoverItem.contains("player.") && (audience == null || !audience.isPlayer())))
 				try {
 					final Object result = JavaScriptExecutor.run(variables.replaceLegacy(this.hoverItem), audience);
 
