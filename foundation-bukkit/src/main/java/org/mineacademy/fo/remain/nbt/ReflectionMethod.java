@@ -216,7 +216,7 @@ enum ReflectionMethod {
 			new Class[] { ClassWrapper.NMS_IBLOCKDATA.getClazz(), ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz() },
 			MinecraftVersion.MC1_16_R1, MinecraftVersion.MC1_16_R3, new Since(MinecraftVersion.MC1_16_R1, "load")),
 	TILEENTITY_SET_NBT(ClassWrapper.NMS_TILEENTITY, new Class[] { ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz() },
-			MinecraftVersion.MC1_17_R1, MinecraftVersion.MC1_20_R4, new Since(MinecraftVersion.MC1_16_R1, "load"),
+			MinecraftVersion.MC1_17_R1, MinecraftVersion.MC1_20_R3, new Since(MinecraftVersion.MC1_16_R1, "load"),
 			new Since(MinecraftVersion.MC1_18_R1, "load(net.minecraft.nbt.CompoundTag)")),
 	TILEENTITY_GET_BLOCKDATA(ClassWrapper.NMS_TILEENTITY, new Class[] {}, MinecraftVersion.MC1_16_R1,
 			new Since(MinecraftVersion.MC1_16_R1, "getBlock"),

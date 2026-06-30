@@ -442,7 +442,7 @@ public final class Remain {
 		}
 
 		try {
-			if (MinecraftVersion.atLeast(V.v1_21)) {
+			if (isUsingMojangMappings) {
 				fieldPlayerConnection = ReflectionUtil.lookupClass("net.minecraft.server.level.ServerPlayer")
 						.getField("connection");
 			} else {
@@ -464,7 +464,7 @@ public final class Remain {
 			}
 
 		try {
-			if (MinecraftVersion.atLeast(V.v1_21)) {
+			if (isUsingMojangMappings) {
 				sendPacket = ReflectionUtil.lookupClass("net.minecraft.server.network.ServerCommonPacketListenerImpl")
 						.getMethod("send", ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet"));
 			} else {
