@@ -153,8 +153,8 @@ public abstract class DiscordListener implements Listener {
 			if (jda != null)
 				return jda.getTextChannelById(channelId);
 
-		} catch (final Throwable t) {
-			CommonCore.logTimed(3600, "Skipping Discord delivery: DiscordSRV's JDA API is unreachable (" + t.getClass().getSimpleName() + "). This usually means DiscordSRV is missing, still starting, or was reloaded at runtime. This message only shows hourly.");
+		} catch (final LinkageError ex) {
+			CommonCore.logTimed(60 * 60, "Skipping Discord delivery: DiscordSRV's JDA API is unreachable. Is DiscordSRV installed and up to date? Error: " + ex.getMessage() + ". This message only shows once per hour.");
 		}
 
 		return null;
@@ -181,8 +181,8 @@ public abstract class DiscordListener implements Listener {
 				return channels;
 			}
 
-		} catch (final Throwable t) {
-			CommonCore.logTimed(3600, "Skipping Discord lookup: DiscordSRV's JDA API is unreachable (" + t.getClass().getSimpleName() + "). This usually means DiscordSRV is missing, still starting, or was reloaded at runtime. This message only shows hourly.");
+		} catch (final LinkageError ex) {
+			CommonCore.logTimed(60 * 60, "Skipping Discord channel lookup: DiscordSRV's JDA API is unreachable. Is DiscordSRV installed and up to date? Error: " + ex.getMessage() + ". This message only shows once per hour.");
 		}
 
 		return new ArrayList<>();
