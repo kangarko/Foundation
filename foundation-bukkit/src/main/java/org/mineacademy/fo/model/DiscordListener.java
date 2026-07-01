@@ -146,11 +146,16 @@ public abstract class DiscordListener implements Listener {
 	 * @return
 	 */
 	protected final TextChannel findChannel(final long channelId) {
-		final JDA jda = DiscordUtil.getJda();
+		try {
+			final JDA jda = DiscordUtil.getJda();
 
-		// JDA can be null when server is starting or connecting
-		if (jda != null)
-			return jda.getTextChannelById(channelId);
+			// JDA can be null when server is starting or connecting
+			if (jda != null)
+				return jda.getTextChannelById(channelId);
+
+		} catch (final Throwable t) {
+			CommonCore.logTimed(3600, "Skipping Discord delivery: DiscordSRV's JDA API is unreachable (" + t.getClass().getSimpleName() + "). This usually means DiscordSRV is missing, still starting, or was reloaded at runtime. This message only shows hourly.");
+		}
 
 		return null;
 	}
@@ -162,17 +167,22 @@ public abstract class DiscordListener implements Listener {
 	 * @return
 	 */
 	protected final List<TextChannel> findChannels(final String channelName) {
-		final JDA jda = DiscordUtil.getJda();
+		try {
+			final JDA jda = DiscordUtil.getJda();
 
-		// JDA can be null when server is starting or connecting
-		if (jda != null) {
-			final List<TextChannel> channels = new ArrayList<>();
+			// JDA can be null when server is starting or connecting
+			if (jda != null) {
+				final List<TextChannel> channels = new ArrayList<>();
 
-			for (final TextChannel channel : jda.getTextChannels())
-				if (channel.getName().equalsIgnoreCase(channelName))
-					channels.add(channel);
+				for (final TextChannel channel : jda.getTextChannels())
+					if (channel.getName().equalsIgnoreCase(channelName))
+						channels.add(channel);
 
-			return channels;
+				return channels;
+			}
+
+		} catch (final Throwable t) {
+			CommonCore.logTimed(3600, "Skipping Discord lookup: DiscordSRV's JDA API is unreachable (" + t.getClass().getSimpleName() + "). This usually means DiscordSRV is missing, still starting, or was reloaded at runtime. This message only shows hourly.");
 		}
 
 		return new ArrayList<>();
