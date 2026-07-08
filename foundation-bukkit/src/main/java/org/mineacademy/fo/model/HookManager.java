@@ -893,6 +893,32 @@ public final class HookManager {
 	}
 
 	/**
+	 * Return the custom AFK reason the given player set via "/afk reason"
+	 * in EssentialsX or CMI, or null if not AFK, no reason was given, or
+	 * neither plugin is present.
+	 *
+	 * @param player the player to check.
+	 * @return
+	 */
+	public static String getAfkMessage(final Player player) {
+		if (isEssentialsLoaded()) {
+			final String message = essentialsHook.getAfkMessage(player.getName());
+
+			if (message != null && !message.isEmpty())
+				return message;
+		}
+
+		if (isCMILoaded()) {
+			final String reason = CMIHook.getAfkReason(player);
+
+			if (reason != null && !reason.isEmpty())
+				return reason;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Return true if the given player is vanished in EssentialsX.
 	 *
 	 * @deprecated this does not call a metadata check for most plugins,
@@ -2095,6 +2121,16 @@ class EssentialsHook {
 		final IUser user = this.getUser(playerName);
 
 		return user != null ? user.isAfk() : false;
+	}
+
+	String getAfkMessage(final String playerName) {
+		try {
+			final IUser user = this.getUser(playerName);
+
+			return user != null ? user.getAfkMessage() : null;
+		} catch (final NoSuchMethodError ex) {
+			return null;
+		}
 	}
 
 	boolean isVanished(final String playerName) {
@@ -3809,6 +3845,16 @@ class CMIHook {
 			return user != null && user.isAfk();
 		} catch (final NoClassDefFoundError ex) {
 			return false;
+		}
+	}
+
+	String getAfkReason(final Player player) {
+		try {
+			final CMIUser user = this.getUser(player);
+
+			return user != null ? user.getAfkReason() : null;
+		} catch (final NoClassDefFoundError | NoSuchMethodError ex) {
+			return null;
 		}
 	}
 
