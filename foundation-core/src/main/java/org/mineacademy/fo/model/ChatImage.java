@@ -193,12 +193,9 @@ public final class ChatImage {
 	 */
 	private TextColor[][] parseImage(final BufferedImage newImage) {
 		final double ratio = (double) newImage.getHeight() / newImage.getWidth();
-		int width = (int) (this.height / ratio);
+		final int width = Math.max(1, (int) (this.height / ratio));
 
-		if (width > 10)
-			width = 10;
-
-		final BufferedImage resized = this.resizeImage(newImage, (int) (this.height / ratio), this.height);
+		final BufferedImage resized = this.resizeImage(newImage, width, this.height);
 		final TextColor[][] chatImg = new TextColor[resized.getWidth()][resized.getHeight()];
 
 		for (int x = 0; x < resized.getWidth(); x++)
