@@ -146,13 +146,18 @@ public final class LitebansTask {
 	public boolean isMuted(final UUID uniqueId) {
 		final String key = uniqueId.toString();
 
-		// Synchronous fallback: if the join-time async lookup failed, query LiteBans
-		// now so a transient DB hiccup does not let a muted player chat freely. Chat
-		// events are processed off the main thread on modern Paper / Folia, so a
-		// brief blocking DB call here is acceptable. Self-healing: the pending flag
-		// is cleared on the first success, after which this branch is skipped.
-		if (this.enabled && this.pendingLookupUniqueIds.contains(key))
-			this.tryLookup(uniqueId, true);
+		// Fallback: if the join-time async lookup failed, retry it so a transient DB
+		// hiccup does not let a muted player chat freely. Off the main thread (async
+		// chat on modern Paper / Folia) we query LiteBans right away; on the main
+		// thread (commands, signs, books, anvils, join/quit/death messages) we only
+		// schedule an async retry to never block the tick. Self-healing: the pending
+		// flag is cleared on the first success, after which this branch is skipped.
+		if (this.enabled && this.pendingLookupUniqueIds.contains(key)) {
+			if (Platform.isAsync())
+				this.tryLookup(uniqueId, true);
+			else
+				Platform.runTaskAsync(() -> this.tryLookup(uniqueId, true));
+		}
 
 		final Long until = this.mutedPlayersByUniqueId.get(key);
 
