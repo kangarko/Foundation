@@ -894,8 +894,11 @@ public final class HookManager {
 
 	/**
 	 * Return the custom AFK reason the given player set via "/afk reason"
-	 * in EssentialsX or CMI, or null if not AFK, no reason was given, or
-	 * neither plugin is present.
+	 * in EssentialsX or CMI, or null if no reason was given or neither
+	 * plugin is present. Callers should gate on {@link #isAfk(Player)},
+	 * we do not guarantee the reason is cleared once the player is back.
+	 *
+	 * The reason is raw player input, only ever insert it as plain text.
 	 *
 	 * @param player the player to check.
 	 * @return
