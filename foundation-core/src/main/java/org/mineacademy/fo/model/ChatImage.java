@@ -238,7 +238,7 @@ public final class ChatImage {
 				line += color != null ? "<" + color.toString() + ">" + this.fillerCharacter : ' ';
 			}
 
-			lines[y] = line + CompChatColor.RESET;
+			lines[y] = CompChatColor.RESET + line + CompChatColor.RESET;
 		}
 
 		return lines;
