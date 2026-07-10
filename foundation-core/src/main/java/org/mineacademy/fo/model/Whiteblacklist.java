@@ -123,24 +123,27 @@ public final class Whiteblacklist {
 	}
 
 	/**
-	 * Evaluates if the given collection contains at least one match.
+	 * Evaluates if at least one of the given candidates matches the list,
+	 * inverting the combined result once according to the {@link #isWhitelist()}
+	 * flag so blacklists except a command when any of its candidates is listed.
 	 *
-	 * @param items
+	 * @param candidates
 	 * @return
 	 */
-	public boolean isInList(final Collection<String> items) {
+	public boolean isInList(final Collection<String> candidates) {
 		if (this.entireList)
-			if (this.whitelist && !items.isEmpty())
-				return true;
+			return this.whitelist ? !candidates.isEmpty() : candidates.isEmpty();
 
-			else if (!this.whitelist && items.isEmpty())
-				return true;
+		boolean match = false;
 
-		for (final String item : items)
-			if (this.isInList(item))
-				return true;
+		for (final String candidate : candidates)
+			if (ValidCore.isInList(candidate, this.items)) {
+				match = true;
 
-		return false;
+				break;
+			}
+
+		return this.whitelist ? match : !match;
 	}
 
 	/**
