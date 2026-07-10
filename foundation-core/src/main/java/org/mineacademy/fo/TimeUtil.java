@@ -232,7 +232,12 @@ public final class TimeUtil {
 			hourMsg = Lang.numberFormat("case-hour", hour) + " ";
 		}
 
-		return hourMsg + (minute != 0 ? Lang.numberFormat("case-minute", minute) + " " : "") + Lang.numberFormat("case-second", second);
+		String message = hourMsg + (minute != 0 ? Lang.numberFormat("case-minute", minute) + " " : "");
+
+		if (second != 0 || message.isEmpty())
+			message += Lang.numberFormat("case-second", second);
+
+		return message.trim();
 	}
 
 	/**
@@ -246,10 +251,14 @@ public final class TimeUtil {
 		final long hours = minutes / 60;
 		final long days = hours / 24;
 
-		return (days != 0 ? Lang.numberFormat("case-day", days) + " " : "")
+		String message = (days != 0 ? Lang.numberFormat("case-day", days) + " " : "")
 				+ (hours % 24 != 0 ? Lang.numberFormat("case-hour", hours % 24) + " " : "")
-				+ (minutes % 60 != 0 ? Lang.numberFormat("case-minute", minutes % 60) + " " : "")
-				+ Lang.numberFormat("case-second", seconds % 60);
+				+ (minutes % 60 != 0 ? Lang.numberFormat("case-minute", minutes % 60) + " " : "");
+
+		if (seconds % 60 != 0 || message.isEmpty())
+			message += Lang.numberFormat("case-second", seconds % 60);
+
+		return message.trim();
 	}
 
 	/**
