@@ -688,6 +688,35 @@ public class SimpleDatabase {
 	 * @param uniqueColumnName
 	 * @param columnsAndValues
 	 */
+	/*
+	 * Bind the value with its typed setter. Hybrid servers repackaging the
+	 * JDBC driver (e.g. Youer) break ServiceLoader codec discovery, making
+	 * every setObject call throw "Type X not supported type"; typed setters
+	 * reference their codecs directly and keep working.
+	 */
+	private static void setTypedParameter(final PreparedStatement statement, final int index, final Object value) throws SQLException {
+		if (value instanceof String)
+			statement.setString(index, (String) value);
+
+		else if (value instanceof Integer)
+			statement.setInt(index, (Integer) value);
+
+		else if (value instanceof Long)
+			statement.setLong(index, (Long) value);
+
+		else if (value instanceof Double)
+			statement.setDouble(index, (Double) value);
+
+		else if (value instanceof Float)
+			statement.setFloat(index, (Float) value);
+
+		else if (value instanceof Boolean)
+			statement.setBoolean(index, (Boolean) value);
+
+		else
+			statement.setObject(index, value);
+	}
+
 	protected final void upsert(final Table table, @NonNull final Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
 		final String tableName = this.replaceVariables(table.getName());
 
@@ -710,7 +739,7 @@ public class SimpleDatabase {
 			final String removeSql = "DELETE FROM " + tableName + " WHERE " + uniqueColumn.getKey() + " = ?;";
 
 			try (PreparedStatement preparedStatement = this.prepareStatement(removeSql)) {
-				preparedStatement.setObject(1, uniqueColumn.getValue());
+				setTypedParameter(preparedStatement, 1, uniqueColumn.getValue());
 
 				Debugger.debug("mysql", "[sqlite/remove] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 				preparedStatement.executeUpdate();
@@ -743,7 +772,7 @@ public class SimpleDatabase {
 					if (!(converted instanceof String) && !(converted instanceof Boolean) && !(converted instanceof Number) && !converted.getClass().isPrimitive())
 						throw new SQLException("Cannot store " + converted.getClass() + " in database, must be a primitive type, number or a string. Got: " + converted);
 
-					preparedStatement.setObject(index++, converted);
+					setTypedParameter(preparedStatement, index++, converted);
 				}
 
 			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
@@ -787,7 +816,7 @@ public class SimpleDatabase {
 					preparedStatement.setString(index++, (String) value);
 
 				else
-					preparedStatement.setObject(index++, SerializeUtilCore.serialize(Language.JSON, value));
+					setTypedParameter(preparedStatement, index++, SerializeUtilCore.serialize(Language.JSON, value));
 
 			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
@@ -883,7 +912,7 @@ public class SimpleDatabase {
 					int index = 1;
 
 					for (final Object value : values)
-						preparedStatement.setObject(index++, value);
+						setTypedParameter(preparedStatement, index++, value);
 
 					preparedStatement.addBatch();
 				}
@@ -999,7 +1028,7 @@ public class SimpleDatabase {
 				int index = 1;
 
 				for (final Object value : where.getValues())
-					preparedStatement.setObject(index++, value);
+					setTypedParameter(preparedStatement, index++, value);
 			}
 
 			Debugger.debug("mysql", "[select] Running SQL: " + preparedStatement.toString().replace("\n", ""));
@@ -1057,7 +1086,7 @@ public class SimpleDatabase {
 				int index = 1;
 
 				for (final Object value : where.getValues())
-					preparedStatement.setObject(index++, value);
+					setTypedParameter(preparedStatement, index++, value);
 			}
 
 			Debugger.debug("mysql", "[select columns] Running SQL: " + preparedStatement.toString().replace("\n", ""));
@@ -1101,7 +1130,7 @@ public class SimpleDatabase {
 			int index = 1;
 
 			for (final Map.Entry<String, Object> entry : conditions.entrySet())
-				preparedStatement.setObject(index++, entry.getValue());
+				setTypedParameter(preparedStatement, index++, entry.getValue());
 
 			Debugger.debug("mysql", "[count] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
@@ -1134,7 +1163,7 @@ public class SimpleDatabase {
 			int index = 1;
 
 			for (final Object value : where.getValues())
-				preparedStatement.setObject(index++, value);
+				setTypedParameter(preparedStatement, index++, value);
 
 			Debugger.debug("mysql", "[delete] Running SQL: " + preparedStatement.toString().replace("\n", ""));
 
