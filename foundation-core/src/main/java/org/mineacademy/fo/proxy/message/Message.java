@@ -21,9 +21,21 @@ abstract class Message {
 	public static final String DEFAULT_CHANNEL = "BungeeCord";
 
 	/**
-	 * Represents the largest size that an individual plugin message may be.
+	 * Represents the largest size that an individual plugin message may be
+	 * when sent from a backend server towards the proxy (clientbound custom
+	 * payload limit enforced by the Bukkit Messenger API).
 	 */
 	public static final int MAX_MESSAGE_SIZE = 1048576;
+
+	/**
+	 * Represents the largest size that an individual plugin message may be
+	 * when sent from the proxy towards a backend server. The vanilla server
+	 * rejects serverbound custom payloads over 32,767 bytes by disconnecting
+	 * the player connection that carried the packet, so oversized messages
+	 * must be dropped here instead of kicking an innocent player. Kept below
+	 * the protocol ceiling for header room.
+	 */
+	public static final int MAX_SERVERBOUND_MESSAGE_SIZE = 32000;
 
 	/**
 	 * The listener associated with this message.

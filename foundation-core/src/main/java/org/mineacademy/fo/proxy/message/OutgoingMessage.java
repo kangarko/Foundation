@@ -229,7 +229,8 @@ public final class OutgoingMessage extends Message {
 					SimpleComponent component = (SimpleComponent) data;
 					String json = component.serialize().toJson();
 
-					// BungeeCord plugin channel has a 32766 byte limit for the entire message.
+					// Proxies re-forward backend messages to other backends as serverbound
+					// plugin messages capped at MAX_SERVERBOUND_MESSAGE_SIZE, and
 					// DataOutputStream.writeUTF additionally has a 65535 byte per-string limit.
 					// Strip hover events first, then fall back to plain text with truncation.
 					if (json.getBytes(StandardCharsets.UTF_8).length > 30000) {
@@ -339,8 +340,8 @@ public final class OutgoingMessage extends Message {
 			return;
 		}
 
-		if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
-			CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+		if (byteArray.length >= Message.MAX_SERVERBOUND_MESSAGE_SIZE) {
+			CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_SERVERBOUND_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
 
 			return;
 		}
@@ -384,10 +385,10 @@ public final class OutgoingMessage extends Message {
 
 			final byte[] byteArray = this.toByteArray(CommonCore.ZERO_UUID, otherServer.getName());
 
-			if (byteArray.length >= Message.MAX_MESSAGE_SIZE) {
-				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
+			if (byteArray.length >= Message.MAX_SERVERBOUND_MESSAGE_SIZE) {
+				CommonCore.log("Outgoing proxy message '" + this + "' was oversized, not sending. Max length: " + Message.MAX_SERVERBOUND_MESSAGE_SIZE + " bytes, got " + byteArray.length + " bytes.");
 
-				return;
+				continue;
 			}
 
 			otherServer.sendData(DEFAULT_CHANNEL, byteArray);
