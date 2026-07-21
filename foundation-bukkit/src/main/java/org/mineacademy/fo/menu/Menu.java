@@ -509,7 +509,7 @@ public abstract class Menu {
 		}
 
 		// Register current menu
-		Platform.runTask(1, () -> {
+		Remain.runEntityTask(player, 1, () -> {
 			try {
 				this.onDisplay(drawer, player);
 
