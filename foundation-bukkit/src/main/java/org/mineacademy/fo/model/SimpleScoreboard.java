@@ -17,6 +17,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.BukkitPlugin;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -58,6 +59,11 @@ public class SimpleScoreboard {
 	 */
 	@Getter
 	private static final List<SimpleScoreboard> registeredBoards = new ArrayList<>();
+
+	/**
+	 * Whether the Folia unsupported warning was already printed.
+	 */
+	private static boolean foliaWarned = false;
 
 	/**
 	 * Cache flags for performance purposes.
@@ -214,6 +220,16 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	public final void show(final Player player) {
+		if (Remain.isFolia()) {
+			if (!foliaWarned) {
+				CommonCore.warning("Scoreboards are unsupported on Folia, scoreboards will not be shown.");
+
+				foliaWarned = true;
+			}
+
+			return;
+		}
+
 		ValidCore.checkBoolean(!this.isViewing(player), "Player " + player.getName() + " is already viewing scoreboard: " + this);
 
 		if (this.title == null)

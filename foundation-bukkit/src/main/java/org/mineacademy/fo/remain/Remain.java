@@ -3132,6 +3132,28 @@ public final class Remain {
 	}
 
 	/**
+	 * Runs the task on the region owning the given location on Folia,
+	 * or immediately on non-Folia servers.
+	 *
+	 * @param location the location whose owning region scheduler to use
+	 * @param timer    the runnable to execute
+	 */
+	public static void runLocationTask(final Location location, final Runnable timer) {
+		final Runnable runnable = CommonCore.wrapRunnableInExceptionCatcher(timer);
+
+		if (CommonCore.runIfDisabled(runnable))
+			return;
+
+		if (!isFolia) {
+			runnable.run();
+
+			return;
+		}
+
+		Bukkit.getRegionScheduler().run(BukkitPlugin.getInstance(), location, task -> runnable.run());
+	}
+
+	/**
 	 * Runs the task even if the plugin is disabled for some reason.
 	 *
 	 * @param delayTicks
