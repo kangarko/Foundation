@@ -394,11 +394,13 @@ public final class Remain {
 
 					isTickThreadForEntityMethod = tickThreadClass.getMethod("isTickThreadFor", nmsEntityClass);
 
-				} catch (final NoSuchMethodException ignored) {
+				} catch (final Throwable ignored) {
+
+					// Forge hybrids throw unchecked ReflectionException from lookupClass, never crash clinit
 					isTickThreadForEntityMethod = null;
 				}
 
-			} catch (final NoSuchMethodException ex) {
+			} catch (final Throwable ex) {
 				isTickThreadMethod = null;
 			}
 		}
@@ -443,15 +445,26 @@ public final class Remain {
 
 		try {
 			if (isUsingMojangMappings) {
-				fieldPlayerConnection = ReflectionUtil.lookupClass("net.minecraft.server.level.ServerPlayer")
-						.getField("connection");
+
+				// Member names vary by mapping (Mojang, Forge SRG), but the connection is
+				// always the only ServerGamePacketListenerImpl field on ServerPlayer
+				final Class<?> serverPlayerClass = ReflectionUtil.lookupClass("net.minecraft.server.level.ServerPlayer");
+				final Class<?> gameListenerClass = ReflectionUtil.lookupClass("net.minecraft.server.network.ServerGamePacketListenerImpl");
+
+				fieldPlayerConnection = ReflectionUtil.getFieldByType(serverPlayerClass, gameListenerClass);
+
+				if (fieldPlayerConnection == null)
+					throw new NoSuchFieldException("No field of type ServerGamePacketListenerImpl found in " + serverPlayerClass.getName());
+
 			} else {
 				fieldPlayerConnection = Remain.getNMSClass("EntityPlayer", "net.minecraft.server.level.EntityPlayer")
 						.getField(MinecraftVersion.atLeast(V.v1_20) ? "c" : MinecraftVersion.atLeast(V.v1_17) ? "b" : "playerConnection");
 			}
 
 		} catch (final Throwable t) {
-			if (!isUnsupportedPlatform())
+			if (isUnsupportedPlatform())
+				CommonCore.warning("Failed to find EntityPlayer.playerConnection on " + Platform.getPlatformName() + ", packet-dependent features are disabled.");
+			else
 				CommonCore.error(t, "Failed to find EntityPlayer.playerConnection");
 		}
 
@@ -465,22 +478,42 @@ public final class Remain {
 
 		try {
 			if (isUsingMojangMappings) {
-				sendPacket = ReflectionUtil.lookupClass("net.minecraft.server.network.ServerCommonPacketListenerImpl")
-						.getMethod("send", ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet"));
+
+				// The field failure was already logged above, stay quiet here
+				if (fieldPlayerConnection != null) {
+
+					// send(Packet) is the only void single-Packet method in the connection's
+					// hierarchy under every mapping, and walking superclasses finds it on
+					// ServerCommonPacketListenerImpl where 1.20.2+ moved it
+					final Class<?> packetClass = ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet");
+
+					sendPacket = ReflectionUtil.getMethodBySignature(fieldPlayerConnection.getType(), void.class, packetClass);
+
+					if (sendPacket == null)
+						throw new NoSuchMethodException("No void method taking a single Packet parameter found in " + fieldPlayerConnection.getType().getName());
+				}
+
 			} else {
 				sendPacket = Remain.getNMSClass("PlayerConnection", "net.minecraft.server.network.PlayerConnection")
 						.getMethod(MinecraftVersion.atLeast(V.v1_18) ? "a" : "sendPacket", Remain.getNMSClass("Packet", "net.minecraft.network.protocol.Packet"));
 			}
 		} catch (final Throwable t) {
-			if (!isUnsupportedPlatform())
+			if (isUnsupportedPlatform())
+				CommonCore.warning("Failed to find PlayerConnection.sendPacket() on " + Platform.getPlatformName() + ", packet-dependent features are disabled.");
+			else
 				CommonCore.error(t, "Failed to find PlayerConnection.sendPacket()");
 		}
 
-		if (MinecraftVersion.olderThan(V.v1_16)) {
-			final Class<?> nmsItemStack = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
+		if (MinecraftVersion.olderThan(V.v1_16))
+			try {
+				final Class<?> nmsItemStack = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
 
-			getNmsItemStackTag = ReflectionUtil.getMethod(nmsItemStack, "getTag");
-		}
+				getNmsItemStackTag = ReflectionUtil.getMethod(nmsItemStack, "getTag");
+
+			} catch (final Throwable t) {
+				if (!isUnsupportedPlatform())
+					CommonCore.error(t, "Failed to find NMS ItemStack.getTag()");
+			}
 
 		try {
 			World.class.getMethod("spawnParticle", org.bukkit.Particle.class, Location.class, int.class);
@@ -658,6 +691,9 @@ public final class Remain {
 	}
 
 	private static boolean isUnsupportedPlatform() {
+		if (ReflectionUtil.isClassAvailable("net.minecraftforge.common.MinecraftForge") || ReflectionUtil.isClassAvailable("net.neoforged.neoforge.common.NeoForge"))
+			return true;
+
 		final String platformName = Platform.getPlatformName();
 
 		return platformName.contains("Arclight") || platformName.contains("Cardboard") || (platformName.contains("CraftBukkit") && MinecraftVersion.atLeast(V.v1_12));

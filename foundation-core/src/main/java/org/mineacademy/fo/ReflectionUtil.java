@@ -1,9 +1,11 @@
 package org.mineacademy.fo;
 
 import java.io.File;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -321,6 +325,63 @@ public final class ReflectionUtil {
 
 			} catch (final Throwable t) {
 			}
+
+		return null;
+	}
+
+	/**
+	 * Get the only non-static declared method with the given return and parameter
+	 * types, walking superclasses. Member names vary by mapping (Mojang, Forge SRG,
+	 * Spigot), the signature does not, so use this to resolve members on servers
+	 * whose member names we cannot know. Returns null when absent or ambiguous.
+	 *
+	 * @param clazz
+	 * @param returnType
+	 * @param parameterTypes
+	 * @return
+	 */
+	public static Method getMethodBySignature(@NonNull final Class<?> clazz, @NonNull final Class<?> returnType, final Class<?>... parameterTypes) {
+		return findUniqueMember(clazz, Class::getDeclaredMethods, method -> method.getReturnType() == returnType && Arrays.equals(method.getParameterTypes(), parameterTypes));
+	}
+
+	/**
+	 * Get the only non-static declared field of the given type, walking superclasses.
+	 * See {@link #getMethodBySignature(Class, Class, Class...)} for when to prefer
+	 * type-based resolution over names. Returns null when absent or ambiguous.
+	 *
+	 * @param clazz
+	 * @param fieldType
+	 * @return
+	 */
+	public static Field getFieldByType(@NonNull final Class<?> clazz, @NonNull final Class<?> fieldType) {
+		return findUniqueMember(clazz, Class::getDeclaredFields, field -> field.getType() == fieldType);
+	}
+
+	/*
+	 * Walk the class hierarchy for the only non-static, non-synthetic member the
+	 * filter accepts, closest declaration wins. Null when absent or ambiguous.
+	 */
+	private static <T extends AccessibleObject & Member> T findUniqueMember(Class<?> clazz, final Function<Class<?>, T[]> extractor, final Predicate<T> filter) {
+		while (clazz != null && !clazz.equals(Object.class)) {
+			T match = null;
+
+			for (final T member : extractor.apply(clazz))
+				if (!member.isSynthetic() && !Modifier.isStatic(member.getModifiers()) && filter.test(member)) {
+
+					if (match != null)
+						return null;
+
+					match = member;
+				}
+
+			if (match != null) {
+				match.setAccessible(true);
+
+				return match;
+			}
+
+			clazz = clazz.getSuperclass();
+		}
 
 		return null;
 	}
