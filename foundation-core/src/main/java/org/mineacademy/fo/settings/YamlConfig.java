@@ -346,12 +346,27 @@ public class YamlConfig extends FileConfig {
 						break;
 					}
 
-				if (hasDiskValue)
-					if (!(diskValue instanceof ConfigSection))
+				ConfigSection diskSection = null;
+
+				if (hasDiskValue) {
+					if (diskValue instanceof ConfigSection)
+						diskSection = (ConfigSection) diskValue;
+
+					// Users empty out sections by writing '[]'. User-managed sections stay
+					// empty, defaults-managed ones cannot, so drop the key there to keep
+					// memory consistent with the defaults this save writes back.
+					else if (diskValue instanceof List && ((List<?>) diskValue).isEmpty()) {
+						if (isUncommentedSection)
+							diskSection = new ConfigSection(section, entry.getKey());
+						else
+							section.store(entry.getKey(), null);
+
+					} else
 						throw new FoException("Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got "
 								+ diskValue.getClass().getSimpleName() + " (If you edited this key, remove it to reset it)", false);
+				}
 
-				value = this.toNodeTreeWithDefaults0((ConfigSection) (hasDiskValue ? diskValue : entry.getValue()), defaults != null ? defaults.retrieveMemorySection(entry.getKey()) : null, !isUncommentedSection);
+				value = this.toNodeTreeWithDefaults0(diskSection != null ? diskSection : innerSection, defaults != null ? defaults.retrieveMemorySection(entry.getKey()) : null, !isUncommentedSection);
 
 			} else
 				value = this.representer.represent(SerializeUtilCore.serialize(Language.YAML, hasDiskValue ? diskValue : entry.getValue()));
