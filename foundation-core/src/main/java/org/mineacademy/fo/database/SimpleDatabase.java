@@ -306,21 +306,14 @@ public class SimpleDatabase {
 			if (!this.isSQLite)
 				this.loadMaxAllowedPacket();
 
-			// Create tables automatically
+			// Create tables automatically, a failure aborts through handleConnectError below
+			// so the plugin never runs half-alive with a connection but no tables
 			for (final Table createdTable : this.getTables()) {
 				final TableCreator creator = new TableCreator(createdTable.getName());
 
-				try {
-					createdTable.onTableCreate(creator);
+				createdTable.onTableCreate(creator);
 
-					this.createTable(creator);
-
-				} catch (final Exception ex) {
-					CommonCore.error(ex, "Error creating table " + createdTable.getName() + ", aborting.");
-					this.disconnect();
-
-					return;
-				}
+				this.createTable(creator);
 			}
 
 			try {
@@ -670,14 +663,14 @@ public class SimpleDatabase {
 			columns += ", PRIMARY KEY (`" + creator.getPrimaryColumn() + "`)";
 
 		try {
-			this.updateUnsafe("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
+			this.updateRaw("CREATE TABLE IF NOT EXISTS `" + creator.getName() + "` (" + columns + ") " + (this.isSQLite ? "" : "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci") + ";");
 
 		} catch (final Throwable t) {
 			if (t.toString().contains("Unknown collation"))
 				CommonCore.log("You need to update your database driver to support utf8mb4_unicode_520_ci collation. This is now required for storing emojis and non-engliish characters.");
 
 			else
-				throw t;
+				CommonCore.sneaky(t);
 		}
 	}
 
@@ -1318,7 +1311,22 @@ public class SimpleDatabase {
 	 * @deprecated Unchecked sql query, prone to SQL injections. You need to perform the validation yourself.
 	 */
 	@Deprecated
-	protected final void updateUnsafe(String sql) {
+	protected final void updateUnsafe(final String sql) {
+		try {
+			this.updateRaw(sql);
+
+		} catch (final SQLException ex) {
+			CommonCore.error(ex,
+					"Error updating database",
+					"Query: " + sql);
+		}
+	}
+
+	/*
+	 * Runs the update, throwing so callers such as table creation can abort
+	 * loudly instead of continuing half-alive on a failed statement.
+	 */
+	private void updateRaw(String sql) throws SQLException {
 		this.ensureConnected();
 
 		sql = this.replaceVariables(sql);
@@ -1329,11 +1337,6 @@ public class SimpleDatabase {
 		try (Connection connection = this.borrowConnection();
 				Statement statement = connection.createStatement()) {
 			statement.executeUpdate(sql);
-
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error updating database",
-					"Query: " + sql);
 		}
 	}
 
