@@ -1738,9 +1738,18 @@ public abstract class CommonCore {
 	}
 
 	/*
-	 * Combines the stack traces of two throwables and logs them.
+	 * Combines the stack traces of two throwables and logs them,
+	 * classifying the throwable the same way error() does.
 	 */
 	private static void logCombinedError(final Throwable throwable, final StackTraceElement[] outerTrace) {
+		Throwable classified = throwable;
+
+		if (classified instanceof InvocationTargetException && classified.getCause() != null)
+			classified = classified.getCause();
+
+		if (classified instanceof HandledException)
+			return;
+
 		final StackTraceElement[] innerTrace = throwable.getStackTrace();
 
 		final StackTraceElement[] combinedTrace = new StackTraceElement[outerTrace.length + innerTrace.length];
@@ -1751,7 +1760,10 @@ public abstract class CommonCore {
 		throwable.setStackTrace(combinedTrace);
 
 		Debugger.printStackTrace(throwable);
-		Debugger.saveError(throwable);
+
+		// FoException decides reporting at construction
+		if (!(classified instanceof FoException))
+			Debugger.saveError(throwable);
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
