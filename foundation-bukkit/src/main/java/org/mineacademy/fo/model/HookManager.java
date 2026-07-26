@@ -210,38 +210,26 @@ public final class HookManager {
 		if (Platform.isPluginInstalled("Essentials"))
 			essentialsHook = new EssentialsHook();
 
-		// Various kinds of Faction plugins.
-		final Plugin factions = Bukkit.getPluginManager().getPlugin("Factions"),
-				factionsUUID = Bukkit.getPluginManager().getPlugin("FactionsUUID");
-
-		if (Platform.isPluginInstalled("FactionsX") && factions == null)
+		// Various kinds of Faction plugins. Forks share plugin names and version schemes,
+		// so pick the flavour from the API classes that are actually on the classpath.
+		if (Platform.isPluginInstalled("FactionsX") && !Platform.isPluginInstalled("Factions"))
 			CommonCore.log("Note: If you want FactionX integration, install FactionsUUIDAPIProxy.");
 
-		else if (factions != null || factionsUUID != null) {
-			if (factionsUUID != null)
+		else if (Platform.isPluginInstalled("Factions") || Platform.isPluginInstalled("FactionsUUID")) {
+			if (ReflectionUtil.isClassAvailable("dev.kitteh.factions.Factions"))
 				factionsHook = new FactionsUUID();
-			else {
-				final String ver = factions.getDescription().getVersion();
-				final String main = factions.getDescription().getMain();
 
-				if (ver.startsWith("1.6") || main.contains("FactionsUUIDAPIProxy"))
-					factionsHook = new FactionsUUID();
-				// Condition commented due to blocking hooks with modern Factions plugins
-				else /*if (ver.startsWith("2."))*/ {
-					Class<?> mplayer = null;
+			// FactionsUUID before the dev.kitteh rewrite, which is the only one running below
+			// MC 1.21.7, and the FactionsUUIDAPIProxy bridge that implements part of it
+			else if (ReflectionUtil.isClassAvailable("com.massivecraft.factions.FPlayers"))
+				factionsHook = new FactionsUUIDLegacy();
 
-					try {
-						mplayer = Class.forName("com.massivecraft.factions.entity.MPlayer"); // only support the free version of the plugin
-					} catch (final ClassNotFoundException ex) {
-					}
+			// Only the free version of MCore Factions is supported
+			else if (ReflectionUtil.isClassAvailable("com.massivecraft.factions.entity.MPlayer"))
+				factionsHook = new FactionsMassive();
 
-					if (mplayer != null)
-						factionsHook = new FactionsMassive();
-					else
-						CommonCore.warning("Recognized MCore Factions, but it isn't hooked! Check if you have the latest version!");
-
-				}
-			}
+			else
+				CommonCore.warning("Found a Factions plugin exposing an API we do not recognize, its integration is disabled. Install FactionsUUID or the free MassiveCraft Factions.");
 		}
 
 		if (Platform.isPluginInstalled("ItemsAdder"))
@@ -3761,6 +3749,137 @@ final class FactionsUUID extends FactionsHook {
 
 			throw new FoException(ex);
 		}
+	}
+}
+
+/*
+ * FactionsUUID before the dev.kitteh rewrite, and the FactionsUUIDAPIProxy bridge for
+ * FactionsX, which implements a subset. They speak the com.massivecraft.factions API,
+ * which we cannot import since the build compiles against FactionsUUID 4, hence
+ * resolving every member reflectively.
+ */
+final class FactionsUUIDLegacy extends FactionsHook {
+
+	private final Class<?> factionsClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Factions");
+	private final Class<?> factionClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Faction");
+	private final Class<?> playersClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FPlayers");
+	private final Class<?> playerClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FPlayer");
+	private final Class<?> boardClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Board");
+	private final Class<?> locationClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FLocation");
+
+	// Resolved against the API types once, since the runtime classes are subclasses that
+	// declare nothing, so a per-call lookup by name walks and throws its way up to them
+	private final Method factionsInstance = ReflectionUtil.getMethod(this.factionsClass, "getInstance");
+	private final Method factionTags = ReflectionUtil.getMethod(this.factionsClass, "getFactionTags");
+	private final Method allFactions = ReflectionUtil.getMethod(this.factionsClass, "getAllFactions");
+	private final Method factionId = ReflectionUtil.getMethod(this.factionClass, "getId");
+	private final Method factionTag = ReflectionUtil.getMethod(this.factionClass, "getTag");
+	private final Method factionAdmin = ReflectionUtil.getMethod(this.factionClass, "getFPlayerAdmin");
+	private final Method relationWish = ReflectionUtil.getMethod(this.factionClass, "getRelationWish", this.factionClass);
+	private final Method playersInstance = ReflectionUtil.getMethod(this.playersClass, "getInstance");
+	private final Method playerByBukkit = ReflectionUtil.getMethod(this.playersClass, "getByPlayer", Player.class);
+	private final Method playerFaction = ReflectionUtil.getMethod(this.playerClass, "getFaction");
+	private final Method playerName = ReflectionUtil.getMethod(this.playerClass, "getName");
+	private final Method boardInstance = ReflectionUtil.getMethod(this.boardClass, "getInstance");
+	private final Method factionAt = ReflectionUtil.getMethod(this.boardClass, "getFactionAt", this.locationClass);
+	private final Constructor<?> locationConstructor = ReflectionUtil.getConstructor(this.locationClass, Location.class);
+
+	@Override
+	public Collection<String> getFactions() {
+		return ReflectionUtil.invoke(this.factionTags, ReflectionUtil.invokeStatic(this.factionsInstance));
+	}
+
+	@Override
+	public String getFaction(final Player player) {
+		final Object faction = this.findFaction(player);
+
+		if (faction == null)
+			return null;
+
+		return ReflectionUtil.invoke(this.factionTag, faction);
+	}
+
+	@Override
+	String getFactionId(final Player player) {
+		final Object faction = this.findFaction(player);
+
+		if (faction == null)
+			return null;
+
+		return ReflectionUtil.invoke(this.factionId, faction);
+	}
+
+	@Override
+	public String getFaction(final Location location) {
+		final Object faction = this.findFaction(location);
+
+		if (faction == null)
+			return null;
+
+		return ReflectionUtil.invoke(this.factionTag, faction);
+	}
+
+	@Override
+	public String getFactionOwner(final Location location) {
+		final Object faction = this.findFaction(location);
+
+		if (faction == null)
+			return null;
+
+		final Object admin = ReflectionUtil.invoke(this.factionAdmin, faction);
+
+		if (admin == null)
+			return null;
+
+		return ReflectionUtil.invoke(this.playerName, admin);
+	}
+
+	@Override
+	List<String> getFactionRelationIDs(final Player player, final String relation) {
+		final List<String> relations = new ArrayList<>();
+
+		// The FactionsUUIDAPIProxy bridge only implements part of the API and has no relations
+		if (this.allFactions == null || this.relationWish == null)
+			return relations;
+
+		final Object playerFaction = this.findFaction(player);
+
+		if (playerFaction == null)
+			return relations;
+
+		final String playerFactionId = ReflectionUtil.invoke(this.factionId, playerFaction);
+		final Collection<?> factions = ReflectionUtil.invoke(this.allFactions, ReflectionUtil.invokeStatic(this.factionsInstance));
+
+		for (final Object faction : factions) {
+			final String factionId = ReflectionUtil.invoke(this.factionId, faction);
+
+			if (factionId.equals(playerFactionId))
+				continue;
+
+			final Enum<?> wish = ReflectionUtil.invoke(this.relationWish, playerFaction, faction);
+
+			if (wish.name().equalsIgnoreCase(relation))
+				relations.add(factionId);
+		}
+
+		return relations;
+	}
+
+	private Object findFaction(final Player player) {
+		final Object players = ReflectionUtil.invokeStatic(this.playersInstance);
+		final Object factionPlayer = ReflectionUtil.invoke(this.playerByBukkit, players, player);
+
+		if (factionPlayer == null)
+			return null;
+
+		return ReflectionUtil.invoke(this.playerFaction, factionPlayer);
+	}
+
+	private Object findFaction(final Location location) {
+		final Object board = ReflectionUtil.invokeStatic(this.boardInstance);
+		final Object factionLocation = ReflectionUtil.instantiate(this.locationConstructor, location);
+
+		return ReflectionUtil.invoke(this.factionAt, board, factionLocation);
 	}
 }
 
