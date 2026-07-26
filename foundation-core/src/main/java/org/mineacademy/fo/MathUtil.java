@@ -33,6 +33,12 @@ public final class MathUtil {
 	private final static DecimalFormat twoDigitsFormat = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
 
 	/**
+	 * Formatter that keeps both decimal points even when they are zero, unlike the
+	 * formatters above which trim them
+	 */
+	private final static DecimalFormat currencyFormat = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.ROOT));
+
+	/**
 	 * Holds all valid roman numbers
 	 */
 	private final static NavigableMap<Integer, String> romanNumbers = new TreeMap<>();
@@ -200,6 +206,17 @@ public final class MathUtil {
 		ValidCore.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
 		return Double.parseDouble(twoDigitsFormat.format(value));
+	}
+
+	/**
+	 * Formats the given number as a currency amount, always keeping two decimal
+	 * points, such as 5 into "5.00". Does not add a currency name or symbol.
+	 *
+	 * @param value
+	 * @return
+	 */
+	public static String formatCurrency(final double value) {
+		return currencyFormat.format(value);
 	}
 
 	/**
