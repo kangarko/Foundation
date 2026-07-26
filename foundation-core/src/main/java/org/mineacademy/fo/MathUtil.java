@@ -1,8 +1,10 @@
 package org.mineacademy.fo;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -23,12 +25,12 @@ public final class MathUtil {
 	/**
 	 * Formatter that transforms whole numbers into whole decimals with 1 decimal point
 	 */
-	private final static DecimalFormat oneDigitFormat = new DecimalFormat("#.#");
+	private final static DecimalFormat oneDigitFormat = new DecimalFormat("#.#", DecimalFormatSymbols.getInstance(Locale.ROOT));
 
 	/**
 	 * Formatter that transforms whole numbers into whole decimals with 2 decimal points
 	 */
-	private final static DecimalFormat twoDigitsFormat = new DecimalFormat("#.##");
+	private final static DecimalFormat twoDigitsFormat = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
 
 	/**
 	 * Holds all valid roman numbers
@@ -163,7 +165,7 @@ public final class MathUtil {
 	 * @return
 	 */
 	public static String formatOneDigit(final double value) {
-		return oneDigitFormat.format(value).replace(",", ".");
+		return oneDigitFormat.format(value);
 	}
 
 	/**
@@ -175,7 +177,7 @@ public final class MathUtil {
 	public static double formatOneDigitD(final double value) {
 		ValidCore.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
-		return Double.parseDouble(oneDigitFormat.format(value).replace(",", "."));
+		return Double.parseDouble(oneDigitFormat.format(value));
 	}
 
 	/**
@@ -185,7 +187,7 @@ public final class MathUtil {
 	 * @return
 	 */
 	public static String formatTwoDigits(final double value) {
-		return twoDigitsFormat.format(value).replace(",", ".");
+		return twoDigitsFormat.format(value);
 	}
 
 	/**
@@ -197,7 +199,7 @@ public final class MathUtil {
 	public static double formatTwoDigitsD(final double value) {
 		ValidCore.checkBoolean(!Double.isNaN(value), "Value must not be NaN");
 
-		return Double.parseDouble(twoDigitsFormat.format(value).replace(",", "."));
+		return Double.parseDouble(twoDigitsFormat.format(value));
 	}
 
 	/**
