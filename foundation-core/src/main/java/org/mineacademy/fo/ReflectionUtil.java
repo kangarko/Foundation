@@ -618,7 +618,9 @@ public final class ReflectionUtil {
 		try {
 			classNameGuard.add(path);
 
-			final Class<?> clazz = Class.forName(path);
+			// Never initialize, matching isClassAvailable, or a class that passed the
+			// availability probe would still blow up here when its initializer throws
+			final Class<?> clazz = Class.forName(path, false, ReflectionUtil.class.getClassLoader());
 
 			classCache.put(path, clazz);
 			reflectionDataCache.computeIfAbsent(clazz, ReflectionData::new);
