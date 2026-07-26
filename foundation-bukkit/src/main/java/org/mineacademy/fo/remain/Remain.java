@@ -481,13 +481,15 @@ public final class Remain {
 
 				// The field failure was already logged above, stay quiet here
 				if (fieldPlayerConnection != null) {
-
-					// send(Packet) is the only void single-Packet method in the connection's
-					// hierarchy under every mapping, and walking superclasses finds it on
-					// ServerCommonPacketListenerImpl where 1.20.2+ moved it
 					final Class<?> packetClass = ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet");
 
-					sendPacket = ReflectionUtil.getMethodBySignature(fieldPlayerConnection.getType(), void.class, packetClass);
+					// Paper 1.20.5 through 1.21.6 also declares a deprecated sendPacket(Packet) alias
+					// next to send(Packet), which makes the signature search ambiguous, so take the
+					// Mojang name first and only search by signature on mappings that rename members
+					sendPacket = ReflectionUtil.getMethod(fieldPlayerConnection.getType(), "send", packetClass);
+
+					if (sendPacket == null)
+						sendPacket = ReflectionUtil.getMethodBySignature(fieldPlayerConnection.getType(), void.class, packetClass);
 
 					if (sendPacket == null)
 						throw new NoSuchMethodException("No void method taking a single Packet parameter found in " + fieldPlayerConnection.getType().getName());
