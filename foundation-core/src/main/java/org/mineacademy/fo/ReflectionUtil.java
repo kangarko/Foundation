@@ -322,8 +322,6 @@ public final class ReflectionUtil {
 
 				if (clazz == null)
 					break;
-
-			} catch (final Throwable t) {
 			}
 
 		return null;
@@ -571,7 +569,9 @@ public final class ReflectionUtil {
 			if (classCache.containsKey(path))
 				return true;
 
-			Class.forName(path);
+			// Never initialize, or probing a plugin that has not enabled yet runs its static
+			// initializers early and leaves the class permanently unusable when they fail
+			Class.forName(path, false, ReflectionUtil.class.getClassLoader());
 
 			return true;
 
