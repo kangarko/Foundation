@@ -181,31 +181,25 @@ public final class HookManager {
 			bossHook = new BossHook();
 
 		if (Platform.isPluginInstalled("Citizens"))
-			try {
-				Class.forName("net.citizensnpcs.api.ai.tree.Behavior");
-
+			if (ReflectionUtil.isClassAvailable("net.citizensnpcs.api.ai.tree.Behavior"))
 				citizensHook = new CitizensHook();
 
-			} catch (final ClassNotFoundException ex) {
+			else
 				CommonCore.logFramed("Failed to hook into Citizens!",
 						"Ensure you're using Citizens 2.0.33+.",
 						"If yes, report this issue to github.com/kangarko/" + Platform.getPlugin().getName() + "/issues");
-			}
 
 		if (Platform.isPluginInstalled("CMI"))
 			CMIHook = new CMIHook();
 
 		if (Platform.isPluginInstalled("DiscordSRV"))
-			try {
-				Class.forName("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel");
-				Class.forName("github.scarsz.discordsrv.util.DiscordUtil");
-
+			if (ReflectionUtil.isClassAvailable("github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel")
+					&& ReflectionUtil.isClassAvailable("github.scarsz.discordsrv.util.DiscordUtil"))
 				discordSRVHook = new DiscordSRVHook();
 
-			} catch (final ClassNotFoundException ex) {
+			else
 				CommonCore.logFramed(BukkitPlugin.getInstance().getName() + " failed to hook into DiscordSRV",
 						"because the plugin is outdated (1.18.x is supported)!");
-			}
 
 		if (Platform.isPluginInstalled("Essentials"))
 			essentialsHook = new EssentialsHook();
@@ -3267,14 +3261,7 @@ class WorldEditHook {
 	public final boolean legacy;
 
 	public WorldEditHook() {
-		boolean ok = false;
-		try {
-			Class.forName("com.sk89q.worldedit.world.World");
-			ok = true;
-		} catch (final ClassNotFoundException e) {
-		}
-
-		this.legacy = !ok;
+		this.legacy = !ReflectionUtil.isClassAvailable("com.sk89q.worldedit.world.World");
 	}
 }
 
@@ -3684,8 +3671,15 @@ final class FactionsUUID extends FactionsHook {
 	public String getFactionOwner(final Location location) {
 		final Object faction = this.findFaction(location);
 
+		if (faction == null)
+			return null;
+
 		try {
-			return faction != null ? ((dev.kitteh.factions.FPlayer) faction.getClass().getMethod("admin").invoke(faction)).name() : null;
+			// The faction admin is nullable, such as for a server faction like Wilderness
+			final dev.kitteh.factions.FPlayer admin = (dev.kitteh.factions.FPlayer) faction.getClass().getMethod("admin").invoke(faction);
+
+			return admin == null ? null : admin.name();
+
 		} catch (final ReflectiveOperationException ex) {
 			ex.printStackTrace();
 
@@ -3760,29 +3754,46 @@ final class FactionsUUID extends FactionsHook {
  */
 final class FactionsUUIDLegacy extends FactionsHook {
 
-	private final Class<?> factionsClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Factions");
-	private final Class<?> factionClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Faction");
-	private final Class<?> playersClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FPlayers");
-	private final Class<?> playerClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FPlayer");
-	private final Class<?> boardClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Board");
-	private final Class<?> locationClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FLocation");
-
 	// Resolved against the API types once, since the runtime classes are subclasses that
 	// declare nothing, so a per-call lookup by name walks and throws its way up to them
-	private final Method factionsInstance = ReflectionUtil.getMethod(this.factionsClass, "getInstance");
-	private final Method factionTags = ReflectionUtil.getMethod(this.factionsClass, "getFactionTags");
-	private final Method allFactions = ReflectionUtil.getMethod(this.factionsClass, "getAllFactions");
-	private final Method factionId = ReflectionUtil.getMethod(this.factionClass, "getId");
-	private final Method factionTag = ReflectionUtil.getMethod(this.factionClass, "getTag");
-	private final Method factionAdmin = ReflectionUtil.getMethod(this.factionClass, "getFPlayerAdmin");
-	private final Method relationWish = ReflectionUtil.getMethod(this.factionClass, "getRelationWish", this.factionClass);
-	private final Method playersInstance = ReflectionUtil.getMethod(this.playersClass, "getInstance");
-	private final Method playerByBukkit = ReflectionUtil.getMethod(this.playersClass, "getByPlayer", Player.class);
-	private final Method playerFaction = ReflectionUtil.getMethod(this.playerClass, "getFaction");
-	private final Method playerName = ReflectionUtil.getMethod(this.playerClass, "getName");
-	private final Method boardInstance = ReflectionUtil.getMethod(this.boardClass, "getInstance");
-	private final Method factionAt = ReflectionUtil.getMethod(this.boardClass, "getFactionAt", this.locationClass);
-	private final Constructor<?> locationConstructor = ReflectionUtil.getConstructor(this.locationClass, Location.class);
+	private final Method factionsInstance;
+	private final Method factionTags;
+	private final Method allFactions;
+	private final Method factionId;
+	private final Method factionTag;
+	private final Method factionAdmin;
+	private final Method relationWish;
+	private final Method playersInstance;
+	private final Method playerByBukkit;
+	private final Method playerFaction;
+	private final Method playerName;
+	private final Method boardInstance;
+	private final Method factionAt;
+	private final Constructor<?> locationConstructor;
+
+	FactionsUUIDLegacy() {
+		final Class<?> factionsClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Factions");
+		final Class<?> factionClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Faction");
+		final Class<?> playersClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FPlayers");
+		final Class<?> playerClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FPlayer");
+		final Class<?> boardClass = ReflectionUtil.lookupClass("com.massivecraft.factions.Board");
+		final Class<?> locationClass = ReflectionUtil.lookupClass("com.massivecraft.factions.FLocation");
+
+		this.factionsInstance = ReflectionUtil.getMethod(factionsClass, "getInstance");
+		this.factionTags = ReflectionUtil.getMethod(factionsClass, "getFactionTags");
+		this.allFactions = ReflectionUtil.getMethod(factionsClass, "getAllFactions");
+		this.factionId = ReflectionUtil.getMethod(factionClass, "getId");
+		this.factionTag = ReflectionUtil.getMethod(factionClass, "getTag");
+		this.factionAdmin = ReflectionUtil.getMethod(factionClass, "getFPlayerAdmin");
+		this.relationWish = ReflectionUtil.getMethod(factionClass, "getRelationWish", factionClass);
+		this.playersInstance = ReflectionUtil.getMethod(playersClass, "getInstance");
+		this.playerByBukkit = ReflectionUtil.getMethod(playersClass, "getByPlayer", Player.class);
+		this.playerFaction = ReflectionUtil.getMethod(playerClass, "getFaction");
+		this.playerName = ReflectionUtil.getMethod(playerClass, "getName");
+		this.boardInstance = ReflectionUtil.getMethod(boardClass, "getInstance");
+		this.factionAt = ReflectionUtil.getMethod(boardClass, "getFactionAt", locationClass);
+		this.locationConstructor = ReflectionUtil.getConstructor(locationClass, Location.class);
+	}
 
 	@Override
 	public Collection<String> getFactions() {
@@ -4134,17 +4145,7 @@ class CitizensHook {
 	private final boolean modernCitizens;
 
 	CitizensHook() {
-		boolean modern;
-
-		try {
-			Class.forName("net.citizensnpcs.api.ai.BehaviorController");
-
-			modern = true;
-		} catch (final ClassNotFoundException ex) {
-			modern = false;
-		}
-
-		this.modernCitizens = modern;
+		this.modernCitizens = ReflectionUtil.isClassAvailable("net.citizensnpcs.api.ai.BehaviorController");
 	}
 
 	boolean isNPC(final Entity entity) {
