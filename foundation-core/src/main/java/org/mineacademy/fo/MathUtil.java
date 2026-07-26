@@ -1,5 +1,6 @@
 package org.mineacademy.fo;
 
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
@@ -37,6 +38,11 @@ public final class MathUtil {
 	 * formatters above which trim them
 	 */
 	private final static DecimalFormat currencyFormat = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.ROOT));
+
+	static {
+		// Money rounds half away from zero, unlike the banker's rounding DecimalFormat defaults to
+		currencyFormat.setRoundingMode(RoundingMode.HALF_UP);
+	}
 
 	/**
 	 * Holds all valid roman numbers
