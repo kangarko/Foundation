@@ -676,8 +676,8 @@ public abstract class CommonCore {
 		else if (object instanceof String)
 			return (String) object;
 
-		else if (object.getClass() == double.class || object.getClass() == float.class)
-			return MathUtil.formatTwoDigits((double) object);
+		else if (object instanceof Double || object instanceof Float)
+			return MathUtil.formatTwoDigits(((Number) object).doubleValue());
 
 		else if (object instanceof Collection)
 			return CommonCore.join((Collection<?>) object, ", ", CommonCore::simplify);
