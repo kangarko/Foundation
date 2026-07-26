@@ -483,10 +483,14 @@ public final class Remain {
 				if (fieldPlayerConnection != null) {
 					final Class<?> packetClass = ReflectionUtil.lookupClass("net.minecraft.network.protocol.Packet");
 
-					// Paper 1.20.5 through 1.21.6 also declares a deprecated sendPacket(Packet) alias
-					// next to send(Packet), which makes the signature search ambiguous, so take the
-					// Mojang name first and only search by signature on mappings that rename members
+					// Paper 1.20.5 through 1.21.6 declares a sendPacket(Packet) alias next to
+					// send(Packet), which makes the signature search ambiguous. Try both names,
+					// since mappings that rename the Mojang one leave the Paper alias alone, and
+					// only search by signature when neither name survived
 					sendPacket = ReflectionUtil.getMethod(fieldPlayerConnection.getType(), "send", packetClass);
+
+					if (sendPacket == null)
+						sendPacket = ReflectionUtil.getMethod(fieldPlayerConnection.getType(), "sendPacket", packetClass);
 
 					if (sendPacket == null)
 						sendPacket = ReflectionUtil.getMethodBySignature(fieldPlayerConnection.getType(), void.class, packetClass);
@@ -606,12 +610,18 @@ public final class Remain {
 			}
 		}
 
-		if (MinecraftVersion.olderThan(V.v1_17)) {
-			final Class<?> chatSerializer = Remain.getNMSClass("IChatBaseComponent$ChatSerializer");
+		if (MinecraftVersion.olderThan(V.v1_17))
+			try {
+				final Class<?> chatSerializer = Remain.getNMSClass("IChatBaseComponent$ChatSerializer");
 
-			fromJSONToNMSComponentmethod = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
+				fromJSONToNMSComponentmethod = ReflectionUtil.getMethod(chatSerializer, "a", String.class);
 
-		} else
+			} catch (final Throwable t) {
+				if (!isUnsupportedPlatform())
+					CommonCore.error(t, "Failed to find NMS ChatSerializer on legacy MC");
+			}
+
+		else
 			try {
 				final Class<?> chatSerializer = Class.forName("net.minecraft.network.chat.IChatBaseComponent$ChatSerializer");
 
@@ -758,7 +768,7 @@ public final class Remain {
 	 */
 	public static void sendPacket(final Player player, final Object packet) {
 		if (sendPacket == null || fieldPlayerConnection == null) {
-			CommonCore.log("Cannot send packet " + packet.getClass() + " (known to be broken on Cauldron).");
+			CommonCore.logTimed(60 * 60, "Cannot send packet " + packet.getClass() + ", this server's connection class could not be resolved on startup. This message only shows once per hour.");
 
 			return;
 		}
