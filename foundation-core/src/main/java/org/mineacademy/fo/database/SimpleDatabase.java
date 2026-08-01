@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
+import java.security.CodeSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -288,7 +289,12 @@ public class SimpleDatabase {
 
 			if (!this.isSQLite) {
 				config.setMaxLifetime(this.maxLifetimeMs);
-				config.setKeepaliveTime(this.keepaliveMs);
+
+				try {
+					config.setKeepaliveTime(this.keepaliveMs);
+				} catch (final NoSuchMethodError err) {
+					// Ignore, unrelocated old hikaricp in another plugin jar
+				}
 			}
 
 			final int effectivePoolSize = this.isSQLite ? POOL_SIZE_SQLITE : this.poolSize;
