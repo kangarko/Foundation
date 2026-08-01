@@ -5,6 +5,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.SerializeUtil;
+import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.HookManager;
 import org.mineacademy.fo.model.SimpleExpansion;
@@ -76,7 +77,7 @@ final class BukkitPlaceholders extends SimpleExpansion {
 			return player == null ? "" : String.valueOf(Remain.getPing(player));
 
 		else if ("player_health".equals(identifier))
-			return player == null ? "" : String.valueOf(Remain.getHealth(player));
+			return player == null ? "" : MathUtil.formatTwoDigits(player.getHealth());
 
 		else if ("player_health_colorized".equals(identifier))
 			return player == null ? "" : formatHealth(player);
@@ -104,9 +105,9 @@ final class BukkitPlaceholders extends SimpleExpansion {
 	 * Formats the {health} variable
 	 */
 	private static String formatHealth(final Player player) {
-		final int health = Remain.getHealth(player);
+		final double health = player.getHealth();
 
-		return (health > 10 ? CompChatColor.DARK_GREEN : health > 5 ? CompChatColor.GOLD : CompChatColor.RED) + "" + health + CompChatColor.RESET;
+		return (health > 10 ? CompChatColor.DARK_GREEN : health > 5 ? CompChatColor.GOLD : CompChatColor.RED) + "" + MathUtil.formatTwoDigits(health) + CompChatColor.RESET;
 	}
 
 	@Override

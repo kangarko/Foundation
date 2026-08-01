@@ -155,16 +155,6 @@ public final class Remain {
 	private static boolean isGetPlayersCollection = false;
 
 	/**
-	 * The get player health method stored here for performance
-	 */
-	private static Method getHealthMethod;
-
-	/**
-	 * Does the current server version get player health as a double?
-	 */
-	private static boolean isGetHealthDouble = false;
-
-	/**
 	 * The EntityPlayer.playerConnection method
 	 */
 	private static Field fieldPlayerConnection;
@@ -436,12 +426,6 @@ public final class Remain {
 			CommonCore.error(t, "Failed to find Bukkit.getOnlinePlayers()");
 		}
 
-		try {
-			getHealthMethod = LivingEntity.class.getMethod("getHealth");
-			isGetHealthDouble = getHealthMethod.getReturnType() == double.class;
-		} catch (final Throwable t) {
-			CommonCore.error(t, "Failed to find LivingEntity.getHealth()");
-		}
 
 		try {
 			if (isUsingMojangMappings) {
@@ -725,39 +709,19 @@ public final class Remain {
 	}
 
 	/**
-	 * Returns the health of an entity
+	 * Return the max health of an entity. For the current health, call
+	 * {@link LivingEntity#getHealth()} directly, it works on all supported versions.
 	 *
-	 * @param entity the entity
-	 * @return the health
-	 */
-	public static int getHealth(final LivingEntity entity) {
-		return isGetHealthDouble ? (int) entity.getHealth() : ReflectionUtil.invoke(getHealthMethod, entity);
-	}
-
-	/**
-	 * Return the max health of an entity
+	 * This is the single place we call the deprecated Bukkit method, which works
+	 * from 1.8.8 to the present and returns the live attribute value including
+	 * modifiers. Should Bukkit ever remove it, only this body needs changing.
 	 *
 	 * @param entity
-	 * @return
+	 * @return the max health
 	 */
-	public static int getMaxHealth(final LivingEntity entity) {
-		if (isGetHealthDouble)
-			return (int) entity.getMaxHealth();
-
-		try {
-			final Object number = LivingEntity.class.getMethod("getMaxHealth").invoke(entity);
-
-			if (number instanceof Double)
-				return ((Double) number).intValue();
-
-			if (number instanceof Integer)
-				return (Integer) number;
-
-			return (int) Double.parseDouble(number.toString());
-
-		} catch (final ReflectiveOperationException ex) {
-			throw new FoException(ex, "Reflection malfunction");
-		}
+	@SuppressWarnings("deprecation")
+	public static double getMaxHealth(final LivingEntity entity) {
+		return entity.getMaxHealth();
 	}
 
 	/**

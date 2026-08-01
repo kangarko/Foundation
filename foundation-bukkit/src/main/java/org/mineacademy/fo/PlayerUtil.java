@@ -477,7 +477,7 @@ public final class PlayerUtil {
 				"content", player.getInventory().getContents(),
 				"armorContent", player.getInventory().getArmorContents(),
 				"maxHealth", Remain.getMaxHealth(player),
-				"health", Remain.getHealth(player),
+				"health", player.getHealth(),
 				"healthScaled", player.isHealthScaled(),
 				"remainingAir", player.getRemainingAir(),
 				"maximumAir", player.getMaximumAir(),
@@ -543,8 +543,8 @@ public final class PlayerUtil {
 		player.setGameMode(data.get("gameMode", GameMode.class));
 		player.getInventory().setContents((ItemStack[]) data.getObject("content"));
 		player.getInventory().setArmorContents((ItemStack[]) data.getObject("armorContent"));
-		player.setMaxHealth(data.getInteger("maxHealth"));
-		player.setHealth(data.getInteger("health"));
+		player.setMaxHealth(data.getDouble("maxHealth"));
+		player.setHealth(data.getDouble("health"));
 		player.setHealthScaled(data.getBoolean("healthScaled"));
 		player.setRemainingAir(data.getInteger("remainingAir"));
 		player.setMaximumAir(data.getInteger("maximumAir"));

@@ -388,7 +388,7 @@ public final class EntityUtil {
 		final Entity entity = world.spawnEntity(location, type);
 		ValidCore.checkBoolean(entity instanceof LivingEntity, "Cannot use getDefaultHealth for non-living entity: " + type);
 
-		final double health = Remain.getHealth((LivingEntity) entity);
+		final double health = ((LivingEntity) entity).getHealth();
 
 		entity.remove();
 		return health;
