@@ -63,8 +63,10 @@ public final class HealthBarUtil {
 	 * @param damage
 	 */
 	public static void display(final Player displayTo, final LivingEntity displayAbout, final SimpleComponent component, final double damage) {
-		final int maxHealth = Remain.getMaxHealth(displayAbout);
-		final int health = Remain.getHealth(displayAbout);
+
+		// Ceil so a living entity below 1 HP still shows one bar instead of the death message
+		final int maxHealth = (int) Math.round(Remain.getMaxHealth(displayAbout));
+		final int health = (int) Math.ceil(displayAbout.getHealth());
 
 		Platform.toPlayer(displayTo).sendActionBar((component == null || component.isEmpty() ? SimpleComponent.fromPlain(ChatUtil.capitalizeFully(displayAbout.getType())) : component)
 				.appendMiniAmpersand(" - " + getHealthMessage(health, maxHealth, (int) damage)));
