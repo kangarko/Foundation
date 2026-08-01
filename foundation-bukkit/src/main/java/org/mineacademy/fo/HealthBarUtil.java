@@ -6,7 +6,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.remain.Remain;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -65,7 +64,7 @@ public final class HealthBarUtil {
 	public static void display(final Player displayTo, final LivingEntity displayAbout, final SimpleComponent component, final double damage) {
 
 		// Ceil so a living entity below 1 HP still shows one bar instead of the death message
-		final int maxHealth = (int) Math.round(Remain.getMaxHealth(displayAbout));
+		final int maxHealth = (int) Math.round(displayAbout.getMaxHealth());
 		final int health = (int) Math.ceil(displayAbout.getHealth());
 
 		Platform.toPlayer(displayTo).sendActionBar((component == null || component.isEmpty() ? SimpleComponent.fromPlain(ChatUtil.capitalizeFully(displayAbout.getType())) : component)

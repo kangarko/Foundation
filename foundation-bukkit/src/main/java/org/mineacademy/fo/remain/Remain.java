@@ -709,22 +709,6 @@ public final class Remain {
 	}
 
 	/**
-	 * Return the max health of an entity. For the current health, call
-	 * {@link LivingEntity#getHealth()} directly, it works on all supported versions.
-	 *
-	 * This is the single place we call the deprecated Bukkit method, which works
-	 * from 1.8.8 to the present and returns the live attribute value including
-	 * modifiers. Should Bukkit ever remove it, only this body needs changing.
-	 *
-	 * @param entity
-	 * @return the max health
-	 */
-	@SuppressWarnings("deprecation")
-	public static double getMaxHealth(final LivingEntity entity) {
-		return entity.getMaxHealth();
-	}
-
-	/**
 	 * Advanced: Sends a packet to the player
 	 *
 	 * @param player the player
