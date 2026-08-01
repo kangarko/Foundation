@@ -476,7 +476,7 @@ public final class PlayerUtil {
 				"gameMode", player.getGameMode(),
 				"content", player.getInventory().getContents(),
 				"armorContent", player.getInventory().getArmorContents(),
-				"maxHealth", Remain.getMaxHealth(player),
+				"maxHealth", player.getMaxHealth(),
 				"health", player.getHealth(),
 				"healthScaled", player.isHealthScaled(),
 				"remainingAir", player.getRemainingAir(),
