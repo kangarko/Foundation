@@ -21,6 +21,7 @@ import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.model.ConfigSerializable;
 import org.mineacademy.fo.remain.CompMaterial;
+import org.mineacademy.fo.remain.Remain;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -302,7 +303,7 @@ public class Region implements ConfigSerializable {
 		toTeleportLocation.setYaw(playerLocation.getYaw());
 		toTeleportLocation.setPitch(playerLocation.getPitch());
 
-		player.teleport(this.getHighestLocation(toTeleportLocation));
+		Remain.teleport(player, this.getHighestLocation(toTeleportLocation));
 	}
 
 	/**
