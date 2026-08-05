@@ -462,6 +462,8 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 			this.internalPostEnable();
 
 		} catch (final Throwable t) {
+			this.loadingFailed = true;
+
 			this.displayError(t);
 
 		} finally {
