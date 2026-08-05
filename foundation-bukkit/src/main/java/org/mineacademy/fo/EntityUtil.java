@@ -30,6 +30,7 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
@@ -166,6 +167,33 @@ public final class EntityUtil {
 			target = HookManager.getNPCTarget(entity);
 
 		return target;
+	}
+
+	/**
+	 * Return the player behind the given damager entity: the player himself, the shooter
+	 * of a projectile, the igniter of a primed TNT (following a flaming arrow back to its
+	 * shooter) or the owner of a tamed animal.
+	 *
+	 * @param damager typically from EntityDamageByEntityEvent#getDamager()
+	 * @return the attacking player, or null if the damage cannot be attributed to one
+	 */
+	public static Player findPlayerAttacker(final Entity damager) {
+		if (damager instanceof Player)
+			return (Player) damager;
+
+		if (damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof Player)
+			return (Player) ((Projectile) damager).getShooter();
+
+		if (damager instanceof TNTPrimed) {
+			final Entity source = ((TNTPrimed) damager).getSource();
+
+			return source != null && source != damager ? findPlayerAttacker(source) : null;
+		}
+
+		if (damager instanceof Tameable && ((Tameable) damager).getOwner() instanceof Player)
+			return (Player) ((Tameable) damager).getOwner();
+
+		return null;
 	}
 
 	/**
