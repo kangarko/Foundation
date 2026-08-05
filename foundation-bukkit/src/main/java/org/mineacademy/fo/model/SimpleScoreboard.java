@@ -19,6 +19,7 @@ import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.remain.Remain;
 
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -64,6 +65,12 @@ public class SimpleScoreboard {
 	 * Whether the Folia unsupported warning was already printed.
 	 */
 	private static boolean foliaWarned = false;
+
+	/**
+	 * Whether the server supports hiding the right-side red score numbers,
+	 * added in the Paper API for Minecraft 1.20.3.
+	 */
+	private static boolean hasNumberFormat = true;
 
 	/**
 	 * Cache flags for performance purposes.
@@ -477,6 +484,14 @@ public class SimpleScoreboard {
 
 			mainboard.setDisplayName(colorizedTitle);
 			mainboard.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+			if (hasNumberFormat)
+				try {
+					mainboard.numberFormat(NumberFormat.blank());
+
+				} catch (final NoClassDefFoundError | NoSuchMethodError err) {
+					hasNumberFormat = false;
+				}
 		}
 
 		if (!mainboard.getDisplayName().equals(colorizedTitle))
