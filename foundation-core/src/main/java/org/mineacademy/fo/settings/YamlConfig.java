@@ -19,6 +19,7 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.SerializeUtilCore;
 import org.mineacademy.fo.SerializeUtilCore.Language;
+import org.mineacademy.fo.collection.SerializedMap;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.snakeyaml.engine.v2.api.Dump;
@@ -361,9 +362,24 @@ public class YamlConfig extends FileConfig {
 						else
 							section.store(entry.getKey(), null);
 
-					} else
-						throw new FoException("Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got "
-								+ diskValue.getClass().getSimpleName() + " (If you edited this key, remove it to reset it)", false);
+					} else {
+
+						// The memory can hold a deserialized object at a section position,
+						// e.g. when get(path, ConfigSerializable.class) injected a missing
+						// default. Serialize it back so the section tree can be written.
+						final Object serialized = SerializeUtilCore.serialize(Language.YAML, diskValue);
+						final Map<?, ?> serializedMap = serialized instanceof SerializedMap ? ((SerializedMap) serialized).asMap() : serialized instanceof Map ? (Map<?, ?>) serialized : null;
+
+						if (serializedMap != null) {
+							diskSection = new ConfigSection(section, entry.getKey());
+
+							for (final Map.Entry<?, ?> serializedEntry : serializedMap.entrySet())
+								diskSection.store(serializedEntry.getKey().toString(), serializedEntry.getValue());
+
+						} else
+							throw new FoException("Expected " + entry.getKey() + " in " + this.getFile() + " to be a Map, got "
+									+ diskValue.getClass().getSimpleName() + " (If you edited this key, remove it to reset it)", false);
+					}
 				}
 
 				value = this.toNodeTreeWithDefaults0(diskSection != null ? diskSection : innerSection, defaults != null ? defaults.retrieveMemorySection(entry.getKey()) : null, !isUncommentedSection);
