@@ -188,10 +188,15 @@ public abstract class Countdown implements Runnable {
 	}
 
 	/**
-	 * Cancels this countdown, failing if it is not scheduled (use {@link #isRunning()})
+	 * Cancels this countdown, doing nothing if it is not scheduled. The null check
+	 * makes concurrent cancellation safe: the final tick cancels the task itself,
+	 * which can race an outside cancel() call on multithreaded platforms.
 	 */
 	public final void cancel() {
-		this.task.cancel();
+		final Task task = this.task;
+
+		if (task != null)
+			task.cancel();
 
 		this.task = null;
 		this.secondsSinceStart = 0;
