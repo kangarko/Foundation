@@ -166,10 +166,10 @@ public abstract class SimpleHologram {
 	private void tick() {
 
 		if (this.pendingTeleport != null) {
-			this.entity.teleport(this.pendingTeleport);
+			Remain.teleport(this.entity, this.pendingTeleport);
 
 			for (final ArmorStand loreEntity : this.loreEntities)
-				loreEntity.teleport(this.pendingTeleport);
+				Remain.teleport(loreEntity, this.pendingTeleport);
 
 			this.pendingTeleport = null;
 			return;

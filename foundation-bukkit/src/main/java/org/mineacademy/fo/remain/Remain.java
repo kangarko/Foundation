@@ -2002,7 +2002,7 @@ public final class Remain {
 	 * @param block
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Block block) {
-		Platform.runTask(delayTicks, () -> sendBlockChange0(player, block));
+		Platform.runTask(delayTicks, () -> runLocationTask(block.getLocation(), () -> sendBlockChange0(player, block)));
 	}
 
 	/**
@@ -2015,7 +2015,7 @@ public final class Remain {
 	 * @param material   the material
 	 */
 	public static void sendBlockChange(final int delayTicks, final Player player, final Location location, final CompMaterial material) {
-		Platform.runTask(delayTicks, () -> sendBlockChange0(player, location, material));
+		Platform.runTask(delayTicks, () -> runLocationTask(location, () -> sendBlockChange0(player, location, material)));
 	}
 
 	private static void sendBlockChange0(final Player player, final Block block) {
@@ -3381,6 +3381,20 @@ public final class Remain {
 			nbt.removeKey("CustomNameVisible");
 			nbt.removeKey("CustomName");
 		}
+	}
+
+	/**
+	 * Teleports the entity to the given location, using teleportAsync on Folia
+	 * where a synchronous teleport throws when crossing region threads.
+	 *
+	 * @param entity
+	 * @param location
+	 */
+	public static void teleport(final Entity entity, final Location location) {
+		if (isFolia())
+			entity.teleportAsync(location);
+		else
+			entity.teleport(location);
 	}
 
 	/**
