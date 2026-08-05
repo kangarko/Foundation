@@ -1,9 +1,9 @@
 package org.mineacademy.fo.visual;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -32,9 +32,10 @@ import lombok.Setter;
 public final class Visualizer {
 
 	/**
-	 * Stores a map of currently visualized blocks.
+	 * Stores a map of currently visualized blocks. Concurrent because on Folia the
+	 * visualization work runs on each block's owning region thread.
 	 */
-	private static final Map<Location, OwnedVisualizedBlock> visualizedBlocks = new HashMap<>();
+	private static final Map<Location, OwnedVisualizedBlock> visualizedBlocks = new ConcurrentHashMap<>();
 
 	@Getter
 	@Setter
@@ -64,16 +65,19 @@ public final class Visualizer {
 		ValidCore.checkBoolean(!isVisualized(block), "Block at " + block.getLocation() + " already visualized");
 		final Location location = block.getLocation();
 
-		final FallingBlock falling = spawnFallingBlock(location, mask, blockName);
+		// The falling block spawn and world reads must happen on the block's owning region thread on Folia
+		Remain.runLocationTask(location, () -> {
+			final FallingBlock falling = spawnFallingBlock(location, mask, blockName);
 
-		// Also send the block change packet to barrier (fixes lightning glitches)
-		for (final Player player : block.getWorld().getPlayers())
-			Remain.sendBlockChange(2, player, location, MinecraftVersion.olderThan(V.v1_9) ? mask : CompMaterial.BARRIER);
+			// Also send the block change packet to barrier (fixes lightning glitches)
+			for (final Player player : block.getWorld().getPlayers())
+				Remain.sendBlockChange(2, player, location, MinecraftVersion.olderThan(V.v1_9) ? mask : CompMaterial.BARRIER);
 
-		visualizedBlocks.put(location, new OwnedVisualizedBlock(falling == null ? false : falling, initiator.getUniqueId()));
+			visualizedBlocks.put(location, new OwnedVisualizedBlock(falling == null ? false : falling, initiator.getUniqueId()));
 
-		// Remove the block after 10 seconds
-		Platform.runTask(20 * 10, () -> stopVisualizing(block));
+			// Remove the block after 10 seconds
+			Platform.runTask(20 * 10, () -> stopVisualizing(block));
+		});
 	}
 
 	/*
@@ -122,18 +126,10 @@ public final class Visualizer {
 	 * @param block
 	 */
 	public static void stopVisualizing(@NonNull final Block block) {
-		if (isVisualized(block)) {
-			final OwnedVisualizedBlock owned = visualizedBlocks.remove(block.getLocation());
-			final Object fallingBlock = owned.getFallingBlock();
+		final OwnedVisualizedBlock owned = visualizedBlocks.remove(block.getLocation());
 
-			// Mark the entity for removal on the next tick
-			if (fallingBlock instanceof FallingBlock)
-				((FallingBlock) fallingBlock).remove();
-
-			// Then restore the client's block back to normal
-			for (final Player player : block.getWorld().getPlayers())
-				Remain.sendBlockChange(1, player, block);
-		}
+		if (owned != null)
+			removeVisual(block.getLocation(), owned.getFallingBlock());
 	}
 
 	/**
@@ -149,19 +145,28 @@ public final class Visualizer {
 			final OwnedVisualizedBlock owned = entry.getValue();
 
 			if (owned.getCreatorPlayerUid().equals(playerUid)) {
-				final Block block = entry.getKey().getBlock();
-
-				// Mark the entity for removal on the next tick
-				if (owned.getFallingBlock() instanceof FallingBlock)
-					((FallingBlock) owned.getFallingBlock()).remove();
-
-				// Then restore the client's block back to normal
-				for (final Player worldPlayer : entry.getKey().getWorld().getPlayers())
-					Remain.sendBlockChange(1, worldPlayer, block);
-
 				iterator.remove();
+
+				removeVisual(entry.getKey(), owned.getFallingBlock());
 			}
 		}
+	}
+
+	/*
+	 * Removes the falling block and restores the real block on the location's
+	 * owning region thread, since on Folia the caller may be the global thread.
+	 */
+	private static void removeVisual(final Location location, final Object fallingBlock) {
+		Remain.runLocationTask(location, () -> {
+
+			// Mark the entity for removal on the next tick
+			if (fallingBlock instanceof FallingBlock)
+				((FallingBlock) fallingBlock).remove();
+
+			// Then restore the client's block back to normal
+			for (final Player player : location.getWorld().getPlayers())
+				Remain.sendBlockChange(1, player, location.getBlock());
+		});
 	}
 
 	/**

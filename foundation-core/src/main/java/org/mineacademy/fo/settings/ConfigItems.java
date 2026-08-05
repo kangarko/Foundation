@@ -3,11 +3,11 @@ package org.mineacademy.fo.settings;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -33,11 +33,13 @@ import lombok.NonNull;
 public final class ConfigItems<T extends YamlConfig> {
 
 	/**
-	 * A map and a list of all loaded items for performance
+	 * A map and a list of all loaded items for performance. Concurrent because on Folia
+	 * items are read and mutated from different region threads, such as RegionTracker
+	 * iterating disk regions every second while a command thread creates one.
 	 */
-	private final Map<String, T> loadedItemsMap = new HashMap<>();
-	private List<T> items = new ArrayList<>(); // non final, can be sorted later
-	private final List<String> itemNames = new ArrayList<>();
+	private final Map<String, T> loadedItemsMap = new ConcurrentHashMap<>();
+	private List<T> items = new CopyOnWriteArrayList<>(); // non final, can be sorted later
+	private final List<String> itemNames = new CopyOnWriteArrayList<>();
 
 	/**
 	 * The item type this class stores, such as "variable, "format", or "arena class"
