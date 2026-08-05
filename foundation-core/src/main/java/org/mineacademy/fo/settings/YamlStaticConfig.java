@@ -162,6 +162,12 @@ public abstract class YamlStaticConfig {
 			return;
 
 		for (final Field field : clazz.getDeclaredFields()) {
+
+			// Skip compiler and tooling bookkeeping such as Eclipse ECJ's lazily
+			// initialized $SWITCH_TABLE$ fields for switches over enums.
+			if (field.isSynthetic())
+				continue;
+
 			field.setAccessible(true);
 
 			if (Modifier.isPublic(field.getModifiers()))
