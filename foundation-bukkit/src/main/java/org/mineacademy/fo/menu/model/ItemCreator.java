@@ -816,6 +816,11 @@ public final class ItemCreator {
 						coloredLores.add(split);
 				}
 
+				// Drop trailing blank lines so conditional lore entries rendered as "" do not
+				// leave a dangling empty row at the bottom of the tooltip.
+				while (!coloredLores.isEmpty() && coloredLores.get(coloredLores.size() - 1).replaceAll("§.", "").trim().isEmpty())
+					coloredLores.remove(coloredLores.size() - 1);
+
 				((ItemMeta) compiledMeta).setLore(coloredLores);
 			}
 		}
