@@ -1139,6 +1139,8 @@ public abstract class FileConfig extends ConfigSection {
 					} catch (final MissingEnumException ex) {
 						CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of List<" + typeOf.getSimpleName() + "> because one of the list elements should be of '" + typeOf.getSimpleName() + "' but is invalid or not compatible with your server version. Skipping it.");
 						ex.printStackTrace();
+
+						continue;
 					}
 
 					if (object != null)
