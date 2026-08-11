@@ -623,7 +623,8 @@ public final class Lang {
 							legacyList.add(component.toLegacySection(null));
 
 						} else {
-							ValidCore.checkBoolean(element != null && !element.isJsonNull(), "Missing element in array for lang key " + key + "! Make sure to remove ',' at the end of the list");
+							if (element == null || element.isJsonNull())
+								throw new FoException("Missing element in the array for lang key " + key + " in your lang/" + SimpleSettings.LOCALE + ".json file! Remove the trailing ',' or the empty element from the list.", false);
 
 							CommonCore.warning("Invalid element in array for lang key " + key + ": " + element + ", only Strings and primitives are supported");
 						}
@@ -633,7 +634,8 @@ public final class Lang {
 					legacyCache.put(key, String.join("\n", legacyList));
 
 				} else {
-					ValidCore.checkBoolean(value != null && !value.isJsonNull(), "Missing element for lang key " + key + ", check for trailing commas");
+					if (value == null || value.isJsonNull())
+						throw new FoException("Missing value for lang key " + key + " in your lang/" + SimpleSettings.LOCALE + ".json file! Remove the trailing ',' or the empty value.", false);
 
 					CommonCore.warning("Invalid element for lang key " + key + ": " + value + ", only Strings, primitives and arrays are supported");
 				}
