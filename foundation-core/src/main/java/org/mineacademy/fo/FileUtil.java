@@ -148,8 +148,12 @@ public final class FileUtil {
 			dataFolder.mkdirs();
 
 		final String finalExtension = extension;
+		final File[] files = dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
 
-		return dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+		if (files == null)
+			throw new FoException("Unable to read the '" + directory + "' folder in " + dataFolder.getAbsolutePath() + ". Make sure it is a folder, not a file, that your disk is not full and that the server has permission to read it.", false);
+
+		return files;
 	}
 
 	/**
