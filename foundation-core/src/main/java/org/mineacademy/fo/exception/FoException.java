@@ -21,12 +21,20 @@ public class FoException extends RuntimeException {
 	private static boolean errorSavedAutomatically = true;
 
 	/**
+	 * Should the user report this error to us? Errors caused by the user, such as an invalid
+	 * configuration, are created with report=false and must not ask him to report them back.
+	 */
+	private final boolean report;
+
+	/**
 	 * Create a new exception and logs it
 	 *
 	 * @param t
 	 */
 	public FoException(final Throwable t) {
 		super(t);
+
+		this.report = true;
 
 		if (errorSavedAutomatically)
 			Debugger.saveError(t);
@@ -40,6 +48,8 @@ public class FoException extends RuntimeException {
 	public FoException(final String message) {
 		super(message);
 
+		this.report = true;
+
 		if (errorSavedAutomatically)
 			Debugger.saveError(this, message);
 	}
@@ -52,6 +62,8 @@ public class FoException extends RuntimeException {
 	 */
 	public FoException(final String message, final boolean report) {
 		super(message);
+
+		this.report = report;
 
 		if (errorSavedAutomatically && report)
 			Debugger.saveError(this, message);
@@ -76,6 +88,8 @@ public class FoException extends RuntimeException {
 	public FoException(final Throwable t, final String message) {
 		super(message, t);
 
+		this.report = true;
+
 		if (errorSavedAutomatically)
 			Debugger.saveError(t, message);
 	}
@@ -90,6 +104,8 @@ public class FoException extends RuntimeException {
 	public FoException(final Throwable t, final String message, final boolean report) {
 		super(message, t);
 
+		this.report = report;
+
 		if (errorSavedAutomatically && report)
 			Debugger.saveError(t, message);
 	}
@@ -98,12 +114,14 @@ public class FoException extends RuntimeException {
 	 * Create a new exception and logs it
 	 */
 	public FoException() {
+		this.report = true;
+
 		if (errorSavedAutomatically)
 			Debugger.saveError(this);
 	}
 
 	@Override
 	public String getMessage() {
-		return "Report: " + super.getMessage();
+		return this.report ? "Report: " + super.getMessage() : super.getMessage();
 	}
 }
