@@ -4730,6 +4730,10 @@ class NexoHook {
 	private Method getTagConfigMethod;
 	private Method getPlaceholdersMethod;
 	private Method getUnicodesMethod;
+	private Method getGlyphConfigsMethod;
+	private Method configPlayerPlaceholderMethod;
+	private Method configPlaceholderMethod;
+	private Method configTagMethod;
 	private boolean failed = false;
 
 	NexoHook() {
@@ -4738,14 +4742,25 @@ class NexoHook {
 			final Class<?> fontManagerClass = ReflectionUtil.lookupClass("com.nexomc.nexo.fonts.FontManager");
 			final Class<?> glyphClass = ReflectionUtil.lookupClass("com.nexomc.nexo.glyphs.Glyph");
 
-			this.instanceMethod = ReflectionUtil.getMethod(nexoPluginClass, "instance");
-			this.fontManagerMethod = ReflectionUtil.getMethod(nexoPluginClass, "fontManager");
-			this.glyphsMethod = ReflectionUtil.getMethod(fontManagerClass, "glyphs");
-			this.getPermissionMethod = ReflectionUtil.getMethod(glyphClass, "getPermission");
+			this.instanceMethod = this.resolveMethod(nexoPluginClass, "instance");
+			this.fontManagerMethod = this.resolveMethod(nexoPluginClass, "fontManager");
+			this.glyphsMethod = this.resolveMethod(fontManagerClass, "glyphs");
+			this.getPermissionMethod = this.resolveMethod(glyphClass, "getPermission");
+			this.getPlaceholdersMethod = this.resolveMethod(glyphClass, "getPlaceholders");
+			this.getUnicodesMethod = this.resolveMethod(glyphClass, "getUnicodes");
+
 			this.getPlaceholderConfigMethod = ReflectionUtil.getMethod(glyphClass, "getPlaceholderConfig");
 			this.getTagConfigMethod = ReflectionUtil.getMethod(glyphClass, "getTagConfig");
-			this.getPlaceholdersMethod = ReflectionUtil.getMethod(glyphClass, "getPlaceholders");
-			this.getUnicodesMethod = ReflectionUtil.getMethod(glyphClass, "getUnicodes");
+
+			// Nexo 1.27.0+ moved the per-glyph replacement configs to FontManager#getGlyphConfigs()
+			if (this.getPlaceholderConfigMethod == null || this.getTagConfigMethod == null) {
+				final Class<?> configsClass = ReflectionUtil.lookupClass("com.nexomc.nexo.glyphs.GlyphReplacementConfigs");
+
+				this.getGlyphConfigsMethod = this.resolveMethod(fontManagerClass, "getGlyphConfigs");
+				this.configPlayerPlaceholderMethod = this.resolveMethod(configsClass, "playerPlaceholderConfig", Player.class);
+				this.configPlaceholderMethod = this.resolveMethod(configsClass, "getPlaceholderConfig");
+				this.configTagMethod = this.resolveMethod(configsClass, "getTagConfig");
+			}
 
 		} catch (final Throwable t) {
 			CommonCore.warning("Unable to resolve Nexo API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
@@ -4761,19 +4776,37 @@ class NexoHook {
 
 		Component adventure = component.toAdventure(null);
 
-		for (final Object glyph : this.loadGlyphs()) {
-			if (!this.canSee(player, glyph))
-				continue;
+		if (this.getGlyphConfigsMethod != null) {
+			final Object glyphConfigs = ReflectionUtil.invoke(this.getGlyphConfigsMethod, this.loadFontManager());
+			final TextReplacementConfig placeholderConfig;
 
-			final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.getPlaceholderConfigMethod, glyph);
-			final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.getTagConfigMethod, glyph);
+			if (player != null)
+				placeholderConfig = ReflectionUtil.invoke(this.configPlayerPlaceholderMethod, glyphConfigs, player);
+			else
+				placeholderConfig = ReflectionUtil.invoke(this.configPlaceholderMethod, glyphConfigs);
+
+			final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.configTagMethod, glyphConfigs);
 
 			if (placeholderConfig != null)
 				adventure = adventure.replaceText(placeholderConfig);
 
 			if (tagConfig != null)
 				adventure = adventure.replaceText(tagConfig);
-		}
+
+		} else
+			for (final Object glyph : this.loadGlyphs()) {
+				if (!this.canSee(player, glyph))
+					continue;
+
+				final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.getPlaceholderConfigMethod, glyph);
+				final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.getTagConfigMethod, glyph);
+
+				if (placeholderConfig != null)
+					adventure = adventure.replaceText(placeholderConfig);
+
+				if (tagConfig != null)
+					adventure = adventure.replaceText(tagConfig);
+			}
 
 		return SimpleComponent.fromAdventure(adventure);
 	}
@@ -4806,10 +4839,13 @@ class NexoHook {
 	}
 
 	private Collection<?> loadGlyphs() {
-		final Object plugin = ReflectionUtil.invokeStatic(this.instanceMethod);
-		final Object fontManager = ReflectionUtil.invoke(this.fontManagerMethod, plugin);
+		return ReflectionUtil.invoke(this.glyphsMethod, this.loadFontManager());
+	}
 
-		return ReflectionUtil.invoke(this.glyphsMethod, fontManager);
+	private Object loadFontManager() {
+		final Object plugin = ReflectionUtil.invokeStatic(this.instanceMethod);
+
+		return ReflectionUtil.invoke(this.fontManagerMethod, plugin);
 	}
 
 	private boolean canSee(final Player player, final Object glyph) {
@@ -4819,6 +4855,15 @@ class NexoHook {
 		final String permission = ReflectionUtil.invoke(this.getPermissionMethod, glyph);
 
 		return permission == null || permission.isEmpty() || player.hasPermission(permission);
+	}
+
+	private Method resolveMethod(final Class<?> clazz, final String methodName, final Class<?>... args) {
+		final Method method = ReflectionUtil.getMethod(clazz, methodName, args);
+
+		if (method == null)
+			throw new FoException("Missing Nexo method " + clazz.getSimpleName() + "#" + methodName + ", your Nexo version is unsupported", false);
+
+		return method;
 	}
 }
 
