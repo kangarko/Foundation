@@ -307,6 +307,11 @@ public final class Debugger {
 			if (msg != null && (msg.contains("SQLITE_CANTOPEN") || msg.contains("unable to open database file") || msg.contains("opening db") || msg.contains("SQLITE_READONLY") || msg.contains("attempt to write a readonly database") || msg.contains("missing database")))
 				return "The plugin could not open or write its SQLite database file. Make sure the server has read and write permission to the plugin folder, the disk is not full, and the folder is not read-only or on a network/cloud-synced drive.";
 
+			// SQLite reports a full disk with its own message that differs from the
+			// OS-level "No space left on device" handled above.
+			if (msg != null && (msg.contains("SQLITE_FULL") || msg.contains("database or disk is full")))
+				return "Your disk is full so the plugin could not write to its SQLite database. Free up disk space.";
+
 			if (msg != null && (msg.contains("SQLITE_BUSY") || msg.contains("SQLITE_LOCKED") || msg.contains("database is locked")))
 				return "Your SQLite database is locked by another process. Make sure only one server instance uses this database file at a time.";
 
