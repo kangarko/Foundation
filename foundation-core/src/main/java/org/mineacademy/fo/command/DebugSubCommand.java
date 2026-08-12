@@ -178,7 +178,13 @@ public final class DebugSubCommand extends SimpleSubCommandCore {
 	 * Load the list of files available to ZIP
 	 */
 	private List<File> listFilesRecursively(final File folder, final List<File> files) {
-		for (final File file : folder.listFiles())
+		final File[] content = folder.listFiles();
+
+		// Null when the path is not a folder or cannot be read, both meaning no files to zip
+		if (content == null)
+			return files;
+
+		for (final File file : content)
 			if (file.isDirectory()) {
 				// Ignore log directory and ignore the debug directory itself
 				if (!file.getName().equals("logs") && !file.getName().equals("debug"))
