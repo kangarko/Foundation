@@ -1137,10 +1137,7 @@ public abstract class FileConfig extends ConfigSection {
 					try {
 						object = object != null ? SerializeUtilCore.deserialize(Language.YAML, typeOf, object, deserializeParameters) : null;
 					} catch (final MissingEnumException ex) {
-						CommonCore.log("Error in loading " + this.getFileName() + " at '" + path + "' of List<" + typeOf.getSimpleName() + "> because one of the list elements should be of '" + typeOf.getSimpleName() + "' but is invalid or not compatible with your server version. Skipping it.");
-						ex.printStackTrace();
-
-						continue;
+						throw new FoException("Error in loading " + this.getFileName() + " at '" + path + "' of List<" + typeOf.getSimpleName() + "> because one of the list elements should be of '" + typeOf.getSimpleName() + "' but is invalid or not compatible with your server version. " + ex.getMessage(), false);
 					}
 
 					if (object != null)
