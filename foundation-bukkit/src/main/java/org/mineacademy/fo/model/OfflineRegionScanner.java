@@ -328,6 +328,9 @@ public abstract class OfflineRegionScanner {
 	public static int getEstimatedWaitTimeSec(final World world) {
 		final File[] files = getRegionFiles(world);
 
+		if (files == null)
+			return 0;
+
 		return (int) (Math.round(WAIT_TIME_BETWEEN_SCAN_SECONDS * 1.5D) * files.length);
 	}
 
