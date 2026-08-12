@@ -85,8 +85,11 @@ public final class ReloadCommand extends SimpleCommandCore {
 	 * and its subdirectories
 	 */
 	static List<File> collectYamlFiles(final File directory, final List<File> list) {
-		if (directory.exists())
-			for (final File file : directory.listFiles()) {
+		final File[] files = directory.listFiles();
+
+		// Null when the path is not a folder or cannot be read, both meaning no files to collect
+		if (files != null)
+			for (final File file : files) {
 				if (file.getName().endsWith("yml"))
 					list.add(file);
 

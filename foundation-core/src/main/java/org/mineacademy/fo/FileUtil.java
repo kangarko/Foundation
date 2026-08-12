@@ -136,24 +136,13 @@ public final class FileUtil {
 	 * @param extension where dot is placed automatically in case it is lacking
 	 * @return
 	 */
-	public static File[] getFiles(@NonNull final String directory, @NonNull String extension) {
-
-		// Remove initial dot, if any
-		if (extension.charAt(0) == '.')
-			extension = extension.substring(1);
-
+	public static File[] getFiles(@NonNull final String directory, @NonNull final String extension) {
 		final File dataFolder = new File(Platform.getPlugin().getDataFolder(), directory);
 
 		if (!dataFolder.exists())
 			dataFolder.mkdirs();
 
-		final String finalExtension = extension;
-		final File[] files = dataFolder.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
-
-		if (files == null)
-			throw new FoException("Unable to read the '" + directory + "' folder in " + dataFolder.getAbsolutePath() + ". Make sure it is a folder, not a file, that your disk is not full and that the server has permission to read it.", false);
-
-		return files;
+		return getFiles(dataFolder, extension);
 	}
 
 	/**
@@ -170,7 +159,12 @@ public final class FileUtil {
 			extension = extension.substring(1);
 
 		final String finalExtension = extension;
-		return directory.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+		final File[] files = directory.listFiles((FileFilter) file -> !file.isDirectory() && file.getName().endsWith("." + finalExtension));
+
+		if (files == null)
+			throw new FoException("Unable to read the " + directory.getAbsolutePath() + " folder. Make sure it is a folder, not a file, that your disk is not full and that the server has permission to read it.", false);
+
+		return files;
 	}
 
 	// ----------------------------------------------------------------------------------------------------
