@@ -1,5 +1,8 @@
 package org.mineacademy.fo.menu;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -26,6 +29,15 @@ import org.mineacademy.fo.settings.Lang;
  * The bukkit listener responsible for menus to function.
  */
 public final class MenuListener implements Listener {
+
+	/**
+	 * The actions we hand over to the menu as a button or a menu click. Every other action is only
+	 * prevented, never handled, so that no exotic click type can fire a button by accident.
+	 */
+	private static final Set<InventoryAction> HANDLED_ACTIONS = EnumSet.of(
+			InventoryAction.PICKUP_ALL, InventoryAction.PICKUP_SOME, InventoryAction.PICKUP_HALF, InventoryAction.PICKUP_ONE,
+			InventoryAction.PLACE_ALL, InventoryAction.PLACE_SOME, InventoryAction.PLACE_ONE,
+			InventoryAction.SWAP_WITH_CURSOR, InventoryAction.CLONE_STACK, InventoryAction.MOVE_TO_OTHER_INVENTORY);
 
 	/**
 	 * Create a new menu listener
@@ -79,55 +91,65 @@ public final class MenuListener implements Listener {
 		final Player player = (Player) event.getWhoClicked();
 		final Menu menu = Menu.getMenu(player);
 
-		if (menu != null) {
-			final int slot = event.getSlot();
-			final ItemStack slotItem = event.getCurrentItem();
-			final ItemStack cursor = event.getCursor();
-			final Inventory clickedInv = Remain.getClickedInventory(event);
+		if (menu == null)
+			return;
 
-			final InventoryAction action = event.getAction();
-			final MenuClickLocation whereClicked = clickedInv != null ? clickedInv.getType() == InventoryType.CHEST ? MenuClickLocation.MENU : MenuClickLocation.PLAYER_INVENTORY : MenuClickLocation.OUTSIDE;
+		final int slot = event.getSlot();
+		final ItemStack slotItem = event.getCurrentItem();
+		final ItemStack cursor = event.getCursor();
+		final Inventory clickedInv = Remain.getClickedInventory(event);
 
-			final boolean allowed = menu.isActionAllowed(whereClicked, slot, slotItem, cursor, action);
+		final InventoryAction action = event.getAction();
+		final MenuClickLocation whereClicked = clickedInv != null ? clickedInv.getType() == InventoryType.CHEST ? MenuClickLocation.MENU : MenuClickLocation.PLAYER_INVENTORY : MenuClickLocation.OUTSIDE;
 
-			if (action.toString().contains("PICKUP") || action.toString().contains("PLACE") || action.toString().equals("SWAP_WITH_CURSOR") || action == InventoryAction.CLONE_STACK || action.toString().equalsIgnoreCase("MOVE_TO_OTHER_INVENTORY")) {
-				if (whereClicked == MenuClickLocation.MENU && slotItem != null)
-					try {
-						Button button = menu.getButton(slot);
+		// Double clicking sweeps matching items out of every slot of both inventories at once, it is
+		// not bound to the clicked slot so no per-slot rule can ever authorize it
+		final boolean allowed = action != InventoryAction.COLLECT_TO_CURSOR && isAllowed(menu, whereClicked, slot, slotItem, cursor, action);
 
-						if (button == null)
-							button = menu.getButton(slotItem);
+		if (whereClicked == MenuClickLocation.MENU && slotItem != null && HANDLED_ACTIONS.contains(action))
+			try {
+				Button button = menu.getButton(slot);
 
-						if (button != null)
-							menu.onButtonClick(player, slot, action, event.getClick(), button);
-						else
-							menu.onMenuClick(player, slot, action, event.getClick(), cursor, slotItem, !allowed);
+				if (button == null)
+					button = menu.getButton(slotItem);
 
-					} catch (final Throwable t) {
-						Common.tell(player, Lang.component("menu-error"));
-						player.closeInventory();
+				if (button != null)
+					menu.onButtonClick(player, slot, action, event.getClick(), button);
+				else
+					menu.onMenuClick(player, slot, action, event.getClick(), cursor, slotItem, !allowed);
 
-						CommonCore.error(t, "Error clicking in menu " + menu);
-					}
+			} catch (final Throwable t) {
+				Common.tell(player, Lang.component("menu-error"));
+				player.closeInventory();
 
-				if (!allowed) {
-					event.setResult(Result.DENY);
-
-					player.updateInventory();
-				}
-
-			} else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY || whereClicked != MenuClickLocation.PLAYER_INVENTORY) {
-
-				if (!allowed) {
-					event.setResult(Result.DENY);
-
-					player.updateInventory();
-				}
-
-				// Spigot bug
-				if (player.getGameMode() == GameMode.CREATIVE && event.getClick().toString().equals("SWAP_OFFHAND"))
-					player.getInventory().setItemInOffHand(null);
+				CommonCore.error(t, "Error clicking in menu " + menu);
 			}
+
+		// Prevent everything the menu did not explicitly allow, regardless of the action. Filtering
+		// by action left holes such as number key swaps or double clicks moving items in and out
+		if (!allowed) {
+			event.setResult(Result.DENY);
+
+			player.updateInventory();
+		}
+
+		// Spigot bug
+		if (whereClicked != MenuClickLocation.PLAYER_INVENTORY && player.getGameMode() == GameMode.CREATIVE && event.getClick().toString().equals("SWAP_OFFHAND"))
+			player.getInventory().setItemInOffHand(null);
+	}
+
+	/*
+	 * Ask the menu if it permits the interaction, preventing it when the menu's own rule errors out
+	 * so that a broken rule can never open a menu up instead of locking it down.
+	 */
+	static boolean isAllowed(final Menu menu, final MenuClickLocation location, final int slot, final ItemStack clicked, final ItemStack cursor, final InventoryAction action) {
+		try {
+			return menu.isActionAllowed(location, slot, clicked, cursor, action);
+
+		} catch (final Throwable t) {
+			CommonCore.error(t, "Error asking " + menu + " if " + action + " is allowed in " + location + " slot " + slot + ", preventing it");
+
+			return false;
 		}
 	}
 }
@@ -163,21 +185,21 @@ class InventoryDragEventListener implements Listener {
 		final Menu menu = Menu.getMenu(player);
 		final InventoryType inventoryType = Remain.invokeInventoryViewMethod(event, "getType");
 
-		if (menu != null && inventoryType == InventoryType.CHEST) {
-			final Inventory topInventory = Remain.invokeInventoryViewMethod(event, "getTopInventory");
-			final int size = topInventory.getSize();
+		if (menu == null || inventoryType != InventoryType.CHEST)
+			return;
 
-			for (final int slot : event.getRawSlots()) {
-				if (slot > size)
-					continue;
+		final Inventory topInventory = Remain.invokeInventoryViewMethod(event, "getTopInventory");
+		final int size = topInventory.getSize();
+		final ItemStack cursor = CommonCore.getOrDefault(event.getCursor(), event.getOldCursor());
 
-				final ItemStack cursor = CommonCore.getOrDefault(event.getCursor(), event.getOldCursor());
+		// Dragging must obey the same rules as clicking, otherwise it becomes a way around them
+		for (final int rawSlot : event.getRawSlots()) {
+			final boolean inMenu = rawSlot < size;
 
-				if (!menu.isActionAllowed(MenuClickLocation.MENU, slot, event.getNewItems().get(slot), cursor, InventoryAction.PLACE_SOME)) {
-					event.setCancelled(true);
+			if (!MenuListener.isAllowed(menu, inMenu ? MenuClickLocation.MENU : MenuClickLocation.PLAYER_INVENTORY, inMenu ? rawSlot : rawSlot - size, event.getNewItems().get(rawSlot), cursor, InventoryAction.PLACE_SOME)) {
+				event.setCancelled(true);
 
-					return;
-				}
+				return;
 			}
 		}
 	}

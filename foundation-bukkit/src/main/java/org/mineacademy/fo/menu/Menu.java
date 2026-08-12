@@ -1171,6 +1171,27 @@ public abstract class Menu {
 	public final void handleClose(final Inventory inventory) {
 		this.viewer.removeMetadata(TAG_MENU_CURRENT, BukkitPlugin.getInstance());
 		this.viewer.setMetadata(TAG_MENU_LAST_CLOSED, new FixedMetadataValue(BukkitPlugin.getInstance(), this));
+
+		this.handleFlush(inventory);
+	}
+
+	/**
+	 * Saves this menu while keeping the viewer registered as being in it, this neither closes
+	 * nor unregisters the inventory, do not use.
+	 *
+	 * Call this instead of {@link #handleClose(Inventory)} when you replace this menu with another
+	 * one while its inventory stays open. Unregistering the viewer there would leave the still open
+	 * inventory unprotected until the new menu is drawn a tick later, letting players click items
+	 * out of it.
+	 *
+	 * @deprecated internal use only
+	 * @param inventory
+	 */
+	@Deprecated
+	public final void handleFlush(final Inventory inventory) {
+		if (!this.opened)
+			return;
+
 		this.opened = false;
 
 		this.onMenuClose(this.viewer, inventory);

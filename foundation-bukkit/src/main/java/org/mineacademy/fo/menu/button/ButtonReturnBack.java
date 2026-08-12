@@ -74,7 +74,7 @@ public final class ButtonReturnBack extends Button {
 			final Inventory currentChestInventory = Remain.getTopInventoryFromOpenInventory(player);
 
 			if (currentChestInventory != null)
-				menu.handleClose(currentChestInventory);
+				menu.handleFlush(currentChestInventory);
 
 			this.parentMenu.newInstance().displayTo(player);
 
