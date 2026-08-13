@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>org.mineacademy</groupId>
 		<artifactId>foundation-parent</artifactId>
-		<version>7.0.0</version>
+		<version>7.0.2</version>
 	</parent>
 
 	<artifactId>foundation-bukkit</artifactId>
@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>org.mineacademy</groupId>
 			<artifactId>foundation-core</artifactId>
-			<version>7.0.0</version>
+			<version>7.0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		
