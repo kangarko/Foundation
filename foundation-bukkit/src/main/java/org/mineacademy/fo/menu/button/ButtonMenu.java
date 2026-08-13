@@ -87,6 +87,34 @@ public final class ButtonMenu extends Button {
 	}
 
 	/**
+	 * Create a new button that triggers another menu, remaking the menu on each click when
+	 * newInstance is true. Use that for menus showing values the player can edit, since the
+	 * icons of a menu are built when the menu is created and would otherwise stay stale.
+	 *
+	 * @param menu
+	 * @param newInstance
+	 * @param material
+	 * @param name
+	 * @param lore
+	 */
+	public ButtonMenu(final Menu menu, final boolean newInstance, final CompMaterial material, final String name, final String... lore) {
+		this(menu, null, ItemCreator.from(material, name, lore).hideTags(true).make(), newInstance);
+	}
+
+	/**
+	 * Create a new button that triggers another menu, remaking the menu on each click when
+	 * newInstance is true. Use that for menus showing values the player can edit, since the
+	 * icons of a menu are built when the menu is created and would otherwise stay stale.
+	 *
+	 * @param menu
+	 * @param item
+	 * @param newInstance
+	 */
+	public ButtonMenu(final Menu menu, final ItemCreator item, final boolean newInstance) {
+		this(menu, null, item.hideTags(true).make(), newInstance);
+	}
+
+	/**
 	 * Create a new button that triggers another menu
 	 *
 	 * @param menu

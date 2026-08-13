@@ -438,20 +438,21 @@ public abstract class Menu {
 	public Menu newInstance() {
 		try {
 			return ReflectionUtil.instantiate(this.getClass());
-		} catch (final Throwable t) {
-			try {
-				final Object parent = this.getClass().getMethod("getParent").invoke(this.getClass());
 
-				if (parent != null)
-					return ReflectionUtil.instantiate(this.getClass(), parent);
-			} catch (final Throwable tt) {
-			}
+		} catch (final Throwable noArgument) {
 
-			t.printStackTrace();
+			// Menus nested in another menu only have a constructor taking their parent
+			if (this.parent != null)
+				try {
+					return ReflectionUtil.instantiate(this.getClass(), this.parent);
+
+				} catch (final Throwable withParent) {
+					// Reported below, the menu has to override this method
+				}
+
+			throw new FoException(noArgument, this.getClass().getSimpleName() + " lacks newInstance() method! Store your constructor parameters as fields, "
+					+ "override the method and return a new instance using fields as paramteres here. Example: https://i.imgur.com/5mqJ2nD.png", false);
 		}
-
-		throw new FoException(this.getClass().getSimpleName() + " lacks newInstance() method! Store your constructor parameters as fields, "
-				+ "override the method and return a new instance using fields as paramteres here. Example: https://i.imgur.com/5mqJ2nD.png");
 	}
 
 	// --------------------------------------------------------------------------------
