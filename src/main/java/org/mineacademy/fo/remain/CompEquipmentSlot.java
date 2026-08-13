@@ -35,12 +35,15 @@ public enum CompEquipmentSlot {
 	HEAD("HEAD", "HELMET"),
 	CHEST("CHEST", "CHESTPLATE"),
 	LEGS("LEGS", "LEGGINGS"),
-	FEET("FEET", "BOOTS");
-
+	FEET("FEET", "BOOTS"),
 	/**
-	 * Requires the entity to be a {@link Horse}
+	 * Body armor of wolves, horses and llamas, requires Minecraft 1.20.5+
 	 */
-	//BODY("BODY", null);
+	BODY("BODY", "BODY"),
+	/**
+	 * Saddle of rideable animals, requires Minecraft 1.21.5+
+	 */
+	SADDLE("SADDLE", "SADDLE");
 
 	/**
 	 * The localizable key
@@ -219,12 +222,27 @@ public enum CompEquipmentSlot {
 
 				break;
 
-			/*case BODY:
-				Valid.checkBoolean(entity instanceof Horse, "Equipment slot BODY requires a Horse entity! Got " + entity.getType());
-			
-				((Horse) entity).getInventory().setArmor(item);
-				break;*/
+			case BODY:
+			case SADDLE:
+				this.applyToModernSlot(equipment, item, dropChance, lacksDropChance);
+
+				break;
 		}
+	}
+
+	/*
+	 * Body armor and saddles never had a dedicated EntityEquipment setter, they are
+	 * only reachable through the slot based API added in Minecraft 1.9.
+	 */
+	private void applyToModernSlot(final EntityEquipment equipment, final ItemStack item, final Double dropChance, final boolean lacksDropChance) {
+		final EquipmentSlot bukkitSlot = ReflectionUtil.lookupEnumSilent(EquipmentSlot.class, this.bukkitName);
+
+		ValidCore.checkNotNull(bukkitSlot, "Equipment slot " + this.name() + " requires Minecraft " + (this == BODY ? "1.20.5" : "1.21.5") + "+, running on " + MinecraftVersion.getFullVersion());
+
+		equipment.setItem(bukkitSlot, item);
+
+		if (dropChance != null && !lacksDropChance)
+			equipment.setDropChance(bukkitSlot, dropChance.floatValue());
 	}
 
 	/**
