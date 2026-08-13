@@ -1540,7 +1540,19 @@ public final class SimpleComponent implements ConfigSerializable {
 		return message.replaceAll("<[^<>]+>", "");
 	}
 
+	/**
+	 * Neutralize all tags in the message so they render literally. Use this for text a player
+	 * typed before it reaches anything parsing MiniMessage, otherwise he paints it by typing tags.
+	 *
+	 * Escaping is idempotent and null returns null so optional values such as a book title stay optional.
+	 *
+	 * @param message
+	 * @return
+	 */
 	public static String escapeMiniMessageTags(String message) {
+		if (message == null)
+			return null;
+
 		if (HAS_STRIP_TAGS)
 			return MINIMESSAGE_PARSER.escapeTags(message);
 
