@@ -14,7 +14,7 @@ final class FoundationLibraries {
 	 * @param plugin
 	 */
 	public static void load(final FoundationPlugin plugin) {
-		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "3.0.1");
+		plugin.loadLibrary("org.snakeyaml", "snakeyaml-engine", "3.1.1");
 
 		// Java 15 removed the bundled Nashorn engine. Foundation requires Java 21+
 		// so the standalone Nashorn JAR is always needed for JS chat-format conditions.

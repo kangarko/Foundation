@@ -346,7 +346,7 @@ public class SimpleDatabase {
 	 */
 	private String loadDriverFor(final String url) {
 		if (url.startsWith("jdbc:sqlite")) {
-			Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.53.2.0");
+			Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.53.2.1");
 
 			this.isSQLite = true;
 
@@ -354,13 +354,13 @@ public class SimpleDatabase {
 		}
 
 		if (url.startsWith("jdbc:mysql://")) {
-			Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "9.7.0");
+			Platform.getPlugin().loadLibrary("com.mysql", "mysql-connector-j", "26.7.0");
 
 			return "com.mysql.cj.jdbc.Driver";
 		}
 
 		if (url.startsWith("jdbc:mariadb://")) {
-			Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.5.9");
+			Platform.getPlugin().loadLibrary("org.mariadb.jdbc", "mariadb-java-client", "3.5.10");
 
 			return "org.mariadb.jdbc.Driver";
 		}
