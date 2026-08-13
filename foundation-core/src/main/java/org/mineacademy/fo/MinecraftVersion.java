@@ -24,6 +24,7 @@ public final class MinecraftVersion {
 	 * Example: 1.21 = 121, 1.8 = 108, 26.1 = 2601.
 	 */
 	public enum V {
+		v26_2(2602),
 		v26_1(2601),
 		v1_21(121),
 		v1_20(120),

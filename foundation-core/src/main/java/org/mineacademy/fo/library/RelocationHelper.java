@@ -58,7 +58,7 @@ final class RelocationHelper {
 				Library.builder()
 						.groupId("org{}ow2{}asm")
 						.artifactId("asm-commons")
-						.version("9.9.1")
+						.version("9.10.1")
 						.fallbackRepository(Repositories.MAVEN_CENTRAL)
 						.build()));
 
@@ -67,7 +67,7 @@ final class RelocationHelper {
 				Library.builder()
 						.groupId("org{}ow2{}asm")
 						.artifactId("asm")
-						.version("9.9.1")
+						.version("9.10.1")
 						.fallbackRepository(Repositories.MAVEN_CENTRAL)
 						.build()));
 
