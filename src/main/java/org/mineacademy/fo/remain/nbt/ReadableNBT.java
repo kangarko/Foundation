@@ -165,6 +165,15 @@ public interface ReadableNBT {
 	Set<String> getKeys();
 
 	/**
+	 * Checks whether this NBT is empty (has no stored data).
+	 *
+	 * @return whether this NBT is empty
+	 */
+	default boolean isEmpty() {
+		return this.getKeys().isEmpty();
+	}
+
+	/**
 	 * @param name
 	 * @return The Compound instance or null
 	 */

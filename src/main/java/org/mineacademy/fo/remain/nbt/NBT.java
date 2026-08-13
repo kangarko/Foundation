@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.bukkit.Chunk;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -670,6 +672,223 @@ public class NBT {
 		blockEnt.setCompound(cont);
 		cont.setClosed();
 		return val;
+	}
+
+	/**
+	 * Reads block specific data that was previously stored in the chunk's
+	 * persistent data container.
+	 * <p>
+	 * The data is stored inside the {@code blocks} compound of the chunk's
+	 * persistent data container, using a key formed as {@code X_Y_Z} where X, Y, Z
+	 * are the block's coordinates.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param block    the block whose stored data is to be read
+	 * @param consumer the consumer that receives a {@link ReadableNBT} view of the
+	 *                 data
+	 */
+	public static void readChunkPDC(Block block, Consumer<ReadableNBT> consumer) {
+		processBlockChunkPDC(block, false, nbt -> {
+			consumer.accept(nbt);
+
+			return null;
+		});
+	}
+
+	/**
+	 * Reads block specific data from the chunk's persistent data container and
+	 * applies a function to produce a result.
+	 * <p>
+	 * The data is stored inside the {@code blocks} compound of the chunk's
+	 * persistent data container, using a key formed as {@code X_Y_Z} where X, Y, Z
+	 * are the block's coordinates.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param block    the block whose stored data is to be read
+	 * @param function the function that processes the {@link ReadableNBT} and
+	 *                 returns a value
+	 * @param <T>      the type of the returned value
+	 * @return the result of the function applied to the data
+	 */
+	public static <T> T readAndGetChunkPDC(Block block, Function<ReadableNBT, T> function) {
+		return processBlockChunkPDC(block, false, function::apply);
+	}
+
+	/**
+	 * Modifies block specific data stored in the chunk's persistent data container.
+	 * <p>
+	 * The data is stored inside the {@code blocks} compound of the chunk's
+	 * persistent data container, using a key formed as {@code X_Y_Z} where X, Y, Z
+	 * are the block's coordinates.
+	 * <p>
+	 * <b>Caution:</b> the data remains even if the block is broken, replaced, moved
+	 * or exploded. You should manually remove the data when it is no longer needed.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param block    the block whose data is to be modified
+	 * @param consumer the consumer that receives the {@link ReadWriteNBT} and
+	 *                 applies modifications
+	 */
+	public static void modifyChunkPDC(Block block, Consumer<ReadWriteNBT> consumer) {
+		processBlockChunkPDC(block, true, nbt -> {
+			consumer.accept(nbt);
+
+			return null;
+		});
+	}
+
+	/**
+	 * Modifies block specific data in the chunk's persistent data container and
+	 * returns a result computed from the modified data.
+	 * <p>
+	 * The data is stored inside the {@code blocks} compound of the chunk's
+	 * persistent data container, using a key formed as {@code X_Y_Z} where X, Y, Z
+	 * are the block's coordinates.
+	 * <p>
+	 * <b>Caution:</b> the data remains even if the block is broken, replaced, moved
+	 * or exploded. You should manually remove the data when it is no longer needed.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param block    the block whose data is to be modified
+	 * @param function the function that receives the {@link ReadWriteNBT}, modifies
+	 *                 it, and returns a value
+	 * @param <T>      the type of the returned value
+	 * @return the result of the function after modification
+	 */
+	public static <T> T modifyAndGetChunkPDC(Block block, Function<ReadWriteNBT, T> function) {
+		return processBlockChunkPDC(block, true, function::apply);
+	}
+
+	/*
+	 * Resolve the block's compound inside the chunk's persistent data container and
+	 * hand it to the given action, pruning empty leftovers when writing.
+	 */
+	private static <T> T processBlockChunkPDC(Block block, boolean createIfAbsent, Function<NBTCompound, T> action) {
+		checkChunkPersistentDataSupported();
+
+		final String blockKey = block.getX() + "_" + block.getY() + "_" + block.getZ();
+		final NBTCompound chunkData = new NBTPersistentDataContainer(block.getChunk().getPersistentDataContainer(), !createIfAbsent);
+		final NBTCompound blocksData = createIfAbsent ? chunkData.getOrCreateCompound("blocks") : chunkData.getCompound("blocks");
+
+		NBTCompound blockData;
+
+		if (createIfAbsent)
+			blockData = blocksData.getOrCreateCompound(blockKey);
+
+		else {
+			blockData = blocksData == null ? null : blocksData.getCompound(blockKey);
+
+			if (blockData == null)
+				blockData = new NBTContainer().setReadOnly(true);
+		}
+
+		final T result = action.apply(blockData);
+
+		if (createIfAbsent) {
+			if (blockData.isEmpty())
+				blocksData.removeKey(blockKey);
+
+			if (blocksData.isEmpty())
+				chunkData.removeKey("blocks");
+		}
+
+		if (result instanceof ReadableNBT || result instanceof ReadableNBTList<?>)
+			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
+
+		return result;
+	}
+
+	/**
+	 * Reads the chunk's persistent data container.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param chunk    the chunk whose persistent data is to be read
+	 * @param consumer the consumer that receives a {@link ReadableNBT} view of the
+	 *                 data
+	 */
+	public static void readChunkPDC(Chunk chunk, Consumer<ReadableNBT> consumer) {
+		processChunkPDC(chunk, false, nbt -> {
+			consumer.accept(nbt);
+
+			return null;
+		});
+	}
+
+	/**
+	 * Reads the chunk's persistent data container and applies a function to produce
+	 * a result.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param chunk    the chunk whose persistent data is to be read
+	 * @param function the function that processes the {@link ReadableNBT} and
+	 *                 returns a value
+	 * @param <T>      the type of the returned value
+	 * @return the result of the function applied to the data
+	 */
+	public static <T> T readAndGetChunkPDC(Chunk chunk, Function<ReadableNBT, T> function) {
+		return processChunkPDC(chunk, false, function::apply);
+	}
+
+	/**
+	 * Modifies the chunk's persistent data container.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param chunk    the chunk whose persistent data is to be modified
+	 * @param consumer the consumer that receives the {@link ReadWriteNBT} and
+	 *                 applies modifications
+	 */
+	public static void modifyChunkPDC(Chunk chunk, Consumer<ReadWriteNBT> consumer) {
+		processChunkPDC(chunk, true, nbt -> {
+			consumer.accept(nbt);
+
+			return null;
+		});
+	}
+
+	/**
+	 * Modifies the chunk's persistent data container and returns a result computed
+	 * from the modified data.
+	 * <p>
+	 * <b>Minecraft version:</b> this method requires <b>1.16.4 or newer</b>.
+	 *
+	 * @param chunk    the chunk whose persistent data is to be modified
+	 * @param function the function that receives the {@link ReadWriteNBT}, modifies
+	 *                 it, and returns a value
+	 * @param <T>      the type of the returned value
+	 * @return the result of the function after modification
+	 */
+	public static <T> T modifyAndGetChunkPDC(Chunk chunk, Function<ReadWriteNBT, T> function) {
+		return processChunkPDC(chunk, true, function::apply);
+	}
+
+	/*
+	 * Hand the chunk's persistent data container to the given action.
+	 */
+	private static <T> T processChunkPDC(Chunk chunk, boolean createIfAbsent, Function<NBTCompound, T> action) {
+		checkChunkPersistentDataSupported();
+
+		final NBTCompound chunkData = new NBTPersistentDataContainer(chunk.getPersistentDataContainer(), !createIfAbsent);
+		final T result = action.apply(chunkData);
+
+		if (result instanceof ReadableNBT || result instanceof ReadableNBTList<?>)
+			throw new NbtApiException("Tried returning part of the NBT to outside of the NBT scope!");
+
+		return result;
+	}
+
+	/*
+	 * Chunks only carry a persistent data container since Minecraft 1.16.4.
+	 */
+	private static void checkChunkPersistentDataSupported() {
+		if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R3))
+			throw new NbtApiException("This method is only available for the version " + MinecraftVersion.MC1_16_R3.name() + " and above!");
 	}
 
 }
