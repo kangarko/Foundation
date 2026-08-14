@@ -1098,7 +1098,7 @@ public final class SerializedMap implements Iterable<Map.Entry<String, Object>> 
 
 		// Not reported: the object always comes from a config the user wrote or from a caller
 		// passing the wrong shape, neither of which we can fix from a stack trace.
-		throw new FoException("Cannot instantiate SerializedMap in mode " + language + " from (" + object.getClass().getSimpleName() + ") '" + object + "'", false);
+		throw new FoException("Cannot instantiate SerializedMap in mode " + language + " from (" + object.getClass().getSimpleName() + ") '" + object + "'");
 	}
 
 	/*
