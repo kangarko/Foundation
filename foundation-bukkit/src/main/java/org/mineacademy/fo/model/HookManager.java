@@ -1344,6 +1344,17 @@ public final class HookManager {
 		return message;
 	}
 
+	/*
+	 * Font image providers wipe their glyph state while reloading, so a call landing mid-reload throws and
+	 * would otherwise break every chat message. Report the real cause, throttled, and skip the replacement.
+	 */
+	static void logFontImageFailure(final String pluginName, final Throwable throwable) {
+		final Throwable root = throwable.getCause() != null ? throwable.getCause() : throwable;
+
+		CommonCore.logTimed(3600, "Failed to invoke " + pluginName + " font image replacement (" + root.getClass().getSimpleName() + ": " + root.getMessage()
+				+ "). " + pluginName + " is likely still loading or reloading its content. This message will not show for the next hour.");
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Multiverse-Core
 	// ------------------------------------------------------------------------------------------------------------
@@ -4710,9 +4721,7 @@ class ItemsAdderHook {
 			}
 
 		} catch (final Throwable t) {
-			final Throwable root = t.getCause() != null ? t.getCause() : t;
-
-			CommonCore.logTimed(3600, "Failed to invoke ItemsAdder font image replacement (" + root.getClass().getSimpleName() + ": " + root.getMessage() + "). ItemsAdder is likely still loading or reloading its content. This message will not show for the next hour.");
+			HookManager.logFontImageFailure("ItemsAdder", t);
 		}
 
 		// Fallback to original message or component if replacement fails
@@ -4732,7 +4741,7 @@ class NexoHook {
 	private Method getUnicodesMethod;
 	private Method getGlyphConfigsMethod;
 	private Method configPlayerPlaceholderMethod;
-	private Method configPlaceholderMethod;
+	private Method configEscapeTagMethod;
 	private Method configTagMethod;
 	private boolean failed = false;
 
@@ -4758,7 +4767,7 @@ class NexoHook {
 
 				this.getGlyphConfigsMethod = this.resolveMethod(fontManagerClass, "getGlyphConfigs");
 				this.configPlayerPlaceholderMethod = this.resolveMethod(configsClass, "playerPlaceholderConfig", Player.class);
-				this.configPlaceholderMethod = this.resolveMethod(configsClass, "getPlaceholderConfig");
+				this.configEscapeTagMethod = this.resolveMethod(configsClass, "escapeTagConfig", Player.class);
 				this.configTagMethod = this.resolveMethod(configsClass, "getTagConfig");
 			}
 
@@ -4776,37 +4785,48 @@ class NexoHook {
 
 		Component adventure = component.toAdventure(null);
 
-		if (this.getGlyphConfigsMethod != null) {
-			final Object glyphConfigs = ReflectionUtil.invoke(this.getGlyphConfigsMethod, this.loadFontManager());
-			final TextReplacementConfig placeholderConfig;
+		try {
+			if (this.getGlyphConfigsMethod != null) {
+				final Object glyphConfigs = ReflectionUtil.invoke(this.getGlyphConfigsMethod, this.loadFontManager());
+				final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.configPlayerPlaceholderMethod, glyphConfigs, player);
 
-			if (player != null)
-				placeholderConfig = ReflectionUtil.invoke(this.configPlayerPlaceholderMethod, glyphConfigs, player);
-			else
-				placeholderConfig = ReflectionUtil.invoke(this.configPlaceholderMethod, glyphConfigs);
-
-			final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.configTagMethod, glyphConfigs);
-
-			if (placeholderConfig != null)
-				adventure = adventure.replaceText(placeholderConfig);
-
-			if (tagConfig != null)
-				adventure = adventure.replaceText(tagConfig);
-
-		} else
-			for (final Object glyph : this.loadGlyphs()) {
-				if (!this.canSee(player, glyph))
-					continue;
-
-				final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.getPlaceholderConfigMethod, glyph);
-				final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.getTagConfigMethod, glyph);
-
+				// Null when the server has no glyph placeholders at all, the player is matched glyph by glyph inside
 				if (placeholderConfig != null)
 					adventure = adventure.replaceText(placeholderConfig);
 
-				if (tagConfig != null)
-					adventure = adventure.replaceText(tagConfig);
-			}
+				// Unlike the placeholder config, the shared tag config ignores permissions, so we let Nexo escape
+				// the <glyph:id> tags the player may not use and the tag config below then skips them. Never
+				// unescape after: Nexo escapes disallowed tags before us and undoing that would leak them through
+				if (player != null) {
+					final TextReplacementConfig escapeTagConfig = ReflectionUtil.invoke(this.configEscapeTagMethod, glyphConfigs, player);
+
+					adventure = adventure.replaceText(escapeTagConfig);
+				}
+
+				final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.configTagMethod, glyphConfigs);
+
+				adventure = adventure.replaceText(tagConfig);
+
+			} else
+				for (final Object glyph : this.loadGlyphs()) {
+					if (!this.canSee(player, glyph))
+						continue;
+
+					final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.getPlaceholderConfigMethod, glyph);
+					final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.getTagConfigMethod, glyph);
+
+					if (placeholderConfig != null)
+						adventure = adventure.replaceText(placeholderConfig);
+
+					if (tagConfig != null)
+						adventure = adventure.replaceText(tagConfig);
+				}
+
+		} catch (final Throwable t) {
+			HookManager.logFontImageFailure("Nexo", t);
+
+			return component;
+		}
 
 		return SimpleComponent.fromAdventure(adventure);
 	}
@@ -4815,24 +4835,33 @@ class NexoHook {
 		if (this.failed)
 			return message;
 
-		for (final Object glyph : this.loadGlyphs()) {
-			if (!this.canSee(player, glyph))
-				continue;
+		final String original = message;
 
-			final List<String> unicodes = ReflectionUtil.invoke(this.getUnicodesMethod, glyph);
+		try {
+			for (final Object glyph : this.loadGlyphs()) {
+				if (!this.canSee(player, glyph))
+					continue;
 
-			if (unicodes == null || unicodes.isEmpty())
-				continue;
+				final List<String> unicodes = ReflectionUtil.invoke(this.getUnicodesMethod, glyph);
 
-			final String unicode = unicodes.get(0);
-			final List<String> placeholders = ReflectionUtil.invoke(this.getPlaceholdersMethod, glyph);
+				if (unicodes == null || unicodes.isEmpty())
+					continue;
 
-			if (placeholders == null)
-				continue;
+				final String unicode = unicodes.get(0);
+				final List<String> placeholders = ReflectionUtil.invoke(this.getPlaceholdersMethod, glyph);
 
-			for (final String placeholder : placeholders)
-				if (placeholder != null && !placeholder.isEmpty())
-					message = message.replace(placeholder, unicode);
+				if (placeholders == null)
+					continue;
+
+				for (final String placeholder : placeholders)
+					if (placeholder != null && !placeholder.isEmpty())
+						message = message.replace(placeholder, unicode);
+			}
+
+		} catch (final Throwable t) {
+			HookManager.logFontImageFailure("Nexo", t);
+
+			return original;
 		}
 
 		return message;
@@ -4934,7 +4963,7 @@ class CraftEngineHook {
 			return SimpleComponent.fromAdventure(GsonComponentSerializer.gson().deserialize(newJson));
 
 		} catch (final Throwable t) {
-			this.logFailure(t);
+			HookManager.logFontImageFailure("CraftEngine", t);
 
 			return component;
 		}
@@ -4958,7 +4987,7 @@ class CraftEngineHook {
 			return ReflectionUtil.invoke(this.emojiTextResultText, result);
 
 		} catch (final Throwable t) {
-			this.logFailure(t);
+			HookManager.logFontImageFailure("CraftEngine", t);
 
 			return message;
 		}
@@ -4966,12 +4995,6 @@ class CraftEngineHook {
 
 	private Object adaptPlayer(final Player player) {
 		return player == null ? null : ReflectionUtil.invokeStatic(this.adaptPlayerMethod, player);
-	}
-
-	private void logFailure(final Throwable t) {
-		final Throwable root = t.getCause() != null ? t.getCause() : t;
-
-		CommonCore.logTimed(3600, "Failed to invoke CraftEngine emoji replacement (" + root.getClass().getSimpleName() + ": " + root.getMessage() + "). This message will not show for the next hour.");
 	}
 }
 
