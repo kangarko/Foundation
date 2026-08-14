@@ -244,13 +244,7 @@ final class BukkitListener implements Listener {
 		if (!Remain.isPaper() || !MinecraftVersion.hasVersion())
 			return false;
 
-		if (MinecraftVersion.newerThan(V.v1_21))
-			return true;
-
-		if (MinecraftVersion.equals(V.v1_21))
-			return MinecraftVersion.getSubversion() >= 6;
-
-		return false;
+		return MinecraftVersion.atLeast(V.v1_21, 6);
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)

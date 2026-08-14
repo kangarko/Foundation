@@ -2875,7 +2875,7 @@ public final class Remain {
 		final Class<?> nmsItemStack = Remain.getNMSClass("ItemStack", "net.minecraft.world.item.ItemStack");
 		final Object nmsItemStackObj = ReflectionUtil.invoke(asNMSCopyMethod, null, item);
 
-		if (MinecraftVersion.newerThan(V.v1_20) || MinecraftVersion.atLeast(V.v1_20) && MinecraftVersion.getSubversion() > 4) {
+		if (MinecraftVersion.atLeast(V.v1_20, 5)) {
 			if (Remain.isPaper()) {
 				final Class<?> providerClass = ReflectionUtil.lookupClass("net.minecraft.core.HolderLookup$Provider");
 				final Method saveMethod = ReflectionUtil.getMethod(nmsItemStack, "saveOptional", providerClass);
@@ -3609,7 +3609,7 @@ public final class Remain {
 				fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class, propertyMapClass).newInstance(uuid, "aaaaa", newPropertyMap);
 			}
 
-			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1) {
+			if (MinecraftVersion.atLeast(V.v1_21, 1)) {
 				final Class<?> resolvableProfileClass = ReflectionUtil.lookupClass("net.minecraft.world.item.component.ResolvableProfile");
 				final Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
 
@@ -3949,7 +3949,7 @@ final class AdvancementAccessor {
 
 		final JsonObject icon = new JsonObject();
 
-		if (MinecraftVersion.atLeast(V.v1_21) || MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5)
+		if (MinecraftVersion.atLeast(V.v1_20, 5))
 			icon.addProperty("id", this.icon);
 		else
 			icon.addProperty("item", this.icon);

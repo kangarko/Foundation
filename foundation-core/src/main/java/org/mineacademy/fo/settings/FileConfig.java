@@ -1236,7 +1236,7 @@ public abstract class FileConfig extends ConfigSection {
 		try {
 			return SerializedMap.fromObject(object);
 		} catch (final FoException ex) {
-			if (ex.getMessage() != null && ex.getMessage().startsWith("Cannot instantiate SerializedMap"))
+			if (ex.getMessage() != null && ex.getMessage().contains("Cannot instantiate SerializedMap"))
 				throw new FoException("Expected a map at '" + path + "' in " + this.file + ", got " + object.getClass().getSimpleName() + " instead! Please check your configuration syntax against the default file.", false);
 
 			throw ex;
@@ -1272,7 +1272,7 @@ public abstract class FileConfig extends ConfigSection {
 			try {
 				serialized = SerializedMap.fromObject(savedKeys);
 			} catch (final FoException ex) {
-				if (ex.getMessage() != null && ex.getMessage().startsWith("Cannot instantiate SerializedMap"))
+				if (ex.getMessage() != null && ex.getMessage().contains("Cannot instantiate SerializedMap"))
 					throw new FoException("Expected a map at '" + path + "' in " + this.file + ", got " + savedKeys.getClass().getSimpleName() + " instead! Please check your configuration syntax against the default file.", false);
 
 				throw ex;

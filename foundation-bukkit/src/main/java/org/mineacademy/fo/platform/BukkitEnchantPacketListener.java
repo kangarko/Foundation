@@ -43,7 +43,7 @@ final class BukkitEnchantPacketListener extends PacketListener {
 
 		// MC 1.20.5+ uses data components with ItemEnchantments.addToTooltip() to natively
 		// render custom enchant names in the tooltip. Injecting fake lore would cause duplicates.
-		if (MinecraftVersion.atLeast(V.v1_21) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() >= 5))
+		if (MinecraftVersion.atLeast(V.v1_20, 5))
 			return;
 
 		// Strip our fake lore from items the client sends back via creative-mode slot drag,

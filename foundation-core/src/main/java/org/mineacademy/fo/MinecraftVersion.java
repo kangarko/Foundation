@@ -118,6 +118,23 @@ public final class MinecraftVersion {
 		return equals(version) || newerThan(version);
 	}
 
+	/**
+	 * Is the current Minecraft version equals or newer than the given version and its subversion,
+	 * such as 1.20.5 or 26.1.2? Use this for features shipped in a patch release.
+	 *
+	 * @param version
+	 * @param subversion
+	 * @return
+	 */
+	public static boolean atLeast(final V version, final int subversion) {
+		final int comparison = compareWith(version);
+
+		if (comparison != 0)
+			return comparison > 0;
+
+		return getSubversion() >= subversion;
+	}
+
 	/*
 	 * Compares two versions by the number
 	 */
