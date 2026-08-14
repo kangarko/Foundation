@@ -30,7 +30,6 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.projectiles.ProjectileSource;
 import org.mineacademy.fo.ChatUtil;
-import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.EntityUtil;
 import org.mineacademy.fo.MathUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -317,7 +316,7 @@ public abstract class SimpleEnchantment implements Listener {
 	 * @return
 	 */
 	public Set<CompEquipmentSlot> getActiveSlots() {
-		return CommonCore.newSet(CompEquipmentSlot.values());
+		return new HashSet<>(CompEquipmentSlot.getAvailable());
 	}
 
 	/**

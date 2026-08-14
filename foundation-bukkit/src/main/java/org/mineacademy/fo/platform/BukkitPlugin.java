@@ -343,7 +343,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 
 							if (HookManager.isPacketEventsLoaded())
 								BukkitEnchantPacketListener.getInstance().onRegister();
-							else if (MinecraftVersion.olderThan(V.v1_20) || (MinecraftVersion.equals(V.v1_20) && MinecraftVersion.getSubversion() < 5))
+							else if (!MinecraftVersion.atLeast(V.v1_20, 5))
 								CommonCore.warning("Custom enchantments require the PacketEvents plugin for lore to be added properly.");
 						}
 

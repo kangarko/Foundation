@@ -1,6 +1,9 @@
 package org.mineacademy.fo.remain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -11,10 +14,12 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ReflectionUtil;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.menu.model.ItemCreator;
 
 import lombok.Getter;
@@ -27,23 +32,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CompEquipmentSlot {
 
-	HAND("HAND", "HAND"),
+	HAND("HAND", "HAND", null, 0),
 	/**
 	 * Requires Minecraft 1.9+
 	 */
-	OFF_HAND("OFF_HAND", "OFF_HAND"),
-	HEAD("HEAD", "HELMET"),
-	CHEST("CHEST", "CHESTPLATE"),
-	LEGS("LEGS", "LEGGINGS"),
-	FEET("FEET", "BOOTS"),
+	OFF_HAND("OFF_HAND", "OFF_HAND", V.v1_9, 0),
+	HEAD("HEAD", "HELMET", null, 0),
+	CHEST("CHEST", "CHESTPLATE", null, 0),
+	LEGS("LEGS", "LEGGINGS", null, 0),
+	FEET("FEET", "BOOTS", null, 0),
 	/**
 	 * Body armor of wolves, horses and llamas, requires Minecraft 1.20.5+
 	 */
-	BODY("BODY", "BODY"),
+	BODY("BODY", "BODY", V.v1_20, 5),
 	/**
 	 * Saddle of rideable animals, requires Minecraft 1.21.5+
 	 */
-	SADDLE("SADDLE", "SADDLE");
+	SADDLE("SADDLE", "SADDLE", V.v1_21, 5);
 
 	/**
 	 * The localizable key
@@ -55,6 +60,16 @@ public enum CompEquipmentSlot {
 	 * The alternative Bukkit name.
 	 */
 	private final String bukkitName;
+
+	/**
+	 * The oldest Minecraft version shipping this slot, null if it always existed.
+	 */
+	private final V minimumVersion;
+
+	/**
+	 * The subversion of {@link #minimumVersion} such as 5 in 1.20.5.
+	 */
+	private final int minimumSubversion;
 
 	/**
 	 * Applies this equipment slot to the given entity with the given item
@@ -150,8 +165,12 @@ public enum CompEquipmentSlot {
 	 * @param dropChance
 	 */
 	public void applyTo(@NonNull final LivingEntity entity, ItemStack item, final Double dropChance) {
-		final EntityEquipment equipment = entity instanceof LivingEntity ? entity.getEquipment() : null;
-		ValidCore.checkNotNull(equipment);
+		if (!this.isAvailable())
+			throw new FoException("Equipment slot " + this.name() + " requires Minecraft " + this.getMinimumVersion() + "+, this server runs " + MinecraftVersion.getFullVersion()
+					+ ". Iterate CompEquipmentSlot#getAvailable() instead of values() to skip slots this server lacks.", false);
+
+		final EntityEquipment equipment = entity.getEquipment();
+		ValidCore.checkNotNull(equipment, "Entity " + entity.getType() + " has no equipment to set " + this.name() + " on");
 
 		final boolean lacksDropChance = entity instanceof HumanEntity || entity.getType().toString().equals("ARMOR_STAND") || entity.getType().toString().equals("MANNEQUIN");
 
@@ -181,8 +200,6 @@ public enum CompEquipmentSlot {
 				break;
 
 			case OFF_HAND:
-				ValidCore.checkBoolean(MinecraftVersion.atLeast(V.v1_9), "Setting off hand item requires Minecraft 1.9+");
-
 				equipment.setItemInOffHand(item);
 
 				if (dropChance != null && !lacksDropChance)
@@ -235,14 +252,37 @@ public enum CompEquipmentSlot {
 	 * only reachable through the slot based API added in Minecraft 1.9.
 	 */
 	private void applyToModernSlot(final EntityEquipment equipment, final ItemStack item, final Double dropChance, final boolean lacksDropChance) {
-		final EquipmentSlot bukkitSlot = ReflectionUtil.lookupEnumSilent(EquipmentSlot.class, this.bukkitName);
-
-		ValidCore.checkNotNull(bukkitSlot, "Equipment slot " + this.name() + " requires Minecraft " + (this == BODY ? "1.20.5" : "1.21.5") + "+, running on " + MinecraftVersion.getFullVersion());
+		final EquipmentSlot bukkitSlot = this.toBukkit();
 
 		equipment.setItem(bukkitSlot, item);
 
 		if (dropChance != null && !lacksDropChance)
 			equipment.setDropChance(bukkitSlot, dropChance.floatValue());
+	}
+
+	/**
+	 * Return true if the slot is available in this MC version.
+	 *
+	 * @return
+	 */
+	public boolean isAvailable() {
+		if (this.minimumVersion == null)
+			return true;
+
+		return MinecraftVersion.atLeast(this.minimumVersion, this.minimumSubversion);
+	}
+
+	/**
+	 * Return the oldest Minecraft version shipping this slot such as "1.20.5",
+	 * or null if this slot always existed.
+	 *
+	 * @return
+	 */
+	public String getMinimumVersion() {
+		if (this.minimumVersion == null)
+			return null;
+
+		return this.minimumVersion.toString() + (this.minimumSubversion > 0 ? "." + this.minimumSubversion : "");
 	}
 
 	/**
@@ -268,8 +308,27 @@ public enum CompEquipmentSlot {
 	}
 
 	/**
+	 * Return all available equipment slots. Iterate this instead of {@link #values()},
+	 * which also lists slots only newer Minecraft versions have.
+	 *
+	 * @return
+	 */
+	public static List<CompEquipmentSlot> getAvailable() {
+		final List<CompEquipmentSlot> availableSlots = new ArrayList<>();
+
+		for (final CompEquipmentSlot slot : values())
+			if (slot.isAvailable())
+				availableSlots.add(slot);
+
+		return Collections.unmodifiableList(availableSlots);
+	}
+
+	/**
 	 * Attempts to parse equip. slot from the given key, or throwing
-	 * an error if not found
+	 * an error if not found.
+	 *
+	 * Stays an {@link IllegalArgumentException} because {@link ReflectionUtil#lookupEnumSilent(Class, String)}
+	 * calls this method reflectively and only treats that type as "no such value".
 	 *
 	 * @param key
 	 * @return
@@ -281,7 +340,7 @@ public enum CompEquipmentSlot {
 			if (slot.key.equals(key) || slot.bukkitName.equals(key))
 				return slot;
 
-		throw new IllegalArgumentException("No such comp equipment slot: " + key + " Available: " + values());
+		throw new IllegalArgumentException("No such equipment slot '" + key + "'. Available: " + CommonCore.join(values()));
 	}
 
 	/**
