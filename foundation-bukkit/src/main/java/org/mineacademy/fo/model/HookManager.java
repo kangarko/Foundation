@@ -1344,17 +1344,6 @@ public final class HookManager {
 		return message;
 	}
 
-	/*
-	 * Font image providers wipe their glyph state while reloading, so a call landing mid-reload throws and
-	 * would otherwise break every chat message. Report the real cause, throttled, and skip the replacement.
-	 */
-	static void logFontImageFailure(final String pluginName, final Throwable throwable) {
-		final Throwable root = throwable.getCause() != null ? throwable.getCause() : throwable;
-
-		CommonCore.logTimed(3600, "Failed to invoke " + pluginName + " font image replacement (" + root.getClass().getSimpleName() + ": " + root.getMessage()
-				+ "). " + pluginName + " is likely still loading or reloading its content. This message will not show for the next hour.");
-	}
-
 	// ------------------------------------------------------------------------------------------------------------
 	// Multiverse-Core
 	// ------------------------------------------------------------------------------------------------------------
@@ -4698,7 +4687,7 @@ class ItemsAdderHook {
 
 					return (T) SimpleComponent.fromAdventure(result);
 
-				} else if (messageOrComponent instanceof String && this.replaceFontImagesStringNoPlayer != null) {
+				} else if (this.replaceFontImagesStringNoPlayer != null) {
 					final String message = (String) messageOrComponent;
 					final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesStringNoPlayer, message);
 
@@ -4712,7 +4701,7 @@ class ItemsAdderHook {
 
 					return (T) SimpleComponent.fromAdventure(result);
 
-				} else if (messageOrComponent instanceof String && this.replaceFontImagesString != null) {
+				} else if (this.replaceFontImagesString != null) {
 					final String message = (String) messageOrComponent;
 					final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesString, player, message);
 
@@ -4721,7 +4710,9 @@ class ItemsAdderHook {
 			}
 
 		} catch (final Throwable t) {
-			HookManager.logFontImageFailure("ItemsAdder", t);
+			final String toString = messageOrComponent instanceof SimpleComponent ? ((SimpleComponent) messageOrComponent).toLegacyAmpersand(null) : (String) messageOrComponent;
+
+			Common.error(t, "Failed to replace ItemsAdder images" + (player == null ? "" : " for player " + player.getName()) + " in " + toString);
 		}
 
 		// Fallback to original message or component if replacement fails
@@ -4947,7 +4938,7 @@ class CraftEngineHook {
 			return SimpleComponent.fromAdventure(GsonComponentSerializer.gson().deserialize(newJson));
 
 		} catch (final Throwable t) {
-			HookManager.logFontImageFailure("CraftEngine", t);
+			Common.error(t, "Failed to replace CraftEngine images" + (player == null ? "" : " for player " + player.getName()) + " in " + component.toLegacyAmpersand(null));
 
 			return component;
 		}
@@ -4971,7 +4962,7 @@ class CraftEngineHook {
 			return ReflectionUtil.invoke(this.emojiTextResultText, result);
 
 		} catch (final Throwable t) {
-			HookManager.logFontImageFailure("CraftEngine", t);
+			Common.error(t, "Failed to replace CraftEngine legacy font images" + (player == null ? "" : " for player " + player.getName()) + " in " + message);
 
 			return message;
 		}
