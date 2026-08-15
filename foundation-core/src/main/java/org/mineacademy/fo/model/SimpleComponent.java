@@ -12,6 +12,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mineacademy.fo.CommonCore;
@@ -573,10 +574,16 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replaceMatch(final Pattern pattern, final BiFunction<MatchResult, TextComponent.Builder, ComponentLike> replacement) {
+		final Function<MatchResult, String> plainReplacement = match -> {
+			final ComponentLike replaced = replacement.apply(match, Component.text());
+
+			return replaced == null ? match.group() : PlainTextComponentSerializer.plainText().serialize(replaced.asComponent());
+		};
+
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement));
+			final Component innerComponent = replaceClickAndInsertionText(component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement)), pattern, plainReplacement);
 
 			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
@@ -596,7 +603,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement));
+			final Component innerComponent = replaceClickAndInsertionText(component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement)), pattern, match -> replacement);
 
 			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
@@ -613,15 +620,85 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent replaceMatch(final Pattern pattern, final SimpleComponent replacement) {
+		final String plainReplacement = PlainTextComponentSerializer.plainText().serialize(replacement.toAdventure(null));
 		final List<ConditionalComponent> copy = new ArrayList<>();
 
 		for (final ConditionalComponent component : this.subcomponents) {
-			final Component innerComponent = component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement.toAdventure(null)));
+			final Component innerComponent = replaceClickAndInsertionText(component.getComponent().replaceText(b -> b.match(pattern).replacement(replacement.toAdventure(null))), pattern, match -> plainReplacement);
 
 			copy.add(new ConditionalComponent(innerComponent, component.getViewPermission(), component.getViewCondition(), component.getViewVariable()));
 		}
 
 		return new SimpleComponent(copy, this.lastStyle);
+	}
+
+	/**
+	 * Replaces the pattern inside click event payloads and insertions of the entire
+	 * component tree. Adventure's replaceText only descends into text and hover
+	 * components, so placeholders such as {player} inside
+	 * &lt;click:run_command:'/tell {player}'&gt; would otherwise never be replaced.
+	 *
+	 * @param component
+	 * @param pattern
+	 * @param replacement returns the plain-text replacement for one match
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Component replaceClickAndInsertionText(Component component, final Pattern pattern, final Function<MatchResult, String> replacement) {
+		final ClickEvent clickEvent = component.clickEvent();
+
+		if (clickEvent != null && clickEvent.payload() instanceof ClickEvent.Payload.Text) {
+			final String value = ((ClickEvent.Payload.Text) clickEvent.payload()).value();
+			final String replaced = replaceAllMatches(pattern, value, replacement);
+
+			if (!replaced.equals(value))
+				component = component.clickEvent(ClickEvent.clickEvent(clickEvent.action(), ClickEvent.Payload.string(replaced)));
+		}
+
+		final String insertion = component.insertion();
+
+		if (insertion != null) {
+			final String replaced = replaceAllMatches(pattern, insertion, replacement);
+
+			if (!replaced.equals(insertion))
+				component = component.insertion(replaced);
+		}
+
+		final List<Component> children = component.children();
+
+		if (!children.isEmpty()) {
+			final List<Component> copy = new ArrayList<>(children.size());
+			boolean changed = false;
+
+			for (final Component child : children) {
+				final Component replacedChild = replaceClickAndInsertionText(child, pattern, replacement);
+
+				if (replacedChild != child)
+					changed = true;
+
+				copy.add(replacedChild);
+			}
+
+			if (changed)
+				component = component.children(copy);
+		}
+
+		return component;
+	}
+
+	/*
+	 * Replaces every match of the pattern in the input with the replacement function.
+	 */
+	private static String replaceAllMatches(final Pattern pattern, final String input, final Function<MatchResult, String> replacement) {
+		final Matcher matcher = pattern.matcher(input);
+		final StringBuffer buffer = new StringBuffer();
+
+		while (matcher.find())
+			matcher.appendReplacement(buffer, Matcher.quoteReplacement(replacement.apply(matcher.toMatchResult())));
+
+		matcher.appendTail(buffer);
+
+		return buffer.toString();
 	}
 
 	// --------------------------------------------------------------------
