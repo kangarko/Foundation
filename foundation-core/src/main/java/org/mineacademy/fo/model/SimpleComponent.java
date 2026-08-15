@@ -26,6 +26,7 @@ import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.FoScriptException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.platform.Platform;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.Lang;
 
 import com.google.gson.JsonArray;
@@ -647,12 +648,15 @@ public final class SimpleComponent implements ConfigSerializable {
 	private static Component replaceClickAndInsertionText(Component component, final Pattern pattern, final Function<MatchResult, String> replacement) {
 		final ClickEvent clickEvent = component.clickEvent();
 
-		if (clickEvent != null && clickEvent.payload() instanceof ClickEvent.Payload.Text) {
-			final String value = ((ClickEvent.Payload.Text) clickEvent.payload()).value();
-			final String replaced = replaceAllMatches(pattern, value, replacement);
+		if (clickEvent != null) {
+			final String value = RemainCore.getClickEventValue(clickEvent);
 
-			if (!replaced.equals(value))
-				component = component.clickEvent(ClickEvent.clickEvent(clickEvent.action(), ClickEvent.Payload.string(replaced)));
+			if (value != null) {
+				final String replaced = replaceAllMatches(pattern, value, replacement);
+
+				if (!replaced.equals(value))
+					component = component.clickEvent(RemainCore.newClickEvent(clickEvent.action(), replaced));
+			}
 		}
 
 		final String insertion = component.insertion();
