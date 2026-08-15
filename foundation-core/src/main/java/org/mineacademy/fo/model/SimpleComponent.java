@@ -643,7 +643,7 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @param replacement returns the plain-text replacement for one match
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("rawtypes")
 	private static Component replaceClickAndInsertionText(Component component, final Pattern pattern, final Function<MatchResult, String> replacement) {
 		final ClickEvent clickEvent = component.clickEvent();
 
