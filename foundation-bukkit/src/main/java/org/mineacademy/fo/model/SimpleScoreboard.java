@@ -31,9 +31,12 @@ import lombok.NonNull;
  * - 1.8: 30 with color, 32 without color
  * - 1.13: 126 with color, 128 without color
  * - 1.18: 65532 with color, 65534 without color
- * Maximum title lengths:
- * - 1.8: 30 with color, 32 without color
- * - 1.13: 126 with color, 128 without color
+ * Maximum title lengths, applied AFTER color translation because the server
+ * validates the final string (CraftObjective#setDisplayName throws over the
+ * limit; verified against decompiled 1.8.8, 1.12.2, 1.16.5 and 1.21.11 jars):
+ * - below 1.13: 32
+ * - 1.13 to 1.19.4: 128
+ * - 1.20+: unlimited
  *
  * @author kangarko and Tijn (<a href="https://github.com/Tvhee-Dev">Tvhee-Dev</a>)
  */
@@ -77,6 +80,7 @@ public class SimpleScoreboard {
 	 */
 	private final boolean atLeast1_13 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_13);
 	private final boolean atLeast1_18 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_18);
+	private final boolean atLeast1_20 = MinecraftVersion.atLeast(MinecraftVersion.V.v1_20);
 
 	/**
 	 * Stored scoreboard lines
@@ -187,13 +191,16 @@ public class SimpleScoreboard {
 	}
 
 	/**
+	 * Sets the raw title. It is stored untruncated: the server limits apply to the
+	 * COLOR-TRANSLATED string (a 9-char hex tag becomes 2 legacy chars below 1.16
+	 * but 14 chars from 1.16), so we translate first and truncate in
+	 * {@link #reloadEntries(Player)}. Truncating the raw text here used to cut
+	 * hex tags in half, rendering garbage like "ʀᴇ<#E1323" on 1.8.8.
+	 *
 	 * @param title the title to set
 	 */
 	public final void setTitle(final String title) {
-		final int maxTitleLength = this.atLeast1_13 ? 128 : 32;
-
-		this.title = title.length() > maxTitleLength ? title.substring(0, maxTitleLength) : title;
-		this.title = this.title.endsWith(COLOR_CHAR) ? this.title.substring(0, this.title.length() - 1) : this.title;
+		this.title = title == null ? "" : title;
 	}
 
 	/**
@@ -475,7 +482,11 @@ public class SimpleScoreboard {
 	 * @param player
 	 */
 	private void reloadEntries(final Player player) throws IllegalArgumentException {
-		final String colorizedTitle = CompChatColor.translateColorCodes(this.title);
+		String colorizedTitle = CompChatColor.translateColorCodes(this.title);
+
+		if (!this.atLeast1_20)
+			colorizedTitle = truncateSafely(colorizedTitle, this.atLeast1_13 ? 128 : 32);
+
 		final Scoreboard scoreboard = player.getScoreboard();
 		Objective mainboard = scoreboard.getObjective("mainboard");
 
@@ -529,6 +540,23 @@ public class SimpleScoreboard {
 				line.unregister();
 			}
 		}
+	}
+
+	/**
+	 * Truncates the already color-translated text to the given limit without
+	 * leaving a dangling color character at the cut point.
+	 *
+	 * @param text
+	 * @param maxLength
+	 * @return
+	 */
+	private static String truncateSafely(final String text, final int maxLength) {
+		if (text.length() <= maxLength)
+			return text;
+
+		final String cut = text.substring(0, maxLength);
+
+		return cut.endsWith(COLOR_CHAR) ? cut.substring(0, cut.length() - 1) : cut;
 	}
 
 	/**
