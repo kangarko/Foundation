@@ -2,6 +2,7 @@ package org.mineacademy.fo.model;
 
 import java.awt.Color;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.MinecraftVersion;
 import org.mineacademy.fo.MinecraftVersion.V;
 import org.mineacademy.fo.ValidCore;
+import org.mineacademy.fo.exception.FoException;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -740,6 +742,195 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	}
 
 	/**
+	 * Replaces literal text in the given legacy-colored message and strips the '§' color
+	 * codes from it, returning plain text such as the one we send to Discord.
+	 *
+	 * Each replacement key is an optional color followed by the literal text to match, such
+	 * as "&lt;green&gt;⬤", "&c⬤" or "⬤". A colored key only replaces text rendered in its color:
+	 * RGB colors round to their closest chat color, decorations are ignored and "&lt;reset&gt;"
+	 * means no color. A colorless key matches its text in any color and acts as the fallback,
+	 * because colored keys always match first. Matching runs on the color-stripped text, so
+	 * per-character color changes such as gradients cannot break it, and replaced values are
+	 * inserted verbatim, never stripped or matched again. Ampersand sequences pass through
+	 * untouched because they were never rendered as colors.
+	 *
+	 * Throws FoException for a key with no text or a missing value, call this on load with
+	 * an empty message to validate user-supplied replacements early.
+	 *
+	 * @param message
+	 * @param replacements
+	 * @return
+	 */
+	public static String replaceAndStripColors(final String message, final Map<String, String> replacements) {
+		if (replacements.isEmpty())
+			return stripColorCodes(message, false);
+
+		final List<String[]> entries = new ArrayList<>(replacements.size());
+		int coloredAmount = 0;
+
+		for (final Map.Entry<String, String> entry : replacements.entrySet()) {
+			final String[] colorAndText = splitKeyColor(entry.getKey());
+
+			if (colorAndText[1].isEmpty())
+				throw new FoException("Remove the replacement key '" + entry.getKey() + "' or add the text to replace after its color.", false);
+
+			if (entry.getValue() == null)
+				throw new FoException("Set a value for the replacement key '" + entry.getKey() + "' or remove it.", false);
+
+			final String[] parsed = { colorAndText[0], colorAndText[1], entry.getValue() };
+
+			if (colorAndText[0] != null)
+				entries.add(coloredAmount++, parsed);
+			else
+				entries.add(parsed);
+		}
+
+		// Strip the colors, remembering the color each kept character was rendered in
+		final int length = message.length();
+		final StringBuilder strippedBuilder = new StringBuilder(length);
+		final String[] colorAt = new String[length];
+		String activeColor = null;
+
+		for (int index = 0; index < length;) {
+			final char letter = message.charAt(index);
+
+			if (letter == COLOR_CHAR && index + 1 < length) {
+				final char code = message.charAt(index + 1);
+
+				if (code == 'x' && isLegacyHex(message, index)) {
+					activeColor = message.substring(index, index + 14).toLowerCase();
+					index += 14;
+
+					continue;
+				}
+
+				if ((code >= '0' && code <= '9') || (code >= 'a' && code <= 'f') || (code >= 'A' && code <= 'F') || (code >= 'k' && code <= 'o') || (code >= 'K' && code <= 'O') || code == 'r' || code == 'R' || code == 'x') {
+					final char lowerCode = Character.toLowerCase(code);
+
+					if ((lowerCode >= '0' && lowerCode <= '9') || (lowerCode >= 'a' && lowerCode <= 'f'))
+						activeColor = String.valueOf(COLOR_CHAR) + lowerCode;
+
+					else if (lowerCode == 'r')
+						activeColor = null;
+
+					index += 2;
+
+					continue;
+				}
+			}
+
+			colorAt[strippedBuilder.length()] = activeColor;
+			strippedBuilder.append(letter);
+
+			index++;
+		}
+
+		// Replace on the stripped text where keys always match as written
+		final String stripped = strippedBuilder.toString();
+		final StringBuilder result = new StringBuilder(stripped.length());
+
+		for (int index = 0; index < stripped.length();) {
+			String[] match = null;
+
+			for (final String[] entry : entries)
+				if ((entry[0] == null || entry[0].equals(colorAt[index])) && stripped.startsWith(entry[1], index)) {
+					match = entry;
+
+					break;
+				}
+
+			if (match != null) {
+				result.append(match[2]);
+
+				index += match[1].length();
+
+			} else {
+				result.append(stripped.charAt(index));
+
+				index++;
+			}
+		}
+
+		return result.toString();
+	}
+
+	/*
+	 * Split a replacement key into its leading color in legacy form and the literal text
+	 * to match, skipping decorations. Returns {color, text} where color may be null.
+	 */
+	private static String[] splitKeyColor(final String key) {
+		String color = null;
+		int index = 0;
+
+		while (index < key.length()) {
+			final char letter = key.charAt(index);
+
+			if ((letter == COLOR_CHAR || letter == '&') && index + 1 < key.length()) {
+				final CompChatColor code = getByChar(Character.toLowerCase(key.charAt(index + 1)));
+
+				if (code == null)
+					break;
+
+				if (code == RESET)
+					color = null;
+
+				else if (!getDecorations().contains(code))
+					color = code.toString();
+
+				index += 2;
+
+			} else if (letter == '<') {
+				final int end = key.indexOf('>', index);
+
+				if (end == -1)
+					break;
+
+				String tag = key.substring(index + 1, end).toLowerCase(Locale.ROOT).replace("colour:", "").replace("color:", "").replace("grey", "gray");
+				CompChatColor parsed;
+
+				try {
+					parsed = fromString(tag);
+
+				} catch (final IllegalArgumentException ex) {
+					break;
+				}
+
+				if (parsed == RESET)
+					color = null;
+
+				else if (!getDecorations().contains(parsed))
+					color = parsed.isHex() ? parsed.toClosestLegacy() : parsed.toString();
+
+				index = end + 1;
+
+			} else
+				break;
+		}
+
+		return new String[] { color, key.substring(index) };
+	}
+
+	/*
+	 * Return true if the message holds a full §x§R§R§G§G§B§B hex sequence at the index.
+	 */
+	private static boolean isLegacyHex(final String message, final int index) {
+		if (index + 14 > message.length())
+			return false;
+
+		for (int pair = index + 2; pair < index + 14; pair += 2) {
+			if (message.charAt(pair) != COLOR_CHAR)
+				return false;
+
+			final char code = Character.toLowerCase(message.charAt(pair + 1));
+
+			if ((code < '0' || code > '9') && (code < 'a' || code > 'f'))
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Gets the ChatColors used at the end of the given input string.
 	 *
 	 * @param input Input string to retrieve the colors from.
@@ -819,6 +1010,203 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 		// We got a hex color return it
 		return input.substring(index - 12, index + 2);
+	}
+
+	/**
+	 * Removes color and decoration codes that restate the style already in effect,
+	 * such as per-character colorized text where adjacent characters downsample to
+	 * the same legacy color. The rendered output is pixel-identical, only shorter,
+	 * which matters where the server enforces length limits such as scoreboard
+	 * titles (32 characters below 1.13). Understands both §c legacy codes and
+	 * §x§R§R§G§G§B§B hex sequences, honors the vanilla rule that any color code
+	 * clears active decorations, and drops codes trailing after the last visible
+	 * character since they render nothing.
+	 *
+	 * @param message the message with already translated § color codes
+	 * @return
+	 */
+	public static String compressColorCodes(final String message) {
+		if (!hasWellFormedCodes(message))
+			return message;
+
+		final int length = message.length();
+		final StringBuilder result = new StringBuilder(length);
+
+		String currentColor = null;
+		String pendingColor = null;
+		final boolean[] currentDecorations = new boolean[5];
+		final boolean[] pendingDecorations = new boolean[5];
+
+		int index = 0;
+
+		while (index < length) {
+			final char letter = message.charAt(index);
+
+			if (letter == COLOR_CHAR && index + 1 < length) {
+				final char code = Character.toLowerCase(message.charAt(index + 1));
+
+				if (code == 'x' && isHexSequence(message, index)) {
+					final StringBuilder hex = new StringBuilder(7).append('x');
+
+					for (int digit = index + 3; digit <= index + 13; digit += 2)
+						hex.append(Character.toLowerCase(message.charAt(digit)));
+
+					pendingColor = hex.toString();
+					Arrays.fill(pendingDecorations, false);
+
+					index += 14;
+					continue;
+
+				} else if ((code >= '0' && code <= '9') || (code >= 'a' && code <= 'f') || code == 'r') {
+					pendingColor = String.valueOf(code);
+					Arrays.fill(pendingDecorations, false);
+
+					index += 2;
+					continue;
+
+				} else if (code >= 'k' && code <= 'o') {
+					pendingDecorations[code - 'k'] = true;
+
+					index += 2;
+					continue;
+				}
+			}
+
+			// A visible character follows, emit the minimal codes for the pending style
+			final boolean colorChanged = pendingColor == null ? currentColor != null : !pendingColor.equals(currentColor);
+			boolean decorationRemoved = false;
+
+			for (int decoration = 0; decoration < 5; decoration++)
+				if (currentDecorations[decoration] && !pendingDecorations[decoration])
+					decorationRemoved = true;
+
+			if (colorChanged || decorationRemoved) {
+				appendColor(result, pendingColor == null ? "r" : pendingColor);
+
+				for (int decoration = 0; decoration < 5; decoration++)
+					if (pendingDecorations[decoration])
+						result.append(COLOR_CHAR).append((char) ('k' + decoration));
+
+			} else
+				for (int decoration = 0; decoration < 5; decoration++)
+					if (pendingDecorations[decoration] && !currentDecorations[decoration])
+						result.append(COLOR_CHAR).append((char) ('k' + decoration));
+
+			currentColor = pendingColor;
+			System.arraycopy(pendingDecorations, 0, currentDecorations, 0, 5);
+
+			result.append(letter);
+			index++;
+		}
+
+		return result.toString();
+	}
+
+	/*
+	 * Append the canonical color token: "c" -> §c, "r" -> §r, "xff4646" -> §x§f§f§4§6§4§6.
+	 */
+	private static void appendColor(final StringBuilder result, final String canonical) {
+		if (canonical.charAt(0) == 'x') {
+			result.append(COLOR_CHAR).append('x');
+
+			for (int digit = 1; digit < canonical.length(); digit++)
+				result.append(COLOR_CHAR).append(canonical.charAt(digit));
+
+		} else
+			result.append(COLOR_CHAR).append(canonical.charAt(0));
+	}
+
+	/*
+	 * Return true if every § in the message starts a valid color, decoration or hex token.
+	 * A literal § rendered as text makes dropping codes unsafe: removing a redundant token
+	 * after it can fuse it with the following character into an accidental new code, so
+	 * compression and downsampling leave such strings untouched.
+	 */
+	private static boolean hasWellFormedCodes(final String message) {
+		final int length = message.length();
+
+		for (int index = 0; index < length; index++)
+			if (message.charAt(index) == COLOR_CHAR) {
+				if (index + 1 >= length)
+					return false;
+
+				final char code = Character.toLowerCase(message.charAt(index + 1));
+
+				if (code == 'x') {
+					if (!isHexSequence(message, index))
+						return false;
+
+					index += 13;
+
+				} else if ((code >= '0' && code <= '9') || (code >= 'a' && code <= 'f') || (code >= 'k' && code <= 'o') || code == 'r')
+					index++;
+
+				else
+					return false;
+			}
+
+		return true;
+	}
+
+	/*
+	 * Return true if a full §x§R§R§G§G§B§B sequence starts at the given index.
+	 */
+	private static boolean isHexSequence(final String message, final int index) {
+		if (index + 13 >= message.length())
+			return false;
+
+		for (int pair = 1; pair <= 6; pair++) {
+			if (message.charAt(index + 2 * pair) != COLOR_CHAR)
+				return false;
+
+			final char digit = Character.toLowerCase(message.charAt(index + 2 * pair + 1));
+
+			if (!((digit >= '0' && digit <= '9') || (digit >= 'a' && digit <= 'f')))
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Replaces every §x§R§R§G§G§B§B hex sequence with the closest legacy color code,
+	 * used as graceful degradation where the full hex form blows a server length limit,
+	 * such as scoreboard titles between 1.16 and 1.19 whose limit of 128 characters
+	 * fits only nine 14-character hex colors. Follow with {@link #compressColorCodes(String)}
+	 * to merge neighbors that downsampled to the same legacy color.
+	 *
+	 * @param message the message with already translated § color codes
+	 * @return
+	 */
+	public static String downsampleColorCodes(final String message) {
+		if (!hasWellFormedCodes(message))
+			return message;
+
+		final int length = message.length();
+		final StringBuilder result = new StringBuilder(length);
+
+		int index = 0;
+
+		while (index < length) {
+			final char letter = message.charAt(index);
+
+			if (letter == COLOR_CHAR && index + 1 < length && Character.toLowerCase(message.charAt(index + 1)) == 'x' && isHexSequence(message, index)) {
+				final StringBuilder hex = new StringBuilder(7).append('#');
+
+				for (int digit = index + 3; digit <= index + 13; digit += 2)
+					hex.append(message.charAt(digit));
+
+				result.append(getClosestLegacy(getColorFromHex(hex.toString())));
+
+				index += 14;
+				continue;
+			}
+
+			result.append(letter);
+			index++;
+		}
+
+		return result.toString();
 	}
 
 	/**
