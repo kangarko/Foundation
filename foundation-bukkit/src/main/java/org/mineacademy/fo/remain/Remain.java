@@ -117,7 +117,7 @@ import net.kyori.adventure.text.event.HoverEventSource;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Remain {
+public final class Remain extends RemainCore {
 
 	/**
 	 * The full package name for NMS.
@@ -425,7 +425,6 @@ public final class Remain {
 		} catch (final Throwable t) {
 			CommonCore.error(t, "Failed to find Bukkit.getOnlinePlayers()");
 		}
-
 
 		try {
 			if (isUsingMojangMappings) {
