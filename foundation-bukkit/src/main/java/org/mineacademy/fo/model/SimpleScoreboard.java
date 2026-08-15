@@ -193,9 +193,12 @@ public class SimpleScoreboard {
 	/**
 	 * Sets the raw title. It is stored untruncated: the server limits apply to the
 	 * COLOR-TRANSLATED string (a 9-char hex tag becomes 2 legacy chars below 1.16
-	 * but 14 chars from 1.16), so we translate first and truncate in
-	 * {@link #reloadEntries(Player)}. Truncating the raw text here used to cut
-	 * hex tags in half, rendering garbage like "ʀᴇ<#E1323" on 1.8.8.
+	 * but 14 chars from 1.16), so {@link #reloadEntries(Player)} translates first,
+	 * then compresses codes restating the same style (a per-character gradient
+	 * downsampled to legacy collapses to a few color runs), then downsamples hex
+	 * to legacy colors if still over the limit, and only then truncates. Truncating
+	 * the raw text here used to cut hex tags in half, rendering garbage like
+	 * "ʀᴇ<#E1323" on 1.8.8.
 	 *
 	 * @param title the title to set
 	 */
@@ -484,8 +487,17 @@ public class SimpleScoreboard {
 	private void reloadEntries(final Player player) throws IllegalArgumentException {
 		String colorizedTitle = CompChatColor.translateColorCodes(this.title);
 
-		if (!this.atLeast1_20)
-			colorizedTitle = truncateSafely(colorizedTitle, this.atLeast1_13 ? 128 : 32);
+		if (!this.atLeast1_20) {
+			final int limit = this.atLeast1_13 ? 128 : 32;
+
+			colorizedTitle = CompChatColor.compressColorCodes(colorizedTitle);
+
+			// Text beats color fidelity: downsample hex to legacy colors rather than cut visible characters
+			if (colorizedTitle.length() > limit)
+				colorizedTitle = CompChatColor.compressColorCodes(CompChatColor.downsampleColorCodes(colorizedTitle));
+
+			colorizedTitle = truncateSafely(colorizedTitle, limit);
+		}
 
 		final Scoreboard scoreboard = player.getScoreboard();
 		Objective mainboard = scoreboard.getObjective("mainboard");
@@ -520,7 +532,11 @@ public class SimpleScoreboard {
 				}
 
 				final String scoreboardLineRaw = this.rows.get(lineNumber).replace("{player}", player.getName());
-				final String finishedRow = CompChatColor.translateColorCodes(this.replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
+				String finishedRow = CompChatColor.translateColorCodes(this.replaceTheme(this.replaceVariables(player, scoreboardLineRaw)));
+
+				if (!this.atLeast1_18)
+					finishedRow = CompChatColor.compressColorCodes(finishedRow);
+
 				final int maxLength = this.atLeast1_18 ? 32767 : (this.atLeast1_13 ? 64 : 16);
 				final List<String> parts = this.copyColors(finishedRow, maxLength, maxLength);
 
