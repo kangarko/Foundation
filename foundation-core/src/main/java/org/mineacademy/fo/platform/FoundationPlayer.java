@@ -20,6 +20,7 @@ import org.mineacademy.fo.model.SimpleComponent;
 import org.mineacademy.fo.model.SimpleComponent.LastMessageStyleParser;
 import org.mineacademy.fo.model.SimpleLocation;
 import org.mineacademy.fo.platform.BossBarTask.TimedBar;
+import org.mineacademy.fo.remain.RemainCore;
 import org.mineacademy.fo.settings.Lang;
 
 import lombok.NonNull;
@@ -39,7 +40,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.TextDecoration.State;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
-import net.kyori.adventure.title.Title.Times;
 import net.kyori.adventure.title.TitlePart;
 
 /**
@@ -828,7 +828,7 @@ public abstract class FoundationPlayer implements Audience {
 	 * @param subtitle the subtitle, will be colorized
 	 */
 	public final void showTitle(final int fadeIn, final int stay, final int fadeOut, final SimpleComponent title, final SimpleComponent subtitle) {
-		this.showTitle(Title.title(title.toAdventure(this), subtitle.toAdventure(this), Times.times(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
+		this.showTitle(Title.title(title.toAdventure(this), subtitle.toAdventure(this), RemainCore.newTitleTimes(Duration.ofMillis(fadeIn * 50), Duration.ofMillis(stay * 50), Duration.ofMillis(fadeOut * 50))));
 	}
 
 	/**
