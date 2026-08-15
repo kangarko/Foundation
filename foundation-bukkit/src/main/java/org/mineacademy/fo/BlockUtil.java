@@ -69,7 +69,7 @@ public final class BlockUtil {
 	 */
 	public static Set<Location> getBoundingBox(@NonNull final Chunk chunk) {
 		final int minX = chunk.getX() << 4;
-		final int minY = MinecraftVersion.atLeast(V.v1_18) ? chunk.getWorld().getMinHeight() : 0;
+		final int minY = Remain.getMinHeight(chunk.getWorld());
 		final int minZ = chunk.getZ() << 4;
 
 		final int maxX = minX | 15;
@@ -227,7 +227,7 @@ public final class BlockUtil {
 		final int maxX = minX | 15;
 		final int maxY = chunk.getWorld().getMaxHeight();
 		final int maxZ = minZ | 15;
-		final int minY = MinecraftVersion.atLeast(V.v1_18) ? chunk.getWorld().getMinHeight() : 0;
+		final int minY = Remain.getMinHeight(chunk.getWorld());
 
 		for (int x = minX; x <= maxX; ++x)
 			for (int y = minY; y <= maxY; ++y)
@@ -419,7 +419,7 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlockNoSnow(final World world, final int x, final int z) {
-		final int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+		final int minHeight = Remain.getMinHeight(world);
 
 		for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
 			final Block block = world.getBlockAt(x, y, z);
@@ -462,7 +462,7 @@ public final class BlockUtil {
 	 * @return the y coordinate, or -1 if not found
 	 */
 	public static int findHighestBlock(final World world, final int x, final int z, final Predicate<Material> predicate) {
-		final int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+		final int minHeight = Remain.getMinHeight(world);
 
 		for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
 			final Block block = world.getBlockAt(x, y, z);
@@ -499,7 +499,7 @@ public final class BlockUtil {
 	 * @return
 	 */
 	public static int findAirBlock(final World world, final int x, final int z, final boolean topDown, final Predicate<Material> predicate) {
-		final int minHeight = (MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0) + 1;
+		final int minHeight = Remain.getMinHeight(world) + 1;
 
 		if (topDown)
 			for (int y = world.getMaxHeight() - 1; y > minHeight; y--) {
@@ -543,7 +543,7 @@ public final class BlockUtil {
 	public static int findHighestNetherAirBlock(@NonNull final World world, final int x, final int z) {
 		ValidCore.checkBoolean(world.getEnvironment() == Environment.NETHER, "findHighestNetherAirBlock must be called in nether worlds, " + world.getName() + " is of type " + world.getEnvironment());
 
-		final int minHeight = MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+		final int minHeight = Remain.getMinHeight(world);
 
 		for (int y = minHeight; y < world.getMaxHeight(); y++) {
 			final Block block = world.getBlockAt(x, y, z);

@@ -55,6 +55,8 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -1373,6 +1375,17 @@ public final class Remain extends RemainCore {
 	}
 
 	/**
+	 * Return the minimum world height, which only went below zero with the expanded
+	 * world height in Minecraft 1.18.
+	 *
+	 * @param world
+	 * @return
+	 */
+	public static int getMinHeight(final World world) {
+		return MinecraftVersion.atLeast(V.v1_18) ? world.getMinHeight() : 0;
+	}
+
+	/**
 	 * Return the name of the entity
 	 *
 	 * @param entity
@@ -1855,6 +1868,29 @@ public final class Remain extends RemainCore {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Return true if the server is in the process of shutting down, used to
+	 * suppress quit-time logic when players are kicked by the stop itself.
+	 * Bukkit#isStopping only exists from 1.16, older versions ask the NMS server.
+	 *
+	 * @return
+	 */
+	public static boolean isStopping() {
+		try {
+			return Bukkit.isStopping();
+
+		} catch (final NoSuchMethodError err) {
+			try {
+				return !(boolean) ReflectionUtil.invoke("isRunning", getHandleServer());
+
+			} catch (final Throwable t) {
+
+				// Unknown fork, assume the server keeps running
+				return false;
+			}
+		}
 	}
 
 	/**
@@ -2380,6 +2416,29 @@ public final class Remain extends RemainCore {
 	}
 
 	/**
+	 * Set whether the block break event drops items and return true if the flag was
+	 * applied. The method only exists from Minecraft 1.12: below it there is no flag
+	 * in the API at all, we return false and vanilla drops CANNOT be suppressed this
+	 * way - callers who must guarantee no drops there have to cancel the event and
+	 * remove the block themselves via Block#setType, which never drops. Harmless for
+	 * synthetic probe events, which the server never processes on any version.
+	 *
+	 * @param event
+	 * @param dropItems
+	 * @return true if the flag exists and was set, false below 1.12
+	 */
+	public static boolean setDropItems(final BlockBreakEvent event, final boolean dropItems) {
+		try {
+			event.setDropItems(dropItems);
+
+			return true;
+
+		} catch (final NoSuchMethodError err) {
+			return false;
+		}
+	}
+
+	/**
 	 * Sets a game rule
 	 *
 	 * @param world    world to set game rule in
@@ -2504,6 +2563,29 @@ public final class Remain extends RemainCore {
 	 */
 	public static void setPotion(final ItemStack item, final PotionEffectType type, final long durationTicks, final int level) {
 		PotionSetter.setPotion(item, type, durationTicks, level);
+	}
+
+	/**
+	 * Set the entity that primed the TNT, making kills count as that entity's for
+	 * death attribution such as Player#getKiller. TNTPrimed#setSource is absent on
+	 * legacy versions (verified missing 1.12.2, present 1.16.5), where we set the
+	 * NMS EntityTNTPrimed source field directly (same name on 1.8.8 and 1.12.2).
+	 *
+	 * @param tnt
+	 * @param source
+	 */
+	public static void setTntSource(final TNTPrimed tnt, final LivingEntity source) {
+		try {
+			tnt.setSource(source);
+
+		} catch (final NoSuchMethodError err) {
+			try {
+				ReflectionUtil.setField(getHandleEntity(tnt), "source", getHandleEntity(source));
+
+			} catch (final Throwable t) {
+				CommonCore.logTimed(60 * 60, "Failed to set TNT source to " + source.getName() + ", kill attribution will be lost. This message only shows once per hour.");
+			}
+		}
 	}
 
 	/**
