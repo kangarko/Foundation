@@ -327,6 +327,18 @@ public final class Remain extends RemainCore {
 	private static boolean hasPlayerOpenVirtualSignMethod = false;
 
 	/**
+	 * Does the server have Bukkit#isStopping? Added in Paper 1.16 and absent from Spigot
+	 * on every version, so the NMS fallback below is the normal path there, not an edge case.
+	 */
+	private static boolean hasBukkitIsStopping = false;
+
+	/**
+	 * The NMS MinecraftServer#isRunning method used to detect shutdown when Bukkit#isStopping
+	 * is missing. The name survived every mapping we ship against (verified 1.8.8 through 26.2).
+	 */
+	private static Method nmsIsRunningMethod;
+
+	/**
 	 * Return true if the Entity class has the getHeight method (Bukkit 1.13+).
 	 * On older versions we fall back to the NMS Entity.length field.
 	 */
@@ -558,6 +570,16 @@ public final class Remain extends RemainCore {
 		} catch (final Throwable ex) {
 			// Not available
 		}
+
+		hasBukkitIsStopping = ReflectionUtil.getMethod(Bukkit.class, "isStopping") != null;
+
+		if (!hasBukkitIsStopping)
+			try {
+				nmsIsRunningMethod = ReflectionUtil.getMethod(getHandleServer().getClass(), "isRunning");
+
+			} catch (final Throwable t) {
+				// Reported the first time isStopping() is actually called
+			}
 
 		try {
 			Entity.class.getMethod("getHeight");
@@ -1873,24 +1895,20 @@ public final class Remain extends RemainCore {
 	/**
 	 * Return true if the server is in the process of shutting down, used to
 	 * suppress quit-time logic when players are kicked by the stop itself.
-	 * Bukkit#isStopping only exists from 1.16, older versions ask the NMS server.
+	 * Bukkit#isStopping is Paper 1.16+ only, everything else asks the NMS server.
 	 *
 	 * @return
 	 */
 	public static boolean isStopping() {
-		try {
+		if (hasBukkitIsStopping)
 			return Bukkit.isStopping();
 
-		} catch (final NoSuchMethodError err) {
-			try {
-				return !(boolean) ReflectionUtil.invoke("isRunning", getHandleServer());
+		if (nmsIsRunningMethod != null)
+			return !(boolean) ReflectionUtil.invoke(nmsIsRunningMethod, getHandleServer());
 
-			} catch (final Throwable t) {
+		CommonCore.logTimed(60 * 60, "Cannot detect server shutdown on " + Platform.getPlatformName() + ": neither Bukkit#isStopping nor NMS MinecraftServer#isRunning was found, so quit handlers treat a shutdown as a normal disconnect. This message only shows once per hour.");
 
-				// Unknown fork, assume the server keeps running
-				return false;
-			}
-		}
+		return false;
 	}
 
 	/**
