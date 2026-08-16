@@ -54,7 +54,7 @@ public class RemainCore {
 
 	static {
 		hasClickPayload = ReflectionUtil.isClassAvailable("net.kyori.adventure.text.event.ClickEvent$Payload");
-		hasClickPayloadFactory = hasClickPayload && ReflectionUtil.getMethod(ClickEvent.class, "clickEvent", ClickEvent.Action.class, ClickEvent.Payload.class) != null;
+		hasClickPayloadFactory = hasClickPayload && ClickPayloadAccessor.hasFactory();
 
 		if (!hasClickPayload)
 			legacyClickValueMethod = ReflectionUtil.getMethod(ClickEvent.class, "value");
@@ -76,7 +76,7 @@ public class RemainCore {
 	@SuppressWarnings("rawtypes")
 	public static String getClickEventValue(final ClickEvent clickEvent) {
 		if (hasClickPayload)
-			return clickEvent.payload() instanceof ClickEvent.Payload.Text ? ((ClickEvent.Payload.Text) clickEvent.payload()).value() : null;
+			return ClickPayloadAccessor.getValue(clickEvent);
 
 		return ReflectionUtil.invoke(legacyClickValueMethod, clickEvent);
 	}
@@ -90,9 +90,10 @@ public class RemainCore {
 	 */
 	@SuppressWarnings("rawtypes")
 	public static ClickEvent newClickEvent(final ClickEvent.Action action, final String value) {
-		return hasClickPayloadFactory
-				? ClickEvent.clickEvent(action, ClickEvent.Payload.string(value))
-				: (ClickEvent) ReflectionUtil.invoke(legacyClickFactoryMethod, (Object) null, action, value);
+		if (hasClickPayloadFactory)
+			return ClickPayloadAccessor.newClickEvent(action, value);
+
+		return ReflectionUtil.invoke(legacyClickFactoryMethod, (Object) null, action, value);
 	}
 
 	/**
@@ -107,5 +108,42 @@ public class RemainCore {
 		return legacyTimesOfMethod == null
 				? Times.times(fadeIn, stay, fadeOut)
 				: (Times) ReflectionUtil.invoke(legacyTimesOfMethod, (Object) null, fadeIn, stay, fadeOut);
+	}
+}
+
+/**
+ * Holds every direct ClickEvent.Payload call, kept out of {@link RemainCore} on purpose.
+ *
+ * Loading a class resolves the types its own methods name, so a single Payload reference
+ * anywhere in RemainCore made RemainCore itself unloadable on the many servers bundling
+ * Adventure older than 4.22, and since every platform Remain extends it, the whole plugin
+ * died at enable time with NoClassDefFoundError. A runtime flag cannot guard that, only a
+ * separate class can: this one is loaded the first time a method below runs, which happens
+ * only behind RemainCore's payload checks.
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+final class ClickPayloadAccessor {
+
+	/**
+	 * Return true if Adventure carries the 4.25.0 clickEvent(Action, Payload) factory.
+	 */
+	static boolean hasFactory() {
+		return ReflectionUtil.getMethod(ClickEvent.class, "clickEvent", ClickEvent.Action.class, ClickEvent.Payload.class) != null;
+	}
+
+	/**
+	 * Return the click event's text payload, or null when the payload carries something else.
+	 */
+	@SuppressWarnings("rawtypes")
+	static String getValue(final ClickEvent clickEvent) {
+		return clickEvent.payload() instanceof ClickEvent.Payload.Text ? ((ClickEvent.Payload.Text) clickEvent.payload()).value() : null;
+	}
+
+	/**
+	 * Create a click event carrying the given text payload.
+	 */
+	@SuppressWarnings("rawtypes")
+	static ClickEvent newClickEvent(final ClickEvent.Action action, final String value) {
+		return ClickEvent.clickEvent(action, ClickEvent.Payload.string(value));
 	}
 }
