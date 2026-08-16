@@ -493,6 +493,18 @@ public abstract class MenuPaged<T> extends Menu {
 	}
 
 	/**
+	 * The item shown in the middle of the content area when there is nothing to list,
+	 * so players see why the menu is blank and what to do about it instead of an empty grid.
+	 *
+	 * Returns null by default, which leaves the grid empty as before.
+	 *
+	 * @return the placeholder item, or null to show nothing
+	 */
+	protected ItemStack getEmptyItem() {
+		return null;
+	}
+
+	/**
 	 * Automatically get the correct item from the actual page, including
 	 * prev/next buttons
 	 *
@@ -509,6 +521,13 @@ public abstract class MenuPaged<T> extends Menu {
 
 			if (object != null)
 				return this.convertToItemStack(object);
+		}
+
+		if (this.isEmpty() && !this.slots.isEmpty() && slot == this.slots.get(this.slots.size() / 2)) {
+			final ItemStack emptyItem = this.getEmptyItem();
+
+			if (emptyItem != null)
+				return emptyItem;
 		}
 
 		if (slot == this.getPreviousButtonPosition())
