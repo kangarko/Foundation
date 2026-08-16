@@ -538,6 +538,14 @@ public class SimpleScoreboard {
 					finishedRow = CompChatColor.compressColorCodes(finishedRow);
 
 				final int maxLength = this.atLeast1_18 ? 32767 : (this.atLeast1_13 ? 64 : 16);
+
+				// A row is split into the team prefix and suffix, so anything past two chunks is dropped.
+				// We report the raw row, not the finished one: logTimed caches by the whole string and the
+				// finished row carries replaced variables, so it would log on every scoreboard update.
+				if (finishedRow.length() > 2 * maxLength)
+					CommonCore.logTimed(3600, "Scoreboard row '" + this.rows.get(lineNumber) + "' grows past the " + 2 * maxLength + " characters Minecraft "
+							+ MinecraftVersion.getFullVersion() + " shows per row once variables and color codes are replaced. The rest is cut off, shorten the row. (This message shows hourly.)");
+
 				final List<String> parts = this.copyColors(finishedRow, maxLength, maxLength);
 
 				final String prefix = parts.isEmpty() ? "" : parts.get(0);
@@ -589,7 +597,11 @@ public class SimpleScoreboard {
 			final String lastColor = CompChatColor.getLastColors(lastEntry);
 
 			final boolean addColor = !text.startsWith(COLOR_CHAR) && !lastColor.isEmpty() && !SPACE_COLOR_PATTERN.matcher(text).find();
-			final int realSplitPoint = Math.min(splitPoint - (addColor ? 2 : 0), text.length());
+
+			// Reserve the full carried-over color length: getLastColors can return color plus
+			// decorations or a 14-char hex, and reserving only 2 chars made the line overflow
+			// the server limit and throw in setPrefix/setSuffix
+			final int realSplitPoint = Math.min(Math.max(splitPoint - (addColor ? lastColor.length() : 0), 0), text.length());
 			String line = (addColor ? lastColor : "") + text.substring(0, realSplitPoint);
 
 			text = text.substring(realSplitPoint);
