@@ -32,23 +32,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CompEquipmentSlot {
 
-	HAND("HAND", "HAND", null, 0),
+	HAND("HAND", "HAND", null, 0, false),
 	/**
 	 * Requires Minecraft 1.9+
 	 */
-	OFF_HAND("OFF_HAND", "OFF_HAND", V.v1_9, 0),
-	HEAD("HEAD", "HELMET", null, 0),
-	CHEST("CHEST", "CHESTPLATE", null, 0),
-	LEGS("LEGS", "LEGGINGS", null, 0),
-	FEET("FEET", "BOOTS", null, 0),
+	OFF_HAND("OFF_HAND", "OFF_HAND", V.v1_9, 0, false),
+	HEAD("HEAD", "HELMET", null, 0, false),
+	CHEST("CHEST", "CHESTPLATE", null, 0, false),
+	LEGS("LEGS", "LEGGINGS", null, 0, false),
+	FEET("FEET", "BOOTS", null, 0, false),
 	/**
 	 * Body armor of wolves, horses and llamas, requires Minecraft 1.20.5+
 	 */
-	BODY("BODY", "BODY", V.v1_20, 5),
+	BODY("BODY", "BODY", V.v1_20, 5, true),
 	/**
 	 * Saddle of rideable animals, requires Minecraft 1.21.5+
 	 */
-	SADDLE("SADDLE", "SADDLE", V.v1_21, 5);
+	SADDLE("SADDLE", "SADDLE", V.v1_21, 5, true);
 
 	/**
 	 * The localizable key
@@ -70,6 +70,11 @@ public enum CompEquipmentSlot {
 	 * The subversion of {@link #minimumVersion} such as 5 in 1.20.5.
 	 */
 	private final int minimumSubversion;
+
+	/**
+	 * True if only animals carry this slot and players lack it entirely.
+	 */
+	private final boolean animalOnly;
 
 	/**
 	 * Applies this equipment slot to the given entity with the given item
@@ -160,6 +165,8 @@ public enum CompEquipmentSlot {
 	 * Applies this equipment slot to the given entity with the given item,
 	 * and optional drop chance from 0 to 1.0
 	 *
+	 * Does nothing when the entity has no such slot, see {@link #isApplicableTo(LivingEntity)}.
+	 *
 	 * @param entity
 	 * @param item
 	 * @param dropChance
@@ -168,6 +175,9 @@ public enum CompEquipmentSlot {
 		if (!this.isAvailable())
 			throw new FoException("Equipment slot " + this.name() + " requires Minecraft " + this.getMinimumVersion() + "+, this server runs " + MinecraftVersion.getFullVersion()
 					+ ". Iterate CompEquipmentSlot#getAvailable() instead of values() to skip slots this server lacks.", false);
+
+		if (!this.isApplicableTo(entity))
+			return;
 
 		final EntityEquipment equipment = entity.getEquipment();
 		ValidCore.checkNotNull(equipment, "Entity " + entity.getType() + " has no equipment to set " + this.name() + " on");
@@ -270,6 +280,25 @@ public enum CompEquipmentSlot {
 			return true;
 
 		return MinecraftVersion.atLeast(this.minimumVersion, this.minimumSubversion);
+	}
+
+	/**
+	 * Return true if the given entity carries this slot on this MC version. Body armor
+	 * and saddles belong to animals only, players have no such slot: older Minecraft
+	 * versions throw when you touch it on a player and newer ones silently write into
+	 * a slot the player can never wear.
+	 *
+	 * @param entity
+	 * @return
+	 */
+	public boolean isApplicableTo(@NonNull final LivingEntity entity) {
+		if (!this.isAvailable())
+			return false;
+
+		if (this.animalOnly && entity instanceof HumanEntity)
+			return false;
+
+		return true;
 	}
 
 	/**
