@@ -1972,10 +1972,11 @@ public final class HookManager {
 	/**
 	 * Send a message to a Discord channel if DiscordSRV is installed.
 	 *
-	 * @param channel the channel to send the message in.
+	 * @param channel the channel to send the message in, either a game channel name
+	 *                linked in DiscordSRV's config.yml or a raw Discord channel ID.
 	 * @param message the message to send.
 	 */
-	public static void sendDiscordMessage(final String channel, @NonNull final String message) {
+	public static void sendDiscordMessage(@NonNull final String channel, @NonNull final String message) {
 		if (isDiscordSRVLoaded())
 			try {
 				discordSRVHook.sendMessage(channel, message);
@@ -4261,11 +4262,17 @@ class CitizensHook {
 
 class DiscordSRVHook {
 
+	// Raw Discord channel ID, capped at 19 digits so parseUnsignedLong never overflows
+	private static final Pattern CHANNEL_ID_PATTERN = Pattern.compile("\\d{17,19}");
+
 	Set<String> getChannels() {
 		return DiscordSRV.getPlugin().getChannels().keySet();
 	}
 
 	boolean sendMessage(final String channel, final String message) {
+		if (CHANNEL_ID_PATTERN.matcher(channel).matches())
+			return this.sendMessage(Long.parseUnsignedLong(channel), message);
+
 		return this.sendMessage(null, channel, message);
 	}
 
@@ -4281,7 +4288,14 @@ class DiscordSRVHook {
 		// The channel is not configured in the config.yml of Discord,
 		// so we can ignore it.
 		if (textChannel == null) {
-			Common.logTimed(60 * 60, "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", this.getChannels()) + ". Not sending: " + message + ". Please add the channel by name in DiscordSRV/config.yml This message only shows once per hour.");
+
+			// Keep the message out of the throttled line, logTimed caches by the whole string
+			// and a message carrying variables would log on every single call.
+			Common.logTimed(60 * 60, "[MC->Discord] Could not find Discord channel '" + channel + "'. Available: " + String.join(", ", this.getChannels())
+					+ ". Either link the channel by name in DiscordSRV/config.yml or use the raw Discord channel ID instead."
+					+ " Set Debug to [discord] in settings.yml to see the dropped messages. This message only shows once per hour.");
+
+			Debugger.debug("discord", "[MC->Discord] Not sending to channel '" + channel + "': " + message);
 
 			return false;
 		}
@@ -4289,7 +4303,7 @@ class DiscordSRVHook {
 		return this.sendMessage0(sender, textChannel, message);
 	}
 
-	boolean sendMessage(final long channelId, String message) {
+	boolean sendMessage(final long channelId, final String message) {
 		final JDA jda = DiscordSRV.getPlugin().getJda();
 
 		if (jda == null) {
@@ -4301,25 +4315,16 @@ class DiscordSRVHook {
 		final TextChannel textChannel = jda.getTextChannelById(channelId);
 
 		if (textChannel == null) {
-			Debugger.debug("discord", "[MC->Discord] Could not find Discord channel id '" + channelId + "'. Available: " + CommonCore.join(jda.getTextChannels(), TextChannel::getName) + ". Not sending: " + message);
+			Common.logTimed(60 * 60, "[MC->Discord] Could not find Discord channel ID '" + channelId + "'."
+					+ " Check the ID is correct and that the DiscordSRV bot is in that server and can see the channel."
+					+ " Set Debug to [discord] in settings.yml to see the dropped messages. This message only shows once per hour.");
+
+			Debugger.debug("discord", "[MC->Discord] Not sending to channel ID " + channelId + ": " + message);
 
 			return false;
 		}
 
-		Platform.runTaskAsync(() -> {
-			final String finalMessage = SimpleComponent.fromMiniAmpersand(message).toPlain();
-
-			if (!finalMessage.replace(" ", "").isEmpty()) {
-				try {
-					textChannel.sendMessage(finalMessage).complete();
-
-				} catch (final Throwable t) {
-					Common.warning("Unable to send message to Discord channel ID " + channelId + ": " + t.getMessage() + ". Message: " + finalMessage);
-				}
-			}
-		});
-
-		return true;
+		return this.sendMessage0(null, textChannel, message);
 	}
 
 	private boolean sendMessage0(final CommandSender sender, @NonNull final TextChannel textChannel, String message) {
