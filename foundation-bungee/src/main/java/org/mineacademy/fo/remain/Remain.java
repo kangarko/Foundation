@@ -26,7 +26,7 @@ import net.md_5.bungee.api.scheduler.ScheduledTask;
  * Our main cross-version compatibility class.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Remain {
+public final class Remain extends RemainCore {
 
 	/**
 	 * The server getter, used to change for Redis compatibility.
