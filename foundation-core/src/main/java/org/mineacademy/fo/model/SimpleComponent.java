@@ -398,6 +398,9 @@ public final class SimpleComponent implements ConfigSerializable {
 	 * @return
 	 */
 	public SimpleComponent onClickCustomCommand(final String command) {
+		if (!RemainCore.hasCustomClickEvent())
+			return this.onClickRunCmd(command);
+
 		final String snbt = "{command:\"" + escapeSnbtString(command) + "\",plugin:\"" + escapeSnbtString(Platform.getPlugin().getName()) + "\"}";
 
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.custom(CUSTOM_COMMAND_CLICK_KEY, BinaryTagHolder.binaryTagHolder(snbt))));
