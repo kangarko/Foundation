@@ -1045,7 +1045,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 			if (letter == COLOR_CHAR && index + 1 < length) {
 				final char code = Character.toLowerCase(message.charAt(index + 1));
 
-				if (code == 'x' && isHexSequence(message, index)) {
+				if (code == 'x' && isLegacyHex(message, index)) {
 					final StringBuilder hex = new StringBuilder(7).append('x');
 
 					for (int digit = index + 3; digit <= index + 13; digit += 2)
@@ -1133,7 +1133,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				final char code = Character.toLowerCase(message.charAt(index + 1));
 
 				if (code == 'x') {
-					if (!isHexSequence(message, index))
+					if (!isLegacyHex(message, index))
 						return false;
 
 					index += 13;
@@ -1144,26 +1144,6 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 				else
 					return false;
 			}
-
-		return true;
-	}
-
-	/*
-	 * Return true if a full §x§R§R§G§G§B§B sequence starts at the given index.
-	 */
-	private static boolean isHexSequence(final String message, final int index) {
-		if (index + 13 >= message.length())
-			return false;
-
-		for (int pair = 1; pair <= 6; pair++) {
-			if (message.charAt(index + 2 * pair) != COLOR_CHAR)
-				return false;
-
-			final char digit = Character.toLowerCase(message.charAt(index + 2 * pair + 1));
-
-			if (!((digit >= '0' && digit <= '9') || (digit >= 'a' && digit <= 'f')))
-				return false;
-		}
 
 		return true;
 	}
@@ -1190,7 +1170,7 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		while (index < length) {
 			final char letter = message.charAt(index);
 
-			if (letter == COLOR_CHAR && index + 1 < length && Character.toLowerCase(message.charAt(index + 1)) == 'x' && isHexSequence(message, index)) {
+			if (letter == COLOR_CHAR && index + 1 < length && Character.toLowerCase(message.charAt(index + 1)) == 'x' && isLegacyHex(message, index)) {
 				final StringBuilder hex = new StringBuilder(7).append('#');
 
 				for (int digit = index + 3; digit <= index + 13; digit += 2)
