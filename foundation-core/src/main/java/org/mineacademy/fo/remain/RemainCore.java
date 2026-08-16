@@ -7,6 +7,8 @@ import org.mineacademy.fo.ReflectionUtil;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.title.Title.Times;
 
@@ -34,6 +36,13 @@ public class RemainCore {
 	private static boolean hasClickPayloadFactory = true;
 
 	/**
+	 * Does the runtime Adventure have ClickEvent.custom(Key, BinaryTagHolder)? Added in 4.23.0,
+	 * one release after custom click events themselves, so a server bundling 4.22.x supports the
+	 * click action but not this factory.
+	 */
+	private static boolean hasCustomClickEvent = true;
+
+	/**
 	 * ClickEvent#value(), the pre-4.22 payload getter. Removed in Adventure 5.x which we
 	 * compile against, hence reflective.
 	 */
@@ -55,6 +64,7 @@ public class RemainCore {
 	static {
 		hasClickPayload = ReflectionUtil.isClassAvailable("net.kyori.adventure.text.event.ClickEvent$Payload");
 		hasClickPayloadFactory = hasClickPayload && ClickPayloadAccessor.hasFactory();
+		hasCustomClickEvent = ReflectionUtil.getMethod(ClickEvent.class, "custom", Key.class, BinaryTagHolder.class) != null;
 
 		if (!hasClickPayload)
 			legacyClickValueMethod = ReflectionUtil.getMethod(ClickEvent.class, "value");
@@ -94,6 +104,16 @@ public class RemainCore {
 			return ClickPayloadAccessor.newClickEvent(action, value);
 
 		return ReflectionUtil.invoke(legacyClickFactoryMethod, (Object) null, action, value);
+	}
+
+	/**
+	 * Return true if custom click events can carry an NBT payload, that is Adventure 4.23.0
+	 * or newer. Callers must degrade to a regular run_command click when this is false.
+	 *
+	 * @return
+	 */
+	public static boolean hasCustomClickEvent() {
+		return hasCustomClickEvent;
 	}
 
 	/**
