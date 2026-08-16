@@ -296,7 +296,8 @@ public abstract class DiscordListener implements Listener {
 	/**
 	 * Convenience method for sending a message to a Discord channel
 	 *
-	 * @param channelName
+	 * @param channelName either a game channel name linked in DiscordSRV's config.yml
+	 *                    or a raw Discord channel ID
 	 * @param message
 	 */
 	public final void sendMessage(final String channelName, final String message) {
