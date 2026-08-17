@@ -456,6 +456,13 @@ public abstract class BukkitPlugin extends JavaPlugin implements Listener, Found
 					return message;
 				});
 
+			if (HookManager.isPacketEventsLoaded() && Platform.isPluginInstalled("InteractiveChat") && !Platform.isPluginInstalled("InteractiveChat-PacketEvents"))
+				CommonCore.logFramed(
+						"InteractiveChat & PacketEvents require the",
+						"InteractiveChat-PacketEvents to work together.",
+						"Get the plugin it from:",
+						"https://modrinth.com/plugin/interactivechat-packetevents");
+
 			if (this.getBStatsPluginId() != -1)
 				new BStatsBukkit(this, this.getBStatsPluginId());
 
