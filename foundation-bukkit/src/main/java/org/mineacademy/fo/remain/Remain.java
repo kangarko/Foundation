@@ -420,7 +420,7 @@ public final class Remain extends RemainCore {
 		isUsingMojangMappings = ReflectionUtil.isClassAvailable("net.minecraft.server.level.ServerPlayer");
 
 		try {
-			isCommandSenderAudience = Audience.class.isAssignableFrom(CommandSender.class);
+			isCommandSenderAudience = MinecraftVersion.atLeast(V.v1_16) && Audience.class.isAssignableFrom(CommandSender.class); // even older forks can do this but it's generally broken in practice so we check version instead
 
 		} catch (final Throwable t) {
 			CommonCore.error(t, "Failed to find Audience class");
