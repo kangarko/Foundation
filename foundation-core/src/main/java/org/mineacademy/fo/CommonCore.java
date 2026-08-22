@@ -453,6 +453,23 @@ public abstract class CommonCore {
 		throwError0(false, throwable, messages);
 	}
 
+	/**
+	 * Unwrap the exception that was actually thrown. Reflective and third party calls arrive
+	 * wrapped in layers such as ReflectionException over InvocationTargetException, and only
+	 * the innermost one names the real problem.
+	 *
+	 * @param throwable
+	 * @return
+	 */
+	public static final Throwable getRootCause(@NonNull Throwable throwable) {
+
+		// Bounded because a cause chain can be built cyclic, which would otherwise hang the thread
+		for (int depth = 0; depth < 50 && throwable.getCause() != null; depth++)
+			throwable = throwable.getCause();
+
+		return throwable;
+	}
+
 	/*
 	 * Processes the error message
 	 */
@@ -463,10 +480,7 @@ public abstract class CommonCore {
 		if (throwable instanceof HandledException)
 			throw (HandledException) throwable;
 
-		Throwable cause = throwable;
-
-		while (cause.getCause() != null)
-			cause = cause.getCause();
+		final Throwable cause = getRootCause(throwable);
 
 		// Delegate to only print out the relevant stuff
 		if (cause instanceof FoException)
@@ -487,11 +501,10 @@ public abstract class CommonCore {
 	 * Replace the error variable with a smart error info, see above
 	 */
 	private static String[] replaceErrorVariable(Throwable throwable, final String... messages) {
-		while (throwable.getCause() != null)
-			throwable = throwable.getCause();
+		throwable = getRootCause(throwable);
 
-		final String throwableName = throwable == null ? "Unknown error." : throwable.getClass().getSimpleName();
-		final String throwableMessage = throwable == null || throwable.getMessage() == null || throwable.getMessage().isEmpty() ? "" : ": " + throwable.getMessage();
+		final String throwableName = throwable.getClass().getSimpleName();
+		final String throwableMessage = throwable.getMessage() == null || throwable.getMessage().isEmpty() ? "" : ": " + throwable.getMessage();
 
 		for (int i = 0; i < messages.length; i++) {
 			final String error = throwableName + throwableMessage;

@@ -263,10 +263,7 @@ public final class CompEntityType {
 					enabledByFeature = true;
 
 				} catch (final ReflectiveOperationException ex) {
-					Throwable cause = ex;
-
-					while (cause.getCause() != null)
-						cause = cause.getCause();
+					final Throwable cause = CommonCore.getRootCause(ex);
 
 					if (cause instanceof IllegalArgumentException || cause instanceof NoSuchMethodError || cause instanceof NoSuchElementException) {
 						// ignore

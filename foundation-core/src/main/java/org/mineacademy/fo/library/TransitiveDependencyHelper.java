@@ -192,14 +192,8 @@ final class TransitiveDependencyHelper {
 
 				return Collections.emptyList();
 
-			} else {
-				Throwable cause = throwable;
-
-				while (cause.getCause() != null)
-					cause = cause.getCause();
-
-				CommonCore.sneaky(cause);
-			}
+			} else
+				CommonCore.sneaky(CommonCore.getRootCause(throwable));
 		}
 
 		return Collections.unmodifiableCollection(transitiveLibraries);

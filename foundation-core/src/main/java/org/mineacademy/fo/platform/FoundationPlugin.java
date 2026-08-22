@@ -66,8 +66,7 @@ public interface FoundationPlugin {
 		if (throwable instanceof HandledException)
 			throwable = ((HandledException) throwable).getHandle();
 
-		while (throwable.getCause() != null)
-			throwable = throwable.getCause();
+		throwable = CommonCore.getRootCause(throwable);
 
 		if (!(throwable instanceof HandledException)) {
 			String error = "Unable to get the error message, search above.";
