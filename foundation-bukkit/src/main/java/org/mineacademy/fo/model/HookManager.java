@@ -2303,7 +2303,9 @@ class MultiverseHook {
 				this.legacyGetColoredWorldString = mvWorld.getMethod("getColoredWorldString");
 
 			} catch (final ReflectiveOperationException ex) {
-				Common.error(ex, "Unable to hook into legacy Multiverse-Core 4. The plugin will continue normally, but world aliases will default to world names.");
+				CommonCore.warning("Unable to hook into legacy Multiverse-Core 4. The plugin will continue normally, but world aliases will default to world names.");
+
+				ex.printStackTrace();
 			}
 		}
 	}
@@ -2317,7 +2319,9 @@ class MultiverseHook {
 					return (String) this.legacyGetColoredWorldString.invoke(mvWorld);
 
 			} catch (final ReflectiveOperationException ex) {
-				Common.error(ex, "Unable to get world alias for '" + worldName + "' from legacy Multiverse-Core 4, returning world name.");
+				// Keep the world name out of the throttled line, logTimed caches by the whole string
+				CommonCore.logTimed(60 * 60, "Unable to get world aliases from legacy Multiverse-Core 4, is it up to date? Error: " + CommonCore.getRootCause(ex)
+						+ ". World names are shown instead. This message only shows once per hour.");
 			}
 
 			return worldName;
@@ -4638,7 +4642,7 @@ class LandsHook {
 
 class ItemsAdderHook {
 
-	private Class<?> itemsAdder;
+	private Method areItemsLoadedMethod;
 	private Method replaceFontImagesString;
 	private Method replaceFontImagesStringNoPlayer;
 	private Method replaceFontImagesAdventure;
@@ -4646,6 +4650,35 @@ class ItemsAdderHook {
 	private boolean failed = false;
 
 	ItemsAdderHook() {
+		try {
+			final Class<?> wrapperClass = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
+
+			this.replaceFontImagesString = ReflectionUtil.getMethod(wrapperClass, "replaceFontImages", Permissible.class, String.class);
+			this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(wrapperClass, "replaceFontImages", String.class);
+
+			this.replaceFontImagesAdventure = ReflectionUtil.getMethod(wrapperClass, "replaceFontImages", Permissible.class, Component.class);
+			this.replaceFontImagesAdventureNoPlayer = ReflectionUtil.getMethod(wrapperClass, "replaceFontImages", Component.class);
+
+			// ItemsAdder before the Permissible rewrite typed the sender parameter as Player
+			if (this.replaceFontImagesString == null)
+				this.replaceFontImagesString = ReflectionUtil.getMethod(wrapperClass, "replaceFontImages", Player.class, String.class);
+
+			final Class<?> apiClass = ReflectionUtil.lookupClassSilently("dev.lone.itemsadder.api.ItemsAdder");
+
+			if (apiClass != null)
+				this.areItemsLoadedMethod = ReflectionUtil.getMethod(apiClass, "areItemsLoaded");
+
+			// Do not stay silently idle if ItemsAdder ever renames the method, the same way Nexo fails early
+			if (this.replaceFontImagesString == null && this.replaceFontImagesStringNoPlayer == null
+					&& this.replaceFontImagesAdventure == null && this.replaceFontImagesAdventureNoPlayer == null)
+				throw new FoException("Found no usable FontImageWrapper#replaceFontImages method", false);
+
+		} catch (final Throwable t) {
+			CommonCore.warning("Unable to resolve ItemsAdder API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
+
+			t.printStackTrace();
+			this.failed = true;
+		}
 	}
 
 	SimpleComponent replaceFontImages(final Player player, final SimpleComponent component) {
@@ -4657,34 +4690,13 @@ class ItemsAdderHook {
 	}
 
 	private <T> T doReplaceFontImages(final Player player, final T messageOrComponent) {
-		if (this.replaceFontImagesString == null && this.replaceFontImagesAdventure == null && !this.failed) {
-			try {
-				this.itemsAdder = ReflectionUtil.lookupClass("dev.lone.itemsadder.api.FontImages.FontImageWrapper");
-
-				this.replaceFontImagesString = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Permissible.class, String.class);
-				this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
-
-				this.replaceFontImagesAdventure = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Permissible.class, Component.class);
-				this.replaceFontImagesAdventureNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Component.class);
-
-			} catch (final Throwable original) {
-				try {
-					this.replaceFontImagesString = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", Player.class, String.class);
-					this.replaceFontImagesStringNoPlayer = ReflectionUtil.getMethod(this.itemsAdder, "replaceFontImages", String.class);
-
-				} catch (final Throwable tt) {
-					CommonCore.warning("Unable to resolve ItemsAdder API. The plugin will continue to function, but no font images will be replaced. Is the integration outdated?");
-
-					original.printStackTrace();
-					this.failed = true;
-				}
-			}
-		}
-
 		if (this.failed)
 			return messageOrComponent;
 
 		try {
+			if (!this.isReady())
+				return messageOrComponent;
+
 			if (player == null) {
 				if (messageOrComponent instanceof SimpleComponent && this.replaceFontImagesAdventureNoPlayer != null) {
 					final Component component = ((SimpleComponent) messageOrComponent).toAdventure(null);
@@ -4692,7 +4704,7 @@ class ItemsAdderHook {
 
 					return (T) SimpleComponent.fromAdventure(result);
 
-				} else if (this.replaceFontImagesStringNoPlayer != null) {
+				} else if (messageOrComponent instanceof String && this.replaceFontImagesStringNoPlayer != null) {
 					final String message = (String) messageOrComponent;
 					final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesStringNoPlayer, message);
 
@@ -4706,7 +4718,7 @@ class ItemsAdderHook {
 
 					return (T) SimpleComponent.fromAdventure(result);
 
-				} else if (this.replaceFontImagesString != null) {
+				} else if (messageOrComponent instanceof String && this.replaceFontImagesString != null) {
 					final String message = (String) messageOrComponent;
 					final String result = (String) ReflectionUtil.invokeStatic(this.replaceFontImagesString, player, message);
 
@@ -4715,13 +4727,25 @@ class ItemsAdderHook {
 			}
 
 		} catch (final Throwable t) {
-			final String toString = messageOrComponent instanceof SimpleComponent ? ((SimpleComponent) messageOrComponent).toLegacyAmpersand(null) : (String) messageOrComponent;
-
-			Common.error(t, "Failed to replace ItemsAdder images" + (player == null ? "" : " for player " + player.getName()) + " in " + toString);
+			// Keep the message out of the throttled line, logTimed caches by the whole string
+			CommonCore.logTimed(60 * 60, "Unable to replace ItemsAdder font images, is ItemsAdder up to date? Error: " + CommonCore.getRootCause(t)
+					+ ". This error comes from ItemsAdder, report it there. This message only shows once per hour.");
 		}
 
 		// Fallback to original message or component if replacement fails
 		return messageOrComponent;
+	}
+
+	/*
+	 * ItemsAdder loads its content asynchronously after the server starts and drops it again while
+	 * /iareload runs, and its API throws a raw NullPointerException when called in that window. This
+	 * is the same flag ItemsAdder guards its own API methods with.
+	 */
+	private boolean isReady() {
+		if (this.areItemsLoadedMethod == null)
+			return true;
+
+		return (boolean) ReflectionUtil.invokeStatic(this.areItemsLoadedMethod);
 	}
 }
 
@@ -4779,10 +4803,15 @@ class NexoHook {
 		if (this.failed)
 			return component;
 
+		final Object fontManager = this.loadFontManager();
+
+		if (fontManager == null)
+			return component;
+
 		Component adventure = component.toAdventure(null);
 
 		if (this.getGlyphConfigsMethod != null) {
-			final Object glyphConfigs = ReflectionUtil.invoke(this.getGlyphConfigsMethod, this.loadFontManager());
+			final Object glyphConfigs = ReflectionUtil.invoke(this.getGlyphConfigsMethod, fontManager);
 			final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.configPlayerPlaceholderMethod, glyphConfigs, player);
 
 			// Null when the server has no glyph placeholders at all, the player is matched glyph by glyph inside
@@ -4803,7 +4832,7 @@ class NexoHook {
 			adventure = adventure.replaceText(tagConfig);
 
 		} else
-			for (final Object glyph : this.loadGlyphs()) {
+			for (final Object glyph : this.loadGlyphs(fontManager)) {
 				if (!this.canSee(player, glyph))
 					continue;
 
@@ -4824,7 +4853,12 @@ class NexoHook {
 		if (this.failed)
 			return message;
 
-		for (final Object glyph : this.loadGlyphs()) {
+		final Object fontManager = this.loadFontManager();
+
+		if (fontManager == null)
+			return message;
+
+		for (final Object glyph : this.loadGlyphs(fontManager)) {
 			if (!this.canSee(player, glyph))
 				continue;
 
@@ -4847,12 +4881,30 @@ class NexoHook {
 		return message;
 	}
 
-	private Collection<?> loadGlyphs() {
-		return ReflectionUtil.invoke(this.glyphsMethod, this.loadFontManager());
+	private Collection<?> loadGlyphs(final Object fontManager) {
+		return ReflectionUtil.invoke(this.glyphsMethod, fontManager);
 	}
 
+	/*
+	 * Nexo loads its content in an async task after enabling, so until that finishes its plugin
+	 * instance is either null or an unassigned Kotlin lateinit that throws when read. Both mean
+	 * Nexo is not ready rather than that the replacement failed, so we return no font manager.
+	 */
 	private Object loadFontManager() {
-		final Object plugin = ReflectionUtil.invokeStatic(this.instanceMethod);
+		Object plugin;
+
+		try {
+			plugin = ReflectionUtil.invokeStatic(this.instanceMethod);
+
+		} catch (final Throwable t) {
+			if (!CommonCore.getRootCause(t).getClass().getName().endsWith("UninitializedPropertyAccessException"))
+				throw t;
+
+			return null;
+		}
+
+		if (plugin == null)
+			return null;
 
 		return ReflectionUtil.invoke(this.fontManagerMethod, plugin);
 	}
@@ -4943,7 +4995,9 @@ class CraftEngineHook {
 			return SimpleComponent.fromAdventure(GsonComponentSerializer.gson().deserialize(newJson));
 
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to replace CraftEngine images" + (player == null ? "" : " for player " + player.getName()) + " in " + component.toLegacyAmpersand(null));
+			// Keep the message out of the throttled line, logTimed caches by the whole string
+			CommonCore.logTimed(60 * 60, "Unable to replace CraftEngine emojis, is CraftEngine up to date? Error: " + CommonCore.getRootCause(t)
+					+ ". This error comes from CraftEngine, report it there. This message only shows once per hour.");
 
 			return component;
 		}
@@ -4967,7 +5021,9 @@ class CraftEngineHook {
 			return ReflectionUtil.invoke(this.emojiTextResultText, result);
 
 		} catch (final Throwable t) {
-			Common.error(t, "Failed to replace CraftEngine legacy font images" + (player == null ? "" : " for player " + player.getName()) + " in " + message);
+			// Keep the message out of the throttled line, logTimed caches by the whole string
+			CommonCore.logTimed(60 * 60, "Unable to replace CraftEngine legacy emojis, is CraftEngine up to date? Error: " + CommonCore.getRootCause(t)
+					+ ". This error comes from CraftEngine, report it there. This message only shows once per hour.");
 
 			return message;
 		}

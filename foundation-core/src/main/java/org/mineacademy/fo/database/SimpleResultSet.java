@@ -118,13 +118,8 @@ public final class SimpleResultSet {
 				list.add(SerializeUtilCore.deserialize(Language.JSON, typeOf, element));
 
 			} catch (final Throwable ex) {
-				Throwable t = ex;
-
-				while (t.getCause() != null)
-					t = t.getCause();
-
 				// Get to the root cause and then ignore if the world is not loaded anymore.
-				if (t instanceof InvalidWorldException)
+				if (CommonCore.getRootCause(ex) instanceof InvalidWorldException)
 					continue;
 				else
 					CommonCore.error(ex, "Failed to deserialize list element in table " + this.tableName + "! Raw: " + element);

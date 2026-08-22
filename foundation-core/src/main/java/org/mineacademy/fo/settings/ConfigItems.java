@@ -323,10 +323,7 @@ public final class ConfigItems<T extends YamlConfig> {
 						errorHandled = true;
 
 					} else {
-						Throwable root = t;
-
-						while (root.getCause() != null)
-							root = root.getCause();
+						final Throwable root = CommonCore.getRootCause(t);
 
 						if (root instanceof InvalidWorldException) {
 							CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
