@@ -297,6 +297,12 @@ public final class Debugger {
 					return "Lost connection to your database. This is a temporary network issue, not a plugin bug.";
 			}
 
+			// MySQL/MariaDB refused the connection because the connecting host has no grant
+			// (error 1130) or the credentials are wrong (error 1045). A database setup issue,
+			// not a plugin bug.
+			if (msg != null && (msg.contains("is not allowed to connect to this") || msg.contains("Access denied for user")))
+				return "Your database refused the connection: the user or this server's IP is not allowed. Check your credentials and grant access for this host in your MySQL/MariaDB server (CREATE USER/GRANT for this IP, and bind-address/skip-networking settings).";
+
 			// A single row exceeds the server's max_allowed_packet. The user must raise that server limit;
 			// the plugin already skips oversized rows on insert where it can.
 			if (msg != null && (msg.contains("max_allowed_packet") || msg.contains("Packet for query is too large")))
