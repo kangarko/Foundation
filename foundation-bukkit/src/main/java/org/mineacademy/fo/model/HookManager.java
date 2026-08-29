@@ -1344,6 +1344,20 @@ public final class HookManager {
 		return message;
 	}
 
+	/**
+	 * Return true if the player may use the given Nexo glyph as gated by its
+	 * per-glyph permission. Returns true for unknown glyph ids, for null players
+	 * such as the console, while Nexo is still loading its content, or when
+	 * Nexo is not installed.
+	 *
+	 * @param player  the player, null to always allow.
+	 * @param glyphId the glyph id as written in a &lt;glyph:id&gt; or &lt;g:id&gt; tag.
+	 * @return
+	 */
+	public static boolean canUseNexoGlyph(final Player player, @NonNull final String glyphId) {
+		return !isNexoLoaded() || nexoHook.canUseGlyph(player, glyphId);
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 	// Multiverse-Core
 	// ------------------------------------------------------------------------------------------------------------
@@ -4754,13 +4768,16 @@ class NexoHook {
 	private Method instanceMethod;
 	private Method fontManagerMethod;
 	private Method glyphsMethod;
+	private Method getIdMethod;
 	private Method getPermissionMethod;
 	private Method getPlaceholderConfigMethod;
 	private Method getTagConfigMethod;
 	private Method getPlaceholdersMethod;
 	private Method getUnicodesMethod;
+	private Method getBaseRegexMethod;
 	private Method getGlyphConfigsMethod;
 	private Method configPlayerPlaceholderMethod;
+	private Method configEscapePlaceholderMethod;
 	private Method configEscapeTagMethod;
 	private Method configTagMethod;
 	private boolean failed = false;
@@ -4774,12 +4791,14 @@ class NexoHook {
 			this.instanceMethod = this.resolveMethod(nexoPluginClass, "instance");
 			this.fontManagerMethod = this.resolveMethod(nexoPluginClass, "fontManager");
 			this.glyphsMethod = this.resolveMethod(fontManagerClass, "glyphs");
+			this.getIdMethod = this.resolveMethod(glyphClass, "getId");
 			this.getPermissionMethod = this.resolveMethod(glyphClass, "getPermission");
 			this.getPlaceholdersMethod = this.resolveMethod(glyphClass, "getPlaceholders");
 			this.getUnicodesMethod = this.resolveMethod(glyphClass, "getUnicodes");
 
 			this.getPlaceholderConfigMethod = ReflectionUtil.getMethod(glyphClass, "getPlaceholderConfig");
 			this.getTagConfigMethod = ReflectionUtil.getMethod(glyphClass, "getTagConfig");
+			this.getBaseRegexMethod = ReflectionUtil.getMethod(glyphClass, "getBaseRegex");
 
 			// Nexo 1.27.0+ moved the per-glyph replacement configs to FontManager#getGlyphConfigs()
 			if (this.getPlaceholderConfigMethod == null || this.getTagConfigMethod == null) {
@@ -4787,6 +4806,7 @@ class NexoHook {
 
 				this.getGlyphConfigsMethod = this.resolveMethod(fontManagerClass, "getGlyphConfigs");
 				this.configPlayerPlaceholderMethod = this.resolveMethod(configsClass, "playerPlaceholderConfig", Player.class);
+				this.configEscapePlaceholderMethod = this.resolveMethod(configsClass, "escapePlaceholderConfig", Player.class);
 				this.configEscapeTagMethod = this.resolveMethod(configsClass, "escapeTagConfig", Player.class);
 				this.configTagMethod = this.resolveMethod(configsClass, "getTagConfig");
 			}
@@ -4819,9 +4839,16 @@ class NexoHook {
 				adventure = adventure.replaceText(placeholderConfig);
 
 			// Unlike the placeholder config, the shared tag config ignores permissions, so we let Nexo escape
-			// the <glyph:id> tags the player may not use and the tag config below then skips them. Never
-			// unescape after: Nexo escapes disallowed tags before us and undoing that would leak them through
+			// the placeholders and <glyph:id> tags the player may not use and the tag config below then skips
+			// them. The escape is mandatory, not cosmetic: Nexo's packet layer renders every unescaped form
+			// permission-blind on the way out, so a denied glyph left bare would still render. Never unescape
+			// after: Nexo escapes disallowed forms before us and undoing that would leak them through
 			if (player != null) {
+				final TextReplacementConfig escapePlaceholderConfig = ReflectionUtil.invoke(this.configEscapePlaceholderMethod, glyphConfigs, player);
+
+				if (escapePlaceholderConfig != null)
+					adventure = adventure.replaceText(escapePlaceholderConfig);
+
 				final TextReplacementConfig escapeTagConfig = ReflectionUtil.invoke(this.configEscapeTagMethod, glyphConfigs, player);
 
 				adventure = adventure.replaceText(escapeTagConfig);
@@ -4833,8 +4860,11 @@ class NexoHook {
 
 		} else
 			for (final Object glyph : this.loadGlyphs(fontManager)) {
-				if (!this.canSee(player, glyph))
+				if (!this.canSee(player, glyph)) {
+					adventure = this.escapeDeniedGlyph(adventure, glyph);
+
 					continue;
+				}
 
 				final TextReplacementConfig placeholderConfig = ReflectionUtil.invoke(this.getPlaceholderConfigMethod, glyph);
 				final TextReplacementConfig tagConfig = ReflectionUtil.invoke(this.getTagConfigMethod, glyph);
@@ -4859,8 +4889,16 @@ class NexoHook {
 			return message;
 
 		for (final Object glyph : this.loadGlyphs(fontManager)) {
-			if (!this.canSee(player, glyph))
+			if (!this.canSee(player, glyph)) {
+				final String placeholderPattern = this.compileDeniedPlaceholderPattern(glyph);
+
+				if (placeholderPattern != null)
+					message = message.replaceAll(placeholderPattern, "\\\\$0");
+
+				message = message.replaceAll(this.compileTagPattern(glyph), "\\\\$0");
+
 				continue;
+			}
 
 			final List<String> unicodes = ReflectionUtil.invoke(this.getUnicodesMethod, glyph);
 
@@ -4875,10 +4913,73 @@ class NexoHook {
 
 			for (final String placeholder : placeholders)
 				if (placeholder != null && !placeholder.isEmpty())
-					message = message.replace(placeholder, unicode);
+					message = message.replaceAll("(?<!\\\\)" + Pattern.quote(placeholder), Matcher.quoteReplacement(unicode));
 		}
 
 		return message;
+	}
+
+	boolean canUseGlyph(final Player player, final String glyphId) {
+		if (this.failed)
+			return true;
+
+		final Object fontManager = this.loadFontManager();
+
+		if (fontManager == null)
+			return true;
+
+		for (final Object glyph : this.loadGlyphs(fontManager))
+			if (glyphId.equals(ReflectionUtil.invoke(this.getIdMethod, glyph)))
+				return this.canSee(player, glyph);
+
+		return true;
+	}
+
+	/*
+	 * Nexo's packet layer renders bare glyph placeholders and <glyph:id> tags permission-blind
+	 * in outgoing messages, so a denied form must leave here escaped, not merely unreplaced.
+	 * The render configs skip single-backslash escaped forms and Nexo unescapes them into plain
+	 * text for the viewer. We build the escape ourselves: Nexo's own escape configs before 1.27
+	 * corrupt the message, collapsing tags into their alias and double-escaping placeholders.
+	 */
+	private Component escapeDeniedGlyph(Component adventure, final Object glyph) {
+		final String placeholderPattern = this.compileDeniedPlaceholderPattern(glyph);
+
+		if (placeholderPattern != null)
+			adventure = adventure.replaceText(this.buildEscapeConfig(placeholderPattern));
+
+		return adventure.replaceText(this.buildEscapeConfig(this.compileTagPattern(glyph)));
+	}
+
+	private TextReplacementConfig buildEscapeConfig(final String pattern) {
+		return TextReplacementConfig.builder()
+				.match(pattern)
+				.replacement((match, builder) -> builder.content("\\" + match.group()))
+				.build();
+	}
+
+	private String compileDeniedPlaceholderPattern(final Object glyph) {
+		final List<String> placeholders = ReflectionUtil.invoke(this.getPlaceholdersMethod, glyph);
+
+		if (placeholders == null || placeholders.isEmpty())
+			return null;
+
+		final List<String> quoted = new ArrayList<>();
+
+		for (final String placeholder : placeholders)
+			if (placeholder != null && !placeholder.isEmpty())
+				quoted.add(Pattern.quote(placeholder));
+
+		return quoted.isEmpty() ? null : "(?<!\\\\)(?:" + String.join("|", quoted) + ")";
+	}
+
+	private String compileTagPattern(final Object glyph) {
+		if (this.getBaseRegexMethod != null)
+			return ReflectionUtil.invoke(this.getBaseRegexMethod, glyph).toString();
+
+		final String glyphId = ReflectionUtil.invoke(this.getIdMethod, glyph);
+
+		return "(?<!\\\\)<(?:glyph|g):" + Pattern.quote(glyphId) + "(?::[^>]*)?>";
 	}
 
 	private Collection<?> loadGlyphs(final Object fontManager) {
