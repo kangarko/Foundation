@@ -34,11 +34,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 public final class CompChatColor implements TextColor, ConfigStringSerializable {
 
 	/**
-	 * Pattern to identify URLs with optional leading color codes in convertLegacyToMini().
-	 */
-	private static final Pattern URL_PATTERN = Pattern.compile("(?i)^((?:[§&][0-9a-fk-or])+)?(https?://\\S+)$");
-
-	/**
 	 * The special character which prefixes all chat colour codes. Use this if
 	 * you need to dynamically convert colour codes from your custom format.
 	 */
@@ -1192,6 +1187,10 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 	/**
 	 * Replace legacy & color codes to MiniMessage tags. Does NOT parse the message.
 	 *
+	 * Codes inside a URL stay as they are wherever the URL sits, as a bare word, inside a click
+	 * event payload or as the text of a click tag, since "&list=" in a YouTube link is a query
+	 * parameter and not a bold code. See {@link ChatUtil#CLICKABLE_DOMAIN_PATTERN}.
+	 *
 	 * @param message
 	 * @param supportAmpersand
 	 * @return
@@ -1202,61 +1201,27 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 		if (!message.contains(String.valueOf(COLOR_CHAR)) && (!supportAmpersand || !message.contains("&")))
 			return message;
 
-		final StringBuilder result = new StringBuilder();
+		final int length = message.length();
+		final StringBuilder result = new StringBuilder(length);
+		final Matcher urlMatcher = ChatUtil.CLICKABLE_DOMAIN_PATTERN.matcher(message);
 
 		// Track open legacy decorations so a following color code can reset them like the vanilla client does
 		boolean legacyDecorationOpen = false;
 
-		// Split by spaces to handle URLs separately (preserve color codes inside URLs as-is)
-		final String[] parts = message.split(" ", -1);
+		// A URL can only begin where a word begins, so "foo&list" keeps its bold code
+		boolean urlMayStart = true;
 
-		for (int idx = 0; idx < parts.length; idx++) {
-			final String part = parts[idx];
-
-			// Check for URLs with http:// or https:// protocol first (with optional leading color codes)
-			final Matcher urlMatcher = URL_PATTERN.matcher(part);
-
-			if (urlMatcher.matches()) {
-				final String colorPrefix = urlMatcher.group(1); // Optional color codes before URL
-				final String url = urlMatcher.group(2); // The actual URL
-
-				if (colorPrefix != null && !colorPrefix.isEmpty())
-					legacyDecorationOpen = appendLegacyAsMini(result, colorPrefix, supportAmpersand, legacyDecorationOpen);
-
-				result.append(url.replace(String.valueOf(COLOR_CHAR), ""));
-
-				if (idx < parts.length - 1)
-					result.append(' ');
-
-				continue;
-			}
-
-			legacyDecorationOpen = appendLegacyAsMini(result, part, supportAmpersand, legacyDecorationOpen);
-
-			// Re-append the space we used to split if it is not the last part
-			if (idx < parts.length - 1)
-				result.append(" ");
-		}
-
-		return result.toString();
-	}
-
-	/*
-	 * Convert one space-delimited token from legacy codes to mini tags,
-	 * returning whether a legacy decoration remains open after it.
-	 */
-	private static boolean appendLegacyAsMini(final StringBuilder result, final String part, final boolean supportAmpersand, boolean legacyDecorationOpen) {
-		for (int i = 0; i < part.length(); i++) {
+		for (int i = 0; i < length; i++) {
 
 			// Support §x§R§R§G§G§B§B and &x&R&R&G&G&B&B hex colors
-			if (i + 13 < part.length() && (part.charAt(i) == COLOR_CHAR || (supportAmpersand && part.charAt(i) == '&')) && Character.toLowerCase(part.charAt(i + 1)) == 'x') {
-				final char prefix = part.charAt(i);
+			if (i + 13 < length && (message.charAt(i) == COLOR_CHAR || (supportAmpersand && message.charAt(i) == '&')) && Character.toLowerCase(message.charAt(i + 1)) == 'x') {
+				final char prefix = message.charAt(i);
 				final StringBuilder hex = new StringBuilder("#");
 				boolean isValidHexSequence = true;
 
 				for (int j = 2; j <= 12; j += 2) {
-					if (part.charAt(i + j) == prefix)
-						hex.append(part.charAt(i + j + 1));
+					if (message.charAt(i + j) == prefix)
+						hex.append(message.charAt(i + j + 1));
 
 					else {
 						isValidHexSequence = false;
@@ -1274,14 +1239,15 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 					result.append('<').append(hex).append('>');
 					i += 13; // Skip the entire §x§R§R§G§G§B§B or &x&R&R&G&G&B&B sequence
+					urlMayStart = true;
 
 					continue;
 				}
 			}
 
 			// Support &#RRGGBB and §#RRGGBB hex colors
-			if (i + 7 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR) && part.charAt(i + 1) == '#') {
-				final String hexCode = part.substring(i + 2, i + 8);
+			if (i + 7 < length && ((message.charAt(i) == '&' && supportAmpersand) || message.charAt(i) == COLOR_CHAR) && message.charAt(i + 1) == '#') {
+				final String hexCode = message.substring(i + 2, i + 8);
 
 				if (hexCode.matches("[0-9a-fA-F]{6}")) {
 					if (legacyDecorationOpen) {
@@ -1292,13 +1258,14 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 					result.append("<#").append(hexCode).append('>');
 					i += 7; // Skip the entire &#RRGGBB sequence
+					urlMayStart = true;
 
 					continue;
 				}
 			}
 
-			if (i + 1 < part.length() && ((part.charAt(i) == '&' && supportAmpersand) || part.charAt(i) == COLOR_CHAR)) {
-				final String code = part.substring(i, i + 2);
+			if (i + 1 < length && ((message.charAt(i) == '&' && supportAmpersand) || message.charAt(i) == COLOR_CHAR)) {
+				final String code = message.substring(i, i + 2);
 
 				if (LEGACY_TO_MINI.containsKey(code)) {
 					final char codeChar = Character.toLowerCase(code.charAt(1));
@@ -1317,18 +1284,41 @@ public final class CompChatColor implements TextColor, ConfigStringSerializable 
 
 					result.append(LEGACY_TO_MINI.get(code));
 					i++;
+					urlMayStart = true;
 
 					continue;
 				}
 			}
 
-			if (part.charAt(i) == COLOR_CHAR)
+			final char letter = message.charAt(i);
+
+			if (letter == COLOR_CHAR)
 				continue;
 
-			result.append(part.charAt(i));
+			if (urlMayStart && urlMatcher.region(i, length).lookingAt()) {
+				for (int j = i; j < urlMatcher.end(); j++)
+					if (message.charAt(j) != COLOR_CHAR)
+						result.append(message.charAt(j));
+
+				i = urlMatcher.end() - 1;
+				urlMayStart = false;
+
+				continue;
+			}
+
+			result.append(letter);
+			urlMayStart = !isDomainChar(letter);
 		}
 
-		return legacyDecorationOpen;
+		return result.toString();
+	}
+
+	/*
+	 * Return true if the letter can be part of a domain name, matching the protocol-less
+	 * branch of ChatUtil#CLICKABLE_DOMAIN_PATTERN.
+	 */
+	private static boolean isDomainChar(final char letter) {
+		return (letter >= 'a' && letter <= 'z') || (letter >= 'A' && letter <= 'Z') || (letter >= '0' && letter <= '9') || letter == '_' || letter == '.' || letter == '-';
 	}
 
 	/**

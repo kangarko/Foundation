@@ -15,6 +15,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mineacademy.fo.ChatUtil;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.MinecraftVersion;
@@ -424,12 +425,22 @@ public final class SimpleComponent implements ConfigSerializable {
 	}
 
 	/**
-	 * Open the given URL.
+	 * Open the given URL. Paper 1.21.5+ and Adventure 5.1+ reject a click event whose URL
+	 * java.net.URI cannot parse, so an invalid one is logged and left unclickable instead of
+	 * failing every message built from that format.
 	 *
 	 * @param url
 	 * @return
 	 */
 	public SimpleComponent onClickOpenUrl(final String url) {
+		final String syntaxError = ChatUtil.findUrlSyntaxError(url);
+
+		if (syntaxError != null) {
+			CommonCore.logTimed(3600, "Not adding a click event to open a URL from your configuration, fix it: " + syntaxError + " (This message shows hourly.)");
+
+			return this;
+		}
+
 		return this.modifyLastComponentAndReturn(component -> component.clickEvent(ClickEvent.openUrl(url)));
 	}
 
