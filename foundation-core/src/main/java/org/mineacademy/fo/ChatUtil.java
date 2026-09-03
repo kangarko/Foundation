@@ -1,6 +1,8 @@
 package org.mineacademy.fo;
 
 import java.awt.Color;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,14 +34,22 @@ public final class ChatUtil {
 	private final static Pattern DOMAIN_PATTERN = Pattern.compile("(https?:\\/\\/(?:www\\.|(?!www))[^\\s\\.]+\\.[^\\s]{2,}|www\\.[^\\s]+\\.[^\\s]{2,})");
 
 	/**
-	 * The pattern to match a domain to make it clickable.
+	 * The pattern to match a URL we make clickable and whose inside we never parse for legacy
+	 * color codes, since "&list=" in a YouTube link is a query parameter and not a bold code.
 	 *
-	 * This regex strictly matches URLs with an optional protocol,
-	 * a more structured domain, and an optional path.
-	 *
-	 * It's designed to enforce a more logical structure for parsed URLs.
+	 * With a protocol any host is accepted, without one the word must look like a domain with
+	 * an optional port. The path, query or fragment stops at whitespace, quotes and angle
+	 * brackets so the match works both on a whole word and from inside a MiniMessage tag such
+	 * as {@code <click:open_url:'https://...'>https://...</click>}, and it never ends in sentence
+	 * punctuation so "see youtube.com, now" links youtube.com without the comma. Use it with
+	 * {@link Matcher#lookingAt()}, group 1 is the protocol.
 	 */
-	private static final Pattern CLICKABLE_DOMAIN_PATTERN = Pattern.compile("^(?:(https?)://)?([-\\w_\\.]{2,}\\.[a-z]{2,4})(/\\S*)?$");
+	public static final Pattern CLICKABLE_DOMAIN_PATTERN = Pattern.compile("(?:((?i:https?))://[^\\s'\"<>/?#]*[^\\s'\"<>/?#.,;:!?)]|[-\\w.]{2,}\\.[a-z]{2,4}(?::\\d+)?)(?:/(?:[^\\s'\"<>]*[^\\s'\"<>.,;:!?])?|[?#][^\\s'\"<>]*[^\\s'\"<>.,;:!?])?(?![-\\w]|\\.[-\\w])");
+
+	/**
+	 * Sentence punctuation that may trail a URL inside the same word without being part of it.
+	 */
+	private static final Pattern TRAILING_PUNCTUATION = Pattern.compile("[.,;:!?)]*");
 
 	/**
 	 * Centers a message in chat.
@@ -532,6 +542,25 @@ public final class ChatUtil {
 	}
 
 	/**
+	 * Return why the URL does not parse as a java.net.URI, or null when it does. Paper 1.21.5+
+	 * demands a parseable URI of an open_url click event when encoding the packet and
+	 * Adventure 5.1+ when creating the event, otherwise the whole message is lost.
+	 *
+	 * @param url
+	 * @return
+	 */
+	public static String findUrlSyntaxError(final String url) {
+		try {
+			new URI(url);
+
+			return null;
+
+		} catch (final URISyntaxException ex) {
+			return ex.getMessage();
+		}
+	}
+
+	/**
 	 * Appends minimessage tags for URLs in the message to
 	 * make them clickable.
 	 *
@@ -540,27 +569,68 @@ public final class ChatUtil {
 	 */
 	public static String addMiniMessageUrlTags(final String message) {
 		final StringBuilder result = new StringBuilder();
-		final String[] words = message.split("\\s+");
 
-		for (String word : words) {
-			final String color = word.startsWith("&") && word.length() > 2 ? word.substring(0, 2) : "";
-			if(!color.isEmpty())
-				word = word.substring(2);
-			final Matcher matcher = CLICKABLE_DOMAIN_PATTERN.matcher(word);
-			if (matcher.matches()) {
-				final String protocol = matcher.group(1) != null ? matcher.group(1) : "https";
-				final String domain = matcher.group(2);
-				final String path = matcher.group(3) != null ? matcher.group(3) : "";
-				final String fullUrl = protocol + "://" + domain + path;
+		for (final String word : message.split("\\s+")) {
+			final int start = findStyleEnd(word);
+			final Matcher matcher = CLICKABLE_DOMAIN_PATTERN.matcher(word).region(start, word.length());
+			int end = matcher.lookingAt() ? matcher.end() : start;
 
-				String format = String.format("<click:open_url:'%s'>%s</click> ", fullUrl, CompChatColor.convertLegacyToMini(color, true).trim() + word);
-				result.append(format);
-			} else {
-				result.append(color).append(word).append(" ");
+			// A closing bracket belongs to the sentence unless the URL opened one, as in wiki/Foo_(bar)
+			if (end > start && word.charAt(end - 1) == ')' && word.substring(start, end).indexOf('(') == -1)
+				end--;
+
+			final String url = end > start && TRAILING_PUNCTUATION.matcher(word.substring(end)).matches() ? findClickableUrl(word.substring(start, end), matcher.group(1)) : null;
+
+			if (url == null) {
+				result.append(word).append(' ');
+
+				continue;
 			}
+
+			result.append(CompChatColor.convertLegacyToMini(word.substring(0, start), true))
+					.append("<click:open_url:'").append(url).append("'>").append(word, start, end).append("</click>")
+					.append(word.substring(end)).append(' ');
 		}
 
 		return result.toString().trim();
+	}
+
+	/*
+	 * Return the index where the leading MiniMessage tags and legacy codes of the word end, so
+	 * "<red>https://..." as produced by a color filter or "&chttps://..." still gets its link.
+	 */
+	private static int findStyleEnd(final String word) {
+		int index = 0;
+
+		while (index < word.length()) {
+			final char letter = word.charAt(index);
+
+			if (letter == '<') {
+				final int close = word.indexOf('>', index);
+
+				if (close == -1)
+					break;
+
+				index = close + 1;
+
+			} else if ((letter == '&' || letter == CompChatColor.COLOR_CHAR) && index + 1 < word.length() && CompChatColor.LEGACY_TO_MINI.containsKey(word.substring(index, index + 2)))
+				index += 2;
+
+			else
+				break;
+		}
+
+		return index;
+	}
+
+	/*
+	 * Return the text as a URL Minecraft can open, adding the protocol when missing, or null
+	 * so text with a stray "{" or "\" stays plain instead of failing the whole message.
+	 */
+	private static String findClickableUrl(final String text, final String protocol) {
+		final String url = protocol == null ? "https://" + text : protocol.toLowerCase() + text.substring(protocol.length());
+
+		return findUrlSyntaxError(url) == null ? url : null;
 	}
 
 	/**
