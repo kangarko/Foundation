@@ -5004,7 +5004,10 @@ class NexoHook {
 			return null;
 		}
 
-		if (plugin == null)
+		// Nexo builds its font manager on first access and registers a listener while doing so, which the
+		// server refuses until Nexo is enabled. We get here first when the load order puts us in front of
+		// Nexo, typically on the legacy plugin loading strategy that breaks soft dependency cycles arbitrarily
+		if (plugin == null || !((Plugin) plugin).isEnabled())
 			return null;
 
 		return ReflectionUtil.invoke(this.fontManagerMethod, plugin);

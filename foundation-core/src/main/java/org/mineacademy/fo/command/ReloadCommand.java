@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mineacademy.fo.exception.FoException;
+import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.mineacademy.fo.platform.Platform;
 import org.mineacademy.fo.settings.Lang;
 import org.mineacademy.fo.settings.YamlConfig;
@@ -57,10 +59,15 @@ public final class ReloadCommand extends SimpleCommandCore {
 				try {
 					YamlConfig.fromFile(file);
 
-				} catch (final Throwable t) {
-					t.printStackTrace();
+				} catch (final YamlSyntaxError err) {
+					err.printStackTrace();
 
 					erroredFiles.add(file.getName());
+
+				} catch (final FoException ex) {
+					// Well formed YAML that is not a configuration, such as a word list an admin keeps in
+					// the plugin folder. Only the code loading it as a configuration can tell whether that
+					// is a problem, and it reports it then.
 				}
 
 			if (!erroredFiles.isEmpty()) {

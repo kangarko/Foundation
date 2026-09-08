@@ -172,7 +172,6 @@ public class YamlConfig extends FileConfig {
 	@Override
 	public final void loadFromString(@NonNull final String contents) {
 
-		MappingNode node;
 		Node rawNode;
 
 		try {
@@ -182,12 +181,13 @@ public class YamlConfig extends FileConfig {
 			throw new YamlSyntaxError(ex, this.getFile());
 		}
 
-		try {
-			node = (MappingNode) rawNode;
+		// A bare list or a single value is well formed YAML but not a configuration, this is
+		// a mistake in the file rather than a bug so it is not reported back to us
+		if (rawNode != null && !(rawNode instanceof MappingNode))
+			throw new FoException((this.getFile() != null ? "File " + this.getFile() : "The YAML content") + " must start with 'key: value' pairs but its top level is a "
+					+ (rawNode instanceof SequenceNode ? "list" : "single value") + " instead, fix or remove it.", false);
 
-		} catch (final ClassCastException e) {
-			throw new FoException("Top level is not a Map in YAML configuration: " + contents);
-		}
+		final MappingNode node = (MappingNode) rawNode;
 
 		this.map.clear();
 
