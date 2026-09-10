@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -3494,6 +3495,13 @@ public final class Remain extends RemainCore {
 			entity.teleportAsync(location);
 		else
 			entity.teleport(location);
+	}
+
+	public static CompletableFuture<Boolean> teleportWithResult(final Entity entity, final Location location) {
+		if (isFolia())
+			return entity.teleportAsync(location);
+
+		return CompletableFuture.completedFuture(entity.teleport(location));
 	}
 
 	/**
