@@ -28,7 +28,6 @@ import org.mineacademy.fo.event.RocketExplosionEvent;
 import org.mineacademy.fo.menu.Menu;
 import org.mineacademy.fo.model.SimpleRunnable;
 import org.mineacademy.fo.platform.Platform;
-import org.mineacademy.fo.remain.CompEntityType;
 import org.mineacademy.fo.remain.Remain;
 import org.mineacademy.fo.settings.Lang;
 
@@ -80,16 +79,7 @@ public final class ToolsListener implements Listener {
 				if ((event.isCancelled() || !event.hasBlock()) && tool.ignoreCancelled())
 					return;
 
-				if (tool instanceof Rocket) {
-					final Rocket rocket = (Rocket) tool;
-
-					if (rocket.canLaunch(player, player.getEyeLocation()))
-						player.launchProjectile(rocket.getProjectile(), player.getEyeLocation().getDirection().multiply(rocket.getFlightSpeed()));
-					else
-						event.setCancelled(true);
-
-				} else
-					tool.onBlockClick(event);
+				tool.onBlockClick(event);
 
 				if (tool.autoCancel())
 					event.setCancelled(true);
@@ -253,12 +243,9 @@ public final class ToolsListener implements Listener {
 
 						final Location directedLoc = player.getEyeLocation().add(player.getEyeLocation().getDirection().setY(0).normalize().multiply(1.05)).add(0, 0.2, 0);
 
-						final Projectile copy;
-
-						if (shot instanceof EnderPearl)
-							copy = (Projectile) world.spawnEntity(directedLoc, CompEntityType.ENDER_PEARL);
-						else
-							copy = world.spawn(directedLoc, shot.getClass());
+						// Spawn by type, the entity's own class is the CraftBukkit implementation
+						// which World#spawn rejects, killing every non-pearl rocket
+						final Projectile copy = (Projectile) world.spawnEntity(directedLoc, shot.getType());
 
 						copy.setVelocity(shot.getVelocity());
 
