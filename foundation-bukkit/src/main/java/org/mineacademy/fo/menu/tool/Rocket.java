@@ -1,23 +1,24 @@
 package org.mineacademy.fo.menu.tool;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.event.RocketExplosionEvent;
 
 import lombok.Getter;
 
 /**
- * A rocket is an extended {@link Tool}
+ * A rocket is an extended {@link BlockTool}
  * that explodes when hit the ground.
  * <p>
  * Please use the onExplode method for calling
  * the explosion or call the {@link RocketExplosionEvent} manually.
  */
 @Getter
-public abstract class Rocket extends Tool {
+public abstract class Rocket extends BlockTool {
 
 	/**
 	 * The projectile that is being shot
@@ -94,7 +95,30 @@ public abstract class Rocket extends Tool {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void onBlockClick(final PlayerInteractEvent e) {
+	protected final void onBlockClick(final Player player, final ClickType click, final Block block) {
+		this.launchIfRightClick(player, click);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected final void onAirClick(final Player player, final ClickType click) {
+		this.launchIfRightClick(player, click);
+	}
+
+	/*
+	 * One use reaches the listener as both the arm swing and the item use in the same tick,
+	 * on the primary hand either way, so only the right click may launch or it fires twice.
+	 */
+	private void launchIfRightClick(final Player player, final ClickType click) {
+		if (click != ClickType.RIGHT)
+			return;
+
+		if (this.canLaunch(player, player.getEyeLocation()))
+			player.launchProjectile(this.projectile, player.getEyeLocation().getDirection().multiply(this.flightSpeed));
+		else
+			this.getEvent().setCancelled(true);
 	}
 
 	/**
@@ -151,16 +175,6 @@ public abstract class Rocket extends Tool {
 	 * @param location
 	 */
 	protected void onExplode(final Projectile projectile, final Player shooter) {
-	}
-
-	/**
-	 * Also shoot rockets when clicking the air (Bukkit cancels the event so)
-	 *
-	 * @return true
-	 */
-	@Override
-	protected boolean ignoreCancelled() {
-		return false;
 	}
 
 	/**
