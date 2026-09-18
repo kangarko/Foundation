@@ -250,6 +250,11 @@ public final class CompPotionEffectType {
 	public static final PotionEffectType INFESTED = find("INFESTED");
 
 	/**
+	 * Breath of the Nautilus (26.2+)
+	 */
+	public static final PotionEffectType BREATH_OF_THE_NAUTILUS = find("BREATH_OF_THE_NAUTILUS");
+
+	/**
 	 * Get the potion by name
 	 *
 	 * @param name

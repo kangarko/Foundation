@@ -220,6 +220,11 @@ public final class CompEntityType {
 	// Up to Minecraft 26.2
 	public static final EntityType SULFUR_CUBE = find(-1, CompMaterial.SULFUR_CUBE_SPAWN_EGG, "SULFUR_CUBE");
 
+	// Up to Minecraft 26.3
+	public static final EntityType CUSHION = find(-1, null, "CUSHION");
+	public static final EntityType POPLAR_BOAT = find(-1, null, "POPLAR_BOAT");
+	public static final EntityType POPLAR_CHEST_BOAT = find(-1, null, "POPLAR_CHEST_BOAT");
+
 	/** @deprecated removed */
 	@Deprecated
 	public static final EntityType WEATHER = find(-1, null, "WEATHER");
