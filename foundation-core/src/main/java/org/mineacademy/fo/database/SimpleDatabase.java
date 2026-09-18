@@ -247,7 +247,7 @@ public class SimpleDatabase {
 			// BungeeCord does not. Load it on demand so HikariCP's class initializer doesn't
 			// fail with NoClassDefFoundError.
 			if (!ReflectionUtil.isClassAvailable("org.slf4j.LoggerFactory"))
-				Platform.getPlugin().loadLibrary("org.slf4j", "slf4j-api", "2.0.18");
+				Platform.getPlugin().loadLibrary("org.slf4j", "slf4j-api", "2.0.19");
 
 			Platform.getPlugin().loadLibrary("com.zaxxer", "HikariCP", "7.1.0");
 
@@ -346,7 +346,7 @@ public class SimpleDatabase {
 	 */
 	private String loadDriverFor(final String url) {
 		if (url.startsWith("jdbc:sqlite")) {
-			Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.53.2.1");
+			Platform.getPlugin().loadLibrary("org.xerial", "sqlite-jdbc", "3.53.4.0");
 
 			this.isSQLite = true;
 
