@@ -80,7 +80,7 @@
         <dependency>
 		    <groupId>io.papermc.paper</groupId>
 		    <artifactId>paper-api</artifactId>
-		    <version>[26.2.build,)</version>
+		    <version>[26.3.build,26.3-pre)</version>
 		</dependency>
 
         <!-- MineAcademy guaranteed availability repos for plugins -->
