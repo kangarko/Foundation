@@ -1094,8 +1094,14 @@ public class Common {
 		if (found == null)
 			return false;
 
+		// Warn if the plugin is still disabled after server has finished loading. Never throw here,
+		// a third party plugin failing to enable is not our error to log or auto report.
 		if (!found.isEnabled())
-			runLaterAsync(0, () -> Valid.checkBoolean(found.isEnabled(), SimplePlugin.getNamed() + " could not hook into " + pluginName + " as the plugin is disabled! (DO NOT REPORT THIS TO " + SimplePlugin.getNamed() + ", look for errors above and contact support of '" + pluginName + "')"));
+			runLaterAsync(0, () -> {
+				if (!found.isEnabled())
+					warning(SimplePlugin.getNamed() + " could not hook into " + pluginName + " as the plugin is disabled! (DO NOT REPORT THIS TO "
+							+ SimplePlugin.getNamed() + ", look for errors above and contact support of '" + pluginName + "')");
+			});
 
 		return true;
 	}
