@@ -217,6 +217,9 @@ public final class CompEntityType {
 	public static final EntityType PARCHED = find(-1, CompMaterial.PARCHED_SPAWN_EGG, "PARCHED");
 	public static final EntityType ZOMBIE_NAUTILUS = find(-1, CompMaterial.ZOMBIE_NAUTILUS_SPAWN_EGG, "ZOMBIE_NAUTILUS");
 
+	// Up to Minecraft 26.2
+	public static final EntityType SULFUR_CUBE = find(-1, CompMaterial.SULFUR_CUBE_SPAWN_EGG, "SULFUR_CUBE");
+
 	/** @deprecated removed */
 	@Deprecated
 	public static final EntityType WEATHER = find(-1, null, "WEATHER");

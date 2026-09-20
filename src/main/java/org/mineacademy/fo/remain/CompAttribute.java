@@ -222,7 +222,32 @@ public enum CompAttribute {
 	/**
 	 * Attribute controlling the range an entity receives other waypoints from.
 	 */
-	WAYPOINT_RECEIVE_RANGE("WAYPOINT_RECEIVE_RANGE");
+	WAYPOINT_RECEIVE_RANGE("WAYPOINT_RECEIVE_RANGE"),
+
+	/**
+	 * The air drag applied to an entity.
+	 */
+	AIR_DRAG_MODIFIER("AIR_DRAG_MODIFIER"),
+
+	/**
+	 * The distance at which an entity's below-name text is visible.
+	 */
+	BELOW_NAME_DISTANCE("BELOW_NAME_DISTANCE"),
+
+	/**
+	 * How much an entity bounces upon landing.
+	 */
+	BOUNCINESS("BOUNCINESS"),
+
+	/**
+	 * The friction modifier applied to an entity's movement.
+	 */
+	FRICTION_MODIFIER("FRICTION_MODIFIER"),
+
+	/**
+	 * The distance at which an entity's name tag is visible.
+	 */
+	NAME_TAG_DISTANCE("NAME_TAG_DISTANCE");
 
 	/**
 	 * Returns true if the attribute is supported by the server.
