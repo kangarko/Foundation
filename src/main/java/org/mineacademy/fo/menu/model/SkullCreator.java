@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.SkullType;
 import org.bukkit.block.Block;
@@ -254,6 +255,21 @@ public class SkullCreator {
 		return Base64.getEncoder().encodeToString(toEncode.getBytes());
 	}
 
+	/*
+	 * Authlib turned GameProfile into a record, renaming getProperties() to properties().
+	 */
+	private static Object readProperties(final Object profile) throws ReflectiveOperationException {
+		for (final String methodName : new String[] { "properties", "getProperties" })
+			try {
+				return profile.getClass().getMethod(methodName).invoke(profile);
+
+			} catch (final NoSuchMethodException ex) {
+				// Try the other name
+			}
+
+		throw new NoSuchMethodException("Neither properties() nor getProperties() exists on " + profile.getClass());
+	}
+
 	private static Object makeProfile(final String b64) {
 		// random uuid based on the b64 string
 		final UUID id = new UUID(
@@ -267,18 +283,37 @@ public class SkullCreator {
 			Object fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class).newInstance(id, "aaaaa");
 			Object propertyInstance = propertyClass.getConstructor(String.class, String.class).newInstance("textures", b64);
 
-			Method getProperties = fakeProfileInstance.getClass().getMethod("getProperties");
-			Object propertyMap = getProperties.invoke(fakeProfileInstance);
+			Object propertyMap = readProperties(fakeProfileInstance);
 
-			Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
-			putMethod.invoke(propertyMap,"textures", propertyInstance);
+			try {
+				Method putMethod = propertyMap.getClass().getMethod("put", Object.class, Object.class);
+				putMethod.invoke(propertyMap, "textures", propertyInstance);
 
-			if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1) {
+			} catch (final InvocationTargetException ex) {
+				if (!(ex.getCause() instanceof UnsupportedOperationException))
+					throw ex;
+
+				// Newer authlib hands out an immutable property map, so build the profile with one
+				final com.google.common.collect.Multimap<String, Object> properties = com.google.common.collect.LinkedHashMultimap.create();
+				properties.put("textures", propertyInstance);
+
+				Class<?> propertyMapClass = ReflectionUtil.lookupClass("com.mojang.authlib.properties.PropertyMap");
+				Object filledMap = propertyMapClass.getConstructor(com.google.common.collect.Multimap.class).newInstance(properties);
+
+				fakeProfileInstance = gameProfileClass.getConstructor(UUID.class, String.class, propertyMapClass).newInstance(id, "aaaaa", filledMap);
+			}
+
+			if (MinecraftVersion.newerThan(MinecraftVersion.V.v1_21) || (MinecraftVersion.equals(MinecraftVersion.V.v1_21) && MinecraftVersion.getSubversion() >= 1)) {
 				// For Minecraft 1.21.1 and later, create a ResolvableProfile
 				Class<?> resolvableProfileClass = ReflectionUtil.lookupClass("net.minecraft.world.item.component.ResolvableProfile");
-				Object fakeResolvableProfileInstance = resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
 
-				return fakeResolvableProfileInstance;
+				try {
+					return resolvableProfileClass.getConstructor(gameProfileClass).newInstance(fakeProfileInstance);
+
+				} catch (final NoSuchMethodException ex) {
+					// Minecraft 26.3 made ResolvableProfile abstract, it is built by factory now
+					return resolvableProfileClass.getMethod("createResolved", gameProfileClass).invoke(null, fakeProfileInstance);
+				}
 			} else {
 				// For 1.21 and older versions, return the GameProfile instance
 				return fakeProfileInstance;
@@ -309,7 +344,34 @@ public class SkullCreator {
 		}
 	}
 
+	/*
+	 * Paper exposes a profile API that survives Mojang reshaping GameProfile and ResolvableProfile,
+	 * so prefer it and keep the NMS route for servers that lack it.
+	 */
+	private static boolean hasPaperProfile() {
+		return ReflectionUtil.isClassAvailable("com.destroystokyo.paper.profile.PlayerProfile")
+				&& ReflectionUtil.getMethod(Bukkit.class, "createProfile", UUID.class, String.class) != null;
+	}
+
+	private static com.destroystokyo.paper.profile.PlayerProfile makePaperProfile(final String b64) {
+		final UUID id = new UUID(
+				b64.substring(b64.length() - 20).hashCode(),
+				b64.substring(b64.length() - 10).hashCode());
+
+		final com.destroystokyo.paper.profile.PlayerProfile profile = Bukkit.createProfile(id, "aaaaa");
+
+		profile.setProperty(new com.destroystokyo.paper.profile.ProfileProperty("textures", b64));
+
+		return profile;
+	}
+
 	private static void mutateItemMeta(final SkullMeta meta, final String b64) {
+		if (hasPaperProfile()) {
+			meta.setPlayerProfile(makePaperProfile(b64));
+
+			return;
+		}
+
 		try {
 			if (metaSetProfileMethod == null) {
 				metaSetProfileMethod = meta.getClass().getDeclaredMethod("setProfile", ReflectionUtil.lookupClass("com.mojang.authlib.GameProfile"));

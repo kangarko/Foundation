@@ -47,6 +47,11 @@ public abstract class OfflineRegionScanner {
 	private static int WAIT_TIME_BETWEEN_SCAN_SECONDS = 1;
 
 	/**
+	 * Read chunk presence through Bukkit instead of reflecting into the NMS region file.
+	 */
+	private static final boolean modernMode = MinecraftVersion.atLeast(V.v1_19);
+
+	/**
 	 * Changing flag: How many files processed out of total?
 	 */
 	private int processedFilesCount = 0;
@@ -161,6 +166,9 @@ public abstract class OfflineRegionScanner {
 
 					Common.callEvent(new RegionScanCompleteEvent(OfflineRegionScanner.this.world));
 
+					if (modernMode)
+						OfflineRegionScanner.this.world.save();
+
 					OfflineRegionScanner.this.onScanFinished();
 					this.cancel();
 
@@ -206,7 +214,7 @@ public abstract class OfflineRegionScanner {
 		System.out.println();
 
 		// Load the file
-		final Object region = RegionAccessor.getRegionFile(this.world.getName(), file);
+		final Object region = modernMode ? null : RegionAccessor.getRegionFile(this.world.getName(), file);
 
 		// Load each chunk within that file
 		scan:
@@ -215,7 +223,7 @@ public abstract class OfflineRegionScanner {
 				final int chunkX = x + (regionX << 5);
 				final int chunkZ = z + (regionZ << 5);
 
-				if (RegionAccessor.isChunkSaved(region, x, z))
+				if (modernMode ? this.world.isChunkGenerated(chunkX, chunkZ) : RegionAccessor.isChunkSaved(region, x, z))
 					if (this.fastMode)
 						this.onChunkScanFast(chunkX, chunkZ);
 
@@ -234,13 +242,14 @@ public abstract class OfflineRegionScanner {
 			}
 
 		// Save
-		try {
-			RegionAccessor.save(region);
+		if (!modernMode)
+			try {
+				RegionAccessor.save(region);
 
-		} catch (final Throwable t) {
-			Common.log("Failed to save region " + file + ", operation stopped.");
-			Remain.sneaky(t);
-		}
+			} catch (final Throwable t) {
+				Common.log("Failed to save region " + file + ", operation stopped.");
+				Remain.sneaky(t);
+			}
 
 		if (this.fastMode)
 			this.schedule0(queue);

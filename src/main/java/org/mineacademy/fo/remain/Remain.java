@@ -2921,6 +2921,13 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static void unfreezeEnchantRegistry() {
+		if (MinecraftVersion.newerThan(V.v1_20)) {
+			ReflectionUtil.setDeclaredField(getEnchantRegistry(), "frozen", false);
+
+			enchantRegistryUnfrozen = true;
+			return;
+		}
+
 		if (MinecraftVersion.atLeast(V.v1_19)) {
 			final boolean mojMap = Remain.isUsingMojangMappings();
 			final Object enchantmentRegistry = getEnchantRegistry();
@@ -2959,6 +2966,12 @@ public final class Remain {
 	 */
 	@Deprecated
 	public static void freezeEnchantRegistry() {
+		if (MinecraftVersion.newerThan(V.v1_20)) {
+			ReflectionUtil.setDeclaredField(getEnchantRegistry(), "frozen", true);
+
+			return;
+		}
+
 		if (MinecraftVersion.atLeast(V.v1_19)) {
 			final Object enchantmentRegistry = getEnchantRegistry();
 			final Method freezeMethod = ReflectionUtil.getDeclaredMethod(enchantmentRegistry.getClass(), Remain.isUsingMojangMappings() ? "freeze" : "l");
@@ -2991,6 +3004,16 @@ public final class Remain {
 	 * Helper to get the registry object
 	 */
 	private static Object getEnchantRegistry() {
+		if (MinecraftVersion.newerThan(V.v1_20)) {
+			final Class<?> craftRegistryClass = ReflectionUtil.lookupClass("org.bukkit.craftbukkit.CraftRegistry");
+			final Class<?> resourceKeyClass = ReflectionUtil.lookupClass("net.minecraft.resources.ResourceKey");
+			final Class<?> registriesClass = ReflectionUtil.lookupClass("net.minecraft.core.registries.Registries");
+			final Object enchantmentKey = ReflectionUtil.getStaticFieldContent(registriesClass, "ENCHANTMENT");
+			final Method method = ReflectionUtil.getDeclaredMethod(craftRegistryClass, "getMinecraftRegistry", resourceKeyClass);
+
+			return ReflectionUtil.invoke(method, null, enchantmentKey);
+		}
+
 		final Class<?> registryClass = ReflectionUtil.lookupClass("net.minecraft.core.registries.BuiltInRegistries");
 		final Object enchantmentRegistry = ReflectionUtil.getStaticFieldContent(registryClass, Remain.isUsingMojangMappings() ? "ENCHANTMENT" : MinecraftVersion.equals(V.v1_19) ? "g" : "f");
 
