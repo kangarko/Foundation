@@ -30,6 +30,9 @@ import lombok.Setter;
 
 /**
  * An advanced menu listing items with automatic page support
+ * <p>
+ * Calling {@link #setSize(Integer)} after construction lays the items out again so that
+ * they fill every row above the bottom navigation row of the new size.
  *
  * @param <T> the item that each page consists of
  */
@@ -68,9 +71,14 @@ public abstract class MenuPaged<T> extends Menu {
 
 	/**
 	 * The page size overriding automatic pagination system adjusting menu
-	 * size based on item count
+	 * size based on item count, also set when the size changes
 	 */
-	private final Integer manualPageSize;
+	private Integer manualPageSize;
+
+	/**
+	 * True when the caller chose the item slots, their layout is then never rewritten
+	 */
+	private final boolean customSlots;
 
 	/**
 	 * The pages by the page number, containing a list of items
@@ -261,31 +269,56 @@ public abstract class MenuPaged<T> extends Menu {
 		this.slots = slots != null ? slots : new ArrayList<>();
 		this.items = items;
 		this.manualPageSize = pageSize;
+		this.customSlots = !this.slots.isEmpty();
 
 		this.calculatePages();
-		this.setButtons();
 	}
 
 	/*
-	 * Recalculate pages
+	 * Recalculate pages, a menu without custom slots is laid out again through the size change
 	 */
 	private void calculatePages() {
+		if (this.customSlots) {
+			this.fillPages(this.slots.size());
+
+			return;
+		}
+
 		final int items = this.getItemAmount(this.items);
-		final int autoPageSize;
+		final int pageSize = this.manualPageSize != null ? this.manualPageSize : items <= 9 ? 9 * 1 : items <= 9 * 2 ? 9 * 2 : items <= 9 * 3 ? 9 * 3 : items <= 9 * 4 ? 9 * 4 : 9 * 5;
 
-		if (this.slots.isEmpty()) {
-			autoPageSize = this.manualPageSize != null ? this.manualPageSize : items <= 9 ? 9 * 1 : items <= 9 * 2 ? 9 * 2 : items <= 9 * 3 ? 9 * 3 : items <= 9 * 4 ? 9 * 4 : 9 * 5;
+		this.setSize(9 + pageSize);
+	}
 
-			for (int i = 0; i < autoPageSize; i++)
-				this.slots.add(i);
+	/*
+	 * Lay the items out again for the new size: every row above the bottom navigation row holds items
+	 */
+	@Override
+	void onSizeChanged() {
+		if (this.customSlots)
+			return;
 
-			this.setSize(9 + autoPageSize);
+		final int pageSize = this.getSize() - 9;
+		ValidCore.checkBoolean(pageSize >= 9, "Paged menu " + this + " needs at least two rows, one for the items and the bottom one for navigation, got size " + this.getSize());
 
-		} else
-			autoPageSize = this.slots.size();
+		this.manualPageSize = pageSize;
+		this.slots.clear();
 
+		for (int slot = 0; slot < pageSize; slot++)
+			this.slots.add(slot);
+
+		this.fillPages(pageSize);
+	}
+
+	/*
+	 * Split the items into pages of the given size, keep the current page in range and rebuild the navigation buttons
+	 */
+	private void fillPages(final int pageSize) {
 		this.pages.clear();
-		this.pages.putAll(CommonCore.fillPages(autoPageSize, this.items));
+		this.pages.putAll(CommonCore.fillPages(pageSize, this.items));
+		this.currentPage = MathUtil.range(this.currentPage, 1, Math.max(1, this.pages.size()));
+
+		this.setButtons();
 	}
 
 	@SuppressWarnings("unused")

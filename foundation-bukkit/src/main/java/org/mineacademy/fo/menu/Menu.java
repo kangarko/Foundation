@@ -651,6 +651,12 @@ public abstract class Menu {
 	void onRestartInternal() {
 	}
 
+	/*
+	 * Called after the size changes, lets paged menus lay their items out again.
+	 */
+	void onSizeChanged() {
+	}
+
 	/**
 	 * Called automatically when a menu is restarted. Called before getItemAt() and after registerButtons()
 	 */
@@ -971,6 +977,8 @@ public abstract class Menu {
 	 */
 	protected final void setSize(final Integer size) {
 		this.size = size;
+
+		this.onSizeChanged();
 	}
 
 	/**
