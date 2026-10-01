@@ -1,57 +1,66 @@
 package org.mineacademy.fo.model;
 
+import java.util.Locale;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.mineacademy.fo.MinecraftVersion;
-import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.platform.FoundationPlayer;
 import org.mineacademy.fo.remain.CompSound;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /**
  * A class holding a sound, volume and a pitch.
  */
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SimpleSound implements ConfigStringSerializable {
 
 	/**
 	 * The Bukkit sound value
 	 */
 	@NonNull
-	private CompSound sound;
+	private final CompSound sound;
 
 	/**
 	 * The volume value
 	 */
-	private float volume = 1.0F;
+	private final float volume;
 
 	/**
 	 * The pitch value
 	 */
-	private float pitch = 1.0F;
+	private final float pitch;
 
 	/**
 	 * Is the pitch random?
 	 */
-	private boolean randomPitch = false;
+	private final boolean randomPitch;
 
 	/**
 	 * Is this sound enabled?
 	 */
-	private boolean enabled = true;
+	private final boolean enabled;
 
 	/**
 	 * Is this sound custom?
 	 */
-	private String customSoundName;
+	private final String customSoundName;
+
+    private SimpleSound(@NonNull final CompSound sound, final float volume, final float pitch, final boolean randomPitch, final boolean enabled, final String customSoundName) {
+
+        if (!Float.isFinite(volume) || !Float.isFinite(pitch))
+            throw new FoException("Sound volume and pitch must be finite. Got: " + volume + " " + pitch, false);
+
+        this.sound           = sound;
+        this.volume          = volume;
+        this.pitch           = pitch;
+        this.randomPitch     = randomPitch;
+        this.enabled         = enabled;
+        this.customSoundName = customSoundName;
+    }
 
 	private SimpleSound(final CompSound sound, final float volume, final float pitch) {
 		this(sound, volume, pitch, false, true, null);
@@ -87,38 +96,32 @@ public final class SimpleSound implements ConfigStringSerializable {
 	 *
 	 * @param player
 	 */
-	public void play(final Player player) {
-		if (this.enabled)
-			try {
-				if (this.customSoundName != null)
-					player.playSound(player.getLocation(), this.customSoundName, this.volume, this.getPitch());
-				else {
-					ValidCore.checkNotNull(this.sound);
-					player.playSound(player.getLocation(), this.sound.getSound(), this.volume, this.getPitch());
-				}
-			} catch (final NoSuchMethodError err) {
-				// Legacy MC
-			}
-	}
+    public void play(final Player player) {
+
+        if (!this.enabled)
+            return;
+
+        if (this.customSoundName != null)
+            player.playSound(player.getLocation(), this.customSoundName, this.volume, this.getPitch());
+        else
+            player.playSound(player.getLocation(), this.sound.getSound(), this.volume, this.getPitch());
+    }
 
 	/**
 	 * Play the sound at the given location
 	 *
 	 * @param location
 	 */
-	public void play(final Location location) {
-		if (this.enabled)
-			try {
-				if (this.customSoundName != null)
-					location.getWorld().playSound(location, this.customSoundName, this.volume, this.getPitch());
-				else {
-					ValidCore.checkNotNull(this.sound);
-					location.getWorld().playSound(location, this.sound.getSound(), this.volume, this.getPitch());
-				}
-			} catch (final NoSuchMethodError err) {
-				// Legacy MC
-			}
-	}
+    public void play(final Location location) {
+
+        if (!this.enabled)
+            return;
+
+        if (this.customSoundName != null)
+            location.getWorld().playSound(location, this.customSoundName, this.volume, this.getPitch());
+        else
+            location.getWorld().playSound(location, this.sound.getSound(), this.volume, this.getPitch());
+    }
 
 	/**
 	 * Return the pitch or random if {@link #isRandomPitch()} is true
@@ -159,19 +162,29 @@ public final class SimpleSound implements ConfigStringSerializable {
 		if ("none".equals(line) || "".equals(line))
 			return new SimpleSound(CompSound.UI_BUTTON_CLICK, 0.0F, 1.0F, false, false, null);
 
-		final String[] values = line.contains(", ") ? line.split(", ") : line.split(" ");
+        final String[] values = line.contains(", ") ? line.split(", ", -1) : line.split(" ");
 
-		final String soundNameRaw = values[0].toLowerCase();
+        if (values.length != 1 && values.length != 3)
+            throw new FoException("Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line, false);
+
+        final String soundNameRaw = values[0];
 
 		// Check if the sound is custom
-		final boolean customSound = soundNameRaw.startsWith("custom:");
+        final boolean customSound = soundNameRaw.toLowerCase(Locale.ROOT).startsWith("custom:");
 
 		// If the sound is custom, we strip the "custom:" prefix
-		String soundName = customSound ? soundNameRaw.substring("custom:".length()) : soundNameRaw.toUpperCase();
+        String soundName = customSound ? soundNameRaw.substring("custom:".length()) : soundNameRaw.toUpperCase(Locale.ROOT);
 
-		// If the sound is custom and does not start with "minecraft:", we prefix it with "minecraft:"
-		if (customSound && !soundName.startsWith("minecraft:"))
-			soundName = "minecraft:" + soundName; // Ensure custom sounds are prefixed with minecraft:
+        if (customSound) {
+
+            if (!soundName.contains(":"))
+                soundName = "minecraft:" + soundName;
+
+            if (!soundName.matches("[a-zA-Z0-9._-]+:[a-zA-Z0-9/._-]+"))
+                throw new FoException("Malformed custom sound '" + values[0] + "', use custom:namespace:sound with lowercase letters, digits, '.', '_' or '-', and '/' only in the sound path.", false);
+
+            soundName = soundName.toLowerCase(Locale.ROOT);
+        }
 
 		// If the sound is not custom, we try to get the CompSound from the name
 		CompSound compSound = customSound ? null : CompSound.fromName(soundName);
@@ -183,36 +196,22 @@ public final class SimpleSound implements ConfigStringSerializable {
 		else if (compSound == null)
 			compSound = CompSound.UI_BUTTON_CLICK; // Dummy sound for custom sounds
 
-		final SimpleSound sound = new SimpleSound();
+        if (values.length == 1)
+            return new SimpleSound(compSound, 1F, 1.5F, false, true, customSound ? soundName : null);
 
-		sound.sound = compSound;
-		if (customSound)
-			sound.customSoundName = soundName;
+        final boolean randomPitch = "random".equals(values[2]);
+        final float volume;
+        final float pitch;
 
-		if (values.length == 1) {
-			sound.volume = 1F;
-			sound.pitch = 1.5F;
+        try {
+            volume = Float.parseFloat(values[1]);
+            pitch  = randomPitch ? 1.0F : Float.parseFloat(values[2]);
 
-			return sound;
-		}
+        } catch (final NumberFormatException ex) {
+            throw new FoException("Malformed sound volume or pitch, use finite numbers or 'random' for pitch. Got: " + line, false);
+        }
 
-		if (values.length != 3)
-			throw new FoException("Malformed sound type, use format: 'sound' OR 'sound volume pitch'. Got: " + line, false);
-
-		final String volumeRaw = values[1];
-		final String pitchRaw = values[2];
-
-		sound.volume = Float.parseFloat(volumeRaw);
-
-		if ("random".equals(pitchRaw)) {
-			sound.pitch = 1.0F;
-			sound.randomPitch = true;
-		}
-
-		else
-			sound.pitch = Float.parseFloat(pitchRaw);
-
-		return sound;
+        return new SimpleSound(compSound, volume, pitch, randomPitch, true, customSound ? soundName : null);
 	}
 
 	/**
