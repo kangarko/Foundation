@@ -16,9 +16,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -36,7 +40,6 @@ import org.mineacademy.fo.exception.InvalidRowException;
 import org.mineacademy.fo.model.Tuple;
 import org.mineacademy.fo.platform.Platform;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -147,7 +150,12 @@ public class SimpleDatabase {
 	/**
 	 * The active HikariCP pool, or null if not connected.
 	 */
-	private HikariDataSource dataSource;
+	private volatile HikariDataSource dataSource;
+
+    @Getter
+    private volatile long connectionGeneration;
+
+    private final Map<Tuple<Table, Tuple<String, Object>>, Queue<PendingUpsert>> pendingUpserts = new ConcurrentHashMap<>();
 
 	/**
 	 * Guards the pool lifecycle so disconnect() and reconnect() cannot rip a borrowed
@@ -184,7 +192,9 @@ public class SimpleDatabase {
 	 * @return
 	 */
 	public final boolean isConnected() {
-		return this.dataSource != null && !this.dataSource.isClosed();
+        final HikariDataSource source = this.dataSource;
+
+        return source != null && !source.isClosed();
 	}
 
 	/**
@@ -219,15 +229,25 @@ public class SimpleDatabase {
 	 * @param password
 	 */
 	public final void connect(final String url, final String user, final String password) {
-		this.connectionLock.writeLock().lock();
+		this.lockConnectionLifecycle();
 
-		try {
-			this.connectInternal(url, user, password);
+        try {
+            if (!this.isConnected() && this.lastCredentials != null && !this.lastCredentials.getUrl().equals(url))
+                ValidCore.checkBoolean(this.pendingUpserts.isEmpty() && !RowQueueWriter.getInstance().hasPending(this), "Cannot change database while writes remain unsaved. Resolve the previous database write errors first.");
+
+            this.connectInternal(url, user, password);
 
 		} finally {
 			this.connectionLock.writeLock().unlock();
 		}
 	}
+
+    private void lockConnectionLifecycle() {
+        if (this.connectionLock.getReadHoldCount() > 0 && !this.connectionLock.isWriteLockedByCurrentThread())
+            throw new FoException("Cannot change a database connection inside an active query or row serialization. Close the current query first.", false);
+
+        this.connectionLock.writeLock().lock();
+    }
 
 	/*
 	 * Builds the pool and runs onConnected. Always invoked under the write lock.
@@ -301,7 +321,8 @@ public class SimpleDatabase {
 			config.setMaximumPoolSize(effectivePoolSize);
 			config.setMinimumIdle(effectivePoolSize);
 
-			this.dataSource = new HikariDataSource(config);
+			this.connectionGeneration++;
+            this.dataSource = new HikariDataSource(config);
 
 			String databaseName = url.substring(url.lastIndexOf("/") + 1);
 			databaseName = databaseName.contains("?") ? databaseName.substring(0, databaseName.indexOf("?")) : databaseName;
@@ -321,12 +342,15 @@ public class SimpleDatabase {
 				this.createTable(creator);
 			}
 
+            this.flushPendingWrites();
+            RowQueueWriter.getInstance().flush(this);
+
 			try {
 				this.onConnected();
 
 			} catch (final Exception ex) {
-				CommonCore.error(ex, "Error after connecting to database, shutting down the plugin for safety.");
-				this.disconnect();
+                this.closePoolAfterFailure(ex);
+                CommonCore.error(ex, "Error after connecting to database, shutting down the plugin for safety.");
 				Platform.getPlugin().disable();
 
 				return;
@@ -334,7 +358,7 @@ public class SimpleDatabase {
 
 		} catch (final Throwable throwable) {
 			// Ensure no half-built pool keeps housekeeper threads alive when we re-throw.
-			this.disconnect();
+			this.closePoolAfterFailure(throwable);
 
 			this.handleConnectError(throwable, url, user);
 		}
@@ -457,25 +481,72 @@ public class SimpleDatabase {
 	/**
 	 * Closes the connection pool, if not null.
 	 */
-	public final void disconnect() {
-		this.connectionLock.writeLock().lock();
+    public final void disconnect() {
+        this.lockConnectionLifecycle();
+        this.connectionGeneration++;
+        Throwable failure = null;
 
-		try {
-			if (this.dataSource != null) {
-				try {
-					this.dataSource.close();
+        try {
+            if (this.isConnected()) {
+                try {
+                    this.flushPendingWrites();
 
-				} catch (final Throwable ex) {
-					CommonCore.error(ex, "Error closing database connection pool!");
+                } catch (final Throwable error) {
+                    failure = mergeFailure(failure, error);
+                }
 
-				} finally {
-					this.dataSource = null;
-				}
-			}
-		} finally {
-			this.connectionLock.writeLock().unlock();
-		}
-	}
+                try {
+                    RowQueueWriter.getInstance().flush(this);
+
+                } catch (final Throwable error) {
+                    failure = mergeFailure(failure, error);
+                }
+            }
+
+        } finally {
+            try {
+                this.closePool();
+
+            } catch (final Throwable error) {
+                failure = mergeFailure(failure, error);
+
+            } finally {
+                this.connectionLock.writeLock().unlock();
+            }
+        }
+
+        if (failure != null)
+            CommonCore.sneaky(failure);
+    }
+
+    private static Throwable mergeFailure(final Throwable failure, final Throwable next) {
+        if (failure == null)
+            return next;
+
+        if (failure != next)
+            failure.addSuppressed(next);
+
+        return failure;
+    }
+
+    private void closePool() {
+        try {
+            if (this.dataSource != null)
+                this.dataSource.close();
+
+        } finally {
+            this.dataSource = null;
+        }
+    }
+
+    private void closePoolAfterFailure(final Throwable failure) {
+        try {
+            this.closePool();
+
+        } catch (final Throwable closeError) {
+            mergeFailure(failure, closeError);
+        }
+    }
 
 	/*
 	 * Checks if we connected to the database
@@ -582,11 +653,123 @@ public class SimpleDatabase {
 	 *
 	 * @param row
 	 */
-	public final void upsert(final Row row) {
-		ValidCore.checkNotNull(row, "To use Database#upsert(), override " + row.getClass().getSimpleName() + "#getUniqueColumn()");
+    public final void upsert(final Row row) {
+        this.queueUpsert(row).run();
+    }
 
-		this.upsert(row.getTable(), row.getUniqueColumn(), row.toMap());
-	}
+    final Runnable queueUpsert(final Row row) {
+        this.connectionLock.readLock().lock();
+
+        try {
+            this.ensureConnected();
+            final Table table                       = row.getTable();
+            final Tuple<String, Object> uniqueColumn = serializeUniqueColumn(row.getUniqueColumn());
+            final Tuple<Table, Tuple<String, Object>> rowKey = new Tuple<>(table, uniqueColumn);
+            final Queue<PendingUpsert> queue = this.pendingUpserts.compute(rowKey, (key, existing) -> {
+                final SerializedMap snapshot = serializeColumns(row.toMap());
+                final Queue<PendingUpsert> pending;
+
+                if (existing == null)
+                    pending = new ConcurrentLinkedQueue<>();
+                else
+                    pending = existing;
+
+                final PendingUpsert previous = pending.peek();
+
+                if (previous != null && previous.failed)
+                    pending.remove(previous);
+
+                pending.add(new PendingUpsert(table, uniqueColumn, snapshot));
+
+                return pending;
+            });
+
+            return () -> this.flushPendingWrites(rowKey, queue);
+
+        } finally {
+            this.connectionLock.readLock().unlock();
+        }
+    }
+
+    private static Tuple<String, Object> serializeUniqueColumn(final Tuple<String, Object> uniqueColumn) {
+        ValidCore.checkNotNull(uniqueColumn, "Override Row#getUniqueColumn() before saving a database row.");
+
+        return new Tuple<>(uniqueColumn.getKey(), SerializeUtilCore.serialize(Language.JSON, uniqueColumn.getValue()));
+    }
+
+    public final void flushPendingWrites() {
+        this.flushPendingWrites((Table) null);
+    }
+
+    public final void flushPendingWrites(final Table table) {
+        this.connectionLock.readLock().lock();
+
+        try {
+            Throwable failure = null;
+
+            for (final Map.Entry<Tuple<Table, Tuple<String, Object>>, Queue<PendingUpsert>> entry : new HashMap<>(this.pendingUpserts).entrySet())
+                try {
+                    if (table == null || table == entry.getKey().getKey())
+                        this.flushPendingWrites(entry.getKey(), entry.getValue());
+
+                } catch (final Throwable error) {
+                    failure = mergeFailure(failure, error);
+                }
+
+            if (failure != null)
+                CommonCore.sneaky(failure);
+
+        } finally {
+            this.connectionLock.readLock().unlock();
+        }
+    }
+
+    public final void flushPendingWrites(final Table table, final Tuple<String, Object> uniqueColumn) {
+        final Tuple<Table, Tuple<String, Object>> rowKey = new Tuple<>(table, serializeUniqueColumn(uniqueColumn));
+        final Queue<PendingUpsert> queue                = this.pendingUpserts.get(rowKey);
+
+        if (queue != null)
+            this.flushPendingWrites(rowKey, queue);
+    }
+
+    private void flushPendingWrites(final Tuple<Table, Tuple<String, Object>> rowKey, final Queue<PendingUpsert> queue) {
+        this.connectionLock.readLock().lock();
+
+        try {
+            Throwable failure = null;
+
+            synchronized (queue) {
+                PendingUpsert pending;
+
+                while ((pending = queue.peek()) != null) {
+                    try {
+                        pending.run();
+
+                    } catch (final RuntimeException | Error error) {
+                        pending.failed = true;
+                        failure = mergeFailure(failure, error);
+
+                        if (queue.size() == 1)
+                            break;
+
+                        queue.remove(pending);
+
+                        continue;
+                    }
+
+                    queue.remove(pending);
+                }
+
+                this.pendingUpserts.computeIfPresent(rowKey, (key, current) -> current == queue && queue.isEmpty() ? null : current);
+            }
+
+            if (failure != null)
+                CommonCore.sneaky(failure);
+
+        } finally {
+            this.connectionLock.readLock().unlock();
+        }
+    }
 
 	/**
 	 * Add a map of data to the queue for the given table, appending as a new row.
@@ -606,7 +789,16 @@ public class SimpleDatabase {
 	 * @param row
 	 */
 	public final void deleteRow(final Table table, final Row row) {
-		this.delete(table, Where.builder().equals("Id", row.getId()));
+        final Tuple<String, Object> uniqueColumn = row.getUniqueColumn();
+
+        if (uniqueColumn != null) {
+            this.flushPendingWrites(table, uniqueColumn);
+            this.delete(table, Where.builder().equals(uniqueColumn.getKey(), uniqueColumn.getValue().toString()));
+
+            return;
+        }
+
+        this.delete(table, Where.builder().equals("Id", row.getId()));
 	}
 
 	/**
@@ -693,8 +885,10 @@ public class SimpleDatabase {
 	 * reference their codecs directly and keep working.
 	 */
 	private static void setTypedParameter(final PreparedStatement statement, final int index, final Object value) throws SQLException {
-		if (value instanceof String)
-			statement.setString(index, (String) value);
+        if (value == null)
+            statement.setNull(index, java.sql.Types.NULL);
+        else if (value instanceof String)
+            statement.setString(index, (String) value);
 
 		else if (value instanceof Integer)
 			statement.setInt(index, (Integer) value);
@@ -715,77 +909,113 @@ public class SimpleDatabase {
 			statement.setObject(index, value);
 	}
 
-	protected final void upsert(final Table table, @NonNull final Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
-		final String tableName = this.replaceVariables(table.getName());
+    protected final void upsert(final Table table, @NonNull final Tuple<String, Object> uniqueColumn, @NonNull final SerializedMap columnsAndValues) {
+        final String tableName     = this.replaceVariables(table.getName());
+        final SerializedMap values = serializeColumns(columnsAndValues);
+        final String columns       = String.join(",", values.keySet());
+        final String placeholders  = String.join(",", Collections.nCopies(values.size(), "?"));
+        String sql                 = "INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
 
-		// Building column names and placeholders for values (?)
-		final String columns = String.join(",", columnsAndValues.keySet());
-		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
+        if (!this.isSQLite)
+            sql += " ON DUPLICATE KEY UPDATE " + values.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
 
-		final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
+        final String insertSql = sql;
 
-		if (!this.isSQLite) {
+        try {
+            if (this.isSQLite)
+                this.runTransaction(connection -> {
+                    try (PreparedStatement statement = connection.prepareStatement("DELETE FROM " + tableName + " WHERE " + uniqueColumn.getKey() + " = ?")) {
+                        setTypedParameter(statement, 1, SerializeUtilCore.serialize(Language.JSON, uniqueColumn.getValue()));
+                        statement.executeUpdate();
+                    }
 
-			// Prepare the duplicate update clause for MySQL
-			final String duplicateUpdate = columnsAndValues.keySet().stream().map(key -> key + "=VALUES(" + key + ")").collect(Collectors.joining(","));
+                    executeInsert(connection, insertSql, values);
+                });
+            else
+                try (Connection connection = this.borrowConnection()) {
+                    executeInsert(connection, insertSql, values);
+                }
 
-			sql.append(" ON DUPLICATE KEY UPDATE ").append(duplicateUpdate);
+        } catch (final SQLException ex) {
+            CommonCore.throwError(ex,
+                    "Error inserting into database",
+                    "Table: " + tableName,
+                    "Unique column: " + uniqueColumn,
+                    "Columns and values: " + columnsAndValues,
+                    "Query: " + sql);
+        }
+    }
 
-		} else {
-			// Reason for this extra ugly connection is that Minecraft 1.8.8 ships with outdated SQLite
-			// And we can't use Libby to download a new one due to a conflict.
-			final String removeSql = "DELETE FROM " + tableName + " WHERE " + uniqueColumn.getKey() + " = ?;";
+    private static SerializedMap serializeColumns(final SerializedMap values) {
+        final SerializedMap serialized = new SerializedMap();
 
-			try (PreparedStatement preparedStatement = this.prepareStatement(removeSql)) {
-				setTypedParameter(preparedStatement, 1, uniqueColumn.getValue());
+        for (final Map.Entry<String, Object> entry : values.entrySet()) {
+            Object value = SerializeUtilCore.serialize(Language.JSON, entry.getValue());
 
-				Debugger.debug("mysql", "[sqlite/remove] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-				preparedStatement.executeUpdate();
+            if (value instanceof JsonElement)
+                value = value.toString();
 
-			} catch (final SQLException ex) {
-				CommonCore.error(ex,
-						"Error removing old SQLite column",
-						"Table: " + tableName,
-						"Query: " + removeSql);
-			}
-		}
+            if ("NULL".equals(value))
+                value = null;
 
-		// Execute the query using PreparedStatement
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
-			int index = 1;
+            ValidCore.checkBoolean(value == null || value instanceof String || value instanceof Boolean || value instanceof Number,
+                    "Cannot store database column '" + entry.getKey() + "', expected null, string, boolean or number. Got: " + value);
+            serialized.asMap().put(entry.getKey(), value);
+        }
 
-			for (final Object value : columnsAndValues.values())
-				if (value == null || value.equals("NULL"))
-					preparedStatement.setNull(index++, java.sql.Types.NULL);
+        return serialized;
+    }
 
-				else if (value instanceof String)
-					preparedStatement.setString(index++, (String) value);
+    private static void executeInsert(final Connection connection, final String sql, final SerializedMap values) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            int index = 1;
 
-				else {
-					Object converted = SerializeUtilCore.serialize(Language.JSON, value);
+            for (final Object value : values.values())
+                setTypedParameter(statement, index++, value);
 
-					if (converted instanceof JsonElement)
-						converted = ((JsonElement) converted).toString();
+            Debugger.debug("mysql", "[insert] Running SQL: " + statement.toString().replace("\n", ""));
+            statement.executeUpdate();
+        }
+    }
 
-					if (!(converted instanceof String) && !(converted instanceof Boolean) && !(converted instanceof Number) && !converted.getClass().isPrimitive())
-						throw new SQLException("Cannot store " + converted.getClass() + " in database, must be a primitive type, number or a string. Got: " + converted);
+    private void runTransaction(final Transaction transaction) throws SQLException {
+        try (Connection connection = this.borrowConnection()) {
+            connection.setAutoCommit(false);
 
-					setTypedParameter(preparedStatement, index++, converted);
-				}
+            try {
+                transaction.run(connection);
+                connection.commit();
 
-			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
+            } catch (final SQLException | RuntimeException | Error error) {
+                try {
+                    connection.rollback();
 
-			preparedStatement.executeUpdate();
+                } catch (final SQLException rollbackError) {
+                    error.addSuppressed(rollbackError);
+                }
 
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error inserting into database",
-					"Table: " + tableName,
-					"Unique column: " + uniqueColumn,
-					"Columns and values: " + columnsAndValues,
-					"Query: " + sql);
-		}
-	}
+                throw error;
+            }
+        }
+    }
+
+    @FunctionalInterface
+    private interface Transaction {
+        void run(Connection connection) throws SQLException;
+    }
+
+    @RequiredArgsConstructor
+    private final class PendingUpsert implements Runnable {
+        private final Table table;
+        private final Tuple<String, Object> uniqueColumn;
+        private final SerializedMap values;
+        private volatile boolean failed;
+
+        @Override
+        public void run() {
+            SimpleDatabase.this.upsert(this.table, this.uniqueColumn, this.values);
+        }
+    }
 
 	/**
 	 * Appends the given map into the database table as a new row.
@@ -793,40 +1023,20 @@ public class SimpleDatabase {
 	 * @param table
 	 * @param columnsAndValues
 	 */
-	protected final void insert(final Table table, @NonNull final SerializedMap columnsAndValues) {
-		final String tableName = this.replaceVariables(table.getName());
+    protected final void insert(final Table table, @NonNull final SerializedMap columnsAndValues) {
+        final String tableName     = this.replaceVariables(table.getName());
+        final SerializedMap values = serializeColumns(columnsAndValues);
+        final String columns       = String.join(",", values.keySet());
+        final String placeholders  = String.join(",", Collections.nCopies(values.size(), "?"));
+        final String sql           = "INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
 
-		// Building column names and placeholders for values (?)
-		final String columns = String.join(",", columnsAndValues.keySet());
-		final String placeholders = columnsAndValues.keySet().stream().map(key -> "?").collect(Collectors.joining(","));
+        try (Connection connection = this.borrowConnection()) {
+            executeInsert(connection, sql, values);
 
-		final StringBuilder sql = new StringBuilder("INSERT " + (this.isSQLite ? "OR REPLACE " : "") + "INTO ").append(tableName).append(" (").append(columns).append(") VALUES (").append(placeholders).append(")");
-
-		// Execute the query using PreparedStatement
-		try (PreparedStatement preparedStatement = this.prepareStatement(sql.toString())) {
-			int index = 1;
-
-			for (final Object value : columnsAndValues.values())
-				if (value == null || value.equals("NULL"))
-					preparedStatement.setNull(index++, java.sql.Types.NULL);
-
-				else if (value instanceof String)
-					preparedStatement.setString(index++, (String) value);
-
-				else
-					setTypedParameter(preparedStatement, index++, SerializeUtilCore.serialize(Language.JSON, value));
-
-			Debugger.debug("mysql", "[insert] Running SQL: " + preparedStatement.toString().replace("\n", ""));
-
-			preparedStatement.executeUpdate();
-
-		} catch (final SQLException ex) {
-			CommonCore.error(ex,
-					"Error inserting into database",
-					"Table: " + tableName,
-					"Query: " + sql);
-		}
-	}
+        } catch (final SQLException ex) {
+            CommonCore.throwError(ex, "Error inserting into database", "Table: " + tableName, "Columns and values: " + columnsAndValues, "Query: " + sql);
+        }
+    }
 
 	/**
 	 * Insert the batch map into the database as new rows.
@@ -835,14 +1045,7 @@ public class SimpleDatabase {
 	 * @param maps
 	 */
 	protected final void insertBatch(final Table table, @NonNull final List<SerializedMap> maps) {
-		// Unlike the synchronous query methods, this runs from the async RowQueueWriter once per second
-		// regardless of connection state, so a missing pool is an expected, recoverable condition rather
-		// than developer error: a failed or aborted initial connect that left the plugin running without
-		// a database, or the brief teardown window during a settings reload. Skip the write instead of
-		// throwing a fatal, auto-reported exception. borrowConnection() below still parks on the read lock,
-		// so a normal in-progress reload completes and writes via the new pool rather than being skipped.
-		if (!this.isConnected())
-			return;
+        this.ensureConnected();
 
 		if (maps.isEmpty())
 			return;
@@ -866,13 +1069,11 @@ public class SimpleDatabase {
 				long estimatedBytes = 0;
 				int index = 0;
 
-				for (Object value : map.values()) {
-					value = SerializeUtilCore.serialize(Language.JSON, value);
+                ValidCore.checkBoolean(map.keySet().equals(maps.get(0).keySet()), "Mismatched batch columns. Expected " + maps.get(0).keySet() + ", got: " + map);
+                final SerializedMap serialized = serializeColumns(map);
 
-					if (value instanceof JsonArray)
-						value = ((JsonArray) value).toString();
-
-					value = value == null || "NULL".equals(value) ? null : value instanceof Boolean ? (boolean) value ? 1 : 0 : value;
+                for (final String column : maps.get(0).keySet()) {
+                    final Object value = serialized.asMap().get(column);
 
 					if (value instanceof String)
 						estimatedBytes += ((String) value).getBytes(StandardCharsets.UTF_8).length;
@@ -899,55 +1100,27 @@ public class SimpleDatabase {
 		if (rows.isEmpty())
 			return;
 
-		// Borrow ONE connection for the whole transaction.
-		try (Connection connection = this.borrowConnection()) {
-			final boolean originalAutoCommit = connection.getAutoCommit();
+        try {
+            this.runTransaction(connection -> {
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
-			try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-				connection.setAutoCommit(false);
+                    for (final Object[] values : rows) {
+                        int index = 1;
 
-				for (final Object[] values : rows) {
-					int index = 1;
+                        for (final Object value : values)
+                            setTypedParameter(statement, index++, value);
 
-					for (final Object value : values)
-						setTypedParameter(preparedStatement, index++, value);
+                        statement.addBatch();
+                    }
 
-					preparedStatement.addBatch();
-				}
+                    Debugger.debug("mysql", "Executing batch of " + rows.size() + " row(s)...");
+                    statement.executeBatch();
+                }
+            });
 
-				Debugger.debug("mysql", "Executing batch of " + rows.size() + " row(s)...");
-				preparedStatement.executeBatch();
-
-				connection.commit();
-
-			} finally {
-				try {
-					connection.setAutoCommit(originalAutoCommit);
-
-				} catch (final SQLException ignored) {
-					// Connection is being returned to the pool; HikariCP resets state on next borrow.
-				}
-			}
-
-		} catch (final SQLException ex) {
-			final String message = ex.getMessage() != null ? ex.getMessage() : "";
-
-			if (message.contains("Can not read response from server")) {
-				CommonCore.log("Error executing batch insert: " + sql);
-
-				ex.printStackTrace();
-
-			} else if (message.contains("Incorrect string value")) {
-				CommonCore.log("Your db column's character set or collation not supporting 4-byte UTF-8 characters (e.g., emojis). "
-						+ "See https://docs.mineacademy.org/general/compatibility.html#remote-database");
-
-				ex.printStackTrace();
-
-			} else
-				CommonCore.error(ex,
-						"Error executing a batch insert",
-						"SQL Query: " + sql);
-		}
+        } catch (final SQLException ex) {
+            CommonCore.throwError(ex, "Error executing a batch insert", "SQL Query: " + sql);
+        }
 	}
 
 	/**
@@ -963,36 +1136,20 @@ public class SimpleDatabase {
 		if (sqls.isEmpty())
 			return;
 
-		try (Connection connection = this.borrowConnection()) {
-			final boolean originalAutoCommit = connection.getAutoCommit();
+        try {
+            this.runTransaction(connection -> {
+                try (Statement statement = connection.createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE,
+                        this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
 
-			try (Statement batchStatement = connection.createStatement(this.isSQLite ? ResultSet.TYPE_FORWARD_ONLY : ResultSet.TYPE_SCROLL_SENSITIVE, this.isSQLite ? ResultSet.CONCUR_READ_ONLY : ResultSet.CONCUR_UPDATABLE)) {
-				final int processedCount = sqls.size();
+                    for (final String sql : sqls)
+                        statement.addBatch(this.replaceVariables(sql));
 
-				for (final String sql : sqls)
-					batchStatement.addBatch(this.replaceVariables(sql));
-
-				if (processedCount > 10_000)
-					CommonCore.log("Updating your database (" + processedCount + " entries)... PLEASE BE PATIENT THIS WILL TAKE "
-							+ (processedCount > 50_000 ? "10-20 MINUTES" : "5-10 MINUTES") + " - If server will print a crash report, ignore it, update will proceed.");
-
-				connection.setAutoCommit(false);
-
-				batchStatement.executeBatch();
-
-				connection.commit();
-
-			} finally {
-				try {
-					connection.setAutoCommit(originalAutoCommit);
-
-				} catch (final SQLException ignored) {
-					// Connection is being returned to the pool; HikariCP resets state on next borrow.
-				}
-			}
+                    statement.executeBatch();
+                }
+            });
 
 		} catch (final SQLException ex) {
-			CommonCore.error(ex,
+            CommonCore.throwError(ex,
 					"Error executing a batch update",
 					"SQLs (" + sqls.size() + "): " + sqls);
 		}
@@ -1588,57 +1745,106 @@ public class SimpleDatabase {
 	/**
 	 * A specialized task to make I/O operations off of the main thread
 	 */
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static final class RowQueueWriter implements Runnable {
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class RowQueueWriter implements Runnable {
+        private static final RowQueueWriter instance = new RowQueueWriter();
+        private final Map<Table, List<SerializedMap>> queue = new HashMap<>();
+        private final Object writerLock = new Object();
 
-		/**
-		 * The singleton instance
-		 */
-		private static final RowQueueWriter instance = new RowQueueWriter();
+        @Override
+        public void run() {
+            final Set<SimpleDatabase> databases = new HashSet<>();
 
-		/**
-		 * Sync database write operations.
-		 */
-		private final Map<Table, List<SerializedMap>> queue = new HashMap<>();
+            synchronized (this.queue) {
+                for (final Table table : this.queue.keySet())
+                    databases.add(table.getDatabase());
+            }
 
-		@Override
-		public void run() {
-			final Map<Table, List<SerializedMap>> copy = new HashMap<>();
+            Throwable failure = null;
 
-			synchronized (instance) {
-				copy.putAll(this.queue);
+            for (final SimpleDatabase database : databases)
+                try {
+                    this.flush(database);
 
-				this.queue.clear();
-			}
+                } catch (final Throwable error) {
+                    failure = mergeFailure(failure, error);
+                }
 
-			for (final Iterator<Map.Entry<Table, List<SerializedMap>>> it = copy.entrySet().iterator(); it.hasNext();) {
-				final Map.Entry<Table, List<SerializedMap>> entry = it.next();
+            if (failure != null)
+                CommonCore.sneaky(failure);
+        }
 
-				final Table table = entry.getKey();
-				final List<SerializedMap> maps = entry.getValue();
+        private boolean hasPending(final SimpleDatabase database) {
+            synchronized (this.queue) {
+                for (final Table table : this.queue.keySet())
+                    if (table.getDatabase() == database)
+                        return true;
+            }
 
-				table.getDatabase().insertBatch(table, maps);
-			}
-		}
+            return false;
+        }
 
-		/*
-		 * Adds a row to the queue.
-		 */
-		private void addToQueue(final Row row) {
-			synchronized (instance) {
-				this.queue.computeIfAbsent(row.getTable(), key -> new ArrayList<>()).add(row.toMap());
-			}
-		}
+        private void flush(final SimpleDatabase database) {
+            database.connectionLock.readLock().lock();
 
-		/*
-		 * Get the singleton instance
-		 */
-		public static RowQueueWriter getInstance() {
-			synchronized (instance) {
-				return instance;
-			}
-		}
-	}
+            try {
+                synchronized (this.writerLock) {
+                    final Map<Table, List<SerializedMap>> pending = new HashMap<>();
+
+                    synchronized (this.queue) {
+                        for (final Map.Entry<Table, List<SerializedMap>> entry : this.queue.entrySet())
+                            if (entry.getKey().getDatabase() == database)
+                                pending.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+                    }
+
+                    Throwable failure = null;
+
+                    for (final Map.Entry<Table, List<SerializedMap>> entry : pending.entrySet())
+                        try {
+                            database.insertBatch(entry.getKey(), entry.getValue());
+
+                            synchronized (this.queue) {
+                                final List<SerializedMap> current = this.queue.get(entry.getKey());
+                                current.subList(0, entry.getValue().size()).clear();
+
+                                if (current.isEmpty())
+                                    this.queue.remove(entry.getKey());
+                            }
+
+                        } catch (final Throwable error) {
+                            failure = mergeFailure(failure, error);
+                        }
+
+                    if (failure != null)
+                        CommonCore.sneaky(failure);
+                }
+
+            } finally {
+                database.connectionLock.readLock().unlock();
+            }
+        }
+
+        private void addToQueue(final Row row) {
+            final SimpleDatabase database = row.getTable().getDatabase();
+            database.connectionLock.readLock().lock();
+
+            try {
+                database.ensureConnected();
+                final SerializedMap snapshot = serializeColumns(row.toMap());
+
+                synchronized (this.queue) {
+                    this.queue.computeIfAbsent(row.getTable(), key -> new ArrayList<>()).add(snapshot);
+                }
+
+            } finally {
+                database.connectionLock.readLock().unlock();
+            }
+        }
+
+        public static RowQueueWriter getInstance() {
+            return instance;
+        }
+    }
 
 	/**
 	 * Represents a where clause builder for SQL queries.

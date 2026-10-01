@@ -81,12 +81,14 @@ public abstract class Row {
 	 *
 	 * If using SQLIte, override {@link #getUniqueColumn()} and make sure the table has a unique column.
 	 */
-	public final void upsert() {
-		if (Platform.isAsync())
-			this.getTable().getDatabase().upsert(this);
-		else
-			Platform.runTaskAsync(() -> this.getTable().getDatabase().upsert(this));
-	}
+    public final void upsert() {
+        final Runnable writer = this.getTable().getDatabase().queueUpsert(this);
+
+        if (Platform.isAsync())
+            writer.run();
+        else
+            Platform.runTaskAsync(writer);
+    }
 
 	/**
 	 * Delete this row from the database
