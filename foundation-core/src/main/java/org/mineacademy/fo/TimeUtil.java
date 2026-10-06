@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,73 +145,75 @@ public final class TimeUtil {
 
 	/**
 	 * Converts the time from a human readable format like "10 minutes"
-	 * to seconds.
+	 * to ticks.
 	 *
 	 * @param humanReadableTime the human readable time format: {time} {period}
 	 *                          example: 5 seconds, 10 ticks, 7 minutes, 12 hours etc..
-	 * @return the converted human time to seconds
+	 * @return the converted human time to ticks
 	 */
-	public static long toTicks(final String humanReadableTime) {
-		ValidCore.checkNotNull(humanReadableTime, "Time is null");
+    public static long toTicks(final String humanReadableTime) {
+        ValidCore.checkNotNull(humanReadableTime, "Time is null");
 
-		if (humanReadableTime.trim().equals("0"))
-			return 0;
+        if (humanReadableTime.trim().equals("0"))
+            return 0;
 
-		long seconds = 0L;
+        long ticks = 0L;
 
-		final String[] split = humanReadableTime.split(" ");
+        final String[] split = humanReadableTime.trim().split("\\s+");
 
-		if (split.length < 2)
-			throw new IllegalArgumentException("Expected human readable time like '1 second', got '" + humanReadableTime + "' instead");
+        if (split.length < 2 || split.length % 2 != 0)
+            throw new IllegalArgumentException("Expected human readable time like '1 second', got '" + humanReadableTime + "' instead");
 
-		for (int i = 1; i < split.length; i++) {
-			final String sub = split[i].toLowerCase();
-			int multiplier = 0; // e.g 2 hours = 2
-			long unit = 0; // e.g hours = 3600
-			boolean isTicks = false;
+        for (int i = 1; i < split.length; i += 2) {
+            final String sub      = split[i].toLowerCase(Locale.ROOT);
+            final long multiplier = Long.parseLong(split[i - 1]);
+            long unit             = 0;
+            boolean isTicks       = false;
 
-			try {
-				multiplier = Integer.parseInt(split[i - 1]);
-			} catch (final NumberFormatException e) {
-				continue;
-			}
+            if (multiplier < 0)
+                throw new IllegalArgumentException("Time must not be negative: '" + humanReadableTime + "'");
 
-			// attempt to match the unit time
-			if (sub.startsWith("tick"))
-				isTicks = true;
+            // attempt to match the unit time
+            if (sub.equals("tick") || sub.equals("ticks"))
+                isTicks = true;
 
-			else if (sub.startsWith("second"))
-				unit = 1;
+            else if (sub.equals("second") || sub.equals("seconds"))
+                unit = 1;
 
-			else if (sub.startsWith("minute"))
-				unit = 60;
+            else if (sub.equals("minute") || sub.equals("minutes"))
+                unit = 60;
 
-			else if (sub.startsWith("hour"))
-				unit = 3600;
+            else if (sub.equals("hour") || sub.equals("hours"))
+                unit = 3600;
 
-			else if (sub.startsWith("day"))
-				unit = 86400;
+            else if (sub.equals("day") || sub.equals("days"))
+                unit = 86400;
 
-			else if (sub.startsWith("week"))
-				unit = 604800;
+            else if (sub.equals("week") || sub.equals("weeks"))
+                unit = 604800;
 
-			else if (sub.startsWith("month"))
-				unit = 2629743;
+            else if (sub.equals("month") || sub.equals("months"))
+                unit = 2629743;
 
-			else if (sub.startsWith("year"))
-				unit = 31556926;
+            else if (sub.equals("year") || sub.equals("years"))
+                unit = 31556926;
 
-			else if (sub.startsWith("potato"))
-				unit = 1337;
+            else if (sub.equals("potato") || sub.equals("potatoes"))
+                unit = 1337;
 
-			else
-				throw new IllegalArgumentException("Must define date type! Example: '1 second' (Got '" + sub + "')");
+            else
+                throw new IllegalArgumentException("Must define date type! Example: '1 second' (Got '" + sub + "')");
 
-			seconds += multiplier * (isTicks ? 1 : unit * 20);
-		}
+            try {
+                ticks = Math.addExact(ticks, Math.multiplyExact(multiplier, isTicks ? 1 : unit * 20));
 
-		return seconds;
-	}
+            } catch (final ArithmeticException error) {
+                throw new IllegalArgumentException("Time is too large: '" + humanReadableTime + "'", error);
+            }
+        }
+
+        return ticks;
+    }
 
 	/**
 	 * Formats the given time from seconds into the following format:
@@ -310,62 +313,62 @@ public final class TimeUtil {
 	 * @param input
 	 * @return
 	 */
-	public static long toMilliseconds(final String input) {
+    public static long toMilliseconds(final String input) {
 
-		// Time unit values in milliseconds
-		final long MILLISECONDS_IN_SECOND = 1000;
-		final long MILLISECONDS_IN_MINUTE = 60 * MILLISECONDS_IN_SECOND;
-		final long MILLISECONDS_IN_HOUR = 60 * MILLISECONDS_IN_MINUTE;
-		final long MILLISECONDS_IN_DAY = 24 * MILLISECONDS_IN_HOUR;
-		final long MILLISECONDS_IN_WEEK = 7 * MILLISECONDS_IN_DAY;
-		final long MILLISECONDS_IN_MONTH = 30 * MILLISECONDS_IN_DAY; // Approximation for 30 days
-		final long MILLISECONDS_IN_YEAR = 365 * MILLISECONDS_IN_DAY; // Approximation for 365 days
+        // Time unit values in milliseconds
+        final long MILLISECONDS_IN_SECOND = 1000;
+        final long MILLISECONDS_IN_MINUTE = 60 * MILLISECONDS_IN_SECOND;
+        final long MILLISECONDS_IN_HOUR   = 60 * MILLISECONDS_IN_MINUTE;
+        final long MILLISECONDS_IN_DAY    = 24 * MILLISECONDS_IN_HOUR;
+        final long MILLISECONDS_IN_WEEK   = 7 * MILLISECONDS_IN_DAY;
+        final long MILLISECONDS_IN_MONTH  = 30 * MILLISECONDS_IN_DAY; // Approximation for 30 days
+        final long MILLISECONDS_IN_YEAR   = 365 * MILLISECONDS_IN_DAY; // Approximation for 365 days
 
-		// Regex to match time tokens
-		final Matcher matcher = TOKEN_PATTERN.matcher(input.toLowerCase());
+        // Regex to match time tokens
+        final String normalized = input.toLowerCase(Locale.ROOT);
+        final Matcher matcher   = TOKEN_PATTERN.matcher(normalized);
+        final long[] units      = { MILLISECONDS_IN_YEAR, MILLISECONDS_IN_MONTH, MILLISECONDS_IN_WEEK, MILLISECONDS_IN_DAY, MILLISECONDS_IN_HOUR, MILLISECONDS_IN_MINUTE, MILLISECONDS_IN_SECOND };
 
-		long totalMillis = 0;
-		boolean matched = false;
+        long totalMillis = 0;
+        int end          = 0;
 
-		// Loop through matched time tokens
-		while (matcher.find()) {
-			matched = true; // At least one match found
+        // Loop through matched time tokens
+        while (matcher.find()) {
+            if (!normalized.substring(end, matcher.start()).trim().isEmpty())
+                throw new IllegalArgumentException("Invalid time tokens found for: " + input);
 
-			if (matcher.group(1) != null)
-				totalMillis += Long.parseLong(matcher.group(1)) * MILLISECONDS_IN_YEAR;
+            for (int i = 0; i < units.length; i++) {
+                final String quantity = matcher.group(i + 1);
 
-			else if (matcher.group(2) != null)
-				totalMillis += Long.parseLong(matcher.group(2)) * MILLISECONDS_IN_MONTH;
+                if (quantity == null)
+                    continue;
 
-			else if (matcher.group(3) != null)
-				totalMillis += Long.parseLong(matcher.group(3)) * MILLISECONDS_IN_WEEK;
+                try {
+                    totalMillis = Math.addExact(totalMillis, Math.multiplyExact(Long.parseLong(quantity), units[i]));
 
-			else if (matcher.group(4) != null)
-				totalMillis += Long.parseLong(matcher.group(4)) * MILLISECONDS_IN_DAY;
+                } catch (final ArithmeticException | NumberFormatException error) {
+                    throw new IllegalArgumentException("Time is too large: '" + input + "'", error);
+                }
 
-			else if (matcher.group(5) != null)
-				totalMillis += Long.parseLong(matcher.group(5)) * MILLISECONDS_IN_HOUR;
+                break;
+            }
 
-			else if (matcher.group(6) != null)
-				totalMillis += Long.parseLong(matcher.group(6)) * MILLISECONDS_IN_MINUTE;
+            end = matcher.end();
+        }
 
-			else if (matcher.group(7) != null)
-				totalMillis += Long.parseLong(matcher.group(7)) * MILLISECONDS_IN_SECOND;
-		}
+        // If no valid tokens were matched, throw an exception
+        if (end == 0)
+            throw new IllegalArgumentException("No valid time tokens found for: " + input);
 
-		// If no valid tokens were matched, throw an exception
-		if (!matched)
-			throw new IllegalArgumentException("No valid time tokens found for: " + input);
+        if (!normalized.substring(end).trim().isEmpty())
+            throw new IllegalArgumentException("Invalid time tokens found for: " + input);
 
-		if (totalMillis < 0)
-			throw new IllegalArgumentException("Invalid time tokens found for: " + input);
+        // If total millis is over 10 years, cap at 10 years
+        if (totalMillis > 10 * MILLISECONDS_IN_YEAR)
+            totalMillis = 10 * MILLISECONDS_IN_YEAR;
 
-		// If total millis is over 10 years, cap at 10 years
-		if (totalMillis > 10 * MILLISECONDS_IN_YEAR)
-			totalMillis = 10 * MILLISECONDS_IN_YEAR;
-
-		return totalMillis;
-	}
+        return totalMillis;
+    }
 
 	/**
 	 * Convert the current time into one that is recognized by MySQL.
