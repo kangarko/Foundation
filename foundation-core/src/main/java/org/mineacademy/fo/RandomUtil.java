@@ -155,11 +155,22 @@ public final class RandomUtil {
 	 * @param max
 	 * @return
 	 */
-	public static int nextIntBetween(final int min, final int max) {
-		ValidCore.checkBoolean(min <= max, "Min !< max");
+    public static int nextIntBetween(final int min, final int max) {
+        ValidCore.checkBoolean(min <= max, "Min !< max");
 
-		return min + nextInt(max - min + 1);
-	}
+        final int bound = max - min + 1;
+
+        if (bound > 0)
+            return min + nextInt(bound);
+
+        int value;
+
+        do {
+            value = random.nextInt();
+        } while (value < min || value > max);
+
+        return value;
+    }
 
 	/**
 	 * Returns a random integer, see {@link Random#nextInt(int)}.

@@ -29,18 +29,24 @@ public final class SimpleTime implements ConfigStringSerializable {
 	/*
 	 * Create a new time instance.
 	 */
-	private SimpleTime(@NonNull final String time) {
-		if ("0".equals(time) || "none".equalsIgnoreCase(time) || "never".equalsIgnoreCase(time)) {
-			this.raw = "0";
-			this.timeTicks = 0;
-			this.enabled = false;
+    private SimpleTime(@NonNull final String time) {
+        final String normalized = time.trim();
 
-		} else {
-			this.raw = time;
-			this.timeTicks = TimeUtil.toTicks(time);
-			this.enabled = true;
-		}
-	}
+        if ("0".equals(normalized) || "none".equalsIgnoreCase(normalized) || "never".equalsIgnoreCase(normalized)) {
+            this.raw       = "0";
+            this.timeTicks = 0;
+            this.enabled   = false;
+
+        } else {
+            this.raw       = time;
+            this.timeTicks = TimeUtil.toTicks(time);
+
+            if (this.timeTicks > Long.MAX_VALUE / 50)
+                throw new IllegalArgumentException("Time is too large to express in milliseconds: '" + time + "'");
+
+            this.enabled = this.timeTicks > 0;
+        }
+    }
 
 	/**
 	 * Get the time specified in seconds (ticks / 20)
@@ -53,16 +59,18 @@ public final class SimpleTime implements ConfigStringSerializable {
 
 	/**
 	 * Get the time specified in ticks
-	 * *WARNING* if the time ticks is over {@value Integer#MAX_VALUE} it will overflow!
 	 *
 	 * @return
 	 */
-	public int getTimeTicks() {
-		return (int) this.timeTicks;
-	}
+    public int getTimeTicks() {
+        if (this.timeTicks > Integer.MAX_VALUE)
+            throw new IllegalArgumentException("Time is too large to express in integer ticks: '" + this.raw + "'");
+
+        return (int) this.timeTicks;
+    }
 
 	/**
-	 * Get the time specified in ms (ticks * 20)
+	 * Get the time specified in ms (ticks * 50)
 	 *
 	 * @return
 	 */
@@ -134,6 +142,11 @@ public final class SimpleTime implements ConfigStringSerializable {
 	public boolean equals(final Object obj) {
 		return obj instanceof SimpleTime && ((SimpleTime) obj).timeTicks == this.timeTicks;
 	}
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(this.timeTicks);
+    }
 
 	/**
 	 * @see #serialize()

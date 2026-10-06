@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import org.mineacademy.fo.RandomUtil;
-import org.mineacademy.fo.ValidCore;
 
 import lombok.Getter;
 
@@ -37,13 +36,13 @@ public final class RangedSimpleTime implements ConfigStringSerializable {
 	 * @param min
 	 * @param max
 	 */
-	public RangedSimpleTime(final SimpleTime min, final SimpleTime max) {
-		ValidCore.checkBoolean(min.getTimeTicks() >= 0 && max.getTimeTicks() >= 0, "Values may not be negative");
-		ValidCore.checkBoolean(min.getTimeTicks() <= max.getTimeTicks(), "Minimum must be lower or equal maximum");
+    public RangedSimpleTime(final SimpleTime min, final SimpleTime max) {
+        if (min.getTimeTicks() > max.getTimeTicks())
+            throw new IllegalArgumentException("Minimum time must not exceed maximum: '" + min + " - " + max + "'");
 
-		this.min = min;
-		this.max = max;
-	}
+        this.min = min;
+        this.max = max;
+    }
 
 	/**
 	 * Return a random time in ticks between min-max value
@@ -69,9 +68,9 @@ public final class RangedSimpleTime implements ConfigStringSerializable {
 	 * @param ticks
 	 * @return
 	 */
-	public boolean isInRangeTicks(final int ticks) {
-		return ticks >= this.min.getTimeTicks() && ticks <= this.min.getTimeTicks();
-	}
+    public boolean isInRangeTicks(final int ticks) {
+        return ticks >= this.min.getTimeTicks() && ticks <= this.max.getTimeTicks();
+    }
 
 	/**
 	 * Return if the given seconds are within min-max value
@@ -79,9 +78,9 @@ public final class RangedSimpleTime implements ConfigStringSerializable {
 	 * @param seconds
 	 * @return
 	 */
-	public boolean isInRangeSeconds(final int seconds) {
-		return seconds >= this.min.getTimeSeconds() && seconds <= this.min.getTimeSeconds();
-	}
+    public boolean isInRangeSeconds(final int seconds) {
+        return seconds >= this.min.getTimeSeconds() && seconds <= this.max.getTimeSeconds();
+    }
 
 	/**
 	 * Return a formatted line such as '1 ticks - 2 minutes'
@@ -111,13 +110,15 @@ public final class RangedSimpleTime implements ConfigStringSerializable {
 	 * @param line
 	 * @return
 	 */
-	public static RangedSimpleTime fromString(final String line) {
-		final String[] parts = line.split("\\-");
-		ValidCore.checkBoolean(parts.length == 1 || parts.length == 2, "Malformed RangedSimpleTime " + line);
+    public static RangedSimpleTime fromString(final String line) {
+        final String[] parts = line.split("-", -1);
 
-		final String min = parts[0].trim();
-		final String max = (parts.length == 2 ? parts[1] : min).trim();
+        if (parts.length != 1 && parts.length != 2)
+            throw new IllegalArgumentException("Malformed ranged time: '" + line + "'");
 
-		return new RangedSimpleTime(SimpleTime.fromString(min), SimpleTime.fromString(max));
-	}
+        final String min = parts[0].trim();
+        final String max = (parts.length == 2 ? parts[1] : min).trim();
+
+        return new RangedSimpleTime(SimpleTime.fromString(min), SimpleTime.fromString(max));
+    }
 }
