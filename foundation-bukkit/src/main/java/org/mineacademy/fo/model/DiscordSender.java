@@ -54,6 +54,9 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public boolean hasPermission(final String perm) {
+		if (this.offlinePlayer == null)
+			return false;
+
 		if (HookManager.isVaultLoaded()) {
 			final Boolean result = HookManager.hasVaultPermission(this.offlinePlayer, perm);
 
@@ -121,6 +124,9 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public void sendMessage(final String message) {
+		if (this.user.isBot())
+			return;
+
 		final String finalMessage = CompChatColor.stripColorCodes(message);
 
 		Platform.runTaskAsync(() -> {
