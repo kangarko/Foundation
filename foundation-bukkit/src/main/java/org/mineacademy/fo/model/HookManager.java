@@ -32,6 +32,7 @@ import org.mineacademy.fo.Common;
 import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.PlayerUtil;
 import org.mineacademy.fo.ReflectionUtil;
+import org.mineacademy.fo.Valid;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
@@ -1074,6 +1075,19 @@ public final class HookManager {
 		}
 
 		return new Tuple<>(false, 0L);
+	}
+
+	public static void loadMute(final UUID uniqueId) {
+		Valid.checkAsync("Loading the mute of " + uniqueId + " queries a database, call it off the main thread");
+
+		if (isLiteBansLoaded())
+			LitebansTask.getInstance().loadMute(uniqueId);
+	}
+
+	public static boolean isBanned(final UUID uniqueId) {
+		Valid.checkAsync("Checking the ban of " + uniqueId + " queries a database, call it off the main thread");
+
+		return isLiteBansLoaded() && LitebansTask.getInstance().isBanned(uniqueId) || isBanManagerLoaded() && banManagerHook.isBanned(uniqueId);
 	}
 
 	/**
@@ -4447,6 +4461,18 @@ class BanManagerHook {
 
 			return false;
 		}
+	}
+
+	boolean isBanned(final UUID uniqueId) {
+		if (!Bukkit.getPluginManager().isPluginEnabled("BanManager"))
+			return false;
+
+		if (!ReflectionUtil.isClassAvailable("me.confuser.banmanager.common.api.BmAPI"))
+			return false;
+
+		final Class<?> api = ReflectionUtil.lookupClass("me.confuser.banmanager.common.api.BmAPI");
+
+		return ReflectionUtil.invoke(ReflectionUtil.getMethod(api, "isBanned", UUID.class), null, uniqueId);
 	}
 }
 
