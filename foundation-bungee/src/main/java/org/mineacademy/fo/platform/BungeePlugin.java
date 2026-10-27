@@ -20,6 +20,7 @@ import org.mineacademy.fo.proxy.ProxyListener;
 import org.mineacademy.fo.proxy.message.OutgoingMessage;
 
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -194,6 +195,10 @@ public abstract class BungeePlugin extends Plugin implements FoundationPlugin {
 
 			// Register the proxy listener and channel
 			this.registerEvents(new BungeeListener());
+
+			for (final ProxiedPlayer online : this.getProxy().getPlayers())
+				if (online.getServer() != null)
+					BungeeServer.markJoined(online, online.getServer());
 
 			if (!this.getProxy().getChannels().contains("BungeeCord"))
 				this.getProxy().registerChannel("BungeeCord");

@@ -641,7 +641,7 @@ public final class ChatUtil {
 	 * @return
 	 */
 	public static String replaceDiacritic(final String message) {
-		return Normalizer.normalize(message, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+		return Normalizer.normalize(message, Normalizer.Form.NFD).replace("<\u0338", "\u226E").replace(">\u0338", "\u226F").replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
 	/**

@@ -180,6 +180,19 @@ public final class LitebansTask {
 		return until == null ? 0L : until;
 	}
 
+	@Deprecated
+	public void loadMute(final UUID uniqueId) {
+		if (!this.enabled)
+			return;
+
+		this.tryLookup(uniqueId, false);
+	}
+
+	@Deprecated
+	public boolean isBanned(final UUID uniqueId) {
+		return this.enabled && LitebansHook.isBanned(uniqueId);
+	}
+
 	/**
 	 * All direct references to litebans.api.* are confined to this nested class.
 	 * The JVM only loads this class (and thus the LiteBans classes) when a method
@@ -221,6 +234,10 @@ public final class LitebansTask {
 					applyEntry(cache, mute);
 			} else
 				cache.remove(uniqueId.toString());
+		}
+
+		static boolean isBanned(final UUID uniqueId) {
+			return Database.get().isPlayerBanned(uniqueId, null);
 		}
 
 		static void applyEntry(final ConcurrentMap<String, Long> cache, final Entry entry) {

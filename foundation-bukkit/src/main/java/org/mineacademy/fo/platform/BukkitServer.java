@@ -45,8 +45,10 @@ public final class BukkitServer extends FoundationServer {
 	}
 
 	@Override
-	public void sendData(final String channel, final byte[] byteArray) {
+	public boolean sendData(final String channel, final byte[] byteArray) {
 		Platform.sendPluginMessage(null, channel, byteArray);
+
+		return false;
 	}
 
 	@Override

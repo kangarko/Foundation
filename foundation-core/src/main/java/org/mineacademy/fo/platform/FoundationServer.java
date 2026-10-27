@@ -50,6 +50,8 @@ public abstract class FoundationServer {
 	 *
 	 * @param channel
 	 * @param data
+	 *
+	 * @return true if a connection to the server took the message, false if nobody could relay it
 	 */
-	public abstract void sendData(String channel, byte[] data);
+	public abstract boolean sendData(String channel, byte[] data);
 }

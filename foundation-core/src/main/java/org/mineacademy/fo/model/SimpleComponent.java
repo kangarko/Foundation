@@ -81,6 +81,8 @@ public final class SimpleComponent implements ConfigSerializable {
 
 	private static boolean HAS_STRIP_TAGS;
 
+	private static final Pattern UNESCAPED_RESET = Pattern.compile("(?<!\\\\)<reset>");
+
 	static {
 		try {
 			TextDecoration.class.getMethod("withState", boolean.class);
@@ -1352,12 +1354,12 @@ public final class SimpleComponent implements ConfigSerializable {
 			message = message.replaceAll("(\\\\){2,}(?=<[^/])", "\\\\"); // New RegExp normalizes backslashes before opening tags only
 
 			// See resetColors() below for explainer
-			mini = MINIMESSAGE_PARSER.deserialize(message.replace("<reset>", "<#180f0d>"));
+			mini = MINIMESSAGE_PARSER.deserialize(UNESCAPED_RESET.matcher(message).replaceAll("<#180f0d>"));
 
 		} catch (final Throwable t) {
 			if (t.getMessage() != null && t.getMessage().contains("Legacy formatting codes")) {
 				try {
-					mini = MINIMESSAGE_PARSER.deserialize(message.replace(String.valueOf(CompChatColor.COLOR_CHAR), "").replace("<reset>", "<#180f0d>"));
+					mini = MINIMESSAGE_PARSER.deserialize(UNESCAPED_RESET.matcher(message.replace(String.valueOf(CompChatColor.COLOR_CHAR), "")).replaceAll("<#180f0d>"));
 
 				} catch (final Throwable t2) {
 					CommonCore.throwErrorUnreported(t2, "Error parsing mini message tags in: " + message);
@@ -1645,7 +1647,7 @@ public final class SimpleComponent implements ConfigSerializable {
 		if (HAS_STRIP_TAGS)
 			return MINIMESSAGE_PARSER.escapeTags(message);
 
-		return message.replace("<", "\\<").replace(">", "\\>");
+		return message.replaceAll("(?<!\\\\)<", "\\\\<");
 	}
 
 	// --------------------------------------------------------------------
