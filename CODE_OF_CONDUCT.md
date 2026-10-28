@@ -1,3 +1,5 @@
+tldr: Don't be a fucking asshole.
+
 Try to help other team members and cooperate if you can.
 
 Treat others the way you yourself want to be treated.
