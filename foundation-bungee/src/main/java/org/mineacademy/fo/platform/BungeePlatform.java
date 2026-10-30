@@ -133,7 +133,7 @@ final class BungeePlatform extends FoundationPlatform {
 
 	@Override
 	public FoundationServer getServer(final String name) {
-		final ServerInfo server = Remain.getServer(name);
+		final ServerInfo server = BungeePlugin.getServer().getServerInfo(name);
 
 		return server != null ? new BungeeServer(server) : null;
 	}

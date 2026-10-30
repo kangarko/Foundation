@@ -35,20 +35,6 @@ public final class Remain extends RemainCore {
 	private static Supplier<Collection<ServerInfo>> serverGetter = () -> ProxyServer.getInstance().getServers().values();
 
 	/**
-	 * Return the server by the given name
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static ServerInfo getServer(final String name) {
-		for (final ServerInfo server : Remain.getServers())
-			if (server.getName().equalsIgnoreCase(name))
-				return server;
-
-		return null;
-	}
-
-	/**
 	 * Returns all servers
 	 *
 	 * @return

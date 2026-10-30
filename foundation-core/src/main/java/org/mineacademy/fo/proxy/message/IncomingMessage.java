@@ -38,7 +38,8 @@ public final class IncomingMessage extends Message {
 	private final UUID senderUid;
 
 	/**
-	 * The serverName
+	 * The server name. On proxies this is the name of the server connection
+	 * the message arrived on, on game servers the name its sender wrote into it.
 	 */
 	@Getter
 	private final String serverName;

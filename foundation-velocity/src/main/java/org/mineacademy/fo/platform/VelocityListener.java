@@ -66,7 +66,10 @@ public final class VelocityListener {
 			if (subChannel.equals(listener.getChannel())) {
 
 				final UUID senderUid = UUID.fromString(in.readUTF());
-				final String serverName = in.readUTF();
+
+				in.readUTF();
+
+				final String serverName = connection.getServerInfo().getName();
 				final String actionName = in.readUTF();
 
 				final ProxyMessage message = ProxyMessage.getByName(listener, actionName);

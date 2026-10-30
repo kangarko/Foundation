@@ -36,20 +36,6 @@ public final class Remain extends RemainCore {
 	private static Supplier<Collection<RegisteredServer>> serverGetter = () -> VelocityPlugin.getServer().getAllServers();
 
 	/**
-	 * Return the server by the given name
-	 *
-	 * @param name
-	 * @return
-	 */
-	public static RegisteredServer getServer(final String name) {
-		for (final RegisteredServer server : Remain.getServers())
-			if (server.getServerInfo().getName().equalsIgnoreCase(name))
-				return server;
-
-		return null;
-	}
-
-	/**
 	 * Returns all servers
 	 *
 	 * @return

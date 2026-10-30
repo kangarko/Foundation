@@ -48,6 +48,8 @@ public final class BungeeListener implements Listener {
 		if (!(sender instanceof Server))
 			return;
 
+		final Server connection = (Server) sender;
+
 		// Read the plugin message
 		final ByteArrayInputStream stream = new ByteArrayInputStream(data);
 		ByteArrayDataInput in;
@@ -67,7 +69,10 @@ public final class BungeeListener implements Listener {
 			if (subChannel.equals(listener.getChannel())) {
 
 				final UUID senderUid = UUID.fromString(in.readUTF());
-				final String serverName = in.readUTF();
+
+				in.readUTF();
+
+				final String serverName = connection.getInfo().getName();
 				final String actionName = in.readUTF();
 
 				final ProxyMessage message = ProxyMessage.getByName(listener, actionName);

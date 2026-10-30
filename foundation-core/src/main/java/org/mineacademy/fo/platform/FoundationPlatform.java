@@ -200,7 +200,7 @@ public abstract class FoundationPlatform {
 				throw new IllegalArgumentException("Server name cannot be longer than 64 characters! Got: " + serverName);
 
 			if (!serverName.matches("[a-zA-Z0-9_-]+"))
-				throw new IllegalArgumentException("Server name can only contains alphanumeric characters, '_' and '-'. Got: " + serverName);
+				throw new IllegalArgumentException("Server name can only contain alphanumeric characters, '_' and '-'. Got: " + serverName);
 
 			this.customServerName = serverName;
 
