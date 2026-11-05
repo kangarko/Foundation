@@ -41,6 +41,7 @@ public final class DiscordSender implements CommandSender {
 	private final User user;
 	private final MessageChannel channel;
 	private final Message message;
+	private final boolean primary;
 
 	@Override
 	public boolean isPermissionSet(final String permission) {
@@ -124,7 +125,7 @@ public final class DiscordSender implements CommandSender {
 
 	@Override
 	public void sendMessage(final String message) {
-		if (this.user.isBot())
+		if (!this.primary || this.user.isBot())
 			return;
 
 		final String finalMessage = CompChatColor.stripColorCodes(message);

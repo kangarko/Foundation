@@ -1,7 +1,6 @@
 package org.mineacademy.fo.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.mineacademy.fo.CommonCore;
+import org.mineacademy.fo.collection.ExpiringMap;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.platform.BukkitPlugin;
 import org.mineacademy.fo.platform.Platform;
@@ -59,8 +59,7 @@ public abstract class DiscordListener implements Listener {
 	 * Used if you edit a message. This maps the old message id to the new one
 	 * because when we edit a message, its ID is changed
 	 */
-	@Getter(value = AccessLevel.PROTECTED)
-	private final Map<Long, Long> editedMessages = new HashMap<>();
+	private final Map<Long, Long> editedMessages = ExpiringMap.builder().expiration(1, TimeUnit.HOURS).build();
 
 	/**
 	 * Create a new Discord listener for the DiscordSRV plugin
