@@ -325,7 +325,7 @@ public final class ConfigItems<T extends YamlConfig> {
 					} else {
 						final Throwable root = CommonCore.getRootCause(t);
 
-						if (root instanceof InvalidWorldException) {
+						if (root instanceof InvalidWorldException || (root instanceof FoException && !((FoException) root).isReport())) {
 							CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
 
 							errorHandled = true;

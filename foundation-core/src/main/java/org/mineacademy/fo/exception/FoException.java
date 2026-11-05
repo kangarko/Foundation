@@ -24,6 +24,7 @@ public class FoException extends RuntimeException {
 	 * Should the user report this error to us? Errors caused by the user, such as an invalid
 	 * configuration, are created with report=false and must not ask him to report them back.
 	 */
+	@Getter
 	private final boolean report;
 
 	/**
