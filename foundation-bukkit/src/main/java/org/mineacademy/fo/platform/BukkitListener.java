@@ -262,6 +262,16 @@ final class BukkitListener implements Listener {
 					audience.sendMessage(component);
 		});
 
+		this.updateVanishMetadata(player);
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onJoinLate(final PlayerJoinEvent event) {
+		this.updateVanishMetadata(event.getPlayer());
+	}
+
+	private void updateVanishMetadata(final Player player) {
+
 		// Workaround for Essentials and CMI bug where they report "vanished" metadata when
 		// the /vanish command is run, but forgot to do so after reload, despite player still
 		// being vanished. So we just set the metadata on join back manually.
