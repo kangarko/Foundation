@@ -291,6 +291,10 @@ public abstract class YamlStaticConfig {
 		return TEMPORARY_INSTANCE.getBoolean(path);
 	}
 
+	protected static final boolean getStrictBoolean(final String path, final boolean def) {
+		return TEMPORARY_INSTANCE.getStrictBoolean(path, def);
+	}
+
 	/**
 	 * @see YamlConfig#getCaseNumberFormat(String)
 	 *
