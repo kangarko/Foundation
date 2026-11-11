@@ -485,6 +485,18 @@ public abstract class FileConfig extends ConfigSection {
 		return val != null ? val : def;
 	}
 
+	public final boolean getStrictBoolean(final String path, final boolean def) {
+		final Object raw = this.getObject(path);
+
+		if (raw == null)
+			return def;
+
+		if (!(raw instanceof Boolean))
+			throw new FoException("Set " + this.buildPathPrefix(path) + " to true or false in lowercase without quotes, got: '" + raw + "'", false);
+
+		return (Boolean) raw;
+	}
+
 	/**
 	 * Return a double from the config path.
 	 *

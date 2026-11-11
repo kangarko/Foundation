@@ -17,8 +17,6 @@ import org.mineacademy.fo.CommonCore;
 import org.mineacademy.fo.FileUtil;
 import org.mineacademy.fo.ValidCore;
 import org.mineacademy.fo.exception.FoException;
-import org.mineacademy.fo.exception.InvalidWorldException;
-import org.mineacademy.fo.exception.YamlSyntaxError;
 
 import lombok.NonNull;
 
@@ -241,9 +239,6 @@ public final class ConfigItems<T extends YamlConfig> {
 					try {
 						this.loadOrCreateItem(name);
 
-					} catch (final YamlSyntaxError ex) {
-						ex.printStackTrace();
-
 					} catch (final Throwable t) {
 						CommonCore.error(t, "Error loading " + file);
 					}
@@ -316,23 +311,14 @@ public final class ConfigItems<T extends YamlConfig> {
 						item = constructor.newInstance();
 
 				} catch (final Throwable t) {
-					if (t instanceof YamlSyntaxError) {
-						CommonCore.log(t.getMessage());
+					final Throwable mistake = CommonCore.findUserMistake(t);
 
-						t.printStackTrace();
-						errorHandled = true;
+					if (mistake == null)
+						throw new FoException(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor, false);
 
-					} else {
-						final Throwable root = CommonCore.getRootCause(t);
+					CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + mistake.getMessage());
 
-						if (root instanceof InvalidWorldException || (root instanceof FoException && !((FoException) root).isReport())) {
-							CommonCore.warning("Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + ": " + root.getMessage());
-
-							errorHandled = true;
-
-						} else
-							throw new FoException(t, "Failed to load " + (this.type == null ? prototypeClass.getSimpleName() : this.type) + " " + name + " from " + constructor, false);
-					}
+					errorHandled = true;
 				}
 			}
 
@@ -350,11 +336,11 @@ public final class ConfigItems<T extends YamlConfig> {
 			}
 
 		} catch (final Throwable t) {
-			CommonCore.throwError(t, "Failed to load" + name + (this.singleFile ? "" : " from " + this.folder));
+			CommonCore.throwError(t, "Failed to load " + name + (this.singleFile ? "" : " from " + this.folder));
 		}
 
 		if (!errorHandled)
-			ValidCore.checkNotNull(item, "Failed to initialiaze " + name + " from " + this.folder);
+			ValidCore.checkNotNull(item, "Failed to initialize " + name + " from " + this.folder);
 
 		return item;
 	}

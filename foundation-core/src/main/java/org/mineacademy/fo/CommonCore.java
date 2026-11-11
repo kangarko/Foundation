@@ -26,6 +26,8 @@ import org.mineacademy.fo.database.Row;
 import org.mineacademy.fo.debug.Debugger;
 import org.mineacademy.fo.exception.FoException;
 import org.mineacademy.fo.exception.HandledException;
+import org.mineacademy.fo.exception.InvalidWorldException;
+import org.mineacademy.fo.exception.YamlSyntaxError;
 import org.mineacademy.fo.model.CompChatColor;
 import org.mineacademy.fo.model.ConfigStringSerializable;
 import org.mineacademy.fo.model.SimpleComponent;
@@ -468,6 +470,24 @@ public abstract class CommonCore {
 			throwable = throwable.getCause();
 
 		return throwable;
+	}
+
+	public static final Throwable findUserMistake(@NonNull final Throwable throwable) {
+		Throwable cause = throwable;
+
+		for (int depth = 0; depth < 50 && cause != null; depth++) {
+			if (cause instanceof YamlSyntaxError)
+				return cause;
+
+			cause = cause.getCause();
+		}
+
+		final Throwable root = getRootCause(throwable);
+
+		if (root instanceof InvalidWorldException || (root instanceof FoException && !((FoException) root).isReport()))
+			return root;
+
+		return null;
 	}
 
 	/*
