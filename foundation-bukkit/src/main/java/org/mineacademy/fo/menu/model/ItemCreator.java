@@ -1075,7 +1075,6 @@ public final class ItemCreator {
 				.bookAuthor(CommonCore.getOrDefault(LegacyComponentSerializer.legacySection().serialize(book.author()), "Blank"))
 				.bookPages(CommonCore.convertList(book.pages(), SimpleComponent::serializeAdventureToMini))
 				.name(title)
-				.tag(SimpleBook.TAG, "true")
 				.hideTags(true);
 	}
 
@@ -1111,7 +1110,6 @@ public final class ItemCreator {
 				.bookAuthor(CommonCore.getOrDefault(book.getAuthor(), "Blank"))
 				.bookPages(book.getPages())
 				.name(book.getTitle())
-				.tag(SimpleBook.TAG, "true")
 				.hideTags(true);
 	}
 }

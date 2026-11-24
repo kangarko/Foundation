@@ -28,14 +28,10 @@ import net.kyori.adventure.text.Component;
 public final class SimpleBook implements ConfigSerializable {
 
 	/**
-	 * The editable book nbt tag
-	 */
-	public final static String TAG = "FoEditableBook";
-
-	/**
 	 * The book title
 	 */
-	private final String title;
+	@Setter
+	private String title;
 
 	/**
 	 * The book author
