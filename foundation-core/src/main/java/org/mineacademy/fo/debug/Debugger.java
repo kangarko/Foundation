@@ -196,18 +196,7 @@ public final class Debugger {
 
 	private static void postCrashReport(final Map<String, String> payload) {
 		try {
-			final StringBuilder json = new StringBuilder("{");
-			boolean first = true;
-
-			for (final Map.Entry<String, String> entry : payload.entrySet()) {
-				if (!first)
-					json.append(",");
-
-				json.append("\"").append(escapeJson(entry.getKey())).append("\":\"").append(escapeJson(entry.getValue())).append("\"");
-				first = false;
-			}
-
-			json.append("}");
+			final String json = CommonCore.GSON.toJson(payload);
 
 			final java.net.URL url = new java.net.URI(CRASH_REPORT_URL).toURL();
 			final java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
@@ -220,7 +209,7 @@ public final class Debugger {
 			connection.setDoOutput(true);
 
 			try (final java.io.OutputStream os = connection.getOutputStream()) {
-				os.write(json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				os.write(json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 			}
 
 			final int responseCode = connection.getResponseCode();
@@ -233,15 +222,6 @@ public final class Debugger {
 		} catch (final Throwable t) {
 			CommonCore.log("Failed to send crash report: " + t.getMessage());
 		}
-	}
-
-	private static String escapeJson(String value) {
-		return value
-				.replace("\\", "\\\\")
-				.replace("\"", "\\\"")
-				.replace("\n", "\\n")
-				.replace("\r", "\\r")
-				.replace("\t", "\\t");
 	}
 
 	/*
