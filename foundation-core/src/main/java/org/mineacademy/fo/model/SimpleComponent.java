@@ -107,7 +107,7 @@ public final class SimpleComponent implements ConfigSerializable {
 						"library without relocating it, which is a bad coding",
 						"practice. Some custom Spigot forks are known to do",
 						"that too. See the below article for more information:",
-						"https://docs.mineacademy.org/chatcontrol/jar-hell",
+						"https://mineacademy.org/docs/chatcontrol/jar-hell",
 						"",
 						"We will continue loading, some features might not",
 						"be available.");
@@ -122,7 +122,7 @@ public final class SimpleComponent implements ConfigSerializable {
 						"library without relocating it, which is a bad coding",
 						"practice. Some custom Spigot forks are known to do",
 						"that too. See the below article for more information:",
-						"https://docs.mineacademy.org/chatcontrol/jar-hell");
+						"https://mineacademy.org/docs/chatcontrol/jar-hell");
 			}
 		}
 
